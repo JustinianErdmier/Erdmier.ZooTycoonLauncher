@@ -13,17 +13,20 @@ public sealed class LauncherConfigService : ILauncherConfigService
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true
+        WriteIndented        = true
     };
 
     private readonly IFileSystem _fileSystem;
 
     /// <param name="fileSystem"> Abstraction over the file system; the production wiring binds this to <see cref="FileSystem" />. </param>
-    /// <param name="appDataRoot"> Root directory under which <c> ZooTycoonLauncher\launcher.config </c> is stored; the production wiring binds this to <see cref="Environment.GetFolderPath(Environment.SpecialFolder)" /> with <see cref="Environment.SpecialFolder.ApplicationData" />. </param>
+    /// <param name="appDataRoot">
+    ///     Root directory under which <c> ZooTycoonLauncher\launcher.config </c> is stored; the production wiring binds this to
+    ///     <see cref="Environment.GetFolderPath(Environment.SpecialFolder)" /> with <see cref="Environment.SpecialFolder.ApplicationData" />.
+    /// </param>
     public LauncherConfigService(IFileSystem fileSystem, string appDataRoot)
     {
-        _fileSystem = fileSystem;
-        ConfigFilePath = _fileSystem.Path.Combine(appDataRoot, "ZooTycoonLauncher", "launcher.config");
+        _fileSystem    = fileSystem;
+        ConfigFilePath = _fileSystem.Path.Combine(appDataRoot, path2: "ZooTycoonLauncher", path3: "launcher.config");
     }
 
     /// <inheritdoc />
@@ -33,14 +36,21 @@ public sealed class LauncherConfigService : ILauncherConfigService
     public async Task<LauncherConfig> LoadAsync()
     {
         if (!_fileSystem.File.Exists(ConfigFilePath))
+        {
             return new LauncherConfig();
+        }
 
         try
         {
-            await using var stream = _fileSystem.File.OpenRead(ConfigFilePath);
-            if (stream.Length == 0) return new LauncherConfig();
+            await using FileSystemStream stream = _fileSystem.File.OpenRead(ConfigFilePath);
 
-            var config = await JsonSerializer.DeserializeAsync<LauncherConfig>(stream, SerializerOptions);
+            if (stream.Length == 0)
+            {
+                return new LauncherConfig();
+            }
+
+            LauncherConfig? config = await JsonSerializer.DeserializeAsync<LauncherConfig>(stream, SerializerOptions);
+
             return config ?? new LauncherConfig();
         }
         catch (Exception)
@@ -52,11 +62,12 @@ public sealed class LauncherConfigService : ILauncherConfigService
     /// <inheritdoc />
     public async Task SaveAsync(LauncherConfig config)
     {
-        var directory = _fileSystem.Path.GetDirectoryName(ConfigFilePath)!;
+        string directory = _fileSystem.Path.GetDirectoryName(ConfigFilePath)!;
         _fileSystem.Directory.CreateDirectory(directory);
 
-        var tempPath = ConfigFilePath + ".tmp";
-        await using (var stream = _fileSystem.File.Create(tempPath))
+        string tempPath = ConfigFilePath + ".tmp";
+
+        await using (FileSystemStream stream = _fileSystem.File.Create(tempPath))
         {
             await JsonSerializer.SerializeAsync(stream, config, SerializerOptions);
         }

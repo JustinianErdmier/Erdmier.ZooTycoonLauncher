@@ -3,7 +3,10 @@ using System.Threading.Tasks;
 namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 
 /// <summary>Manages the <c> zoo.ini.original </c> and <c> zoo.ini.undo </c> backup files.</summary>
-/// <remarks>This milestone implements only <see cref="EnsureOriginalBackupAsync" />, <see cref="OriginalBackupExists" />, and <see cref="UndoSnapshotExists" />. The remaining members throw <see cref="System.NotImplementedException" /> and will be filled in when the full versioning task is undertaken.</remarks>
+/// <remarks>
+///     This milestone implements only <see cref="EnsureOriginalBackupAsync" />, <see cref="OriginalBackupExists" />, and <see cref="UndoSnapshotExists" />. The remaining members
+///     throw <see cref="System.NotImplementedException" /> and will be filled in when the full versioning task is undertaken.
+/// </remarks>
 public interface IVersioningService
 {
     /// <summary>Called once on first launch. Creates <c> zoo.ini.original </c> alongside <paramref name="iniFilePath" /> if it does not already exist.</summary>
@@ -19,5 +22,6 @@ public interface IVersioningService
     Task<bool> RestoreOriginalAsync(string iniFilePath);
 
     bool UndoSnapshotExists(string iniFilePath);
+
     bool OriginalBackupExists(string iniFilePath);
 }

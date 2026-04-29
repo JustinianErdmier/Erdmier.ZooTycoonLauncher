@@ -9,54 +9,59 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 public sealed class StartupService : IStartupService
 {
     private readonly ILauncherConfigService _config;
+
     private readonly IFileLocatorService _locator;
+
     private readonly IIniParserService _parser;
+
     private readonly IVersioningService _versioning;
 
-    public StartupService(
-        ILauncherConfigService config,
-        IFileLocatorService locator,
-        IIniParserService parser,
-        IVersioningService versioning)
+    public StartupService(ILauncherConfigService config,
+                          IFileLocatorService    locator,
+                          IIniParserService      parser,
+                          IVersioningService     versioning)
     {
-        _config = config;
-        _locator = locator;
-        _parser = parser;
+        _config     = config;
+        _locator    = locator;
+        _parser     = parser;
         _versioning = versioning;
     }
 
     /// <inheritdoc />
     public async Task<StartupResult> InitializeAsync()
     {
-        var config = await _config.LoadAsync();
-        var locator = await _locator.LocateFilesAsync();
+        LauncherConfig config  = await _config.LoadAsync();
+        LocatorResult  locator = await _locator.LocateFilesAsync();
+
         return await CompleteAsync(config, locator);
     }
 
     /// <inheritdoc />
     public async Task<StartupResult> ApplyManualDirectoryAsync(string directoryPath)
     {
-        var config = await _config.LoadAsync();
-        var locator = await _locator.LocateFilesAsync(directoryPath);
+        LauncherConfig config  = await _config.LoadAsync();
+        LocatorResult  locator = await _locator.LocateFilesAsync(directoryPath);
+
         return await CompleteAsync(config, locator);
     }
 
     private async Task<StartupResult> CompleteAsync(LauncherConfig config, LocatorResult locator)
     {
-        if (!locator.ExeFound && !locator.IniFound)
+        if (!locator.ExeFound
+            && !locator.IniFound)
         {
-            return new StartupResult(
-                Status: StartupStatus.GameDirectoryUnknown,
-                GameDirectory: null,
-                ExePath: null,
-                IniPath: null,
-                Model: null,
-                Config: config,
-                Warning: "Could not locate Zoo Tycoon. Use File → Locate Manually…");
+            return new StartupResult(StartupStatus.GameDirectoryUnknown,
+                                     GameDirectory: null,
+                                     ExePath: null,
+                                     IniPath: null,
+                                     Model: null,
+                                     config,
+                                     Warning: "Could not locate Zoo Tycoon. Use File → Locate Manually…");
         }
 
-        ZooIniModel? model = null;
-        string? parseWarning = null;
+        ZooIniModel? model        = null;
+        string?      parseWarning = null;
+
         if (locator.IniFound)
         {
             try
@@ -66,14 +71,13 @@ public sealed class StartupService : IStartupService
             }
             catch (Exception ex)
             {
-                return new StartupResult(
-                    Status: StartupStatus.IniParseFailed,
-                    GameDirectory: locator.GameDirectory,
-                    ExePath: locator.ExePath,
-                    IniPath: locator.IniPath,
-                    Model: null,
-                    Config: config,
-                    Warning: $"Failed to read zoo.ini: {ex.Message}");
+                return new StartupResult(StartupStatus.IniParseFailed,
+                                         locator.GameDirectory,
+                                         locator.ExePath,
+                                         locator.IniPath,
+                                         Model: null,
+                                         config,
+                                         $"Failed to read zoo.ini: {ex.Message}");
             }
         }
         else
@@ -81,35 +85,35 @@ public sealed class StartupService : IStartupService
             parseWarning = "zoo.ini not found in the game directory. Settings cannot be edited until it is created.";
         }
 
-        if (locator.GameDirectory is not null && !string.Equals(locator.GameDirectory, config.GameDirectory, StringComparison.OrdinalIgnoreCase))
+        if (locator.GameDirectory is not null
+            && !string.Equals(locator.GameDirectory, config.GameDirectory, StringComparison.OrdinalIgnoreCase))
         {
             config.GameDirectory = locator.GameDirectory;
             await _config.SaveAsync(config);
         }
 
-        var status = (locator.ExeFound, locator.IniFound) switch
+        StartupStatus status = (locator.ExeFound, locator.IniFound) switch
         {
             (true, true)  => StartupStatus.Ready,
             (true, false) => StartupStatus.IniMissing,
             (false, true) => StartupStatus.ExeMissing,
-            _             => StartupStatus.GameDirectoryUnknown
+            var _         => StartupStatus.GameDirectoryUnknown
         };
 
-        var warning = status switch
+        string? warning = status switch
         {
-            StartupStatus.Ready       => null,
-            StartupStatus.IniMissing  => parseWarning,
-            StartupStatus.ExeMissing  => "zoo.exe not found in the game directory. Launching is disabled.",
-            _                         => null
+            StartupStatus.Ready      => null,
+            StartupStatus.IniMissing => parseWarning,
+            StartupStatus.ExeMissing => "zoo.exe not found in the game directory. Launching is disabled.",
+            var _                    => null
         };
 
-        return new StartupResult(
-            Status: status,
-            GameDirectory: locator.GameDirectory,
-            ExePath: locator.ExePath,
-            IniPath: locator.IniPath,
-            Model: model,
-            Config: config,
-            Warning: warning);
+        return new StartupResult(status,
+                                 locator.GameDirectory,
+                                 locator.ExePath,
+                                 locator.IniPath,
+                                 model,
+                                 config,
+                                 warning);
     }
 }

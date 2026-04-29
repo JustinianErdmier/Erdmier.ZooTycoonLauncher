@@ -10,11 +10,15 @@ public sealed class WindowsRegistryReader : IRegistryReader
     /// <inheritdoc />
     public string? ReadHklmString(string subKeyPath, string valueName)
     {
-        if (!OperatingSystem.IsWindows()) return null;
+        if (!OperatingSystem.IsWindows())
+        {
+            return null;
+        }
 
         try
         {
-            using var key = Registry.LocalMachine.OpenSubKey(subKeyPath);
+            using RegistryKey? key = Registry.LocalMachine.OpenSubKey(subKeyPath);
+
             return key?.GetValue(valueName) as string;
         }
         catch (Exception)

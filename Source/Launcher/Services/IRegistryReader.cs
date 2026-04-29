@@ -1,6 +1,9 @@
 namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 
-/// <summary>Thin abstraction over <see cref="Microsoft.Win32.Registry" /> reads, introduced so that <see cref="FileLocatorService" /> remains testable without touching the real registry.</summary>
+/// <summary>
+///     Thin abstraction over <see cref="Microsoft.Win32.Registry" /> reads, introduced so that <see cref="FileLocatorService" /> remains testable without touching the real
+///     registry.
+/// </summary>
 public interface IRegistryReader
 {
     /// <summary>Reads a string value from <c> HKEY_LOCAL_MACHINE </c>, returning <see langword="null" /> if the subkey, value, or registry hive is unavailable.</summary>

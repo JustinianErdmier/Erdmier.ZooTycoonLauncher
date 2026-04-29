@@ -15,9 +15,9 @@ public class DebugSettings
     /// <summary>Logging verbosity cutoff level. Lower values are more verbose. Valid range: <c> 0 </c>–<c> 5 </c>.</summary>
     public int LogCutoff { get; set; } = 1;
 
-    /// <summary>Write log output to a file on disk.</summary>
-    public bool SendLogfile { get; set; } = true;
-
     /// <summary>Send log output to an attached debugger via <c> OutputDebugString </c>.</summary>
     public bool SendDebugger { get; set; } = true;
+
+    /// <summary>Write log output to a file on disk.</summary>
+    public bool SendLogfile { get; set; } = true;
 }

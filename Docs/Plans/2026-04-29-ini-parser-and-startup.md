@@ -2,30 +2,40 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Implement the file locator, INI parser, launcher-config persistence, partial versioning, and startup orchestration services, plus DI wiring in `App.axaml.cs` and a status-bar UI in `MainWindow` that exercises the full discover → parse → cache flow end-to-end.
+**Goal:** Implement the file locator, INI parser, launcher-config persistence, partial versioning, and startup orchestration services, plus DI wiring in `App.axaml.cs` and a
+status-bar UI in `MainWindow` that exercises the full discover → parse → cache flow end-to-end.
 
-**Architecture:** Stateless services injected via `Microsoft.Extensions.DependencyInjection`. File system access goes through `System.IO.Abstractions.IFileSystem`; registry access through a hand-rolled `IRegistryReader`. `MainWindowViewModel` owns the in-memory `ZooIniModel` and current paths; `ILauncherConfigService` owns the persisted JSON config. A dedicated `IStartupService` orchestrates the locate → parse → ensure-backup sequence and is invoked from `MainWindow.Loaded` via `MainWindowViewModel.InitializeAsync`. Round-trip fidelity for `zoo.ini` is preserved via an `internal IniDocument` field on `ZooIniModel` populated by the parser.
+**Architecture:** Stateless services injected via `Microsoft.Extensions.DependencyInjection`. File system access goes through `System.IO.Abstractions.IFileSystem`; registry access
+through a hand-rolled `IRegistryReader`. `MainWindowViewModel` owns the in-memory `ZooIniModel` and current paths; `ILauncherConfigService` owns the persisted JSON config. A
+dedicated `IStartupService` orchestrates the locate → parse → ensure-backup sequence and is invoked from `MainWindow.Loaded` via `MainWindowViewModel.InitializeAsync`. Round-trip
+fidelity for `zoo.ini` is preserved via an `internal IniDocument` field on `ZooIniModel` populated by the parser.
 
-**Tech Stack:** C# 13, .NET 10, Avalonia 11.3 (Classic theme), CommunityToolkit.Mvvm 8.x, Microsoft.Extensions.DependencyInjection 8.x, System.IO.Abstractions 21.x, System.Text.Json (in-box).
+**Tech Stack:** C# 13, .NET 10, Avalonia 11.3 (Classic theme), CommunityToolkit.Mvvm 8.x, Microsoft.Extensions.DependencyInjection 8.x, System.IO.Abstractions 21.x,
+System.Text.Json (in-box).
 
 **Reference:** [docs/plans/2026-04-29-ini-parser-and-startup-design.md](./2026-04-29-ini-parser-and-startup-design.md)
 
 **Important conventions:**
+
 - No tests in this milestone (per user direction). Code is written for testability (see §7 of the design doc) but the test project is a follow-up task.
 - Each task ends with a logical commit point. **Do not commit unless the user explicitly asks** — list the suggested message and pause for approval.
 - After every code-producing task, run `mcp__rider__build_solution` to confirm the solution still compiles. Stop and fix on failure.
-- Existing class names confirmed: `AiSettings` (not `AISettings`), `UISettings`, `UserSettings`, `AdvancedSettings`, `DebugSettings`, `LanguageSettings`, `MapSettings`, `ZooIniModel`. Use these exactly.
+- Existing class names confirmed: `AiSettings` (not `AISettings`), `UISettings`, `UserSettings`, `AdvancedSettings`, `DebugSettings`, `LanguageSettings`, `MapSettings`,
+  `ZooIniModel`. Use these exactly.
 
 ---
 
 ## Task 1: Add NuGet packages
 
 **Files:**
+
 - Modify: `Source/Launcher/Launcher.csproj`
 
-**Step 1.1: Edit `Launcher.csproj`** — add two `PackageReference` entries inside the existing `<ItemGroup>` that holds package references. Keep alphabetical-ish ordering with the existing entries.
+**Step 1.1: Edit `Launcher.csproj`** — add two `PackageReference` entries inside the existing `<ItemGroup>` that holds package references. Keep alphabetical-ish ordering with the
+existing entries.
 
 Add:
+
 ```xml
 <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
 <PackageReference Include="System.IO.Abstractions" Version="21.0.29" />
@@ -46,6 +56,7 @@ Suggested message: `chore: add Microsoft.Extensions.DependencyInjection and Syst
 ## Task 2: Add `RawDocument` field to `ZooIniModel`
 
 **Files:**
+
 - Modify: `Source/Launcher/Models/ZooIniModel.cs`
 
 **Step 2.1: Add the internal property**
@@ -62,7 +73,8 @@ internal IniDocument? RawDocument { get; set; }
 
 **Step 2.2: Verify build**
 
-Run `mcp__rider__build_solution`. Expected: failure — `IniDocument` is not yet defined. This is fine; the next task adds it. (If you'd prefer a clean build between tasks, swap Tasks 2 and 3.)
+Run `mcp__rider__build_solution`. Expected: failure — `IniDocument` is not yet defined. This is fine; the next task adds it. (If you'd prefer a clean build between tasks, swap
+Tasks 2 and 3.)
 
 **Step 2.3: Commit point**
 
@@ -73,6 +85,7 @@ Combine with Task 3 — do not commit yet.
 ## Task 3: Create `IniDocument` and line records
 
 **Files:**
+
 - Create: `Source/Launcher/Models/IniDocument.cs`
 
 **Step 3.1: Write the file**
@@ -127,6 +140,7 @@ Suggested message: `feat(models): add IniDocument and ZooIniModel.RawDocument fo
 ## Task 4: Create `IniKeySpec` helper
 
 **Files:**
+
 - Create: `Source/Launcher/Models/IniKeySpec.cs`
 
 **Step 4.1: Write the file**
@@ -227,6 +241,7 @@ Hold for Task 5; commit them together.
 ## Task 5: Create `ZooIniDefaults` registry
 
 **Files:**
+
 - Create: `Source/Launcher/Models/ZooIniDefaults.cs`
 
 **Step 5.1: Write the file**
@@ -333,6 +348,7 @@ Suggested message: `feat(models): add IniKeySpec and ZooIniDefaults registry of 
 ## Task 6: Create `LauncherConfig` and `StartupResult` models
 
 **Files:**
+
 - Create: `Source/Launcher/Models/LauncherConfig.cs`
 - Create: `Source/Launcher/Models/StartupResult.cs`
 
@@ -401,6 +417,7 @@ Suggested message: `feat(models): add LauncherConfig and StartupResult/StartupSt
 ## Task 7: Create `IRegistryReader` and `WindowsRegistryReader`
 
 **Files:**
+
 - Create: `Source/Launcher/Services/IRegistryReader.cs`
 - Create: `Source/Launcher/Services/WindowsRegistryReader.cs`
 
@@ -463,6 +480,7 @@ Suggested message: `feat(services): add IRegistryReader and WindowsRegistryReade
 ## Task 8: Create `LauncherConfigService`
 
 **Files:**
+
 - Create: `Source/Launcher/Services/ILauncherConfigService.cs`
 - Create: `Source/Launcher/Services/LauncherConfigService.cs`
 
@@ -575,6 +593,7 @@ Suggested message: `feat(services): add LauncherConfigService for persisted JSON
 ## Task 9: Create `FileLocatorService`
 
 **Files:**
+
 - Create: `Source/Launcher/Services/IFileLocatorService.cs`
 - Create: `Source/Launcher/Services/FileLocatorService.cs`
 
@@ -724,6 +743,7 @@ Suggested message: `feat(services): add FileLocatorService with config/filesyste
 ## Task 10: Create `IniParserService`
 
 **Files:**
+
 - Create: `Source/Launcher/Services/IIniParserService.cs`
 - Create: `Source/Launcher/Services/IniParserService.cs`
 
@@ -1040,6 +1060,7 @@ Suggested message: `feat(services): add IniParserService with round-trip layout 
 ## Task 11: Create `VersioningService` (partial)
 
 **Files:**
+
 - Create: `Source/Launcher/Services/IVersioningService.cs`
 - Create: `Source/Launcher/Services/VersioningService.cs`
 
@@ -1137,6 +1158,7 @@ Suggested message: `feat(services): add VersioningService with EnsureOriginalBac
 ## Task 12: Create `StartupService`
 
 **Files:**
+
 - Create: `Source/Launcher/Services/IStartupService.cs`
 - Create: `Source/Launcher/Services/StartupService.cs`
 
@@ -1294,6 +1316,7 @@ Suggested message: `feat(services): add StartupService orchestrating discover �
 ## Task 13: Create `IFolderPicker` and Avalonia implementation
 
 **Files:**
+
 - Create: `Source/Launcher/Services/IFolderPicker.cs`
 - Create: `Source/Launcher/Services/AvaloniaFolderPicker.cs`
 
@@ -1366,6 +1389,7 @@ Suggested message: `feat(services): add IFolderPicker and AvaloniaFolderPicker f
 ## Task 14: Rewrite `MainWindowViewModel`
 
 **Files:**
+
 - Modify: `Source/Launcher/ViewModels/MainWindowViewModel.cs`
 
 **Step 14.1: Replace the file's contents**
@@ -1486,6 +1510,7 @@ Suggested message: `feat(viewmodels): rewrite MainWindowViewModel for startup or
 ## Task 15: Update `MainWindow.axaml` (status bar, tab/launch gating)
 
 **Files:**
+
 - Modify: `Source/Launcher/Views/MainWindow.axaml`
 
 **Step 15.1: Edit the AXAML**
@@ -1538,6 +1563,7 @@ Hold for Task 16; combined commit.
 ## Task 16: Update `MainWindow.axaml.cs` (Loaded handler, picker wiring)
 
 **Files:**
+
 - Modify: `Source/Launcher/Views/MainWindow.axaml.cs`
 
 **Step 16.1: Replace the file's contents**
@@ -1588,7 +1614,8 @@ public partial class MainWindow : Window
 
 **Step 16.2: Verify build**
 
-Run `mcp__rider__build_solution`. Expected: failure — `App.Services` does not yet exist. The next task adds it. (Alternatively, sequence Task 17 before this one if a clean build between tasks is preferred.)
+Run `mcp__rider__build_solution`. Expected: failure — `App.Services` does not yet exist. The next task adds it. (Alternatively, sequence Task 17 before this one if a clean build
+between tasks is preferred.)
 
 **Step 16.3: Commit point**
 
@@ -1599,6 +1626,7 @@ Combined with Task 17.
 ## Task 17: Wire DI in `App.axaml.cs`
 
 **Files:**
+
 - Modify: `Source/Launcher/App.axaml.cs`
 
 **Step 17.1: Replace the file's contents**
@@ -1691,7 +1719,8 @@ Run `mcp__rider__build_solution`. Expected: success with no warnings related to 
 
 **Step 18.2: Run the application**
 
-Use `mcp__rider__execute_run_configuration` (configuration name is whichever Rider auto-generates from `Launcher.csproj` — typically `Launcher: Launcher`) with `waitForExit=false` to launch the app. Verify in the running window:
+Use `mcp__rider__execute_run_configuration` (configuration name is whichever Rider auto-generates from `Launcher.csproj` — typically `Launcher: Launcher`) with `waitForExit=false`
+to launch the app. Verify in the running window:
 
 - The status bar appears at the bottom.
 - If Zoo Tycoon is installed in a default path or the registry, status reads `Ready. Game directory: …` and the tabs are enabled.
@@ -1699,6 +1728,7 @@ Use `mcp__rider__execute_run_configuration` (configuration name is whichever Rid
 - Selecting `File → Locate Manually…` opens a folder picker; choosing a directory containing `zoo.exe` updates the status to `Ready` (assuming `zoo.ini` is present).
 
 If a real Zoo Tycoon installation isn't available, fabricate one for the smoke test:
+
 1. Create a temp directory like `C:\Temp\ZTSmoke\`.
 2. Place an empty file named `zoo.exe` inside (it just needs to exist).
 3. Place a small text file `zoo.ini` next to it with content like:
@@ -1721,6 +1751,7 @@ If anything was tweaked during smoke testing, commit those tweaks. Suggested mes
 ## Summary
 
 End state after Task 17:
+
 - 17 new/modified files under `Source/Launcher/`
 - `Launcher.csproj` references two additional NuGet packages
 - The launcher boots, runs the discovery → parse → backup pipeline, and the status bar reflects every `StartupStatus` outcome
@@ -1729,6 +1760,7 @@ End state after Task 17:
 - All services are testable: file I/O behind `IFileSystem`, registry behind `IRegistryReader`, AppData root injected, UI dialog behind `IFolderPicker`
 
 Out-of-scope items remaining (future milestones):
+
 - Tests
 - Settings tab ViewModels and Views
 - Save / Undo / Full Reset commands; full versioning service

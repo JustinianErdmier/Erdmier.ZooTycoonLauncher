@@ -1,15 +1,13 @@
 namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 
 /// <summary>Outcome of <see cref="Services.IStartupService.InitializeAsync" />, capturing the located paths, parsed model, and any user-facing warning.</summary>
-public sealed record StartupResult(
-    StartupStatus Status,
-    string? GameDirectory,
-    string? ExePath,
-    string? IniPath,
-    ZooIniModel? Model,
-    LauncherConfig Config,
-    string? Warning
-);
+public sealed record StartupResult(StartupStatus  Status,
+                                   string?        GameDirectory,
+                                   string?        ExePath,
+                                   string?        IniPath,
+                                   ZooIniModel?   Model,
+                                   LauncherConfig Config,
+                                   string?        Warning);
 
 /// <summary>The category of startup outcome, used by <see cref="ViewModels.MainWindowViewModel" /> to decide which UI affordances to enable.</summary>
 public enum StartupStatus

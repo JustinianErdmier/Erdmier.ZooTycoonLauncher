@@ -2,7 +2,10 @@ using System.Collections.Generic;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 
-/// <summary>Internal raw line-by-line representation of a parsed INI file. Used by <see cref="Services.IniParserService" /> to preserve comments, blank lines, and key ordering on round-trip writes.</summary>
+/// <summary>
+///     Internal raw line-by-line representation of a parsed INI file. Used by <see cref="Services.IniParserService" /> to preserve comments, blank lines, and key ordering on
+///     round-trip writes.
+/// </summary>
 internal sealed class IniDocument
 {
     public List<IniLine> Lines { get; } = [];
@@ -23,7 +26,11 @@ internal sealed record IniSectionHeader(string Name, string RawText) : IniLine;
 /// <param name="RawText"> The original line text. Used as a template when re-emitting modified values so surrounding whitespace and casing are preserved. </param>
 internal sealed record IniKeyValue(string Section, string Key, string Value, string RawText) : IniLine
 {
-    public IniKeyValue WithValue(string newValue) => this with { Value = newValue };
+    public IniKeyValue WithValue(string newValue)
+        => this with
+        {
+            Value = newValue
+        };
 }
 
 /// <summary>A comment line beginning with <c> ; </c>.</summary>

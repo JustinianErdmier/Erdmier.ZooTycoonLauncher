@@ -8,7 +8,8 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 public sealed class VersioningService : IVersioningService
 {
     private const string OriginalSuffix = ".original";
-    private const string UndoSuffix     = ".undo";
+
+    private const string UndoSuffix = ".undo";
 
     private readonly IFileSystem _fileSystem;
 
@@ -19,30 +20,34 @@ public sealed class VersioningService : IVersioningService
     {
         return Task.Run(() =>
         {
-            var originalPath = iniFilePath + OriginalSuffix;
-            if (_fileSystem.File.Exists(originalPath)) return;
-            if (!_fileSystem.File.Exists(iniFilePath)) return;
+            string originalPath = iniFilePath + OriginalSuffix;
+
+            if (_fileSystem.File.Exists(originalPath))
+            {
+                return;
+            }
+
+            if (!_fileSystem.File.Exists(iniFilePath))
+            {
+                return;
+            }
+
             _fileSystem.File.Copy(iniFilePath, originalPath);
         });
     }
 
     /// <inheritdoc />
-    public bool OriginalBackupExists(string iniFilePath) =>
-        _fileSystem.File.Exists(iniFilePath + OriginalSuffix);
+    public bool OriginalBackupExists(string iniFilePath) => _fileSystem.File.Exists(iniFilePath + OriginalSuffix);
 
     /// <inheritdoc />
-    public bool UndoSnapshotExists(string iniFilePath) =>
-        _fileSystem.File.Exists(iniFilePath + UndoSuffix);
+    public bool UndoSnapshotExists(string iniFilePath) => _fileSystem.File.Exists(iniFilePath + UndoSuffix);
 
     /// <inheritdoc />
-    public Task CreateUndoSnapshotAsync(string iniFilePath) =>
-        throw new NotImplementedException("Undo snapshot is implemented in a future milestone.");
+    public Task CreateUndoSnapshotAsync(string iniFilePath) => throw new NotImplementedException(message: "Undo snapshot is implemented in a future milestone.");
 
     /// <inheritdoc />
-    public Task<bool> RestoreUndoAsync(string iniFilePath) =>
-        throw new NotImplementedException("Restore undo is implemented in a future milestone.");
+    public Task<bool> RestoreUndoAsync(string iniFilePath) => throw new NotImplementedException(message: "Restore undo is implemented in a future milestone.");
 
     /// <inheritdoc />
-    public Task<bool> RestoreOriginalAsync(string iniFilePath) =>
-        throw new NotImplementedException("Restore original is implemented in a future milestone.");
+    public Task<bool> RestoreOriginalAsync(string iniFilePath) => throw new NotImplementedException(message: "Restore original is implemented in a future milestone.");
 }

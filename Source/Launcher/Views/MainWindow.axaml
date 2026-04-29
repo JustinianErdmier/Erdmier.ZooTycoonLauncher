@@ -25,7 +25,8 @@
         <Panel DockPanel.Dock="Top">
             <Menu>
                 <MenuItem Header="File">
-                    <MenuItem Header="Locate Manually…" Command="{Binding LocateManuallyCommand}" />
+                    <MenuItem Header="Locate Manually…"
+                              Command="{Binding LocateManuallyCommand}" />
                     <Separator />
                     <MenuItem Header="Load New INI" />
                     <MenuItem Header="Restore Previous INI" />
@@ -41,13 +42,16 @@
             </Menu>
 
             <Menu HorizontalAlignment="Right">
-                <MenuItem Header="Launch Game" IsEnabled="{Binding HasExe}" />
+                <MenuItem Header="Launch Game"
+                          IsEnabled="{Binding HasExe}" />
             </Menu>
         </Panel>
 
         <Separator DockPanel.Dock="Top" />
 
-        <Border DockPanel.Dock="Bottom" Padding="8,4" BorderThickness="0,1,0,0">
+        <Border DockPanel.Dock="Bottom"
+                Padding="8,4"
+                BorderThickness="0,1,0,0">
             <Grid ColumnDefinitions="Auto,8,*">
                 <ProgressBar Grid.Column="0"
                              IsIndeterminate="{Binding IsBusy}"

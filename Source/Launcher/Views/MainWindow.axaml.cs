@@ -5,7 +5,6 @@ using Avalonia.Interactivity;
 using Classic.Avalonia.Theme;
 
 using Erdmier.ZooTycoonLauncher.Launcher.Services;
-using Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,7 +35,8 @@ public partial class MainWindow : ClassicWindow
             }
             catch (Exception)
             {
-                // The startup service catches all expected exceptions and translates them to StartupStatus values; if anything still leaks through, swallow it here so a single bad disk read can't crash the launcher on startup.
+                // The startup service catches all expected exceptions and translates them to StartupStatus values; if anything still leaks through, swallow it here so a single bad
+                // disk read can't crash the launcher on startup.
             }
         }
     }

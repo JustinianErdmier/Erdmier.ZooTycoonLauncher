@@ -3,6 +3,11 @@
         <File Path=".gitignore" />
         <File Path="SoftwareDesignDocument.md" />
     </Folder>
+    <Folder Name="/SolutionItems/Docs/" />
+    <Folder Name="/SolutionItems/Docs/Plans/">
+        <File Path="Docs/Plans/2026-04-29-ini-parser-and-startup-design.md" />
+        <File Path="Docs/Plans/2026-04-29-ini-parser-and-startup.md" />
+    </Folder>
     <Folder Name="/Source/">
         <Project Path="Source/Launcher/Launcher.csproj" />
     </Folder>

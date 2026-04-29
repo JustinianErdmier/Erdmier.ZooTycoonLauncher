@@ -25,5 +25,7 @@
         <PackageReference Include="Classic.Avalonia.Theme" Version="11.3.0.3" />
         <PackageReference Include="Classic.Avalonia.Theme.DataGrid" Version="11.3.0.3" />
         <PackageReference Include="Classic.Avalonia.Theme.Dock" Version="11.3.0.3" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+        <PackageReference Include="System.IO.Abstractions" Version="21.0.29" />
     </ItemGroup>
 </Project>

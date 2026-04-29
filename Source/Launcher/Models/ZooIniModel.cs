@@ -35,4 +35,10 @@ public class ZooIniModel
 
     /// <summary>Display and performance settings (INI section <c> [user] </c>).</summary>
     public UserSettings User { get; set; } = new();
+
+    /// <summary>
+    ///     Raw line-by-line layout of the source <c> zoo.ini </c> file, used by <see cref="Services.IniParserService" /> to preserve comments, blank lines, and key ordering on
+    ///     round-trip. <see langword="null" /> for models produced by <see cref="Services.IIniParserService.GetDefaults" />.
+    /// </summary>
+    internal IniDocument? RawDocument { get; set; }
 }

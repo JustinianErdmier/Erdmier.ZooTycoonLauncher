@@ -3,7 +3,9 @@
     "allow": [
       "WebSearch",
       "WebFetch(domain:docs.avaloniaui.net)",
-      "WebFetch(domain:avaloniaui.net)"
+      "WebFetch(domain:avaloniaui.net)",
+      "mcp__rider__build_solution",
+      "Bash(tasklist)"
     ]
   }
 }

@@ -4,6 +4,7 @@
     <option name="projectPerEditor">
       <map>
         <entry key="Source/Launcher/App.axaml" value="Source/Launcher/Launcher.csproj" />
+        <entry key="Source/Launcher/Views/MainWindow.axaml" value="Source/Launcher/Launcher.csproj" />
       </map>
     </option>
   </component>

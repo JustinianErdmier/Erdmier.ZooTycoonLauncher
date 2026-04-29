@@ -1,8 +1,13 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:launcher="clr-namespace:Erdmier.ZooTycoonLauncher.Launcher"
              x:Class="Erdmier.ZooTycoonLauncher.Launcher.App"
              RequestedThemeVariant="Default">
     <!--“Default” ThemeVariant follows the system theme variant. “Dark” or “Light” are other available options.-->
+
+    <Application.DataTemplates>
+        <launcher:ViewLocator />
+    </Application.DataTemplates>
 
     <Application.Styles>
         <FluentTheme />

@@ -2,6 +2,8 @@
 
 using Avalonia;
 
+using Classic.CommonControls;
+
 using JetBrains.Annotations;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher;
@@ -30,6 +32,7 @@ internal class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
                      .UsePlatformDetect()
+                     .UseMessageBoxSounds()
 #if DEBUG
                      .WithDeveloperTools()
 #endif

@@ -1,9 +1,8 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:launcher="clr-namespace:Erdmier.ZooTycoonLauncher.Launcher"
-             xmlns:semi="https://irihi.tech/semi"
              x:Class="Erdmier.ZooTycoonLauncher.Launcher.App"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="{x:Static ClassicTheme.Classic}">
     <!--“Default” ThemeVariant follows the system theme variant. “Dark” or “Light” are other available options.-->
 
     <Application.DataTemplates>
@@ -11,8 +10,9 @@
     </Application.DataTemplates>
 
     <Application.Styles>
-        <semi:SemiTheme Locale="en-GB" />
-        <semi:DataGridSemiTheme />
-        <semi:DockSemiTheme />
+        <ClassicTheme />
+
+        <StyleInclude Source="avares://Classic.Avalonia.Theme.DataGrid/Classic.axaml" />
+        <StyleInclude Source="avares://Classic.Avalonia.Theme.Dock/Classic.axaml" />
     </Application.Styles>
 </Application>

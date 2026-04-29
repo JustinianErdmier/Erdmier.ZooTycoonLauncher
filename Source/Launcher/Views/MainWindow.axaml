@@ -9,7 +9,7 @@
         x:Class="Erdmier.ZooTycoonLauncher.Launcher.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Launcher"
+        Title="Zoo Tycoon Ultimate Launcher"
         Width="550"
         Height="450"
         CanMaximize="False"

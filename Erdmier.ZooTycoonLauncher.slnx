@@ -1,4 +1,8 @@
 <Solution>
+    <Folder Name="/SolutionItems/">
+        <File Path=".gitignore" />
+        <File Path="SoftwareDesignDocument.md" />
+    </Folder>
     <Folder Name="/Source/">
         <Project Path="Source/Launcher/Launcher.csproj" />
     </Folder>

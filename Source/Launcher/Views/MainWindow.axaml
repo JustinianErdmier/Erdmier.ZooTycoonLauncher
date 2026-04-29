@@ -21,7 +21,40 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center" />
+    <DockPanel>
+        <Panel DockPanel.Dock="Top">
+            <Menu>
+                <MenuItem Header="File">
+                    <MenuItem Header="Load New INI" />
+                    <MenuItem Header="Restore Previous INI" />
+                    <MenuItem Header="Save Changes to INI" />
+                    <MenuItem Header="Restore to Default INI" />
+                </MenuItem>
+
+                <MenuItem Header="Help">
+                    <MenuItem Header="About" />
+
+                    <MenuItem Header="Wiki" />
+                </MenuItem>
+            </Menu>
+
+            <Menu HorizontalAlignment="Right">
+                <MenuItem Header="Launch Game" />
+            </Menu>
+        </Panel>
+
+        <Separator DockPanel.Dock="Top" />
+
+        <Panel DockPanel.Dock="Top">
+            <TabControl>
+                <TabItem Header="Home" />
+
+                <TabItem Header="INI Configurations" />
+
+                <TabItem Header="Save Files" />
+
+                <TabItem Header="Custom Content" />
+            </TabControl>
+        </Panel>
+    </DockPanel>
 </Window>

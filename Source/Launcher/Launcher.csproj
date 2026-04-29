@@ -24,5 +24,11 @@
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
         <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
+        <!--        <PackageReference Include="Classic.Avalonia.Theme" Version="11.3.0.3" />-->
+        <!--        <PackageReference Include="Classic.Avalonia.Theme.DataGrid" Version="11.3.0.3" />-->
+        <!--        <PackageReference Include="Classic.Avalonia.Theme.Dock" Version="11.3.0.3" />-->
+        <PackageReference Include="Semi.Avalonia" Version="12.0.1" />
+        <PackageReference Include="Semi.Avalonia.DataGrid" Version="12.0.0" />
+        <PackageReference Include="Semi.Avalonia.Dock" Version="12.0.0" />
     </ItemGroup>
 </Project>

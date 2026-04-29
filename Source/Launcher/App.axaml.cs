@@ -15,7 +15,7 @@ namespace Erdmier.ZooTycoonLauncher.Launcher;
 /// <summary>Represents the entry point of the application. Sets up the DI container, resolves <see cref="MainWindowViewModel" />, and assigns it as the main window's data context.</summary>
 public class App : Application
 {
-    /// <summary>The application-wide service provider. Exposed as a static so that <see cref="Views.MainWindow" /> can resolve the folder-picker shim after it loads.</summary>
+    /// <summary>The application-wide service provider. Exposed as a static property so that <see cref="Views.MainWindow" /> can resolve the folder-picker shim after it loads.</summary>
     public static IServiceProvider? Services { get; private set; }
 
     /// <inheritdoc />

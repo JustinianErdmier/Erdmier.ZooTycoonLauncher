@@ -85,7 +85,23 @@
 
         <Panel DockPanel.Dock="Top">
             <TabControl IsEnabled="{Binding HasIni}">
-                <TabItem Header="Home" />
+                <TabItem Header="Home">
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding IniEntries}"
+                                      Margin="8">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:IniDisplayEntry">
+                                    <Grid ColumnDefinitions="240,*">
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding Label}" />
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Value}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </TabItem>
 
                 <TabItem Header="INI Configurations" />
 

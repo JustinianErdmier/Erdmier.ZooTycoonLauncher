@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -41,6 +42,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     [ ObservableProperty ]
     public partial bool HasIni { get; set; }
+
+    [ ObservableProperty ]
+    public partial IReadOnlyList<IniDisplayEntry> IniEntries { get; set; } = [];
 
     [ ObservableProperty ]
     public partial string? IniPath { get; set; }
@@ -97,6 +101,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ExePath       = result.ExePath;
         HasExe        = result.ExePath is not null;
         HasIni        = result.Model is not null;
+        IniEntries    = BuildIniEntries(result.Model);
 
         StatusMessage = result.Status switch
         {
@@ -107,6 +112,28 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             StartupStatus.IniParseFailed       => result.Warning ?? "Failed to parse zoo.ini.",
             var _                              => string.Empty
         };
+    }
+
+    private static IReadOnlyList<IniDisplayEntry> BuildIniEntries(ZooIniModel? model)
+    {
+        if (model is null)
+        {
+            return [];
+        }
+
+        List<IniDisplayEntry> entries = new(ZooIniDefaults.KnownKeys.Count + model.UnknownKeys.Count);
+
+        foreach (IniKeySpec spec in ZooIniDefaults.KnownKeys)
+        {
+            entries.Add(new IniDisplayEntry($"[{spec.Section}] {spec.Key}", spec.Read(model)));
+        }
+
+        foreach ((string compoundKey, string value) in model.UnknownKeys)
+        {
+            entries.Add(new IniDisplayEntry(compoundKey, value));
+        }
+
+        return entries;
     }
 }
 

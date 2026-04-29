@@ -1,6 +1,7 @@
 <Solution>
     <Folder Name="/SolutionItems/">
         <File Path=".gitignore" />
+        <File Path="CLAUDE.md" />
         <File Path="SoftwareDesignDocument.md" />
     </Folder>
     <Folder Name="/SolutionItems/Docs/" />

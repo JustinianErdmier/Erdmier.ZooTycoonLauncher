@@ -69,7 +69,7 @@ public sealed class StartupService : IStartupService
                 model = await _parser.ReadAsync(locator.IniPath!);
                 await _versioning.EnsureOriginalBackupAsync(locator.IniPath!);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 return new StartupResult(StartupStatus.IniParseFailed,
                                          locator.GameDirectory,
@@ -77,7 +77,7 @@ public sealed class StartupService : IStartupService
                                          locator.IniPath,
                                          Model: null,
                                          config,
-                                         $"Failed to read zoo.ini: {ex.Message}");
+                                         $"Failed to read zoo.ini: {exception.Message}");
             }
         }
         else

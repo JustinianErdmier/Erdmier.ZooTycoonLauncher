@@ -40,7 +40,7 @@ public class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static IServiceProvider BuildServiceProvider()
+    private static ServiceProvider BuildServiceProvider()
     {
         ServiceCollection services = new();
 

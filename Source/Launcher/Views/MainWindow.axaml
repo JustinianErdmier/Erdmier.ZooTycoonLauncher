@@ -4,14 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        d:DesignWidth="550"
-        d:DesignHeight="450"
+        d:DesignWidth="408"
+        d:DesignHeight="454"
         x:Class="Erdmier.ZooTycoonLauncher.Launcher.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="Zoo Tycoon Ultimate Launcher"
-        Width="550"
-        Height="450"
+        Width="408"
+        Height="454"
         CanMaximize="False"
         CanMinimize="False"
         CanResize="False">
@@ -25,13 +25,31 @@
         <Panel DockPanel.Dock="Top">
             <Menu>
                 <MenuItem Header="File">
-                    <MenuItem Header="Locate Manually…"
+
+                    <!--INI — Should only be visible when on the INI Config tab,-->
+                    <!--<MenuItem Header="Load New INI" />-->
+                    <!-- -->
+                    <!--<MenuItem Header="Restore Previous INI" />-->
+                    <!-- -->
+                    <!--<MenuItem Header="Save Changes to INI" />-->
+                    <!-- -->
+                    <!--<MenuItem Header="Restore to Default INI" />-->
+                    <!-- -->
+                    <!-- <Separator /> -->
+
+                    <!--Saves — Should only be visible when on the Save Files tab.-->
+                    <!--<MenuItem Header="Import Save File(s)" />-->
+                    <!-- -->
+                    <!--<MenuItem Header="Create Backup(s)" />-->
+                    <!-- -->
+                    <!--<MenuItem Header="Restore Backup(s)" />-->
+                    <!-- -->
+                    <!-- <Separator /> -->
+
+                    <MenuItem Header="Locate Manually"
                               Command="{Binding LocateManuallyCommand}" />
-                    <Separator />
-                    <MenuItem Header="Load New INI" />
-                    <MenuItem Header="Restore Previous INI" />
-                    <MenuItem Header="Save Changes to INI" />
-                    <MenuItem Header="Restore to Default INI" />
+
+                    <MenuItem Header="Settings" />
                 </MenuItem>
 
                 <MenuItem Header="Help">
@@ -52,14 +70,16 @@
         <Border DockPanel.Dock="Bottom"
                 Padding="8,4"
                 BorderThickness="0,1,0,0">
-            <Grid ColumnDefinitions="Auto,8,*">
+            <Grid ColumnDefinitions="Auto,*">
                 <ProgressBar Grid.Column="0"
+                             Grid.Row="0"
                              IsIndeterminate="{Binding IsBusy}"
                              IsVisible="{Binding IsBusy}"
-                             Width="120" />
-                <TextBlock Grid.Column="2"
+                             Width="200" />
+                <TextBlock Grid.Column="1"
+                           Grid.Row="0"
                            Text="{Binding StatusMessage}"
-                           VerticalAlignment="Center" />
+                           HorizontalAlignment="Center" />
             </Grid>
         </Border>
 

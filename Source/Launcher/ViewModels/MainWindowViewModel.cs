@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -15,27 +16,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IStartupService _startup;
 
-    [ ObservableProperty ]
-    private string? _exePath;
-
-    [ ObservableProperty ]
-    private string? _gameDirectory;
-
-    [ ObservableProperty ]
-    private bool _hasExe;
-
-    [ ObservableProperty ]
-    private bool _hasIni;
-
-    [ ObservableProperty ]
-    private string? _iniPath;
-
-    [ ObservableProperty ]
-    private bool _isBusy;
-
-    [ ObservableProperty ]
-    private string _statusMessage = "";
-
     public MainWindowViewModel(IStartupService startup, IFolderPicker folderPicker)
     {
         _startup      = startup;
@@ -50,16 +30,40 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>The cached persisted launcher config. Always non-null after <see cref="InitializeAsync" /> completes.</summary>
     public LauncherConfig Config { get; private set; } = new();
 
+    [ ObservableProperty ]
+    public partial string? ExePath { get; set; }
+
+    [ ObservableProperty ]
+    public partial string? GameDirectory { get; set; }
+
+    [ ObservableProperty ]
+    public partial bool HasExe { get; set; }
+
+    [ ObservableProperty ]
+    public partial bool HasIni { get; set; }
+
+    [ ObservableProperty ]
+    public partial string? IniPath { get; set; }
+
+    [ ObservableProperty ]
+    public partial bool IsBusy { get; set; }
+
     /// <summary>The cached in-memory <c> zoo.ini </c>. Set by <see cref="InitializeAsync" /> on successful parse.</summary>
     public ZooIniModel? Model { get; private set; }
 
-    /// <summary>Runs the full startup flow. Called from <c> MainWindow.OnLoaded </c>.</summary>
+    [ ObservableProperty ]
+    public partial string StatusMessage { get; set; } = string.Empty;
+
+    /// <summary>Runs the full startup flow. Called from <c>MainWindow.OnLoaded</c>.</summary>
     public async Task InitializeAsync()
     {
         IsBusy        = true;
         StatusMessage = "Locating Zoo Tycoon…";
         StartupResult result = await _startup.InitializeAsync();
+
+        await Task.Delay(TimeSpan.FromSeconds(seconds: 10));
         ApplyResult(result);
+
         IsBusy = false;
     }
 
@@ -77,7 +81,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IsBusy        = true;
         StatusMessage = "Verifying selected directory…";
         StartupResult result = await _startup.ApplyManualDirectoryAsync(picked);
+
+        await Task.Delay(TimeSpan.FromSeconds(seconds: 10));
         ApplyResult(result);
+
         IsBusy = false;
     }
 
@@ -93,12 +100,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         StatusMessage = result.Status switch
         {
-            StartupStatus.Ready                => $"Ready. Game directory: {result.GameDirectory}",
+            StartupStatus.Ready                => "Ready.",
             StartupStatus.GameDirectoryUnknown => result.Warning ?? "Zoo Tycoon could not be located.",
-            StartupStatus.IniMissing           => result.Warning ?? "zoo.ini not found.",
-            StartupStatus.ExeMissing           => result.Warning ?? "zoo.exe not found.",
+            StartupStatus.IniMissing           => result.Warning ?? "Unable to find zoo.ini.",
+            StartupStatus.ExeMissing           => result.Warning ?? "Unable to find zoo.exe.",
             StartupStatus.IniParseFailed       => result.Warning ?? "Failed to parse zoo.ini.",
-            var _                              => ""
+            var _                              => string.Empty
         };
     }
 }

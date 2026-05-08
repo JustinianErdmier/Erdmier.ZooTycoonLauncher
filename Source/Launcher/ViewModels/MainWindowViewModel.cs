@@ -15,17 +15,20 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 {
     private readonly IFolderPicker _folderPicker;
 
+    private readonly IShellService _shell;
+
     private readonly IStartupService _startup;
 
-    public MainWindowViewModel(IStartupService startup, IFolderPicker folderPicker)
+    public MainWindowViewModel(IStartupService startup, IFolderPicker folderPicker, IShellService shell)
     {
         _startup      = startup;
         _folderPicker = folderPicker;
+        _shell        = shell;
     }
 
     /// <summary>Parameterless ctor used by the XAML designer only. Will be unused at runtime once DI is wired in <c> App.axaml.cs </c>.</summary>
     public MainWindowViewModel()
-        : this(NullStartupService.Instance, NullFolderPicker.Instance)
+        : this(NullStartupService.Instance, NullFolderPicker.Instance, NullShellService.Instance)
     { }
 
     /// <summary>The cached persisted launcher config. Always non-null after <see cref="InitializeAsync" /> completes.</summary>
@@ -70,6 +73,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         IsBusy = false;
     }
+
+    /// <summary>Opens File Explorer focused on <paramref name="path" />. Bound to the "Open" buttons next to the discovered file paths on the Home tab.</summary>
+    /// <param name="path"> Absolute path to a file or directory to reveal. No-op when null/empty so we can bind directly to <see cref="ExePath" /> / <see cref="IniPath" /> without null-checks at the binding site. </param>
+    [ RelayCommand ]
+    private void RevealInExplorer(string? path) => _shell.RevealInExplorer(path);
 
     /// <summary>Opens the folder picker, then re-runs startup against the chosen directory. Bound to a "Locate Manually…" menu item.</summary>
     [ RelayCommand ]
@@ -154,4 +162,12 @@ file sealed class NullFolderPicker : IFolderPicker
     public static readonly NullFolderPicker Instance = new();
 
     public Task<string?> PickFolderAsync(string title) => Task.FromResult<string?>(result: null);
+}
+
+file sealed class NullShellService : IShellService
+{
+    public static readonly NullShellService Instance = new();
+
+    public void RevealInExplorer(string? path)
+    { }
 }

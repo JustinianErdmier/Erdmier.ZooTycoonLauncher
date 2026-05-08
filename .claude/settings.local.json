@@ -6,7 +6,10 @@
       "WebFetch(domain:avaloniaui.net)",
       "mcp__rider__build_solution",
       "Bash(tasklist)",
-      "Bash(dotnet build *)"
+      "Bash(dotnet build *)",
+      "Bash(gh api *)",
+      "Bash(dotnet msbuild *)",
+      "PowerShell(dotnet msbuild *)"
     ]
   }
 }

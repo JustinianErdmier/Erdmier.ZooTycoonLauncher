@@ -3,6 +3,7 @@
         xmlns:vm="using:Erdmier.ZooTycoonLauncher.Launcher.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
         mc:Ignorable="d"
         d:DesignWidth="408"
         d:DesignHeight="454"
@@ -15,6 +16,19 @@
         CanMaximize="False"
         CanMinimize="False"
         CanResize="False">
+
+    <!--The Classic theme's caption-button template doesn't honour CanMinimize/CanMaximize — only :fullscreen and :dialog:cantresize.-->
+    <!--Collapse those parts. Hide them explicitly here since this window never minimises or maximises.-->
+    <Window.Styles>
+        <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+        <Style Selector="CaptionButtons /template/ Button#PART_RestoreButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+    </Window.Styles>
 
     <Design.DataContext>
         <!--This only sets the DataContext for the previewer in the IDE. To set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs).-->
@@ -59,10 +73,6 @@
                 </MenuItem>
             </Menu>
 
-            <Menu HorizontalAlignment="Right">
-                <MenuItem Header="Launch Game"
-                          IsEnabled="{Binding HasExe}" />
-            </Menu>
         </Panel>
 
         <Separator DockPanel.Dock="Top" />
@@ -86,21 +96,104 @@
         <Panel DockPanel.Dock="Top">
             <TabControl IsEnabled="{Binding HasIni}">
                 <TabItem Header="Home">
-                    <ScrollViewer>
-                        <ItemsControl ItemsSource="{Binding IniEntries}"
-                                      Margin="8">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:IniDisplayEntry">
-                                    <Grid ColumnDefinitions="240,*">
-                                        <TextBlock Grid.Column="0"
-                                                   Text="{Binding Label}" />
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding Value}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                    <StackPanel>
+                        <controls:GroupBox Header="Overview">
+                            <Grid ColumnDefinitions="Auto,*"
+                                  RowDefinitions="Auto,Auto,Auto,Auto"
+                                  Margin="6,4">
+                                <TextBlock Grid.Row="0"
+                                           Grid.Column="0"
+                                           Text="Status:"
+                                           Margin="0,0,8,4" />
+                                <TextBlock Grid.Row="0"
+                                           Grid.Column="1"
+                                           Text="{Binding StatusMessage}"
+                                           Margin="0,0,0,4"
+                                           TextWrapping="Wrap" />
+
+                                <TextBlock Grid.Row="1"
+                                           Grid.Column="0"
+                                           Text="Desktop resolution:"
+                                           Margin="0,0,8,4" />
+                                <TextBlock Grid.Row="1"
+                                           Grid.Column="1"
+                                           Text="1920 × 1080 @ 60 Hz"
+                                           Margin="0,0,0,4" />
+
+                                <TextBlock Grid.Row="2"
+                                           Grid.Column="0"
+                                           Text="Available screen modes:"
+                                           Margin="0,0,8,4"
+                                           VerticalAlignment="Top" />
+                                <TextBlock Grid.Row="2"
+                                           Grid.Column="1"
+                                           Text="252"
+                                           Margin="0,0,0,4"
+                                           TextWrapping="Wrap" />
+
+                                <TextBlock Grid.Row="3"
+                                           Grid.Column="0"
+                                           Text="Detected Zoo Tycoon resolutions:"
+                                           Margin="0,0,8,0"
+                                           VerticalAlignment="Top" />
+                                <TextBlock Grid.Row="3"
+                                           Grid.Column="1"
+                                           Text="14"
+                                           TextWrapping="Wrap" />
+                            </Grid>
+                        </controls:GroupBox>
+
+                        <controls:GroupBox Header="File Paths">
+                            <Grid ColumnDefinitions="Auto,*,Auto"
+                                  RowDefinitions="Auto,Auto"
+                                  Margin="6,4">
+                                <TextBlock Grid.Row="0"
+                                           Grid.Column="0"
+                                           Text="zoo.exe:"
+                                           Margin="0,0,8,4"
+                                           VerticalAlignment="Top" />
+                                <TextBlock Grid.Row="0"
+                                           Grid.Column="1"
+                                           Text="{Binding ExePath, FallbackValue='(not found)', TargetNullValue='(not found)'}"
+                                           Margin="0,0,8,4"
+                                           TextWrapping="Wrap" />
+                                <Button Grid.Row="0"
+                                        Grid.Column="2"
+                                        Content="Open"
+                                        ToolTip.Tip="Show in File Explorer"
+                                        Command="{Binding RevealInExplorerCommand}"
+                                        CommandParameter="{Binding ExePath}"
+                                        IsEnabled="{Binding HasExe}"
+                                        Margin="0,0,0,4"
+                                        VerticalAlignment="Top" />
+
+                                <TextBlock Grid.Row="1"
+                                           Grid.Column="0"
+                                           Text="zoo.ini:"
+                                           Margin="0,0,8,0"
+                                           VerticalAlignment="Top" />
+                                <TextBlock Grid.Row="1"
+                                           Grid.Column="1"
+                                           Text="{Binding IniPath, FallbackValue='(not found)', TargetNullValue='(not found)'}"
+                                           Margin="0,0,8,0"
+                                           TextWrapping="Wrap" />
+                                <Button Grid.Row="1"
+                                        Grid.Column="2"
+                                        Content="Open"
+                                        ToolTip.Tip="Show in File Explorer"
+                                        Command="{Binding RevealInExplorerCommand}"
+                                        CommandParameter="{Binding IniPath}"
+                                        IsEnabled="{Binding HasIni}"
+                                        VerticalAlignment="Top" />
+                            </Grid>
+                        </controls:GroupBox>
+
+                        <Button Content="Launch Game"
+                                IsEnabled="{Binding HasExe}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,16,0,0"
+                                FontWeight="Bold" />
+                    </StackPanel>
                 </TabItem>
 
                 <TabItem Header="INI Configurations" />

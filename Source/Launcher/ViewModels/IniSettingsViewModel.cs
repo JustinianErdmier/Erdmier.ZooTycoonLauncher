@@ -26,8 +26,8 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
 public sealed partial class IniSettingsViewModel : ViewModelBase
 {
     /// <summary>
-    ///     Canonical defaults model. <c>new ZooIniModel()</c> picks up every submodel property initialiser (e.g. <c>UserSettings.ScreenWidth = 800</c>), so this single instance
-    ///     is the source of truth for every tooltip's "Default:" line.
+    ///     Canonical defaults model. <c>new ZooIniModel()</c> picks up every submodel property initialiser (e.g. <c>UserSettings.ScreenWidth = 800</c>), so this single instance is
+    ///     the source of truth for every tooltip's "Default:" line.
     /// </summary>
     private static readonly ZooIniModel DefaultsModel = new();
 
@@ -373,112 +373,158 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
         IsDirty = false;
     }
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnFullscreenChanged(bool value)
     {
         MarkDirty();
         OnPropertyChanged(nameof(ScreenModeIndex));
     }
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnScreenWidthChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnScreenHeightChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnUpdateRateChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnDrawRateChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnLevelChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnLoadHalfAnimsChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnDragChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnClickChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnNormalChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnNoMenuMusicChanged(bool value)
     {
         MarkDirty();
         OnPropertyChanged(nameof(PlayMenuMusic));
     }
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMenuMusicChanged(string value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMenuMusicAttenuationChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnUserAttenuationChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnPlayMovieChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMovieVolume1Changed(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnPlaySecondMovieChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMovieVolume2Changed(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnUse8BitSoundChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnStartingCashChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnCashIncrementChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMinCashChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMaxCashChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMaxGuestsChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnUseAlternateCursorsChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnTooltipDelayChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnTooltipDurationChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMessageDisplayChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMouseScrollThresholdChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMouseScrollDelayChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMouseScrollXChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMouseScrollYChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnKeyScrollXChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnKeyScrollYChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMinimumMessageIntervalChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnHelpTypeChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMapXChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnMapYChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnLangChanged(int value)
     {
         MarkDirty();
         OnPropertyChanged(nameof(SelectedLanguage));
     }
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnSubLangChanged(int value)
     {
         MarkDirty();
         OnPropertyChanged(nameof(SelectedLanguage));
     }
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnDrawFpsChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnDrawFpsXChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnDrawFpsYChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnLogCutoffChanged(int value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnSendLogfileChanged(bool value) => MarkDirty();
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnSendDebuggerChanged(bool value) => MarkDirty();
 
     /// <summary>Writes the current working values back to <see cref="_model" /> and persists to disk. Bound to the Save button's Command.</summary>
@@ -568,8 +614,8 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     private bool CanDiscard() => IsDirty && !string.IsNullOrEmpty(_iniPath);
 
     /// <summary>
-    ///     Restores <c>zoo.ini</c> from the <c>zoo.ini.undo</c> snapshot. Stubbed for this milestone — wired up so the button shows visibly disabled rather than executing a
-    ///     no-op handler.
+    ///     Restores <c>zoo.ini</c> from the <c>zoo.ini.undo</c> snapshot. Stubbed for this milestone — wired up so the button shows visibly disabled rather than executing a no-op
+    ///     handler.
     /// </summary>
     /// <remarks>
     ///     TODO: hook up to <see cref="IVersioningService.RestoreUndoAsync" /> (currently throws <see cref="NotImplementedException" />) and gate <see cref="CanUndo" /> on
@@ -582,6 +628,8 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     private bool CanUndo() => false;
 
     /// <summary>Re-evaluates Save and Discard CanExecute when <see cref="IsDirty" /> flips. Wired via the source generator's partial OnIsDirtyChanged.</summary>
+
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnIsDirtyChanged(bool value)
     {
         SaveCommand.NotifyCanExecuteChanged();

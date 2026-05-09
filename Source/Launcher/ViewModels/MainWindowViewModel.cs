@@ -135,6 +135,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         LaunchGameCommand.NotifyCanExecuteChanged();
     }
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     // HasExe is an [ObservableProperty]; the source generator emits OnHasExeChanged to hook.
     partial void OnHasExeChanged(bool value) => LaunchGameCommand.NotifyCanExecuteChanged();
 

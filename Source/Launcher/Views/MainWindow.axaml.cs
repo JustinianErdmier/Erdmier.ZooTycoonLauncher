@@ -24,8 +24,8 @@ public partial class MainWindow : ClassicWindow
 
     /// <inheritdoc />
     /// <remarks>
-    ///     <c>async void</c> is required here — <see cref="OnLoaded" /> is a framework override whose signature is fixed as <c>void</c>, so <c>async Task</c> is not an option.
-    ///     The <c>try</c>/<c>catch</c> inside guards against the main risk of <c>async void</c> (unhandled exceptions propagating to the process).
+    ///     <c>async void</c> is required here — <see cref="OnLoaded" /> is a framework override whose signature is fixed as <c>void</c>, so <c>async Task</c> is not an option. The
+    ///     <c>try</c>/<c>catch</c> inside guards against the main risk of <c>async void</c> (unhandled exceptions propagating to the process).
     /// </remarks>
     protected override async void OnLoaded(RoutedEventArgs e)
     {
@@ -68,10 +68,11 @@ public partial class MainWindow : ClassicWindow
             return;
         }
 
-        var    element = e.Source as Control;
-        Control? tagged = null;
+        Control? element = e.Source as Control;
+        Control? tagged  = null;
 
-        while (element is not null && !ReferenceEquals(element, IniGroupContainer))
+        while (element is not null
+               && !ReferenceEquals(element, IniGroupContainer))
         {
             if (element.Tag is string { Length: > 0 })
             {

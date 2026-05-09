@@ -79,9 +79,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // NOTE: This implementation is temporary. Once the status bar is polished, this will be reworked or removed.
     public bool IsStatusBarVisible => !(!string.IsNullOrEmpty(StatusMessage) && StatusMessage.StartsWith(value: "Ready.", StringComparison.OrdinalIgnoreCase));
 
-    // ReSharper disable once UnusedParameterInPartialMethod
-    partial void OnStatusMessageChanged(string value) => OnPropertyChanged(nameof(IsStatusBarVisible));
-
     /// <summary>The cached in-memory <c>zoo.ini</c>. Set by <see cref="InitializeAsync" /> on successful parse.</summary>
     public ZooIniModel? Model { get; private set; }
 
@@ -99,6 +96,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         IsBusy = false;
     }
+
+    // ReSharper disable once UnusedParameterInPartialMethod
+    partial void OnStatusMessageChanged(string value) => OnPropertyChanged(nameof(IsStatusBarVisible));
 
     /// <summary>Opens File Explorer focused on <paramref name="path" />. Bound to the "Open" buttons next to the discovered file paths on the Home tab.</summary>
     /// <param name="path">

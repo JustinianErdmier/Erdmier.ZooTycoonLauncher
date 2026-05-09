@@ -56,6 +56,7 @@ public class App : Application
         services.AddSingleton<IStartupService, StartupService>();
         services.AddSingleton<IFolderPicker, AvaloniaFolderPicker>();
         services.AddSingleton<IShellService, WindowsShellService>();
+        services.AddSingleton<ILauncherService, LauncherService>();
 
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<IniSettingsViewModel>();

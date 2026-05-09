@@ -189,10 +189,23 @@
                             </Grid>
                         </controls:GroupBox>
 
+                        <!--
+                            Pending-INI-changes warning. Placeholder for the eventual modal dialog (per user direction);
+                            for now it sits inline above the button and only renders when there are unsaved INI edits.
+                        -->
+                        <TextBlock Text="You have unsaved INI changes. Save or discard them on the INI Configurations tab before launching."
+                                   IsVisible="{Binding HasPendingIniChanges}"
+                                   TextWrapping="Wrap"
+                                   HorizontalAlignment="Stretch"
+                                   TextAlignment="Center"
+                                   FontStyle="Italic"
+                                   Margin="0,16,0,0" />
+
+                        <!--Button uses the RelayCommand's CanExecute (HasExe && !HasPendingIniChanges) to drive IsEnabled — no separate IsEnabled binding needed.-->
                         <Button Content="Launch Game"
-                                IsEnabled="{Binding HasExe}"
+                                Command="{Binding LaunchGameCommand}"
                                 HorizontalAlignment="Stretch"
-                                Margin="0,16,0,0"
+                                Margin="0,8,0,0"
                                 FontWeight="Bold" />
                     </StackPanel>
                 </TabItem>

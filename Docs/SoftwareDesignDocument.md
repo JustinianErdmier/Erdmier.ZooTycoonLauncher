@@ -2,9 +2,14 @@
 
 ## Zoo Tycoon Launcher
 
-**Version:** 1.0  
-**Status:** Draft  
-**Date:** 29 April 2026
+**Version:** 1.1
+**Status:** Living draft — tracked alongside milestone plans under [`Docs/Plans/`](./Plans/).
+**Date:** 8 May 2026 (last revision)
+
+> **Implementation status (2026-05-08).** Milestones delivered to date: file locator + registry probe + launcher-config persistence, INI parser with round-trip fidelity,
+> versioning service (`zoo.ini.original` written on first run, `zoo.ini.undo` snapshot taken before every save), startup orchestration via `IStartupService`, the INI
+> Configurations tab with grouped editors and dirty-tracked save/discard, and the Launch Game button (with a pending-INI-changes guard). Deferred: a true Home/Overview tab with
+> live system data, the Undo Last Save / Full Reset commands, and the test project. See [`Docs/Plans/`](./Plans/) for per-milestone design and execution records.
 
 ---
 
@@ -177,7 +182,10 @@ Launcher/
 
 ### 5.3 Dependency Injection
 
-Services are registered in `App.axaml.cs` using Microsoft.Extensions.DependencyInjection. ViewModels receive their dependencies via constructor injection.
+Services are registered in `App.OnFrameworkInitializationCompleted` using Microsoft.Extensions.DependencyInjection and exposed via `App.Services`. ViewModels receive their
+dependencies via constructor injection. The actual composition root also includes `IStartupService` (orchestrates the locate → parse → ensure-backup sequence), `ILauncherConfigService`
+(persists `%AppData%\ZooTycoonLauncher\launcher.config`), `IRegistryReader` / `WindowsRegistryReader` (HKLM probes), `IFolderPicker` / `AvaloniaFolderPicker`, and `IShellService`
+/ `WindowsShellService`. The folder picker depends on the live `TopLevel`, so `MainWindow.OnLoaded` hands it in once the window exists.
 
 ```csharp
 // Example registration (App.axaml.cs)
@@ -185,6 +193,11 @@ services.AddSingleton<IFileLocatorService, FileLocatorService>();
 services.AddSingleton<IIniParserService, IniParserService>();
 services.AddSingleton<IVersioningService, VersioningService>();
 services.AddSingleton<ILauncherService, LauncherService>();
+services.AddSingleton<IStartupService, StartupService>();
+services.AddSingleton<ILauncherConfigService, LauncherConfigService>();
+services.AddSingleton<IRegistryReader, WindowsRegistryReader>();
+services.AddSingleton<IFolderPicker, AvaloniaFolderPicker>();
+services.AddSingleton<IShellService, WindowsShellService>();
 services.AddTransient<MainWindowViewModel>();
 ```
 

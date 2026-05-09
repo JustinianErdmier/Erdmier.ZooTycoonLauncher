@@ -13,7 +13,7 @@ fidelity for `zoo.ini` is preserved via an `internal IniDocument` field on `ZooI
 **Tech Stack:** C# 13, .NET 10, Avalonia 11.3 (Classic theme), CommunityToolkit.Mvvm 8.x, Microsoft.Extensions.DependencyInjection 8.x, System.IO.Abstractions 21.x,
 System.Text.Json (in-box).
 
-**Reference:** [docs/plans/2026-04-29-ini-parser-and-startup-design.md](./2026-04-29-ini-parser-and-startup-design.md)
+**Reference:** [`2026-04-29—ini-parser-and-startup—design.md`](./2026-04-29—ini-parser-and-startup—design.md)
 
 **Important conventions:**
 

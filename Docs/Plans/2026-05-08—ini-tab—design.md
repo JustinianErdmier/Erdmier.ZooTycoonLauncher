@@ -1,10 +1,10 @@
 # INI Tab — Design
 
-**Status:** Draft (open questions resolved 2026-05-08)
-**Date:** 2026-05-08
-**Companion plan:** [`2026-05-08-ini-tab.md`](./2026-05-08-ini-tab.md)
-**SDD reference:** [`SoftwareDesignDocument.md`](../../SoftwareDesignDocument.md) — §5 (Architecture), §6.5 (ViewModels), §7 (Data Design), §8 (Versioning), §9 (Configuration
-Settings Reference), §10 (Error Handling), §11 (Non-Functional Requirements).
+- **Date:** 2026-05-08
+- **Status:** Approved (open questions resolved 2026-05-08)
+- **Companion plan:** [`2026-05-08—ini-tab.md`](./2026-05-08—ini-tab.md)
+- **SDD reference:** [`SoftwareDesignDocument.md`](../SoftwareDesignDocument.md) — §5 (Architecture), §6.5 (ViewModels), §7 (Data Design), §8 (Versioning), §9 (Configuration
+  Settings Reference), §10 (Error Handling), §11 (Non-Functional Requirements).
 
 ---
 
@@ -35,7 +35,7 @@ there are unsaved changes.
 - **Unmanaged sections** (SDD §9.10: `[mgr]`, `[lib]`, `[resource]`, `[scenario]`). Preserved verbatim via `ZooIniModel.UnknownKeys`; not exposed in the GUI.
 - **Resolution combo + screen-mode picker driven by `IDisplayInfoService`** (SDD §9.1 note about a combined resolution picker). The screen-mode drop-down is included in this
   milestone, but `screenwidth`/`screenheight` remain raw integer fields rather than a list of detected resolutions. The full picker depends on `IDisplayInfoService` (separate plan:
-  `2026-05-08-overview-dynamic-data.md`) and is deferred.
+  `2026-05-08—overview-dynamic-data.md`) and is deferred.
 - **Install-driven language enumeration** (SDD §9.7 note: "populated from the set of language strings bundled with the game installation"). The language drop-down ships with a
   hard-coded canonical list in this milestone; sourcing options from the install's `lang*.dll` resources is a follow-up.
 - **Undo Last Save / Full Reset commands** (SDD §8). `EnsureOriginalBackupAsync` already runs on startup; the snapshot-before-write path is wired here, but the `Undo`/`Reset` UI
@@ -358,6 +358,6 @@ No questions remain open as of the date of this revision.
 
 ## 10. Plan alignment
 
-The companion plan ([`2026-05-08-ini-tab.md`](./2026-05-08-ini-tab.md)) decomposes this design into 14 tasks. Each task ends with a build verification via
+The companion plan ([`2026-05-08—ini-tab.md`](./2026-05-08—ini-tab.md)) decomposes this design into 14 tasks. Each task ends with a build verification via
 `mcp__rider__build_solution` (canonical) or `dotnet build` (fallback), per the project's existing convention. No tests in this milestone — same posture as
-`2026-04-29-ini-parser-and-startup.md`.
+`2026-04-29—ini-parser-and-startup.md`.

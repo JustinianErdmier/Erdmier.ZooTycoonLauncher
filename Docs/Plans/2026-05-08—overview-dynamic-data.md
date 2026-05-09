@@ -83,7 +83,7 @@ DirectX 8 path historically rejects exotic depth/refresh combinations and refuse
   `IRegistryReader` pattern: real impl on Windows, null fallback elsewhere (the launcher is Windows-only per the SDD, but the null impl keeps the designer ctor working).
 - **ViewModel surface:** Add `DesktopResolutionDisplay`, `ScreenModeCount` (or list), and `ZooResolutionCount` (or list) to `MainWindowViewModel`. Populate them from
   `InitializeAsync` after the existing startup flow completes — failures should degrade gracefully (`"Unknown"` / `0`) rather than throwing.
-- **Tests:** Out of scope for the current milestone (per the existing `2026-04-29-ini-parser-and-startup.md` plan), but the abstractions above are designed so the real
+- **Tests:** Out of scope for the current milestone (per the existing `2026-04-29—ini-parser-and-startup.md` plan), but the abstractions above are designed so the real
   implementations stay thin and the resolver logic is fully testable once the test project lands.
 - **Threading:** `EnumDisplaySettings` is fast (microseconds) and safe to call on the UI thread, but if we add bit-depth/refresh filtering or scrape the full mode list, push it
   to a background `Task.Run` to keep `InitializeAsync` snappy.

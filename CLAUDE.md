@@ -7,15 +7,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Avalonia 11.3 desktop launcher for **Zoo Tycoon (2001)**. Discovers `zoo.exe` / `zoo.ini`, parses the INI into a strongly typed model, persists launcher state, and (eventually)
 edits + relaunches. Windows-only, .NET 10, C# 13, Classic Avalonia theme. Single project: `Source/Launcher/Launcher.csproj` under solution `Erdmier.ZooTycoonLauncher.slnx`.
 
-The authoritative spec is [`SoftwareDesignDocument.md`](./SoftwareDesignDocument.md). Implementation plans live in `Docs/Plans/` (named `YYYY-MM-DD-<feature>.md` with a sibling
-`-design.md`). When working from a plan, use the `superpowers:executing-plans` skill — plans expect that workflow.
+The authoritative spec is [`Docs/SoftwareDesignDocument.md`](./Docs/SoftwareDesignDocument.md). Implementation plans live in `Docs/Plans/`, named per the convention in
+[`Docs/MilestonePlanningAndExecutionProcess.md`](./Docs/MilestonePlanningAndExecutionProcess.md): `YYYY-MM-DD—<milestone-name>—design.md` and `YYYY-MM-DD—<milestone-name>.md` (em
+dashes — U+2014 — separate the date, milestone name, and the literal `design` suffix; spaces in the milestone name are replaced with hyphens). The design template lives at
+[`Docs/Templates/milestone-design-template.md`](./Docs/Templates/milestone-design-template.md). When working from a plan, use the `superpowers:executing-plans` skill — plans
+expect that workflow.
 
 ## Common commands
 
-- **Build**: prefer `mcp__rider__build_solution` (the plan files reference it as the canonical build check). `dotnet build Erdmier.ZooTycoonLauncher.slnx` works as a fallback.
+> **Always run shell commands via PowerShell — never Bash.**
+
+- **Build**: prefer `mcp__rider__build_solution` (the canonical build check referenced by every plan). `dotnet build Erdmier.ZooTycoonLauncher.slnx` works as a fallback.
+- **Validate task completion**: clean, then build. PowerShell: `dotnet clean Erdmier.ZooTycoonLauncher.slnx; dotnet build Erdmier.ZooTycoonLauncher.slnx`.
 - **Run**: `dotnet run --project Source/Launcher/Launcher.csproj`.
 - **Tests**: none yet. The current milestone explicitly defers them; code is written to be testable (services behind interfaces, `IFileSystem` abstraction, hand-rolled
   `IRegistryReader`) but no test project exists.
+
+## Git commits
+
+Use the **conventional commit** format with a **gitmoji** in the type scope: `type(emoji): subject`. Examples taken from this repo's history:
+
+- `feat(✨): wire up Launch Game button with pending-INI-changes guard`
+- `fix(🐛): …`
+- `refactor(♻️): use partial for observable properties and adjust UI layout`
+- `chore(🔧): allow dotnet build/clean shell commands in local permissions`
+- `style(🎨): format code`
+- `docs(📝): …`
+
+Match the gitmoji to the conventional type (`feat`→✨, `fix`→🐛, `refactor`→♻️, `style`→🎨, `docs`→📝, `chore`→🔧, `perf`→⚡, `test`→✅, `build`→📦, `ci`→👷). Commit per logical
+task, not per file.
+
+**After each completed task, automatically ask the user whether to commit** (via `AskUserQuestion` or an inline yes/no). Propose the conventional-commit message you would use,
+list the files that would be staged, and wait for explicit approval before running `git commit`. Never commit silently, and never commit on the user's behalf without that
+per-task confirmation.
 
 ## Architecture
 

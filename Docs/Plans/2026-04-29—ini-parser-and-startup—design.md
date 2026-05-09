@@ -1,9 +1,11 @@
 # INI Parser, File Locator, and Startup Flow — Design
 
-**Date:** 2026-04-29
-**Status:** Approved
-**Related SDD sections:** §5 Architecture, §6.1 FileLocatorService, §6.2 IniParserService, §7 Data Design, §8 File Versioning System, §10 Error Handling, §11 Non-Functional
-Requirements
+- **Date:** 2026-04-29
+- **Status:** Approved
+- **Companion plan:** [`2026-04-29—ini-parser-and-startup.md`](./2026-04-29—ini-parser-and-startup.md)
+- **Related SDD sections:** [`SoftwareDesignDocument.md`](../SoftwareDesignDocument.md) — §5 Architecture, §6.1 FileLocatorService, §6.2 IniParserService, §7 Data Design, §8
+  File Versioning System, §10 Error Handling, §11 Non-Functional
+  Requirements
 
 ---
 

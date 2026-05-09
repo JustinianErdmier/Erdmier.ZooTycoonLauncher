@@ -84,6 +84,7 @@
             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                 <TextBlock Grid.Column="0"
                            Text="Installation:"
+                           FontWeight="Bold"
                            VerticalAlignment="Center"
                            Margin="0,0,6,0" />
                 <TextBlock Grid.Column="1"

@@ -18,7 +18,7 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
 ///     <see cref="IsDirty" /> flag set by any edit, and persists changes to disk via <see cref="IIniParserService.WriteAsync" /> only when <see cref="SaveCommand" /> fires.
 /// </summary>
 /// <remarks>
-///     <b>Tooltip strings</b> <br /><br /> Each tooltip = the prose from IniTooltips.axaml (TT.* resource) + a "Default: value" line. The default value comes from a single
+///     <b>Tooltip strings</b> <br /><br /> Each tooltip = the prose from IniTooltips.axaml (Tt.* resource) + a "Default: value" line. The default value comes from a single
 ///     canonical `new ZooIniModel()` instance via ZooIniDefaults.KnownKeys → IniKeySpec.Read, so the submodel property initialisers (UserSettings.ScreenWidth = 800, etc.) remain the
 ///     single source of truth — the tooltips can never drift. <br /><br /> Three derived tooltips (ScreenMode, PlayMenuMusic, Language) don't map 1:1 to a single key, so they pass an
 ///     explicit human-readable default override.
@@ -60,37 +60,37 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial int CashIncrement { get; set; } = 5_000;
 
-    public string CashIncrementTooltip { get; } = BuildTooltip(resourceKey: "TT.MSCashIncrement", section: "UI", key: "MSCashIncrement");
+    public string CashIncrementTooltip { get; } = BuildTooltip(resourceKey: "Tt.CashIncrement", section: "UI", key: "MSCashIncrement");
 
     [ ObservableProperty ]
     public partial bool Click { get; set; }
 
-    public string ClickTooltip { get; } = BuildTooltip(resourceKey: "TT.Click", section: "advanced", key: "click");
+    public string ClickTooltip { get; } = BuildTooltip(resourceKey: "Tt.Click", section: "advanced", key: "click");
 
     [ ObservableProperty ]
     public partial bool Drag { get; set; }
 
-    public string DragTooltip { get; } = BuildTooltip(resourceKey: "TT.Drag", section: "advanced", key: "drag");
+    public string DragTooltip { get; } = BuildTooltip(resourceKey: "Tt.Drag", section: "advanced", key: "drag");
 
     [ ObservableProperty ]
     public partial bool DrawFps { get; set; }
 
-    public string DrawFpsTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawFps", section: "debug", key: "drawfps");
+    public string DrawFpsTooltip { get; } = BuildTooltip(resourceKey: "Tt.DrawFps", section: "debug", key: "drawfps");
 
     [ ObservableProperty ]
     public partial int DrawFpsX { get; set; } = 720;
 
-    public string DrawFpsXTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawFpsX", section: "debug", key: "drawfpsx");
+    public string DrawFpsXTooltip { get; } = BuildTooltip(resourceKey: "Tt.DrawFpsX", section: "debug", key: "drawfpsx");
 
     [ ObservableProperty ]
     public partial int DrawFpsY { get; set; } = 20;
 
-    public string DrawFpsYTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawFpsY", section: "debug", key: "drawfpsy");
+    public string DrawFpsYTooltip { get; } = BuildTooltip(resourceKey: "Tt.DrawFpsY", section: "debug", key: "drawfpsy");
 
     [ ObservableProperty ]
     public partial int DrawRate { get; set; } = 60;
 
-    public string DrawRateTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawRate", section: "user", key: "DrawRate");
+    public string DrawRateTooltip { get; } = BuildTooltip(resourceKey: "Tt.DrawRate", section: "user", key: "DrawRate");
 
     [ ObservableProperty ]
     public partial bool Fullscreen { get; set; } = true;
@@ -98,7 +98,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial int HelpType { get; set; } = 1;
 
-    public string HelpTypeTooltip { get; } = BuildTooltip(resourceKey: "TT.HelpType", section: "UI", key: "helpType");
+    public string HelpTypeTooltip { get; } = BuildTooltip(resourceKey: "Tt.HelpType", section: "UI", key: "helpType");
 
     [ ObservableProperty ]
     public partial bool IsDirty { get; set; }
@@ -106,12 +106,12 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial int KeyScrollX { get; set; } = 64;
 
-    public string KeyScrollXTooltip { get; } = BuildTooltip(resourceKey: "TT.KeyScrollX", section: "UI", key: "keyScrollX");
+    public string KeyScrollXTooltip { get; } = BuildTooltip(resourceKey: "Tt.KeyScrollX", section: "UI", key: "keyScrollX");
 
     [ ObservableProperty ]
     public partial int KeyScrollY { get; set; } = 64;
 
-    public string KeyScrollYTooltip { get; } = BuildTooltip(resourceKey: "TT.KeyScrollY", section: "UI", key: "keyScrollY");
+    public string KeyScrollYTooltip { get; } = BuildTooltip(resourceKey: "Tt.KeyScrollY", section: "UI", key: "keyScrollY");
 
     // ── [language] (SDD §9.7) ─────────────────────────────────────────────────────────────────────────────────────────
 
@@ -134,42 +134,42 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     ];
 
     // Language: composite of [language]/lang + [language]/sublang. The default LangID 9 / SubLang 1 = English (United States).
-    public string LanguageTooltip { get; } = BuildTooltipFromOverride(resourceKey: "TT.Language", defaultDisplay: "English (United States)");
+    public string LanguageTooltip { get; } = BuildTooltipFromOverride(resourceKey: "Tt.Language", defaultDisplay: "English (United States)");
 
     [ ObservableProperty ]
     public partial int Level { get; set; } = 2;
 
-    public string LevelTooltip { get; } = BuildTooltip(resourceKey: "TT.Level", section: "advanced", key: "level");
+    public string LevelTooltip { get; } = BuildTooltip(resourceKey: "Tt.Level", section: "advanced", key: "level");
 
     [ ObservableProperty ]
     public partial bool LoadHalfAnims { get; set; }
 
-    public string LoadHalfAnimsTooltip { get; } = BuildTooltip(resourceKey: "TT.LoadHalfAnims", section: "advanced", key: "loadHalfAnims");
+    public string LoadHalfAnimsTooltip { get; } = BuildTooltip(resourceKey: "Tt.LoadHalfAnims", section: "advanced", key: "loadHalfAnims");
 
     [ ObservableProperty ]
     public partial int LogCutoff { get; set; } = 1;
 
-    public string LogCutoffTooltip { get; } = BuildTooltip(resourceKey: "TT.LogCutoff", section: "debug", key: "logCutoff");
+    public string LogCutoffTooltip { get; } = BuildTooltip(resourceKey: "Tt.LogCutoff", section: "debug", key: "logCutoff");
 
     [ ObservableProperty ]
     public partial int MapX { get; set; } = 75;
 
-    public string MapXTooltip { get; } = BuildTooltip(resourceKey: "TT.MapX", section: "Map", key: "mapX");
+    public string MapXTooltip { get; } = BuildTooltip(resourceKey: "Tt.MapX", section: "Map", key: "mapX");
 
     [ ObservableProperty ]
     public partial int MapY { get; set; } = 75;
 
-    public string MapYTooltip { get; } = BuildTooltip(resourceKey: "TT.MapY", section: "Map", key: "mapY");
+    public string MapYTooltip { get; } = BuildTooltip(resourceKey: "Tt.MapY", section: "Map", key: "mapY");
 
     [ ObservableProperty ]
     public partial int MaxCash { get; set; } = 500_000;
 
-    public string MaxCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSMaxCash", section: "UI", key: "MSMaxCash");
+    public string MaxCashTooltip { get; } = BuildTooltip(resourceKey: "Tt.MaxCash", section: "UI", key: "MSMaxCash");
 
     [ ObservableProperty ]
     public partial int MaxGuests { get; set; } = 1_000;
 
-    public string MaxGuestsTooltip { get; } = BuildTooltip(resourceKey: "TT.MaxGuests", section: "ai", key: "maxGuests");
+    public string MaxGuestsTooltip { get; } = BuildTooltip(resourceKey: "Tt.MaxGuests", section: "ai", key: "maxGuests");
 
     [ ObservableProperty ]
     public partial string MenuMusic { get; set; } = "sounds/mainmenu.wav";
@@ -177,54 +177,54 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial int MenuMusicAttenuation { get; set; } = 1500;
 
-    public string MenuMusicAttenuationTooltip { get; } = BuildTooltip(resourceKey: "TT.MenuMusicAttenuation", section: "UI", key: "menuMusicAttenuation");
+    public string MenuMusicAttenuationTooltip { get; } = BuildTooltip(resourceKey: "Tt.MenuMusicAttenuation", section: "UI", key: "menuMusicAttenuation");
 
-    public string MenuMusicTooltip { get; } = BuildTooltip(resourceKey: "TT.MenuMusic", section: "UI", key: "menuMusic");
+    public string MenuMusicTooltip { get; } = BuildTooltip(resourceKey: "Tt.MenuMusic", section: "UI", key: "menuMusic");
 
     [ ObservableProperty ]
     public partial bool MessageDisplay { get; set; } = true;
 
-    public string MessageDisplayTooltip { get; } = BuildTooltip(resourceKey: "TT.MessageDisplay", section: "UI", key: "MessageDisplay");
+    public string MessageDisplayTooltip { get; } = BuildTooltip(resourceKey: "Tt.MessageDisplay", section: "UI", key: "MessageDisplay");
 
     [ ObservableProperty ]
     public partial int MinCash { get; set; } = 10_000;
 
-    public string MinCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSMinCash", section: "UI", key: "MSMinCash");
+    public string MinCashTooltip { get; } = BuildTooltip(resourceKey: "Tt.MinCash", section: "UI", key: "MSMinCash");
 
     [ ObservableProperty ]
     public partial int MinimumMessageInterval { get; set; } = 60;
 
-    public string MinimumMessageIntervalTooltip { get; } = BuildTooltip(resourceKey: "TT.MinimumMessageInterval", section: "UI", key: "minimumMessageInterval");
+    public string MinimumMessageIntervalTooltip { get; } = BuildTooltip(resourceKey: "Tt.MinimumMessageInterval", section: "UI", key: "minimumMessageInterval");
 
     [ ObservableProperty ]
     public partial int MouseScrollDelay { get; set; } = 1;
 
-    public string MouseScrollDelayTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollDelay", section: "UI", key: "mouseScrollDelay");
+    public string MouseScrollDelayTooltip { get; } = BuildTooltip(resourceKey: "Tt.MouseScrollDelay", section: "UI", key: "mouseScrollDelay");
 
     [ ObservableProperty ]
     public partial int MouseScrollThreshold { get; set; } = 1;
 
-    public string MouseScrollThresholdTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollThreshold", section: "UI", key: "mouseScrollThreshold");
+    public string MouseScrollThresholdTooltip { get; } = BuildTooltip(resourceKey: "Tt.MouseScrollThreshold", section: "UI", key: "mouseScrollThreshold");
 
     [ ObservableProperty ]
     public partial int MouseScrollX { get; set; } = 27;
 
-    public string MouseScrollXTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollX", section: "UI", key: "mouseScrollX");
+    public string MouseScrollXTooltip { get; } = BuildTooltip(resourceKey: "Tt.MouseScrollX", section: "UI", key: "mouseScrollX");
 
     [ ObservableProperty ]
     public partial int MouseScrollY { get; set; } = 27;
 
-    public string MouseScrollYTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollY", section: "UI", key: "mouseScrollY");
+    public string MouseScrollYTooltip { get; } = BuildTooltip(resourceKey: "Tt.MouseScrollY", section: "UI", key: "mouseScrollY");
 
     [ ObservableProperty ]
     public partial int MovieVolume1 { get; set; } = -1000;
 
-    public string MovieVolume1Tooltip { get; } = BuildTooltip(resourceKey: "TT.MovieVolume1", section: "UI", key: "movievolume1");
+    public string MovieVolume1Tooltip { get; } = BuildTooltip(resourceKey: "Tt.MovieVolume1", section: "UI", key: "movievolume1");
 
     [ ObservableProperty ]
     public partial int MovieVolume2 { get; set; } = -1000;
 
-    public string MovieVolume2Tooltip { get; } = BuildTooltip(resourceKey: "TT.MovieVolume2", section: "UI", key: "movievolume2");
+    public string MovieVolume2Tooltip { get; } = BuildTooltip(resourceKey: "Tt.MovieVolume2", section: "UI", key: "movievolume2");
 
     [ ObservableProperty ]
     public partial bool NoMenuMusic { get; set; }
@@ -232,7 +232,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial bool Normal { get; set; }
 
-    public string NormalTooltip { get; } = BuildTooltip(resourceKey: "TT.Normal", section: "advanced", key: "normal");
+    public string NormalTooltip { get; } = BuildTooltip(resourceKey: "Tt.Normal", section: "advanced", key: "normal");
 
     /// <summary>Friendly inverted view over <see cref="NoMenuMusic" />: <c>true</c> = play menu music. Bound from the Audio GroupBox checkbox.</summary>
     public bool PlayMenuMusic
@@ -243,22 +243,22 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     }
 
     // PlayMenuMusic is the inverse of [UI]/noMenuMusic. NoMenuMusic defaults to false → PlayMenuMusic default = "On".
-    public string PlayMenuMusicTooltip { get; } = BuildTooltipFromOverride(resourceKey: "TT.PlayMenuMusic", defaultDisplay: "On");
+    public string PlayMenuMusicTooltip { get; } = BuildTooltipFromOverride(resourceKey: "Tt.PlayMenuMusic", defaultDisplay: "On");
 
     [ ObservableProperty ]
     public partial bool PlayMovie { get; set; }
 
-    public string PlayMovieTooltip { get; } = BuildTooltip(resourceKey: "TT.PlayMovie", section: "UI", key: "playMovie");
+    public string PlayMovieTooltip { get; } = BuildTooltip(resourceKey: "Tt.PlayMovie", section: "UI", key: "playMovie");
 
     [ ObservableProperty ]
     public partial bool PlaySecondMovie { get; set; }
 
-    public string PlaySecondMovieTooltip { get; } = BuildTooltip(resourceKey: "TT.PlaySecondMovie", section: "UI", key: "playSecondMovie");
+    public string PlaySecondMovieTooltip { get; } = BuildTooltip(resourceKey: "Tt.PlaySecondMovie", section: "UI", key: "playSecondMovie");
 
     [ ObservableProperty ]
     public partial int ScreenHeight { get; set; } = 600;
 
-    public string ScreenHeightTooltip { get; } = BuildTooltip(resourceKey: "TT.ScreenHeight", section: "user", key: "screenheight");
+    public string ScreenHeightTooltip { get; } = BuildTooltip(resourceKey: "Tt.ScreenHeight", section: "user", key: "screenheight");
 
     /// <summary>Friendly drop-down view over <see cref="Fullscreen" />: 0 = Fullscreen, 1 = Windowed. Bound from the Display &amp; Performance "Screen mode" combo.</summary>
     public int ScreenModeIndex
@@ -268,12 +268,12 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
         set => Fullscreen = value == 0;
     }
 
-    public string ScreenModeTooltip { get; } = BuildTooltipFromOverride(resourceKey: "TT.ScreenMode", defaultDisplay: "Fullscreen");
+    public string ScreenModeTooltip { get; } = BuildTooltipFromOverride(resourceKey: "Tt.ScreenMode", defaultDisplay: "Fullscreen");
 
     [ ObservableProperty ]
     public partial int ScreenWidth { get; set; } = 800;
 
-    public string ScreenWidthTooltip { get; } = BuildTooltip(resourceKey: "TT.ScreenWidth", section: "user", key: "screenwidth");
+    public string ScreenWidthTooltip { get; } = BuildTooltip(resourceKey: "Tt.ScreenWidth", section: "user", key: "screenwidth");
 
     /// <summary>
     ///     Returns the option that matches the current <see cref="Lang" />/<see cref="SubLang" /> pair, or <see langword="null" /> if no match — in which case the drop-down shows
@@ -298,17 +298,17 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial bool SendDebugger { get; set; } = true;
 
-    public string SendDebuggerTooltip { get; } = BuildTooltip(resourceKey: "TT.SendDebugger", section: "debug", key: "sendDebugger");
+    public string SendDebuggerTooltip { get; } = BuildTooltip(resourceKey: "Tt.SendDebugger", section: "debug", key: "sendDebugger");
 
     [ ObservableProperty ]
     public partial bool SendLogfile { get; set; } = true;
 
-    public string SendLogfileTooltip { get; } = BuildTooltip(resourceKey: "TT.SendLogfile", section: "debug", key: "sendLogfile");
+    public string SendLogfileTooltip { get; } = BuildTooltip(resourceKey: "Tt.SendLogfile", section: "debug", key: "sendLogfile");
 
     [ ObservableProperty ]
     public partial int StartingCash { get; set; } = 70_000;
 
-    public string StartingCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSStartingCash", section: "UI", key: "MSStartingCash");
+    public string StartingCashTooltip { get; } = BuildTooltip(resourceKey: "Tt.StartingCash", section: "UI", key: "MSStartingCash");
 
     [ ObservableProperty ]
     public partial string? StatusMessage { get; set; }
@@ -319,34 +319,34 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial int TooltipDelay { get; set; } = 1;
 
-    public string TooltipDelayTooltip { get; } = BuildTooltip(resourceKey: "TT.TooltipDelay", section: "UI", key: "tooltipDelay");
+    public string TooltipDelayTooltip { get; } = BuildTooltip(resourceKey: "Tt.TooltipDelay", section: "UI", key: "tooltipDelay");
 
     [ ObservableProperty ]
     public partial int TooltipDuration { get; set; } = 3_000;
 
-    public string TooltipDurationTooltip { get; } = BuildTooltip(resourceKey: "TT.TooltipDuration", section: "UI", key: "tooltipDuration");
+    public string TooltipDurationTooltip { get; } = BuildTooltip(resourceKey: "Tt.TooltipDuration", section: "UI", key: "tooltipDuration");
 
     [ ObservableProperty ]
     public partial int UpdateRate { get; set; } = 15;
 
-    public string UpdateRateTooltip { get; } = BuildTooltip(resourceKey: "TT.UpdateRate", section: "user", key: "UpdateRate");
+    public string UpdateRateTooltip { get; } = BuildTooltip(resourceKey: "Tt.UpdateRate", section: "user", key: "UpdateRate");
 
     [ ObservableProperty ]
     public partial bool Use8BitSound { get; set; }
 
-    public string Use8BitSoundTooltip { get; } = BuildTooltip(resourceKey: "TT.Use8BitSound", section: "advanced", key: "use8BitSound");
+    public string Use8BitSoundTooltip { get; } = BuildTooltip(resourceKey: "Tt.Use8BitSound", section: "advanced", key: "use8BitSound");
 
     // ── [UI] — interface (SDD §9.5) ───────────────────────────────────────────────────────────────────────────────────
 
     [ ObservableProperty ]
     public partial bool UseAlternateCursors { get; set; }
 
-    public string UseAlternateCursorsTooltip { get; } = BuildTooltip(resourceKey: "TT.UseAlternateCursors", section: "UI", key: "useAlternateCursors");
+    public string UseAlternateCursorsTooltip { get; } = BuildTooltip(resourceKey: "Tt.UseAlternateCursors", section: "UI", key: "useAlternateCursors");
 
     [ ObservableProperty ]
     public partial int UserAttenuation { get; set; }
 
-    public string UserAttenuationTooltip { get; } = BuildTooltip(resourceKey: "TT.UserAttenuation", section: "UI", key: "userAttenuation");
+    public string UserAttenuationTooltip { get; } = BuildTooltip(resourceKey: "Tt.UserAttenuation", section: "UI", key: "userAttenuation");
 
     /// <summary>Replaces the working state with values from <paramref name="model" />, resets <see cref="IsDirty" />, and stashes <paramref name="iniPath" /> for the save path.</summary>
     public void ApplyModel(ZooIniModel? model, string? iniPath)
@@ -732,7 +732,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     }
 
     /// <summary>
-    ///     Looks up the prose from the <c>TT.*</c> resource, finds the matching <see cref="IniKeySpec" /> in <see cref="ZooIniDefaults.KnownKeys" />, reads the default value off
+    ///     Looks up the prose from the <c>Tt.*</c> resource, finds the matching <see cref="IniKeySpec" /> in <see cref="ZooIniDefaults.KnownKeys" />, reads the default value off
     ///     <see cref="DefaultsModel" />, and returns <c>"{prose}\n\nDefault: {value}"</c>.
     /// </summary>
     private static string BuildTooltip(string resourceKey, string section, string key)

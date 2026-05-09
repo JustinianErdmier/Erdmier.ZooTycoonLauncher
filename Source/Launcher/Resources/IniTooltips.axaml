@@ -3,64 +3,64 @@
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
     <!--Display & Performance (SDD §9.1)-->
-    <sys:String x:Key="TT.ScreenMode">Run the game in fullscreen or in a window. Maps to the [user]/fullscreen INI key.</sys:String>
-    <sys:String x:Key="TT.ScreenWidth">Horizontal resolution in pixels. Must match a mode supported by the display adapter.</sys:String>
-    <sys:String x:Key="TT.ScreenHeight">Vertical resolution in pixels. Must match a mode supported by the display adapter.</sys:String>
-    <sys:String x:Key="TT.UpdateRate">Game logic ticks per second. Higher values give smoother gameplay but cost CPU.</sys:String>
-    <sys:String x:Key="TT.DrawRate">Target frame-rate cap (FPS). Lower values reduce GPU load.</sys:String>
+    <sys:String x:Key="Tt.ScreenMode">Run the game in fullscreen or in a window. Maps to the [user]/fullscreen INI key.</sys:String>
+    <sys:String x:Key="Tt.ScreenWidth">Horizontal resolution in pixels. Must match a mode supported by the display adapter.</sys:String>
+    <sys:String x:Key="Tt.ScreenHeight">Vertical resolution in pixels. Must match a mode supported by the display adapter.</sys:String>
+    <sys:String x:Key="Tt.UpdateRate">Game logic ticks per second. Higher values give smoother gameplay but cost CPU.</sys:String>
+    <sys:String x:Key="Tt.DrawRate">Target frame-rate cap (FPS). Lower values reduce GPU load.</sys:String>
 
     <!--Graphics Quality (SDD §9.2)-->
-    <sys:String x:Key="TT.Level">Overall quality preset. Lower values prefer quality; higher values prefer speed. Paused disables the renderer entirely.</sys:String>
-    <sys:String x:Key="TT.LoadHalfAnims">Load reduced-detail animation sets to improve performance on older hardware.</sys:String>
-    <sys:String x:Key="TT.Drag">Drop rendering quality while objects are being dragged.</sys:String>
-    <sys:String x:Key="TT.Click">Drop rendering quality during click operations.</sys:String>
-    <sys:String x:Key="TT.Normal">Drop rendering quality during normal play.</sys:String>
+    <sys:String x:Key="Tt.Level">Overall quality preset. Lower values prefer quality; higher values prefer speed. Paused disables the renderer entirely.</sys:String>
+    <sys:String x:Key="Tt.LoadHalfAnims">Load reduced-detail animation sets to improve performance on older hardware.</sys:String>
+    <sys:String x:Key="Tt.Drag">Drop rendering quality while objects are being dragged.</sys:String>
+    <sys:String x:Key="Tt.Click">Drop rendering quality during click operations.</sys:String>
+    <sys:String x:Key="Tt.Normal">Drop rendering quality during normal play.</sys:String>
 
     <!--Audio (SDD §9.3)-->
-    <sys:String x:Key="TT.PlayMenuMusic">Play the main-menu background music. (The underlying [UI]/noMenuMusic INI key uses inverted logic.)</sys:String>
-    <sys:String x:Key="TT.MenuMusic">Path to the menu-music file, relative to the game's installation directory.</sys:String>
-    <sys:String x:Key="TT.MenuMusicAttenuation">Menu-music attenuation. Higher values are quieter.</sys:String>
-    <sys:String x:Key="TT.UserAttenuation">Global audio attenuation applied to all sounds. Higher values are quieter.</sys:String>
-    <sys:String x:Key="TT.PlayMovie">Play the first intro movie on startup.</sys:String>
-    <sys:String x:Key="TT.MovieVolume1">Volume for the first intro movie. 0 = full volume; -10000 = silent.</sys:String>
-    <sys:String x:Key="TT.PlaySecondMovie">Play the second intro movie on startup.</sys:String>
-    <sys:String x:Key="TT.MovieVolume2">Volume for the second intro movie. 0 = full volume; -10000 = silent.</sys:String>
-    <sys:String x:Key="TT.Use8BitSound">Force 8-bit audio output. May improve compatibility on older sound hardware.</sys:String>
+    <sys:String x:Key="Tt.PlayMenuMusic">Play the main-menu background music. (The underlying [UI]/noMenuMusic INI key uses inverted logic.)</sys:String>
+    <sys:String x:Key="Tt.MenuMusic">Path to the menu-music file, relative to the game's installation directory.</sys:String>
+    <sys:String x:Key="Tt.MenuMusicAttenuation">Menu-music attenuation. Higher values are quieter.</sys:String>
+    <sys:String x:Key="Tt.UserAttenuation">Global audio attenuation applied to all sounds. Higher values are quieter.</sys:String>
+    <sys:String x:Key="Tt.PlayMovie">Play the first intro movie on startup.</sys:String>
+    <sys:String x:Key="Tt.MovieVolume1">Volume for the first intro movie. 0 = full volume; -10000 = silent.</sys:String>
+    <sys:String x:Key="Tt.PlaySecondMovie">Play the second intro movie on startup.</sys:String>
+    <sys:String x:Key="Tt.MovieVolume2">Volume for the second intro movie. 0 = full volume; -10000 = silent.</sys:String>
+    <sys:String x:Key="Tt.Use8BitSound">Force 8-bit audio output. May improve compatibility on older sound hardware.</sys:String>
 
     <!--Gameplay (SDD §9.4)-->
-    <sys:String x:Key="TT.MSStartingCash">Cash awarded at the start of a new game.</sys:String>
-    <sys:String x:Key="TT.MSCashIncrement">Denomination by which cash awards are rounded.</sys:String>
-    <sys:String x:Key="TT.MSMinCash">Minimum cash the player is allowed to hold.</sys:String>
-    <sys:String x:Key="TT.MSMaxCash">Maximum cash the player is allowed to hold.</sys:String>
-    <sys:String x:Key="TT.MaxGuests">Maximum number of guests permitted in the zoo simultaneously. Higher values are more demanding on the CPU.</sys:String>
+    <sys:String x:Key="Tt.StartingCash">Cash awarded at the start of a new game.</sys:String>
+    <sys:String x:Key="Tt.CashIncrement">Denomination by which cash awards are rounded.</sys:String>
+    <sys:String x:Key="Tt.MinCash">Minimum cash the player is allowed to hold.</sys:String>
+    <sys:String x:Key="Tt.MaxCash">Maximum cash the player is allowed to hold.</sys:String>
+    <sys:String x:Key="Tt.MaxGuests">Maximum number of guests permitted in the zoo simultaneously. Higher values are more demanding on the CPU.</sys:String>
 
     <!--Interface (SDD §9.5)-->
-    <sys:String x:Key="TT.UseAlternateCursors">Use monochrome cursors. Recommended if the cursor flickers or disappears on your display.</sys:String>
-    <sys:String x:Key="TT.TooltipDelay">Seconds to hover before tooltips appear.</sys:String>
-    <sys:String x:Key="TT.TooltipDuration">Milliseconds tooltips remain visible after appearing.</sys:String>
-    <sys:String x:Key="TT.MessageDisplay">Show in-game notification messages.</sys:String>
-    <sys:String x:Key="TT.MouseScrollThreshold">Pixel distance from the screen edge at which mouse-edge scrolling activates.</sys:String>
-    <sys:String x:Key="TT.MouseScrollDelay">Delay before mouse-edge scrolling begins after the cursor enters the threshold.</sys:String>
-    <sys:String x:Key="TT.MouseScrollX">Horizontal mouse-edge scroll speed.</sys:String>
-    <sys:String x:Key="TT.MouseScrollY">Vertical mouse-edge scroll speed.</sys:String>
-    <sys:String x:Key="TT.KeyScrollX">Horizontal keyboard scroll speed.</sys:String>
-    <sys:String x:Key="TT.KeyScrollY">Vertical keyboard scroll speed.</sys:String>
-    <sys:String x:Key="TT.MinimumMessageInterval">Minimum interval (seconds) between repeated notifications of the same kind.</sys:String>
-    <sys:String x:Key="TT.HelpType">Help-system verbosity. Verbose surfaces extra explanatory text on most controls.</sys:String>
+    <sys:String x:Key="Tt.UseAlternateCursors">Use monochrome cursors. Recommended if the cursor flickers or disappears on your display.</sys:String>
+    <sys:String x:Key="Tt.TooltipDelay">Seconds to hover before tooltips appear.</sys:String>
+    <sys:String x:Key="Tt.TooltipDuration">Milliseconds tooltips remain visible after appearing.</sys:String>
+    <sys:String x:Key="Tt.MessageDisplay">Show in-game notification messages.</sys:String>
+    <sys:String x:Key="Tt.MouseScrollThreshold">Pixel distance from the screen edge at which mouse-edge scrolling activates.</sys:String>
+    <sys:String x:Key="Tt.MouseScrollDelay">Delay before mouse-edge scrolling begins after the cursor enters the threshold.</sys:String>
+    <sys:String x:Key="Tt.MouseScrollX">Horizontal mouse-edge scroll speed.</sys:String>
+    <sys:String x:Key="Tt.MouseScrollY">Vertical mouse-edge scroll speed.</sys:String>
+    <sys:String x:Key="Tt.KeyScrollX">Horizontal keyboard scroll speed.</sys:String>
+    <sys:String x:Key="Tt.KeyScrollY">Vertical keyboard scroll speed.</sys:String>
+    <sys:String x:Key="Tt.MinimumMessageInterval">Minimum interval (seconds) between repeated notifications of the same kind.</sys:String>
+    <sys:String x:Key="Tt.HelpType">Help-system verbosity. Verbose surfaces extra explanatory text on most controls.</sys:String>
 
     <!--Map (SDD §9.6)-->
-    <sys:String x:Key="TT.MapX">Default new-zoo width in tiles.</sys:String>
-    <sys:String x:Key="TT.MapY">Default new-zoo height in tiles.</sys:String>
+    <sys:String x:Key="Tt.MapX">Default new-zoo width in tiles.</sys:String>
+    <sys:String x:Key="Tt.MapY">Default new-zoo height in tiles.</sys:String>
 
     <!--Language (SDD §9.7)-->
-    <sys:String x:Key="TT.Language">Game language. Sets the Windows LANGID and SUBLANGID fields. The list shows common combinations bundled with the game; custom IDs require direct INI editing for now.</sys:String>
+    <sys:String x:Key="Tt.Language">Game language. Sets the Windows LANGID and SUBLANGID fields. The list shows common combinations bundled with the game; custom IDs require direct INI editing for now.</sys:String>
 
     <!--Debug (SDD §9.8)-->
-    <sys:String x:Key="TT.DrawFps">Show an FPS counter overlay during gameplay.</sys:String>
-    <sys:String x:Key="TT.DrawFpsX">Horizontal pixel position of the FPS counter overlay.</sys:String>
-    <sys:String x:Key="TT.DrawFpsY">Vertical pixel position of the FPS counter overlay.</sys:String>
-    <sys:String x:Key="TT.LogCutoff">Logging verbosity cutoff. Lower values produce more detail.</sys:String>
-    <sys:String x:Key="TT.SendLogfile">Write log output to a file on disk.</sys:String>
-    <sys:String x:Key="TT.SendDebugger">Send log output to an attached debugger via OutputDebugString.</sys:String>
+    <sys:String x:Key="Tt.DrawFps">Show an FPS counter overlay during gameplay.</sys:String>
+    <sys:String x:Key="Tt.DrawFpsX">Horizontal pixel position of the FPS counter overlay.</sys:String>
+    <sys:String x:Key="Tt.DrawFpsY">Vertical pixel position of the FPS counter overlay.</sys:String>
+    <sys:String x:Key="Tt.LogCutoff">Logging verbosity cutoff. Lower values produce more detail.</sys:String>
+    <sys:String x:Key="Tt.SendLogfile">Write log output to a file on disk.</sys:String>
+    <sys:String x:Key="Tt.SendDebugger">Send log output to an attached debugger via OutputDebugString.</sys:String>
 
 </ResourceDictionary>

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
+        xmlns:models="clr-namespace:Erdmier.ZooTycoonLauncher.Launcher.Models"
         mc:Ignorable="d"
         d:DesignWidth="408"
         d:DesignHeight="454"
@@ -95,7 +96,7 @@
 
         <Panel DockPanel.Dock="Top">
             <TabControl IsEnabled="{Binding HasIni}">
-                <TabItem Header="Home">
+                <TabItem Header="General">
                     <StackPanel>
                         <controls:GroupBox Header="Overview">
                             <Grid ColumnDefinitions="Auto,*"
@@ -196,7 +197,558 @@
                     </StackPanel>
                 </TabItem>
 
-                <TabItem Header="INI Configurations" />
+                <TabItem Header="INI Configurations">
+                    <DockPanel LastChildFill="True">
+                        <Border DockPanel.Dock="Bottom"
+                                Padding="6,8,6,4">
+                            <!--
+                                Three-button row over a status line. Discard (left), Undo (centre — stubbed, disabled),
+                                Save (right). Status TextBlock sits below the buttons so failure messages don't push them
+                                around. All three buttons drive their disabled state from their RelayCommand's CanExecute,
+                                so no IsEnabled bindings are needed here.
+                            -->
+                            <StackPanel Spacing="6">
+                                <Grid ColumnDefinitions="*,*,*">
+                                    <Button Grid.Column="0"
+                                            Content="Discard"
+                                            HorizontalAlignment="Left"
+                                            Padding="24,6"
+                                            Command="{Binding Ini.DiscardCommand}" />
+                                    <Button Grid.Column="1"
+                                            Content="Undo"
+                                            HorizontalAlignment="Center"
+                                            Padding="24,6"
+                                            Command="{Binding Ini.UndoCommand}" />
+                                    <Button Grid.Column="2"
+                                            Content="Save"
+                                            HorizontalAlignment="Right"
+                                            Padding="24,6"
+                                            FontWeight="Bold"
+                                            Command="{Binding Ini.SaveCommand}" />
+                                </Grid>
+
+                                <TextBlock Text="{Binding Ini.StatusMessage}"
+                                           HorizontalAlignment="Center"
+                                           TextAlignment="Center"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                      VerticalScrollBarVisibility="Auto">
+                            <StackPanel Margin="6"
+                                        Spacing="6"
+                                        x:Name="IniGroupContainer">
+                                <controls:GroupBox Header="Display and Performance">
+                                    <Grid ColumnDefinitions="Auto,*,Auto,*"
+                                          RowDefinitions="Auto,Auto,Auto,Auto"
+                                          Margin="6,4">
+
+                                        <!--Row 0 — Screen mode drop-down (spans cols 1–3).-->
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   Text="Screen mode:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                                                  SelectedIndex="{Binding Ini.ScreenModeIndex}"
+                                                  ToolTip.Tip="{Binding Ini.ScreenModeTooltip}"
+                                                  Margin="0,0,0,4">
+                                            <ComboBoxItem>Fullscreen</ComboBoxItem>
+                                            <ComboBoxItem>Windowed</ComboBoxItem>
+                                        </ComboBox>
+
+                                        <!--Row 1 — Width and height adjacent.-->
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Text="Screen width:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="1" Grid.Column="1"
+                                                       Value="{Binding Ini.ScreenWidth}"
+                                                       Minimum="{x:Static models:IniRanges.ScreenWidthMin}"
+                                                       Maximum="{x:Static models:IniRanges.ScreenWidthMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.ScreenWidthTooltip}"
+                                                       Margin="0,0,12,4" />
+                                        <TextBlock Grid.Row="1" Grid.Column="2"
+                                                   Text="Screen height:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="1" Grid.Column="3"
+                                                       Value="{Binding Ini.ScreenHeight}"
+                                                       Minimum="{x:Static models:IniRanges.ScreenHeightMin}"
+                                                       Maximum="{x:Static models:IniRanges.ScreenHeightMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.ScreenHeightTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <!--Row 2 — Update rate (spans cols 1–3).-->
+                                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                                   Text="Update rate (ticks/sec):"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"
+                                                       Value="{Binding Ini.UpdateRate}"
+                                                       Minimum="{x:Static models:IniRanges.UpdateRateMin}"
+                                                       Maximum="{x:Static models:IniRanges.UpdateRateMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.UpdateRateTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <!--Row 3 — Draw rate (spans cols 1–3).-->
+                                        <TextBlock Grid.Row="3" Grid.Column="0"
+                                                   Text="Draw rate (FPS cap):"
+                                                   Margin="0,0,8,0"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
+                                                       Value="{Binding Ini.DrawRate}"
+                                                       Minimum="{x:Static models:IniRanges.DrawRateMin}"
+                                                       Maximum="{x:Static models:IniRanges.DrawRateMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.DrawRateTooltip}" />
+                                    </Grid>
+                                </controls:GroupBox>
+
+                                <controls:GroupBox Header="Graphics Quality">
+                                    <Grid ColumnDefinitions="Auto,*"
+                                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                          Margin="6,4">
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   Text="Quality preset:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <ComboBox Grid.Row="0" Grid.Column="1"
+                                                  SelectedIndex="{Binding Ini.Level}"
+                                                  ToolTip.Tip="{Binding Ini.LevelTooltip}"
+                                                  Margin="0,0,0,4">
+                                            <ComboBoxItem>0 — Total Quality</ComboBoxItem>
+                                            <ComboBoxItem>1 — Quality</ComboBoxItem>
+                                            <ComboBoxItem>2 — Balance</ComboBoxItem>
+                                            <ComboBoxItem>3 — Speed</ComboBoxItem>
+                                            <ComboBoxItem>4 — Paused</ComboBoxItem>
+                                        </ComboBox>
+
+                                        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Load reduced-detail animations"
+                                                  IsChecked="{Binding Ini.LoadHalfAnims}"
+                                                  ToolTip.Tip="{Binding Ini.LoadHalfAnimsTooltip}"
+                                                  Margin="0,0,0,4" />
+                                        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Reduce quality during drag"
+                                                  IsChecked="{Binding Ini.Drag}"
+                                                  ToolTip.Tip="{Binding Ini.DragTooltip}"
+                                                  Margin="0,0,0,4" />
+                                        <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Reduce quality during click"
+                                                  IsChecked="{Binding Ini.Click}"
+                                                  ToolTip.Tip="{Binding Ini.ClickTooltip}"
+                                                  Margin="0,0,0,4" />
+                                        <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Reduce quality during normal operation"
+                                                  IsChecked="{Binding Ini.Normal}"
+                                                  ToolTip.Tip="{Binding Ini.NormalTooltip}" />
+                                    </Grid>
+                                </controls:GroupBox>
+
+                                <controls:GroupBox Header="Audio">
+                                    <Grid ColumnDefinitions="Auto,*"
+                                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                                          Margin="6,4">
+                                        <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Play menu music"
+                                                  IsChecked="{Binding Ini.PlayMenuMusic}"
+                                                  ToolTip.Tip="{Binding Ini.PlayMenuMusicTooltip}"
+                                                  Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Text="Menu music file:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <TextBox Grid.Row="1" Grid.Column="1"
+                                                 Text="{Binding Ini.MenuMusic}"
+                                                 ToolTip.Tip="{Binding Ini.MenuMusicTooltip}"
+                                                 Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                                   Text="Menu music attenuation:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="2" Grid.Column="1"
+                                                       Value="{Binding Ini.MenuMusicAttenuation}"
+                                                       Minimum="{x:Static models:IniRanges.MenuMusicAttenuationMin}"
+                                                       Maximum="{x:Static models:IniRanges.MenuMusicAttenuationMax}"
+                                                       Increment="100"
+                                                       ToolTip.Tip="{Binding Ini.MenuMusicAttenuationTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0"
+                                                   Text="Global attenuation:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="3" Grid.Column="1"
+                                                       Value="{Binding Ini.UserAttenuation}"
+                                                       Minimum="{x:Static models:IniRanges.UserAttenuationMin}"
+                                                       Maximum="{x:Static models:IniRanges.UserAttenuationMax}"
+                                                       Increment="100"
+                                                       ToolTip.Tip="{Binding Ini.UserAttenuationTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Play first intro movie"
+                                                  IsChecked="{Binding Ini.PlayMovie}"
+                                                  ToolTip.Tip="{Binding Ini.PlayMovieTooltip}"
+                                                  Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="5" Grid.Column="0"
+                                                   Text="Movie 1 volume:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="5" Grid.Column="1"
+                                                       Value="{Binding Ini.MovieVolume1}"
+                                                       Minimum="{x:Static models:IniRanges.MovieVolumeMin}"
+                                                       Maximum="{x:Static models:IniRanges.MovieVolumeMax}"
+                                                       Increment="100"
+                                                       ToolTip.Tip="{Binding Ini.MovieVolume1Tooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <CheckBox Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Play second intro movie"
+                                                  IsChecked="{Binding Ini.PlaySecondMovie}"
+                                                  ToolTip.Tip="{Binding Ini.PlaySecondMovieTooltip}"
+                                                  Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="7" Grid.Column="0"
+                                                   Text="Movie 2 volume:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="7" Grid.Column="1"
+                                                       Value="{Binding Ini.MovieVolume2}"
+                                                       Minimum="{x:Static models:IniRanges.MovieVolumeMin}"
+                                                       Maximum="{x:Static models:IniRanges.MovieVolumeMax}"
+                                                       Increment="100"
+                                                       ToolTip.Tip="{Binding Ini.MovieVolume2Tooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <CheckBox Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Force 8-bit audio (compatibility)"
+                                                  IsChecked="{Binding Ini.Use8BitSound}"
+                                                  ToolTip.Tip="{Binding Ini.Use8BitSoundTooltip}" />
+                                    </Grid>
+                                </controls:GroupBox>
+
+                                <controls:GroupBox Header="Gameplay">
+                                    <Grid ColumnDefinitions="Auto,*"
+                                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                          Margin="6,4">
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   Text="Starting cash:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="0" Grid.Column="1"
+                                                       Value="{Binding Ini.MSStartingCash}"
+                                                       Minimum="{x:Static models:IniRanges.MSStartingCashMin}"
+                                                       Maximum="{x:Static models:IniRanges.MSStartingCashMax}"
+                                                       Increment="1000"
+                                                       ToolTip.Tip="{Binding Ini.MSStartingCashTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Text="Cash increment:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="1" Grid.Column="1"
+                                                       Value="{Binding Ini.MSCashIncrement}"
+                                                       Minimum="{x:Static models:IniRanges.MSCashIncrementMin}"
+                                                       Maximum="{x:Static models:IniRanges.MSCashIncrementMax}"
+                                                       Increment="100"
+                                                       ToolTip.Tip="{Binding Ini.MSCashIncrementTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                                   Text="Minimum cash:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="2" Grid.Column="1"
+                                                       Value="{Binding Ini.MSMinCash}"
+                                                       Minimum="{x:Static models:IniRanges.MSMinCashMin}"
+                                                       Maximum="{x:Static models:IniRanges.MSMinCashMax}"
+                                                       Increment="1000"
+                                                       ToolTip.Tip="{Binding Ini.MSMinCashTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0"
+                                                   Text="Maximum cash:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="3" Grid.Column="1"
+                                                       Value="{Binding Ini.MSMaxCash}"
+                                                       Minimum="{x:Static models:IniRanges.MSMaxCashMin}"
+                                                       Maximum="{x:Static models:IniRanges.MSMaxCashMax}"
+                                                       Increment="1000"
+                                                       ToolTip.Tip="{Binding Ini.MSMaxCashTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="4" Grid.Column="0"
+                                                   Text="Maximum guests:"
+                                                   Margin="0,0,8,0"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="4" Grid.Column="1"
+                                                       Value="{Binding Ini.MaxGuests}"
+                                                       Minimum="{x:Static models:IniRanges.MaxGuestsMin}"
+                                                       Maximum="{x:Static models:IniRanges.MaxGuestsMax}"
+                                                       Increment="50"
+                                                       ToolTip.Tip="{Binding Ini.MaxGuestsTooltip}" />
+                                    </Grid>
+                                </controls:GroupBox>
+
+                                <controls:GroupBox Header="Interface">
+                                    <Grid ColumnDefinitions="Auto,*"
+                                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                                          Margin="6,4">
+                                        <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Use alternate (monochrome) cursors"
+                                                  IsChecked="{Binding Ini.UseAlternateCursors}"
+                                                  ToolTip.Tip="{Binding Ini.UseAlternateCursorsTooltip}"
+                                                  Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Text="Tooltip delay (sec):"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="1" Grid.Column="1"
+                                                       Value="{Binding Ini.TooltipDelay}"
+                                                       Minimum="{x:Static models:IniRanges.TooltipDelayMin}"
+                                                       Maximum="{x:Static models:IniRanges.TooltipDelayMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.TooltipDelayTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                                   Text="Tooltip duration (ms):"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="2" Grid.Column="1"
+                                                       Value="{Binding Ini.TooltipDuration}"
+                                                       Minimum="{x:Static models:IniRanges.TooltipDurationMin}"
+                                                       Maximum="{x:Static models:IniRanges.TooltipDurationMax}"
+                                                       Increment="100"
+                                                       ToolTip.Tip="{Binding Ini.TooltipDurationTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Show in-game notification messages"
+                                                  IsChecked="{Binding Ini.MessageDisplay}"
+                                                  ToolTip.Tip="{Binding Ini.MessageDisplayTooltip}"
+                                                  Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="4" Grid.Column="0"
+                                                   Text="Mouse scroll threshold (px):"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="4" Grid.Column="1"
+                                                       Value="{Binding Ini.MouseScrollThreshold}"
+                                                       Minimum="{x:Static models:IniRanges.MouseScrollThresholdMin}"
+                                                       Maximum="{x:Static models:IniRanges.MouseScrollThresholdMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.MouseScrollThresholdTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="5" Grid.Column="0"
+                                                   Text="Mouse scroll delay:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="5" Grid.Column="1"
+                                                       Value="{Binding Ini.MouseScrollDelay}"
+                                                       Minimum="{x:Static models:IniRanges.MouseScrollDelayMin}"
+                                                       Maximum="{x:Static models:IniRanges.MouseScrollDelayMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.MouseScrollDelayTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="6" Grid.Column="0"
+                                                   Text="Mouse scroll X speed:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="6" Grid.Column="1"
+                                                       Value="{Binding Ini.MouseScrollX}"
+                                                       Minimum="{x:Static models:IniRanges.MouseScrollSpeedMin}"
+                                                       Maximum="{x:Static models:IniRanges.MouseScrollSpeedMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.MouseScrollXTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="7" Grid.Column="0"
+                                                   Text="Mouse scroll Y speed:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="7" Grid.Column="1"
+                                                       Value="{Binding Ini.MouseScrollY}"
+                                                       Minimum="{x:Static models:IniRanges.MouseScrollSpeedMin}"
+                                                       Maximum="{x:Static models:IniRanges.MouseScrollSpeedMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.MouseScrollYTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="8" Grid.Column="0"
+                                                   Text="Keyboard scroll X speed:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="8" Grid.Column="1"
+                                                       Value="{Binding Ini.KeyScrollX}"
+                                                       Minimum="{x:Static models:IniRanges.KeyScrollSpeedMin}"
+                                                       Maximum="{x:Static models:IniRanges.KeyScrollSpeedMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.KeyScrollXTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="9" Grid.Column="0"
+                                                   Text="Keyboard scroll Y speed:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="9" Grid.Column="1"
+                                                       Value="{Binding Ini.KeyScrollY}"
+                                                       Minimum="{x:Static models:IniRanges.KeyScrollSpeedMin}"
+                                                       Maximum="{x:Static models:IniRanges.KeyScrollSpeedMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.KeyScrollYTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="10" Grid.Column="0"
+                                                   Text="Min message interval (sec):"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="10" Grid.Column="1"
+                                                       Value="{Binding Ini.MinimumMessageInterval}"
+                                                       Minimum="{x:Static models:IniRanges.MinimumMessageIntervalMin}"
+                                                       Maximum="{x:Static models:IniRanges.MinimumMessageIntervalMax}"
+                                                       Increment="10"
+                                                       ToolTip.Tip="{Binding Ini.MinimumMessageIntervalTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="11" Grid.Column="0"
+                                                   Text="Help verbosity:"
+                                                   Margin="0,0,8,0"
+                                                   VerticalAlignment="Center" />
+                                        <ComboBox Grid.Row="11" Grid.Column="1"
+                                                  SelectedIndex="{Binding Ini.HelpType}"
+                                                  ToolTip.Tip="{Binding Ini.HelpTypeTooltip}">
+                                            <ComboBoxItem>0 — Off</ComboBoxItem>
+                                            <ComboBoxItem>1 — Standard</ComboBoxItem>
+                                            <ComboBoxItem>2 — Verbose</ComboBoxItem>
+                                        </ComboBox>
+                                    </Grid>
+                                </controls:GroupBox>
+
+                                <controls:GroupBox Header="Map">
+                                    <Grid ColumnDefinitions="Auto,*"
+                                          RowDefinitions="Auto,Auto"
+                                          Margin="6,4">
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   Text="Default zoo width (tiles):"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="0" Grid.Column="1"
+                                                       Value="{Binding Ini.MapX}"
+                                                       Minimum="{x:Static models:IniRanges.MapDimensionMin}"
+                                                       Maximum="{x:Static models:IniRanges.MapDimensionMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.MapXTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Text="Default zoo height (tiles):"
+                                                   Margin="0,0,8,0"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="1" Grid.Column="1"
+                                                       Value="{Binding Ini.MapY}"
+                                                       Minimum="{x:Static models:IniRanges.MapDimensionMin}"
+                                                       Maximum="{x:Static models:IniRanges.MapDimensionMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.MapYTooltip}" />
+                                    </Grid>
+                                </controls:GroupBox>
+
+                                <controls:GroupBox Header="Language">
+                                    <Grid ColumnDefinitions="Auto,*"
+                                          RowDefinitions="Auto"
+                                          Margin="6,4">
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   Text="Language:"
+                                                   Margin="0,0,8,0"
+                                                   VerticalAlignment="Center" />
+                                        <ComboBox Grid.Row="0" Grid.Column="1"
+                                                  ItemsSource="{Binding Ini.LanguageOptions}"
+                                                  SelectedItem="{Binding Ini.SelectedLanguage}"
+                                                  ToolTip.Tip="{Binding Ini.LanguageTooltip}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate DataType="vm:LanguageOption">
+                                                    <TextBlock Text="{Binding DisplayName}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Grid>
+                                </controls:GroupBox>
+
+                                <controls:GroupBox Header="Debug">
+                                    <Grid ColumnDefinitions="Auto,*"
+                                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                                          Margin="6,4">
+                                        <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Show FPS counter overlay"
+                                                  IsChecked="{Binding Ini.DrawFps}"
+                                                  ToolTip.Tip="{Binding Ini.DrawFpsTooltip}"
+                                                  Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Text="FPS overlay X (px):"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="1" Grid.Column="1"
+                                                       Value="{Binding Ini.DrawFpsX}"
+                                                       Minimum="{x:Static models:IniRanges.DrawFpsPositionMin}"
+                                                       Maximum="{x:Static models:IniRanges.DrawFpsPositionMax}"
+                                                       Increment="10"
+                                                       ToolTip.Tip="{Binding Ini.DrawFpsXTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                                   Text="FPS overlay Y (px):"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="2" Grid.Column="1"
+                                                       Value="{Binding Ini.DrawFpsY}"
+                                                       Minimum="{x:Static models:IniRanges.DrawFpsPositionMin}"
+                                                       Maximum="{x:Static models:IniRanges.DrawFpsPositionMax}"
+                                                       Increment="10"
+                                                       ToolTip.Tip="{Binding Ini.DrawFpsYTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0"
+                                                   Text="Log verbosity cutoff:"
+                                                   Margin="0,0,8,4"
+                                                   VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Row="3" Grid.Column="1"
+                                                       Value="{Binding Ini.LogCutoff}"
+                                                       Minimum="{x:Static models:IniRanges.LogCutoffMin}"
+                                                       Maximum="{x:Static models:IniRanges.LogCutoffMax}"
+                                                       Increment="1"
+                                                       ToolTip.Tip="{Binding Ini.LogCutoffTooltip}"
+                                                       Margin="0,0,0,4" />
+
+                                        <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Write log file to disk"
+                                                  IsChecked="{Binding Ini.SendLogfile}"
+                                                  ToolTip.Tip="{Binding Ini.SendLogfileTooltip}"
+                                                  Margin="0,0,0,4" />
+                                        <CheckBox Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
+                                                  Content="Send log output to attached debugger"
+                                                  IsChecked="{Binding Ini.SendDebugger}"
+                                                  ToolTip.Tip="{Binding Ini.SendDebuggerTooltip}" />
+                                    </Grid>
+                                </controls:GroupBox>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </DockPanel>
+                </TabItem>
 
                 <TabItem Header="Save Files" />
 

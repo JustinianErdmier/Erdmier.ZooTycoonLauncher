@@ -58,6 +58,7 @@ public class App : Application
         services.AddSingleton<IShellService, WindowsShellService>();
 
         services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<IniSettingsViewModel>();
 
         return services.BuildServiceProvider();
     }

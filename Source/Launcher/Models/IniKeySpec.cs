@@ -3,22 +3,36 @@ using System.Globalization;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 
+/// <summary>Discriminator for the underlying typed value of an <see cref="IniKeySpec" />. Used by display-side formatters that need to turn the spec's INI-string output back into something human (e.g. <c> "1" </c> → <c> "On" </c> for bools).</summary>
+internal enum IniSpecKind
+{
+    Bool,
+    Int,
+    NullableInt,
+    Str,
+    NullableStr
+}
+
 /// <summary>
 ///     Binds a single INI section + key to a typed property on <see cref="ZooIniModel" />. Used by <see cref="ZooIniDefaults.KnownKeys" /> as the registry of all keys the
 ///     launcher understands.
 /// </summary>
 internal sealed class IniKeySpec
 {
-    private IniKeySpec(string section, string key, Func<ZooIniModel, string> read, Action<ZooIniModel, string> write)
+    private IniKeySpec(string section, string key, IniSpecKind kind, Func<ZooIniModel, string> read, Action<ZooIniModel, string> write)
     {
         Section = section;
         Key     = key;
+        Kind    = kind;
         Read    = read;
         Write   = write;
     }
 
     /// <summary>Key name, e.g. <c> "fullscreen" </c>. Compared case-insensitively when matching INI lines.</summary>
     public string Key { get; }
+
+    /// <summary>Underlying typed kind. Display-side formatters consult this to decide whether <c> Read </c>'s output should be shown verbatim or translated (e.g. bools to "On"/"Off").</summary>
+    public IniSpecKind Kind { get; }
 
     /// <summary>Reads the current typed value from the model and serialises it to its INI string form.</summary>
     public Func<ZooIniModel, string> Read { get; }
@@ -32,12 +46,14 @@ internal sealed class IniKeySpec
     public static IniKeySpec Bool(string section, string key, Func<ZooIniModel, bool> get, Action<ZooIniModel, bool> set)
         => new(section,
                key,
+               IniSpecKind.Bool,
                model => get(model) ? "1" : "0",
                (model, raw) => set(model, ParseBool(raw, get(model))));
 
     public static IniKeySpec Int(string section, string key, Func<ZooIniModel, int> get, Action<ZooIniModel, int> set, int? min = null, int? max = null)
         => new(section,
                key,
+               IniSpecKind.Int,
                model => get(model)
                    .ToString(CultureInfo.InvariantCulture),
                (model, raw) => set(model, ParseInt(raw, get(model), min, max)));
@@ -45,6 +61,7 @@ internal sealed class IniKeySpec
     public static IniKeySpec NullableInt(string section, string key, Func<ZooIniModel, int?> get, Action<ZooIniModel, int?> set)
         => new(section,
                key,
+               IniSpecKind.NullableInt,
                model => get(model)
                             ?.ToString(CultureInfo.InvariantCulture)
                         ?? "",
@@ -53,12 +70,14 @@ internal sealed class IniKeySpec
     public static IniKeySpec Str(string section, string key, Func<ZooIniModel, string> get, Action<ZooIniModel, string> set)
         => new(section,
                key,
+               IniSpecKind.Str,
                get,
                (model, raw) => set(model, raw));
 
     public static IniKeySpec NullableStr(string section, string key, Func<ZooIniModel, string?> get, Action<ZooIniModel, string?> set)
         => new(section,
                key,
+               IniSpecKind.NullableStr,
                model => get(model) ?? "",
                (model, raw) => set(model, string.IsNullOrEmpty(raw) ? null : raw));
 

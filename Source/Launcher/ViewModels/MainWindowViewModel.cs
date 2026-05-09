@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -19,16 +18,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IStartupService _startup;
 
-    public MainWindowViewModel(IStartupService startup, IFolderPicker folderPicker, IShellService shell)
+    public MainWindowViewModel(IStartupService startup, IFolderPicker folderPicker, IShellService shell, IniSettingsViewModel ini)
     {
         _startup      = startup;
         _folderPicker = folderPicker;
         _shell        = shell;
+        Ini           = ini;
     }
 
     /// <summary>Parameterless ctor used by the XAML designer only. Will be unused at runtime once DI is wired in <c> App.axaml.cs </c>.</summary>
     public MainWindowViewModel()
-        : this(NullStartupService.Instance, NullFolderPicker.Instance, NullShellService.Instance)
+        : this(NullStartupService.Instance, NullFolderPicker.Instance, NullShellService.Instance, new IniSettingsViewModel())
     { }
 
     /// <summary>The cached persisted launcher config. Always non-null after <see cref="InitializeAsync" /> completes.</summary>
@@ -45,6 +45,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     [ ObservableProperty ]
     public partial bool HasIni { get; set; }
+
+    /// <summary>ViewModel for the INI Configurations tab. Receives the cached model on every successful locate via <see cref="ApplyResult" />.</summary>
+    public IniSettingsViewModel Ini { get; }
 
     [ ObservableProperty ]
     public partial IReadOnlyList<IniDisplayEntry> IniEntries { get; set; } = [];
@@ -68,14 +71,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         StatusMessage = "Locating Zoo Tycoon…";
         StartupResult result = await _startup.InitializeAsync();
 
-        await Task.Delay(TimeSpan.FromSeconds(seconds: 10));
         ApplyResult(result);
 
         IsBusy = false;
     }
 
     /// <summary>Opens File Explorer focused on <paramref name="path" />. Bound to the "Open" buttons next to the discovered file paths on the Home tab.</summary>
-    /// <param name="path"> Absolute path to a file or directory to reveal. No-op when null/empty so we can bind directly to <see cref="ExePath" /> / <see cref="IniPath" /> without null-checks at the binding site. </param>
+    /// <param name="path">
+    ///     Absolute path to a file or directory to reveal. No-op when null/empty so we can bind directly to <see cref="ExePath" /> / <see cref="IniPath" /> without
+    ///     null-checks at the binding site.
+    /// </param>
     [ RelayCommand ]
     private void RevealInExplorer(string? path) => _shell.RevealInExplorer(path);
 
@@ -94,7 +99,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         StatusMessage = "Verifying selected directory…";
         StartupResult result = await _startup.ApplyManualDirectoryAsync(picked);
 
-        await Task.Delay(TimeSpan.FromSeconds(seconds: 10));
         ApplyResult(result);
 
         IsBusy = false;
@@ -120,6 +124,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             StartupStatus.IniParseFailed       => result.Warning ?? "Failed to parse zoo.ini.",
             var _                              => string.Empty
         };
+
+        Ini.ApplyModel(result.Model, result.IniPath);
     }
 
     private static IReadOnlyList<IniDisplayEntry> BuildIniEntries(ZooIniModel? model)

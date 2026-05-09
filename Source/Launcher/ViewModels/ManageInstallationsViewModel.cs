@@ -121,7 +121,7 @@ public sealed partial class ManageInstallationsViewModel : ViewModelBase
     }
 
     /// <summary>Replaces the directory of the selected installation with one chosen via the folder picker.</summary>
-    [ RelayCommand(CanExecute = nameof(HasSelection)) ]
+    [ RelayCommand(CanExecute = nameof(CanFix)) ]
     private async Task FixAsync()
     {
         if (SelectedInstallation is null)
@@ -163,8 +163,11 @@ public sealed partial class ManageInstallationsViewModel : ViewModelBase
         StatusMessage = $"\"{SelectedInstallation.DisplayName}\" set as default.";
     }
 
-    /// <summary><see langword="true" /> when an installation is selected; gates the per-row commands.</summary>
+    /// <summary><see langword="true" /> when an installation is selected; gates Remove, Rename, and Set Default.</summary>
     private bool HasSelection() => SelectedInstallation is not null;
+
+    /// <summary><see langword="true" /> only when an invalid installation is selected; Fix is meaningless for valid entries.</summary>
+    private bool CanFix() => SelectedInstallation is { IsValid: false };
 
     /// <summary>Source-generated change handler for <see cref="SelectedInstallation" />; refreshes the per-row command CanExecute states.</summary>
     // ReSharper disable once UnusedParameterInPartialMethod

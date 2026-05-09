@@ -93,7 +93,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public string DrawRateTooltip { get; } = BuildTooltip(resourceKey: "Tt.DrawRate", section: "user", key: "DrawRate");
 
     [ ObservableProperty ]
-    public partial bool Fullscreen { get; set; } = true;
+    private partial bool Fullscreen { get; set; } = true;
 
     [ ObservableProperty ]
     public partial int HelpType { get; set; } = 1;
@@ -116,7 +116,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     // ── [language] (SDD §9.7) ─────────────────────────────────────────────────────────────────────────────────────────
 
     [ ObservableProperty ]
-    public partial int Lang { get; set; } = 9;
+    private partial int Lang { get; set; } = 9;
 
     /// <summary>Hard-coded canonical list of common Windows LANGID/SUBLANGID combinations. Install-driven enumeration is a follow-up (see design §3.6).</summary>
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
@@ -227,7 +227,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public string MovieVolume2Tooltip { get; } = BuildTooltip(resourceKey: "Tt.MovieVolume2", section: "UI", key: "movievolume2");
 
     [ ObservableProperty ]
-    public partial bool NoMenuMusic { get; set; }
+    private partial bool NoMenuMusic { get; set; }
 
     [ ObservableProperty ]
     public partial bool Normal { get; set; }
@@ -314,7 +314,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public partial string? StatusMessage { get; set; }
 
     [ ObservableProperty ]
-    public partial int SubLang { get; set; } = 1;
+    private partial int SubLang { get; set; } = 1;
 
     [ ObservableProperty ]
     public partial int TooltipDelay { get; set; } = 1;

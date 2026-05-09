@@ -119,7 +119,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     /// <summary>
-    ///     Gates <see cref="LaunchGameCommand" />. Re-evaluated when <see cref="HasExe" /> or <see cref="HasPendingIniChanges" /> changes (see <see cref="OnHasExeChanged" /> and
+    ///     Gates <see cref="LaunchGameCommand" />. Re-evaluated when <see cref="HasExe" /> or <see cref="HasPendingIniChanges" /> changes (see <see cref="OnHasExeChanged(bool)" /> and
     ///     <see cref="OnIniPropertyChanged" />).
     /// </summary>
     private bool CanLaunchGame() => HasExe && !HasPendingIniChanges;

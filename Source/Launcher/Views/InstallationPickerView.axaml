@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Erdmier.ZooTycoonLauncher.Launcher.ViewModels"
+        xmlns:models="clr-namespace:Erdmier.ZooTycoonLauncher.Launcher.Models"
+        x:Class="Erdmier.ZooTycoonLauncher.Launcher.Views.InstallationPickerView"
+        x:DataType="vm:InstallationPickerViewModel"
+        Title="Select Installation"
+        Width="420"
+        Height="260"
+        CanResize="False"
+        CanMaximize="False"
+        CanMinimize="False"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <DockPanel Margin="8">
+        <StackPanel DockPanel.Dock="Bottom"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="6"
+                    Margin="0,8,0,0">
+            <Button Content="OK"
+                    IsEnabled="{Binding CanConfirm}"
+                    Click="OnOkClick"
+                    MinWidth="70" />
+            <Button Content="Cancel"
+                    Click="OnCancelClick"
+                    IsCancel="True"
+                    MinWidth="70" />
+        </StackPanel>
+
+        <ListBox ItemsSource="{Binding Installations}"
+                 SelectedItem="{Binding SelectedInstallation}">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="models:Installation">
+                    <TextBlock Text="{Binding DisplayName}"
+                               Padding="2" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</Window>

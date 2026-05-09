@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 
 using Erdmier.ZooTycoonLauncher.Launcher.Models;
+using Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
+
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 
@@ -27,10 +30,14 @@ public sealed class AvaloniaDialogService : IDialogService
     public void SetOwner(Window owner) => _owner = owner;
 
     /// <inheritdoc />
-    public Task<Installation?> ShowPickerAsync(IEnumerable<Installation> installations)
+    public async Task<Installation?> ShowPickerAsync(IEnumerable<Installation> installations)
     {
-        // Wired up in Task 6 once InstallationPickerViewModel exists.
-        throw new NotImplementedException("InstallationPickerViewModel is introduced in Task 6.");
+        var vm = _services.GetRequiredService<InstallationPickerViewModel>();
+        vm.Load(installations);
+
+        var dialog = new Views.InstallationPickerView { DataContext = vm };
+
+        return await dialog.ShowDialog<Installation?>(_owner!);
     }
 
     /// <inheritdoc />

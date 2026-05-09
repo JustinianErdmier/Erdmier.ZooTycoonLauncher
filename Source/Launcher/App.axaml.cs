@@ -67,7 +67,7 @@ public class App : Application
         services.AddSingleton<ILauncherService, LauncherService>();
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
 
-        // Dialog ViewModels are registered as they are introduced in subsequent tasks.
+        services.AddTransient<InstallationPickerViewModel>();
 
         services.AddTransient<IniSettingsViewModel>();
         services.AddTransient<MainWindowViewModel>();

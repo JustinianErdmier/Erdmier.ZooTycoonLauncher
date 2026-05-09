@@ -65,9 +65,6 @@ public sealed class IniParserService : IIniParserService
         _fileSystem.File.Move(tempPath, iniFilePath, overwrite: true);
     }
 
-    /// <inheritdoc />
-    public ZooIniModel GetDefaults() => new();
-
     private static IniDocument Tokenize(string[] lines)
     {
         IniDocument document       = new();

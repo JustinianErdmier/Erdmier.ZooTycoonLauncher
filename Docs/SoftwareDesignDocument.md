@@ -263,7 +263,6 @@ public interface IIniParserService
 {
     Task<ZooIniModel> ReadAsync(string iniFilePath);
     Task WriteAsync(string iniFilePath, ZooIniModel model);
-    ZooIniModel GetDefaults();
 }
 ```
 

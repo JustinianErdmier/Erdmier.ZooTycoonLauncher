@@ -801,8 +801,6 @@ file sealed class NullIniParserService : IIniParserService
     public Task<ZooIniModel> ReadAsync(string iniFilePath) => Task.FromResult(new ZooIniModel());
 
     public Task WriteAsync(string iniFilePath, ZooIniModel model) => Task.CompletedTask;
-
-    public ZooIniModel GetDefaults() => new();
 }
 
 file sealed class NullVersioningService : IVersioningService

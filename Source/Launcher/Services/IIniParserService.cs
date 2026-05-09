@@ -19,7 +19,4 @@ public interface IIniParserService
 
     /// <summary>Writes <paramref name="model" /> back to <paramref name="iniFilePath" />, preserving the original layout if the model was previously read from disk.</summary>
     Task WriteAsync(string iniFilePath, ZooIniModel model);
-
-    /// <summary>Returns a fresh <see cref="ZooIniModel" /> populated with the documented factory defaults.</summary>
-    ZooIniModel GetDefaults();
 }

@@ -39,7 +39,7 @@ public class ZooIniModel
 
     /// <summary>
     ///     Raw line-by-line layout of the source <c>zoo.ini</c> file, used by <see cref="Services.IniParserService" /> to preserve comments, blank lines, and key ordering on the
-    ///     round-trip. <see langword="null" /> for models produced by <see cref="Services.IIniParserService.GetDefaults" />.
+    ///     round-trip. <see langword="null" /> when the model was not produced by reading a file (e.g. a freshly constructed <c>new ZooIniModel()</c>).
     /// </summary>
     internal IniDocument? RawDocument { get; init; }
 }

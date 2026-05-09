@@ -18,7 +18,7 @@
         CanMinimize="False"
         CanResize="False">
 
-    <!--The Classic theme's caption-button template doesn't honour CanMinimize/CanMaximize — only :fullscreen and :dialog:cantresize.-->
+    <!--The Classic theme’s caption-button template doesn’t honour CanMinimize/CanMaximize — only :fullscreen and :dialog:cantresize.-->
     <!--Collapse those parts. Hide them explicitly here since this window never minimises or maximises.-->
     <Window.Styles>
         <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
@@ -189,10 +189,8 @@
                             </Grid>
                         </controls:GroupBox>
 
-                        <!--
-                            Pending-INI-changes warning. Placeholder for the eventual modal dialog (per user direction);
-                            for now it sits inline above the button and only renders when there are unsaved INI edits.
-                        -->
+                        <!--Pending-INI-changes warning. Placeholder for the eventual modal dialogue (per user direction);
+                            for now it sits inline above the button and only renders when there are unsaved INI edits.-->
                         <TextBlock Text="You have unsaved INI changes. Save or discard them on the INI Configurations tab before launching."
                                    IsVisible="{Binding HasPendingIniChanges}"
                                    TextWrapping="Wrap"
@@ -201,7 +199,7 @@
                                    FontStyle="Italic"
                                    Margin="0,16,0,0" />
 
-                        <!--Button uses the RelayCommand's CanExecute (HasExe && !HasPendingIniChanges) to drive IsEnabled — no separate IsEnabled binding needed.-->
+                        <!--Button uses the RelayCommand’s CanExecute (HasExe && !HasPendingIniChanges) to drive IsEnabled — no separate IsEnabled binding needed.-->
                         <Button Content="Launch Game"
                                 Command="{Binding LaunchGameCommand}"
                                 HorizontalAlignment="Stretch"
@@ -214,12 +212,10 @@
                     <DockPanel LastChildFill="True">
                         <Border DockPanel.Dock="Bottom"
                                 Padding="6,8,6,4">
-                            <!--
-                                Three-button row over a status line. Discard (left), Undo (centre — stubbed, disabled),
-                                Save (right). Status TextBlock sits below the buttons so failure messages don't push them
-                                around. All three buttons drive their disabled state from their RelayCommand's CanExecute,
-                                so no IsEnabled bindings are needed here.
-                            -->
+                            <!--Three-button row over a status line. Discard (left), Undo (centre — stubbed, disabled),
+                                Save (right). Status TextBlock sits below the buttons, so failure messages don’t push them
+                                around. All three buttons drive their disabled state from their RelayCommand’s CanExecute,
+                                so no IsEnabled bindings are needed here.-->
                             <StackPanel Spacing="6">
                                 <Grid ColumnDefinitions="*,*,*">
                                     <Button Grid.Column="0"
@@ -500,11 +496,11 @@
                                                    VerticalAlignment="Center" />
                                         <NumericUpDown Grid.Row="0"
                                                        Grid.Column="1"
-                                                       Value="{Binding Ini.MSStartingCash}"
-                                                       Minimum="{x:Static models:IniRanges.MSStartingCashMin}"
-                                                       Maximum="{x:Static models:IniRanges.MSStartingCashMax}"
+                                                       Value="{Binding Ini.StartingCash}"
+                                                       Minimum="{x:Static models:IniRanges.StartingCashMin}"
+                                                       Maximum="{x:Static models:IniRanges.StartingCashMax}"
                                                        Increment="1000"
-                                                       ToolTip.Tip="{Binding Ini.MSStartingCashTooltip}"
+                                                       ToolTip.Tip="{Binding Ini.StartingCashTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="1"
@@ -514,11 +510,11 @@
                                                    VerticalAlignment="Center" />
                                         <NumericUpDown Grid.Row="1"
                                                        Grid.Column="1"
-                                                       Value="{Binding Ini.MSCashIncrement}"
-                                                       Minimum="{x:Static models:IniRanges.MSCashIncrementMin}"
-                                                       Maximum="{x:Static models:IniRanges.MSCashIncrementMax}"
+                                                       Value="{Binding Ini.CashIncrement}"
+                                                       Minimum="{x:Static models:IniRanges.CashIncrementMin}"
+                                                       Maximum="{x:Static models:IniRanges.CashIncrementMax}"
                                                        Increment="100"
-                                                       ToolTip.Tip="{Binding Ini.MSCashIncrementTooltip}"
+                                                       ToolTip.Tip="{Binding Ini.CashIncrementTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="2"
@@ -528,11 +524,11 @@
                                                    VerticalAlignment="Center" />
                                         <NumericUpDown Grid.Row="2"
                                                        Grid.Column="1"
-                                                       Value="{Binding Ini.MSMinCash}"
-                                                       Minimum="{x:Static models:IniRanges.MSMinCashMin}"
-                                                       Maximum="{x:Static models:IniRanges.MSMinCashMax}"
+                                                       Value="{Binding Ini.MinCash}"
+                                                       Minimum="{x:Static models:IniRanges.MinCashMin}"
+                                                       Maximum="{x:Static models:IniRanges.MinCashMax}"
                                                        Increment="1000"
-                                                       ToolTip.Tip="{Binding Ini.MSMinCashTooltip}"
+                                                       ToolTip.Tip="{Binding Ini.MinCashTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="3"
@@ -542,11 +538,11 @@
                                                    VerticalAlignment="Center" />
                                         <NumericUpDown Grid.Row="3"
                                                        Grid.Column="1"
-                                                       Value="{Binding Ini.MSMaxCash}"
-                                                       Minimum="{x:Static models:IniRanges.MSMaxCashMin}"
-                                                       Maximum="{x:Static models:IniRanges.MSMaxCashMax}"
+                                                       Value="{Binding Ini.MaxCash}"
+                                                       Minimum="{x:Static models:IniRanges.MaxCashMin}"
+                                                       Maximum="{x:Static models:IniRanges.MaxCashMax}"
                                                        Increment="1000"
-                                                       ToolTip.Tip="{Binding Ini.MSMaxCashTooltip}"
+                                                       ToolTip.Tip="{Binding Ini.MaxCashTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="4"

@@ -16,7 +16,7 @@ interfaces, no direct Win32 calls in view models, designer-friendly null impleme
 
 **Current binding:** `MainWindowViewModel.StatusMessage` (shared with the bottom status bar).
 
-**Note:** Once we have richer dynamic state to display, consider splitting Overview's status from the bottom-bar status. The bottom bar is a good fit for *transient* progress
+**Note:** Once we have a richer dynamic state to display, consider splitting Overview's status from the bottom-bar status. The bottom bar is a good fit for *transient* progress
 (`"Locating Zoo Tycoon…"`, `"Verifying selected directory…"`); the Overview row is a good fit for *steady-state* posture (`"Ready."`, `"Game not found."`,
 `"INI parse failed."`). Sharing the property is fine for now — flag this when adding the next dynamic field, and consider an `OverviewStatus` (or projection over
 `StartupResult.Status`) on `MainWindowViewModel` so the two surfaces can diverge cleanly.
@@ -44,7 +44,7 @@ interfaces, no direct Win32 calls in view models, designer-friendly null impleme
 **Current dummy:** count placeholder.
 
 **Data source:** `EnumDisplaySettings` in a loop — increment `iModeNum` from 0 until it returns `FALSE`. Each `DEVMODE` yields width × height × bit-depth × refresh combinations.
-Typically yields a few hundred raw modes; deduplicate by (width, height, refresh) for display unless the user is explicitly inspecting bit-depth.
+Typically, yields a few hundred raw modes; deduplicate by (width, height, refresh) for display unless the user is explicitly inspecting bit-depth.
 
 **Decisions to make before implementing:**
 
@@ -72,7 +72,7 @@ DirectX 8 path historically rejects exotic depth/refresh combinations and refuse
 
 - Where does the "fixed list" of accepted modes come from? Hard-coded constant, embedded resource, or scraped from `zoo.ini` / registry? Likely hard-coded, sourced from
   community documentation. File a research task before implementation.
-- Does the resolver need to consider the current `[Screen]` section of `zoo.ini` (e.g. windowed vs. fullscreen toggles change which modes apply)? Probably yes for fullscreen
+- Does the resolver need to consider the current `[Screen]` section of `zoo.ini` (e.g. windowed vs. fullscreen toggles change which modes apply)? Probably yes, for fullscreen
   modes only.
 
 ---

@@ -1,6 +1,6 @@
 namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 
-/// <summary>Strongly typed representation of the <c> [advanced] </c> section of <c> zoo.ini </c>, controlling the performance/quality trade-off.</summary>
+/// <summary>Strongly typed representation of the <c>[advanced]</c> section of <c> zoo.ini </c>, controlling the performance/quality trade-off.</summary>
 public class AdvancedSettings
 {
     /// <summary>Reduce rendering quality during click operations.</summary>

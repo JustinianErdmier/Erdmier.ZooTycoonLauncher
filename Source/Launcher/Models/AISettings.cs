@@ -1,5 +1,6 @@
 namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 
+// ReSharper disable once GrammarMistakeInComment
 /// <summary>Strongly typed representation of the <c> [ai] </c> section of <c> zoo.ini </c>, covering AI-related gameplay settings.</summary>
 public class AiSettings
 {

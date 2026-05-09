@@ -17,22 +17,28 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
 ///     ViewModel for the INI Configurations tab. Exposes the editable keys of <see cref="ZooIniModel" /> as observable properties for two-way XAML binding, tracks an
 ///     <see cref="IsDirty" /> flag set by any edit, and persists changes to disk via <see cref="IIniParserService.WriteAsync" /> only when <see cref="SaveCommand" /> fires.
 /// </summary>
+/// <remarks>
+///     <b>Tooltip strings</b> <br /><br /> Each tooltip = the prose from IniTooltips.axaml (TT.* resource) + a "Default: value" line. The default value comes from a single
+///     canonical `new ZooIniModel()` instance via ZooIniDefaults.KnownKeys → IniKeySpec.Read, so the submodel property initialisers (UserSettings.ScreenWidth = 800, etc.) remain the
+///     single source of truth — the tooltips can never drift. <br /><br /> Three derived tooltips (ScreenMode, PlayMenuMusic, Language) don't map 1:1 to a single key, so they pass an
+///     explicit human-readable default override.
+/// </remarks>
 public sealed partial class IniSettingsViewModel : ViewModelBase
 {
     /// <summary>
-    ///     Canonical defaults model. <c> new ZooIniModel() </c> picks up every submodel property initializer (e.g. <c> UserSettings.ScreenWidth = 800 </c>), so this single instance
+    ///     Canonical defaults model. <c> new ZooIniModel() </c> picks up every submodel property initialiser (e.g. <c> UserSettings.ScreenWidth = 800</c>), so this single instance
     ///     is the source of truth for every tooltip's "Default:" line.
     /// </summary>
-    private static readonly ZooIniModel _defaultsModel = new();
+    private static readonly ZooIniModel DefaultsModel = new();
 
     private readonly IIniParserService _parser;
 
     private readonly IVersioningService _versioning;
 
-    // Path to zoo.ini, supplied by MainWindowViewModel via ApplyModel. Null => save is impossible (game not located).
+    // Path to zoo.ini, supplied by MainWindowViewModel via ApplyModel. Null → save is impossible (game not located).
     private string? _iniPath;
 
-    // Reference to the disk-of-record model. Preserved across edits so the parser's RawDocument is reused on save (comments + ordering survive).
+    // Reference to the disk-of-record model. Preserved across edits, so the parser’s RawDocument is reused on save (comments + ordering survive).
     private ZooIniModel? _model;
 
     // Suppresses MarkDirty during ApplyModel so syncing from disk doesn't flip IsDirty to true.
@@ -52,6 +58,11 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     }
 
     [ ObservableProperty ]
+    public partial int CashIncrement { get; set; } = 5_000;
+
+    public string CashIncrementTooltip { get; } = BuildTooltip(resourceKey: "TT.MSCashIncrement", section: "UI", key: "MSCashIncrement");
+
+    [ ObservableProperty ]
     public partial bool Click { get; set; }
 
     public string ClickTooltip { get; } = BuildTooltip(resourceKey: "TT.Click", section: "advanced", key: "click");
@@ -60,8 +71,6 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public partial bool Drag { get; set; }
 
     public string DragTooltip { get; } = BuildTooltip(resourceKey: "TT.Drag", section: "advanced", key: "drag");
-
-    // ── [debug] (SDD §9.8) ────────────────────────────────────────────────────────────────────────────────────────────
 
     [ ObservableProperty ]
     public partial bool DrawFps { get; set; }
@@ -82,8 +91,6 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public partial int DrawRate { get; set; } = 60;
 
     public string DrawRateTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawRate", section: "user", key: "DrawRate");
-
-    // ── [user] — display & performance (SDD §9.1) ──────────────────────────────────────────────────────────────────────
 
     [ ObservableProperty ]
     public partial bool Fullscreen { get; set; } = true;
@@ -129,8 +136,6 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     // Language: composite of [language]/lang + [language]/sublang. The default LangID 9 / SubLang 1 = English (United States).
     public string LanguageTooltip { get; } = BuildTooltipFromOverride(resourceKey: "TT.Language", defaultDisplay: "English (United States)");
 
-    // ── [advanced] — graphics quality (SDD §9.2) ──────────────────────────────────────────────────────────────────────
-
     [ ObservableProperty ]
     public partial int Level { get; set; } = 2;
 
@@ -146,8 +151,6 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
     public string LogCutoffTooltip { get; } = BuildTooltip(resourceKey: "TT.LogCutoff", section: "debug", key: "logCutoff");
 
-    // ── [Map] (SDD §9.6) ──────────────────────────────────────────────────────────────────────────────────────────────
-
     [ ObservableProperty ]
     public partial int MapX { get; set; } = 75;
 
@@ -157,6 +160,11 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public partial int MapY { get; set; } = 75;
 
     public string MapYTooltip { get; } = BuildTooltip(resourceKey: "TT.MapY", section: "Map", key: "mapY");
+
+    [ ObservableProperty ]
+    public partial int MaxCash { get; set; } = 500_000;
+
+    public string MaxCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSMaxCash", section: "UI", key: "MSMaxCash");
 
     [ ObservableProperty ]
     public partial int MaxGuests { get; set; } = 1_000;
@@ -177,6 +185,11 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public partial bool MessageDisplay { get; set; } = true;
 
     public string MessageDisplayTooltip { get; } = BuildTooltip(resourceKey: "TT.MessageDisplay", section: "UI", key: "MessageDisplay");
+
+    [ ObservableProperty ]
+    public partial int MinCash { get; set; } = 10_000;
+
+    public string MinCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSMinCash", section: "UI", key: "MSMinCash");
 
     [ ObservableProperty ]
     public partial int MinimumMessageInterval { get; set; } = 60;
@@ -212,30 +225,6 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public partial int MovieVolume2 { get; set; } = -1000;
 
     public string MovieVolume2Tooltip { get; } = BuildTooltip(resourceKey: "TT.MovieVolume2", section: "UI", key: "movievolume2");
-
-    [ ObservableProperty ]
-    public partial int MSCashIncrement { get; set; } = 5_000;
-
-    public string MSCashIncrementTooltip { get; } = BuildTooltip(resourceKey: "TT.MSCashIncrement", section: "UI", key: "MSCashIncrement");
-
-    [ ObservableProperty ]
-    public partial int MSMaxCash { get; set; } = 500_000;
-
-    public string MSMaxCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSMaxCash", section: "UI", key: "MSMaxCash");
-
-    [ ObservableProperty ]
-    public partial int MSMinCash { get; set; } = 10_000;
-
-    public string MSMinCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSMinCash", section: "UI", key: "MSMinCash");
-
-    // ── [UI] + [ai] — gameplay (SDD §9.4) ─────────────────────────────────────────────────────────────────────────────
-
-    [ ObservableProperty ]
-    public partial int MSStartingCash { get; set; } = 70_000;
-
-    public string MSStartingCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSStartingCash", section: "UI", key: "MSStartingCash");
-
-    // ── [UI] + [advanced] — audio (SDD §9.3) ──────────────────────────────────────────────────────────────────────────
 
     [ ObservableProperty ]
     public partial bool NoMenuMusic { get; set; }
@@ -279,16 +268,6 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
         set => Fullscreen = value == 0;
     }
 
-    // ── Tooltip strings ───────────────────────────────────────────────────────────────────────────────────────────────
-    //
-    // Each tooltip = the prose from IniTooltips.axaml (TT.* resource) + a "Default: <value>" line. The default value comes
-    // from a single canonical `new ZooIniModel()` instance via ZooIniDefaults.KnownKeys → IniKeySpec.Read, so the
-    // submodel property initializers (UserSettings.ScreenWidth = 800, etc.) remain the single source of truth — the
-    // tooltips can never drift.
-    //
-    // Three derived tooltips (ScreenMode, PlayMenuMusic, Language) don't map 1:1 to a single key, so they pass an
-    // explicit human-readable default override.
-
     public string ScreenModeTooltip { get; } = BuildTooltipFromOverride(resourceKey: "TT.ScreenMode", defaultDisplay: "Fullscreen");
 
     [ ObservableProperty ]
@@ -325,6 +304,11 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public partial bool SendLogfile { get; set; } = true;
 
     public string SendLogfileTooltip { get; } = BuildTooltip(resourceKey: "TT.SendLogfile", section: "debug", key: "sendLogfile");
+
+    [ ObservableProperty ]
+    public partial int StartingCash { get; set; } = 70_000;
+
+    public string StartingCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSStartingCash", section: "UI", key: "MSStartingCash");
 
     [ ObservableProperty ]
     public partial string? StatusMessage { get; set; }
@@ -435,13 +419,13 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
     partial void OnUse8BitSoundChanged(bool value) => MarkDirty();
 
-    partial void OnMSStartingCashChanged(int value) => MarkDirty();
+    partial void OnStartingCashChanged(int value) => MarkDirty();
 
-    partial void OnMSCashIncrementChanged(int value) => MarkDirty();
+    partial void OnCashIncrementChanged(int value) => MarkDirty();
 
-    partial void OnMSMinCashChanged(int value) => MarkDirty();
+    partial void OnMinCashChanged(int value) => MarkDirty();
 
-    partial void OnMSMaxCashChanged(int value) => MarkDirty();
+    partial void OnMaxCashChanged(int value) => MarkDirty();
 
     partial void OnMaxGuestsChanged(int value) => MarkDirty();
 
@@ -513,16 +497,16 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
         try
         {
-            // 1. Mutate the disk-of-record model in place so its RawDocument is reused (preserves comments + key ordering on round-trip).
+            // 1. Mutate the disk-of-record model in place so its RawDocument is reused (preserves comments + key ordering on a round-trip).
             ApplyToModel(_model);
 
             // 2. Snapshot zoo.ini → zoo.ini.undo BEFORE writing (SDD §8.2).
             await _versioning.CreateUndoSnapshotAsync(_iniPath);
 
-            // 3. Atomic write (temp file + rename) — implemented inside IniParserService.WriteAsync per SDD §11.
+            // 3. Atomically writes (the temp file and rename) — implemented inside IniParserService.WriteAsync() per SDD §11.
             await _parser.WriteAsync(_iniPath, _model);
 
-            // 4. Verification re-read so any normalisation the parser applied is reflected back into the UI.
+            // 4. Verification re-read so any normalisation the parser applied is reflected into the UI.
             ZooIniModel reloaded = await _parser.ReadAsync(_iniPath);
             _model = reloaded;
 
@@ -542,7 +526,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            // Per SDD §10: surface the error. IsDirty stays true so the user can retry. Status-bar-only for this milestone (design §3.11).
+            // Per SDD §10: surface the error. IsDirty stays true, so the user can retry. Status-bar-only for this milestone (design §3.11).
             StatusMessage = $"Save failed: {ex.Message}";
         }
     }
@@ -551,8 +535,9 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
     /// <summary>Re-reads <c> zoo.ini </c> from disk and applies it, throwing away any in-memory edits. Bound to the Discard button.</summary>
     /// <remarks>
-    ///     Re-reads from disk rather than re-syncing from the cached <see cref="_model" /> because <see cref="SaveAsync" /> mutates that model in place before the file write — after
-    ///     a failed save, the model holds the intended values, not the on-disk values. Re-reading is the only way to guarantee Discard restores the user to the file's actual state.
+    ///     Re-reads from disk rather than re-syncing from the cached <see cref="_model" /> because <see cref="SaveAsync" /> mutates that model in place before the file write
+    ///     operation — after a failed save, the model holds the intended values, not the on-disk values. Rereading is the only way to guarantee Discard restores the user to the file's
+    ///     actual state.
     /// </remarks>
     [ RelayCommand(CanExecute = nameof(CanDiscard)) ]
     private async Task DiscardAsync()
@@ -575,7 +560,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            // IsDirty stays as-is so the user can retry. Surface to the same status line as save failures.
+            // IsDirty stays as-is, so the user can retry. Surface to the same status line as the save failures.
             StatusMessage = $"Discard failed: {ex.Message}";
         }
     }
@@ -632,36 +617,36 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
         Normal        = model.Advanced.Normal;
 
         // [UI] + [advanced] — audio
-        NoMenuMusic          = model.UI.NoMenuMusic;
-        MenuMusic            = model.UI.MenuMusic;
-        MenuMusicAttenuation = model.UI.MenuMusicAttenuation;
-        UserAttenuation      = model.UI.UserAttenuation;
-        PlayMovie            = model.UI.PlayMovie;
-        MovieVolume1         = model.UI.MovieVolume1;
-        PlaySecondMovie      = model.UI.PlaySecondMovie;
-        MovieVolume2         = model.UI.MovieVolume2;
+        NoMenuMusic          = model.Ui.NoMenuMusic;
+        MenuMusic            = model.Ui.MenuMusic;
+        MenuMusicAttenuation = model.Ui.MenuMusicAttenuation;
+        UserAttenuation      = model.Ui.UserAttenuation;
+        PlayMovie            = model.Ui.PlayMovie;
+        MovieVolume1         = model.Ui.MovieVolume1;
+        PlaySecondMovie      = model.Ui.PlaySecondMovie;
+        MovieVolume2         = model.Ui.MovieVolume2;
         Use8BitSound         = model.Advanced.Use8BitSound;
 
         // [UI] + [ai] — gameplay
-        MSStartingCash  = model.UI.MSStartingCash;
-        MSCashIncrement = model.UI.MSCashIncrement;
-        MSMinCash       = model.UI.MSMinCash;
-        MSMaxCash       = model.UI.MSMaxCash;
-        MaxGuests       = model.AI.MaxGuests;
+        StartingCash  = model.Ui.StartingCash;
+        CashIncrement = model.Ui.CashIncrement;
+        MinCash       = model.Ui.MinCash;
+        MaxCash       = model.Ui.MaxCash;
+        MaxGuests     = model.Ai.MaxGuests;
 
         // [UI] — interface
-        UseAlternateCursors    = model.UI.UseAlternateCursors;
-        TooltipDelay           = model.UI.TooltipDelay;
-        TooltipDuration        = model.UI.TooltipDuration;
-        MessageDisplay         = model.UI.MessageDisplay;
-        MouseScrollThreshold   = model.UI.MouseScrollThreshold;
-        MouseScrollDelay       = model.UI.MouseScrollDelay;
-        MouseScrollX           = model.UI.MouseScrollX;
-        MouseScrollY           = model.UI.MouseScrollY;
-        KeyScrollX             = model.UI.KeyScrollX;
-        KeyScrollY             = model.UI.KeyScrollY;
-        MinimumMessageInterval = model.UI.MinimumMessageInterval;
-        HelpType               = model.UI.HelpType;
+        UseAlternateCursors    = model.Ui.UseAlternateCursors;
+        TooltipDelay           = model.Ui.TooltipDelay;
+        TooltipDuration        = model.Ui.TooltipDuration;
+        MessageDisplay         = model.Ui.MessageDisplay;
+        MouseScrollThreshold   = model.Ui.MouseScrollThreshold;
+        MouseScrollDelay       = model.Ui.MouseScrollDelay;
+        MouseScrollX           = model.Ui.MouseScrollX;
+        MouseScrollY           = model.Ui.MouseScrollY;
+        KeyScrollX             = model.Ui.KeyScrollX;
+        KeyScrollY             = model.Ui.KeyScrollY;
+        MinimumMessageInterval = model.Ui.MinimumMessageInterval;
+        HelpType               = model.Ui.HelpType;
 
         // [Map]
         MapX = model.Map.MapX;
@@ -698,36 +683,36 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
         model.Advanced.Normal        = Normal;
 
         // [UI] + [advanced] — audio
-        model.UI.NoMenuMusic          = NoMenuMusic;
-        model.UI.MenuMusic            = MenuMusic;
-        model.UI.MenuMusicAttenuation = MenuMusicAttenuation;
-        model.UI.UserAttenuation      = UserAttenuation;
-        model.UI.PlayMovie            = PlayMovie;
-        model.UI.MovieVolume1         = MovieVolume1;
-        model.UI.PlaySecondMovie      = PlaySecondMovie;
-        model.UI.MovieVolume2         = MovieVolume2;
+        model.Ui.NoMenuMusic          = NoMenuMusic;
+        model.Ui.MenuMusic            = MenuMusic;
+        model.Ui.MenuMusicAttenuation = MenuMusicAttenuation;
+        model.Ui.UserAttenuation      = UserAttenuation;
+        model.Ui.PlayMovie            = PlayMovie;
+        model.Ui.MovieVolume1         = MovieVolume1;
+        model.Ui.PlaySecondMovie      = PlaySecondMovie;
+        model.Ui.MovieVolume2         = MovieVolume2;
         model.Advanced.Use8BitSound   = Use8BitSound;
 
         // [UI] + [ai] — gameplay
-        model.UI.MSStartingCash  = MSStartingCash;
-        model.UI.MSCashIncrement = MSCashIncrement;
-        model.UI.MSMinCash       = MSMinCash;
-        model.UI.MSMaxCash       = MSMaxCash;
-        model.AI.MaxGuests       = MaxGuests;
+        model.Ui.StartingCash  = StartingCash;
+        model.Ui.CashIncrement = CashIncrement;
+        model.Ui.MinCash       = MinCash;
+        model.Ui.MaxCash       = MaxCash;
+        model.Ai.MaxGuests     = MaxGuests;
 
         // [UI] — interface
-        model.UI.UseAlternateCursors    = UseAlternateCursors;
-        model.UI.TooltipDelay           = TooltipDelay;
-        model.UI.TooltipDuration        = TooltipDuration;
-        model.UI.MessageDisplay         = MessageDisplay;
-        model.UI.MouseScrollThreshold   = MouseScrollThreshold;
-        model.UI.MouseScrollDelay       = MouseScrollDelay;
-        model.UI.MouseScrollX           = MouseScrollX;
-        model.UI.MouseScrollY           = MouseScrollY;
-        model.UI.KeyScrollX             = KeyScrollX;
-        model.UI.KeyScrollY             = KeyScrollY;
-        model.UI.MinimumMessageInterval = MinimumMessageInterval;
-        model.UI.HelpType               = HelpType;
+        model.Ui.UseAlternateCursors    = UseAlternateCursors;
+        model.Ui.TooltipDelay           = TooltipDelay;
+        model.Ui.TooltipDuration        = TooltipDuration;
+        model.Ui.MessageDisplay         = MessageDisplay;
+        model.Ui.MouseScrollThreshold   = MouseScrollThreshold;
+        model.Ui.MouseScrollDelay       = MouseScrollDelay;
+        model.Ui.MouseScrollX           = MouseScrollX;
+        model.Ui.MouseScrollY           = MouseScrollY;
+        model.Ui.KeyScrollX             = KeyScrollX;
+        model.Ui.KeyScrollY             = KeyScrollY;
+        model.Ui.MinimumMessageInterval = MinimumMessageInterval;
+        model.Ui.HelpType               = HelpType;
 
         // [Map]
         model.Map.MapX = MapX;
@@ -748,7 +733,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
     /// <summary>
     ///     Looks up the prose from the <c> TT.* </c> resource, finds the matching <see cref="IniKeySpec" /> in <see cref="ZooIniDefaults.KnownKeys" />, reads the default value off
-    ///     <see cref="_defaultsModel" />, and returns <c> "{prose}\n\nDefault: {value}" </c>.
+    ///     <see cref="DefaultsModel" />, and returns <c> "{prose}\n\nDefault: {value}"</c>.
     /// </summary>
     private static string BuildTooltip(string resourceKey, string section, string key)
     {
@@ -762,7 +747,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
             return prose;
         }
 
-        string defaultDisplay = FormatDefault(spec.Read(_defaultsModel), spec.Kind);
+        string defaultDisplay = FormatDefault(spec.Read(DefaultsModel), spec.Kind);
 
         return string.IsNullOrEmpty(defaultDisplay) ? prose : $"{prose}\n\nDefault: {defaultDisplay}";
     }
@@ -781,7 +766,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     /// </summary>
     private static string LookupResourceString(string resourceKey)
     {
-        // ResourceDictionary.TryGetResource (not Application.TryFindResource — that doesn't exist in Avalonia 11). Pass theme: null to fall back through the merged dictionary
+        // ResourceDictionary.TryGetResource() (not Application.TryFindResource() — that doesn't exist in Avalonia 11). Pass theme: null to fall back through the merged dictionary
         // chain.
         if (Application.Current is { } app
             && app.Resources.TryGetResource(resourceKey, theme: null, out object? value)

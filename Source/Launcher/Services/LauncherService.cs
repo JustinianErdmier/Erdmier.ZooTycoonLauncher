@@ -43,7 +43,7 @@ public sealed class LauncherService : ILauncherService
                 UseShellExecute  = true
             };
 
-            // Process.Start returns null only when UseShellExecute opens the file with the registered handler and no new process is created — not applicable for an .exe, but
+            // Process.Start() returns null only when UseShellExecute opens the file with the registered handler and no new process is created — not applicable for an .exe, but
             // defend anyway.
             Process? process = Process.Start(startInfo);
 

@@ -1,8 +1,11 @@
 namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 
 /// <summary>Strongly typed representation of the <c> [UI] </c> section of <c> zoo.ini </c>. Covers audio, gameplay (cash), interface, and miscellaneous runtime-state keys.</summary>
-public class UISettings
+public class UiSettings
 {
+    /// <summary>Denomination by which cash is awarded. Valid range: <c> 100 </c>–<c> 1,000,000 </c>.</summary>
+    public int CashIncrement { get; set; } = 5_000;
+
     /// <summary>Audio attenuation value for completed exhibit notifications. Read-only runtime state managed by the game.</summary>
     public int? CompletedExhibitAttenuation { get; set; }
 
@@ -24,6 +27,9 @@ public class UISettings
     /// <summary>Last recorded window Y-position. Read-only runtime state written by the game on exit.</summary>
     public int? LastWindowY { get; set; }
 
+    /// <summary>Maximum cash the player can hold. Valid range: <c> 0 </c>–<c> 10,000,000 </c>.</summary>
+    public int MaxCash { get; set; } = 500_000;
+
     /// <summary>Path to the main menu music file, relative to the game directory.</summary>
     public string MenuMusic { get; set; } = "sounds/mainmenu.wav";
 
@@ -32,6 +38,9 @@ public class UISettings
 
     /// <summary>Show in-game notification messages.</summary>
     public bool MessageDisplay { get; set; } = true;
+
+    /// <summary>Minimum cash the player can hold. Valid range: <c> 0 </c>–<c> 10,000,000 </c>.</summary>
+    public int MinCash { get; set; } = 10_000;
 
     /// <summary>Minimum interval in seconds between repeated notification messages. Valid range: <c> 0 </c>–<c> 3600 </c>.</summary>
     public int MinimumMessageInterval { get; set; } = 60;
@@ -54,18 +63,6 @@ public class UISettings
     /// <summary>Volume for the second intro movie. <c> 0 </c> = full volume, <c> -10000 </c> = silent.</summary>
     public int MovieVolume2 { get; set; } = -1000;
 
-    /// <summary>Denomination by which cash is awarded. Valid range: <c> 100 </c>–<c> 1,000,000 </c>.</summary>
-    public int MSCashIncrement { get; set; } = 5_000;
-
-    /// <summary>Maximum cash the player can hold. Valid range: <c> 0 </c>–<c> 10,000,000 </c>.</summary>
-    public int MSMaxCash { get; set; } = 500_000;
-
-    /// <summary>Minimum cash the player can hold. Valid range: <c> 0 </c>–<c> 10,000,000 </c>.</summary>
-    public int MSMinCash { get; set; } = 10_000;
-
-    /// <summary>Cash available at the start of a new game. Valid range: <c> 0 </c>–<c> 10,000,000 </c>.</summary>
-    public int MSStartingCash { get; set; } = 70_000;
-
     /// <summary>Suppress main menu background music. <see langword="true" /> = music disabled (note inverted logic).</summary>
     public bool NoMenuMusic { get; set; }
 
@@ -86,6 +83,9 @@ public class UISettings
 
     /// <summary>Records whether the main campaign tutorial has been started. Read-only runtime state managed by the game.</summary>
     public bool StartedFirstTutorial { get; set; }
+
+    /// <summary>Cash available at the start of a new game. Valid range: <c> 0 </c>–<c> 10,000,000 </c>.</summary>
+    public int StartingCash { get; set; } = 70_000;
 
     /// <summary>Delay in seconds before tooltips appear. Valid range: <c> 0 </c>–<c> 60 </c>.</summary>
     public int TooltipDelay { get; set; } = 1;

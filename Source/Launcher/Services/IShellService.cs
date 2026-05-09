@@ -1,7 +1,7 @@
 namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 
 /// <summary>
-///     Abstraction over OS shell operations (currently just "show this path in the file manager"), kept off <see cref="ViewModels.MainWindowViewModel" /> so the VM is testable
+///     Abstraction over OS shell operations (currently "show this path in the file manager"), kept off <see cref="ViewModels.MainWindowViewModel" /> so the VM is testable
 ///     without spawning real processes.
 /// </summary>
 public interface IShellService

@@ -10,7 +10,7 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 internal enum IniSpecKind { Bool, Int, NullableInt, Str, NullableStr }
 
 /// <summary>
-///     Binds a single INI section + key to a typed property on <see cref="ZooIniModel" />. Used by <see cref="ZooIniDefaults.KnownKeys" /> as the registry of all keys the
+///     Binds a single INI section and key to a typed property on <see cref="ZooIniModel" />. Used by <see cref="ZooIniDefaults.KnownKeys" /> as the registry of all keys the
 ///     launcher understands.
 /// </summary>
 internal sealed class IniKeySpec
@@ -68,7 +68,7 @@ internal sealed class IniKeySpec
                key,
                IniSpecKind.Str,
                get,
-               (model, raw) => set(model, raw));
+               set);
 
     public static IniKeySpec NullableStr(string section, string key, Func<ZooIniModel, string?> get, Action<ZooIniModel, string?> set)
         => new(section,

@@ -3,7 +3,7 @@
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Implement the file locator, INI parser, launcher-config persistence, partial versioning, and startup orchestration services, plus DI wiring in `App.axaml.cs` and a
-status-bar UI in `MainWindow` that exercises the full discover → parse → cache flow end-to-end.
+status-bar UI in `MainWindow` that exercises the full discovery → parse → cache flow end-to-end.
 
 **Architecture:** Stateless services injected via `Microsoft.Extensions.DependencyInjection`. File system access goes through `System.IO.Abstractions.IFileSystem`; registry access
 through a hand-rolled `IRegistryReader`. `MainWindowViewModel` owns the in-memory `ZooIniModel` and current paths; `ILauncherConfigService` owns the persisted JSON config. A
@@ -17,7 +17,7 @@ System.Text.Json (in-box).
 
 **Important conventions:**
 
-- No tests in this milestone (per user direction). Code is written for testability (see §7 of the design doc) but the test project is a follow-up task.
+- No tests in this milestone (per user direction). Code is written for testability (see §7 of the design doc), but the test project is a follow-up task.
 - Each task ends with a logical commit point. **Do not commit unless the user explicitly asks** — list the suggested message and pause for approval.
 - After every code-producing task, run `mcp__rider__build_solution` to confirm the solution still compiles. Stop and fix on failure.
 - Existing class names confirmed: `AiSettings` (not `AISettings`), `UISettings`, `UserSettings`, `AdvancedSettings`, `DebugSettings`, `LanguageSettings`, `MapSettings`,
@@ -1740,11 +1740,11 @@ If a real Zoo Tycoon installation isn't available, fabricate one for the smoke t
 4. Use `File → Locate Manually…` to point the launcher at `C:\Temp\ZTSmoke\` and confirm status flips to `Ready`.
 5. Verify `%AppData%\ZooTycoonLauncher\launcher.config` was created with `gameDirectory` = `C:\Temp\ZTSmoke`.
 6. Verify `C:\Temp\ZTSmoke\zoo.ini.original` was created.
-7. Quit the app, re-launch it: status should immediately read `Ready` without needing the manual locate (proving the persisted config is being used).
+7. Quit the app, re-launch it: status should immediately read `Ready` without needing the manual locating (proving the persisted config is being used).
 
 **Step 18.3: Final commit point**
 
-If anything was tweaked during smoke testing, commit those tweaks. Suggested message: `chore: smoke test fixes`. If nothing changed, no commit needed.
+If anything was tweaked during smoke testing, commit those tweaks. Suggested message: `chore: smoke test fixes`. If nothing changed, no commit is needed.
 
 ---
 
@@ -1752,14 +1752,14 @@ If anything was tweaked during smoke testing, commit those tweaks. Suggested mes
 
 End state after Task 17:
 
-- 17 new/modified files under `Source/Launcher/`
+- Seventeen new/modified files under `Source/Launcher/`
 - `Launcher.csproj` references two additional NuGet packages
 - The launcher boots, runs the discovery → parse → backup pipeline, and the status bar reflects every `StartupStatus` outcome
 - Settings tabs and the Launch Game menu item gate correctly off `HasIni` / `HasExe`
 - A "Locate Manually…" menu item drives the manual-discovery path through `IFolderPicker`
-- All services are testable: file I/O behind `IFileSystem`, registry behind `IRegistryReader`, AppData root injected, UI dialog behind `IFolderPicker`
+- All services are testable: file I/O behind `IFileSystem`, registry behind `IRegistryReader`, AppData root injected, UI dialogue behind `IFolderPicker`
 
-Out-of-scope items remaining (future milestones):
+Remaining out-of-scope items (future milestones):
 
 - Tests
 - Settings tab ViewModels and Views

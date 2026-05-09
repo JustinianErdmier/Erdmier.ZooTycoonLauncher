@@ -10,37 +10,38 @@
 
 ## 1. Goal
 
-Replace the placeholder `<TabItem Header="INI Configurations" />` in `MainWindow.axaml` with a fully-functional editor for every user-editable key in `zoo.ini`, organised into
-logically grouped `GroupBox`es on a **single tab**. Edits are buffered in memory; changes hit disk only when the user presses **Save**, and the Save button is enabled only while
+Replace the placeholder `<TabItem Header="INI Configurations" />` in `MainWindow.axaml` with a fully functional editor for every user-editable key in `zoo.ini`, organised into
+logically grouped `GroupBox`es on a **single tab**. Edits are buffered in memory; changes hit the disk only when the user presses **Save**, and the Save button is enabled only
+while
 there are unsaved changes.
 
 ## 2. Scope
 
 ### In scope
 
-- Display and edit of every editable key listed in SDD §9.1–§9.8 (the seven category sections), bound to the existing strongly-typed submodels on `ZooIniModel`.
+- Display and edit of every editable key listed in SDD §9.1–§9.8 (the seven category sections), bound to the existing strongly typed submodels on `ZooIniModel`.
 - A dirty-tracking `IniSettingsViewModel` that buffers edits in observable properties.
 - A Save button (right-aligned at the bottom of the tab, mirroring the Home tab's Launch Game button) gated on `IsDirty`.
 - Save flow: `VersioningService.CreateUndoSnapshotAsync` → apply working values to `ZooIniModel` → `IniParserService.WriteAsync` → reload from disk → reset `IsDirty`.
 - Status-bar feedback during save and on success/failure, reusing the existing `MainWindowViewModel.StatusMessage`.
 - A new `IniRanges` static class as the single source of truth for numeric ranges, consumed by both `ZooIniDefaults` (parser-side validation) and the XAML `NumericUpDown`
   controls (UI-side clamping).
-- Per-key tooltips sourced from a centralised resource dictionary so every editable field describes its purpose on hover.
+- Per-key tooltips sourced from a centralised resource dictionary, so every editable field describes its purpose on hover.
 - A friendly **Screen mode** drop-down in place of a bare "Fullscreen" checkbox, and a friendly **Language** drop-down in place of raw `lang`/`sublang` integer inputs.
 
 ### Out of scope (for this milestone)
 
 - **Read-only runtime-state keys** (SDD §9.9: `lastfile`, `showUserEntityWarning`, `lastWindow*`, `started*Tutorial`, `progresscalls`, `defaultEditCharLimit`,
-  `completedExhibitAttenuation`). The parser already preserves them on round-trip; the SDD designates the **status area** as their display surface, not the INI tab.
+  `completedExhibitAttenuation`). The parser already preserves them on a round-trip; the SDD designates the **status area** as their display surface, not the INI tab.
 - **Unmanaged sections** (SDD §9.10: `[mgr]`, `[lib]`, `[resource]`, `[scenario]`). Preserved verbatim via `ZooIniModel.UnknownKeys`; not exposed in the GUI.
 - **Resolution combo + screen-mode picker driven by `IDisplayInfoService`** (SDD §9.1 note about a combined resolution picker). The screen-mode drop-down is included in this
   milestone, but `screenwidth`/`screenheight` remain raw integer fields rather than a list of detected resolutions. The full picker depends on `IDisplayInfoService` (separate plan:
   `2026-05-08—overview-dynamic-data.md`) and is deferred.
 - **Install-driven language enumeration** (SDD §9.7 note: "populated from the set of language strings bundled with the game installation"). The language drop-down ships with a
-  hard-coded canonical list in this milestone; sourcing options from the install's `lang*.dll` resources is a follow-up.
+  hard-coded canonical list in this milestone; sourcing options from the installed `lang*.dll` resources is a follow-up.
 - **Undo Last Save / Full Reset commands** (SDD §8). `EnsureOriginalBackupAsync` already runs on startup; the snapshot-before-write path is wired here, but the `Undo`/`Reset` UI
   commands are deferred to a separate plan.
-- **Tests.** No test project exists yet — same posture as the 2026-04-29 milestone.
+- **Tests.** No test project exists yet — the same posture as the 2026-04-29 milestone.
 
 ## 3. Architecture
 
@@ -55,7 +56,7 @@ The view model holds **two** copies of the model conceptually:
 
 `IsDirty` is a single observable bool driven by an "any working-property changed since last sync" signal. The simplest correct implementation: every `partial void OnXxxChanged`
 setter for the observable properties calls `MarkDirty()`, which sets `IsDirty = true`. `IsDirty` is reset to `false` only by `ApplyOriginal()` (sync working from Original) and
-`OnSaved()` (after a successful write).
+`OnSaved()` (after a successful write operation).
 
 We deliberately **do not** compute `IsDirty` by deep-comparing Working vs Original. Two reasons:
 
@@ -97,11 +98,12 @@ Implements SDD §8.2. The full sequence on `IniSettingsViewModel.SaveCommand`:
    mechanical mapping per `ZooIniDefaults.KnownKeys` would be elegant but is overkill — explicit assignments keep the source readable.
 4. **Snapshot.** `await _versioning.CreateUndoSnapshotAsync(iniPath)` to write `zoo.ini.undo`.
 5. **Write.** `await _parser.WriteAsync(iniPath, original)`.
-6. **Verify.** `await _parser.ReadAsync(iniPath)` and assign the freshly-loaded model back through the same `ApplyModel` path so any normalization applied by the parser is
+6. **Verify.** `await _parser.ReadAsync(iniPath)` and assign the freshly loaded model back through the same `ApplyModel` path so any normalisation applied by the parser is
    reflected in the UI.
 7. **Reset.** `IsDirty = false` and `StatusMessage = "Saved."`.
 8. **Failure.** Any exception in steps 4–6 is caught, surfaced as `StatusMessage = "Save failed: <reason>."`, and **`IsDirty` remains `true`** so the user can retry. Per SDD §10,
-   the undo snapshot is "discarded" on write failure — practically, the snapshot from step 4 may already exist on disk. Acceptable: it represents the previous-good state, which is
+   the undo snapshot is "discarded" on a write operation failure — practically, the snapshot from step 4 may already exist on disk. Acceptable: it represents the previous-good
+   state, which is
    exactly what undo should restore to. **Status-bar messaging only** — modal dialogues per SDD §10 are deferred to a follow-up (see §3.11).
 
 ### 3.4 Section → tab grouping
@@ -180,8 +182,8 @@ The hard-coded options for v1:
 | Dutch (Netherlands)      | 19     | 1         |
 | Swedish (Sweden)         | 29     | 1         |
 
-If the loaded `lang`/`sublang` do not match any option, `SelectedLanguage` returns null and the `ComboBox` shows nothing selected. The user can pick a known option to overwrite, or
-leave it untouched and the parser preserves the original integer values verbatim. This is acceptable for v1; install-driven enumeration is a follow-up (§2 "Out of scope").
+If the loaded `lang`/`sublang` do not match any option, `SelectedLanguage` returns null and the `ComboBox` shows nothing selected. The user can pick a known option to overwrite or
+leave it untouched, and the parser preserves the original integer values verbatim. This is acceptable for v1; install-driven enumeration is a follow-up (§2 "Out of scope").
 
 ### 3.7 Control type per key
 
@@ -249,7 +251,7 @@ the visible label, and they should not paraphrase the SDD's full description ver
 
 ### 3.10 Inverted-logic `noMenuMusic`
 
-Per the resolved decision on Q6, `[UI] noMenuMusic` (where `1` = music *disabled*) is presented to the user as a positively-phrased "Play menu music" check via a derived property
+Per the resolved decision on Q6, `[UI] noMenuMusic` (where `1` = music *disabled*) is presented to the user as a positively phrased "Play menu music" check via a derived property
 on the VM:
 
 ```csharp
@@ -319,20 +321,20 @@ plumbing. Cons: the file is large (~280 lines of mechanical observable-property 
 `ZooIniDefaults` and unlikely to need frequent edits.
 
 If the property surface ever needs to be split (e.g. separate tabs for Display vs Audio vs Debug because the Classic-themed window grows too tall), the natural split is along the
-GroupBox lines from §3.4, and the dirty/save plumbing can lift to `MainWindowViewModel` then.
+GroupBox lines from §3.4. The dirty/save plumbing can lift to `MainWindowViewModel` then.
 
 The "~280 lines" estimate assumes ~5 lines per property (declaration + partial OnChanged + sync + apply) plus shared scaffolding and the language/screen-mode/inverted-music helper
 sections.
 
 ## 6. Atomicity & error handling (SDD §10, §11)
 
-- `IniParserService.WriteAsync` already implements the SDD §11 "Reliability" requirement: write-to-temp + `File.Move(overwrite: true)`. No changes needed.
-- `IVersioningService.CreateUndoSnapshotAsync` is invoked **before** the write so `zoo.ini.undo` represents the last-known-good state.
+- `IniParserService.WriteAsync` already implements the SDD §11 "Reliability" requirement: write-to-temp + `File.Move(overwrite: true)`. No changes are needed.
+- `IVersioningService.CreateUndoSnapshotAsync` is invoked **before** the write operation so `zoo.ini.undo` represents the last-known-good state.
 - All exceptions in the save path are caught at the VM and surfaced via `StatusMessage` — see §3.11.
 
 ## 7. Performance (SDD §11)
 
-- 46 observable properties + 8 group boxes is a trivial UI. No virtualization needed.
+- 46 observable properties + 8 group boxes is a trivial UI. No virtualisation needed.
 - `WriteAsync` is the only I/O on the save path and runs on a background thread via `await`. Snapshot copy is a single `File.Copy` — sub-millisecond.
 - `ApplyModel` runs on the UI thread and triggers ~46 INPC events; this is fine for a one-shot operation.
 
@@ -358,6 +360,6 @@ No questions remain open as of the date of this revision.
 
 ## 10. Plan alignment
 
-The companion plan ([`2026-05-08—ini-tab.md`](./2026-05-08—ini-tab.md)) decomposes this design into 14 tasks. Each task ends with a build verification via
+The companion plan ([`2026-05-08—ini-tab.md`](./2026-05-08—ini-tab.md)) decomposes this design into 14 tasks. Each task ends with build verification via
 `mcp__rider__build_solution` (canonical) or `dotnet build` (fallback), per the project's existing convention. No tests in this milestone — same posture as
 `2026-04-29—ini-parser-and-startup.md`.

@@ -5,7 +5,7 @@ using Erdmier.ZooTycoonLauncher.Launcher.Models;
 namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 
 /// <summary>
-///     Reads <c> zoo.ini </c> from disk into a typed <see cref="ZooIniModel" /> and writes a <see cref="ZooIniModel" /> back to disk, preserving comments and key ordering on
+///     Reads <c> zoo.ini </c> from disk into a typed <see cref="ZooIniModel" /> and writes a <see cref="ZooIniModel" /> back to disk, preserving comments and key ordering on a
 ///     round-trip.
 /// </summary>
 public interface IIniParserService

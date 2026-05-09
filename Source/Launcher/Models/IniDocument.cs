@@ -14,16 +14,16 @@ internal sealed class IniDocument
 /// <summary>Base type for a single line in an <see cref="IniDocument" />.</summary>
 internal abstract record IniLine;
 
-/// <summary>A section header line of the form <c> [SectionName] </c>.</summary>
+/// <summary>A section header line of the form <c>[SectionName]</c>.</summary>
 /// <param name="Name"> The section name without brackets, normalised to its original casing. </param>
-/// <param name="RawText"> The original line text, preserved verbatim for round-trip. </param>
+/// <param name="RawText"> The original line text, preserved verbatim for a round-trip. </param>
 internal sealed record IniSectionHeader(string Name, string RawText) : IniLine;
 
 /// <summary>A key-value line of the form <c> Key=Value </c>.</summary>
 /// <param name="Section"> The name of the section this key belongs to (without brackets). </param>
 /// <param name="Key"> The key name, normalised to its original casing. </param>
 /// <param name="Value"> The current value as a string. Updated by <see cref="Services.IniParserService.WriteAsync" /> when a known key's typed value has changed. </param>
-/// <param name="RawText"> The original line text. Used as a template when re-emitting modified values so surrounding whitespace and casing are preserved. </param>
+/// <param name="RawText"> The original line text. Used as a template when re-emitting modified values, so surrounding whitespace and casing are preserved. </param>
 internal sealed record IniKeyValue(string Section, string Key, string Value, string RawText) : IniLine
 {
     public IniKeyValue WithValue(string newValue)

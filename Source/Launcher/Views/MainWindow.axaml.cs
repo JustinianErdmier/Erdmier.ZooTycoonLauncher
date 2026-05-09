@@ -27,17 +27,20 @@ public partial class MainWindow : ClassicWindow
             picker.SetTopLevel(this);
         }
 
-        if (DataContext is MainWindowViewModel viewModel)
+        if (DataContext is not MainWindowViewModel viewModel)
         {
-            try
-            {
-                await viewModel.InitializeAsync();
-            }
-            catch (Exception)
-            {
-                // The startup service catches all expected exceptions and translates them to StartupStatus values; if anything still leaks through, swallow it here so a single bad
-                // disk read can't crash the launcher on startup.
-            }
+            return;
+        }
+
+        try
+        {
+            await viewModel.InitializeAsync();
+        }
+        catch (Exception)
+        {
+            // The startup service catches all expected exceptions and translates them to StartupStatus values; if anything still leaks through, swallow it here, so a single
+            // bad
+            // disk read can't crash the launcher on a startup.
         }
     }
 }

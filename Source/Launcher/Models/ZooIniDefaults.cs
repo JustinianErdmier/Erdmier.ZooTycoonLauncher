@@ -2,12 +2,12 @@ using System.Collections.Generic;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 
-/// <summary>Single source of truth for every INI key the launcher understands. Maps each section + key to a typed property on <see cref="ZooIniModel" />.</summary>
+/// <summary>Single source of truth for every INI key the launcher understands. Maps each section and key to a typed property on <see cref="ZooIniModel" />.</summary>
 internal static class ZooIniDefaults
 {
     public static IReadOnlyList<IniKeySpec> KnownKeys { get; } =
     [
-        // [user] — display, performance, and runtime state (SDD §9.1, §9.9)
+        // [user] — display, performance and runtime state (SDD §9.1, §9.9)
         IniKeySpec.Bool(section: "user", key: "fullscreen", m => m.User.Fullscreen, (m, v) => m.User.Fullscreen = v),
         IniKeySpec.Int(section: "user", key: "screenwidth", m => m.User.ScreenWidth, (m, v) => m.User.ScreenWidth = v, (int)IniRanges.ScreenWidthMin),
         IniKeySpec.Int(section: "user", key: "screenheight", m => m.User.ScreenHeight, (m, v) => m.User.ScreenHeight = v, (int)IniRanges.ScreenHeightMin),
@@ -17,94 +17,94 @@ internal static class ZooIniDefaults
         IniKeySpec.Bool(section: "user", key: "showUserEntityWarning", m => m.User.ShowUserEntityWarning, (m, v) => m.User.ShowUserEntityWarning = v),
 
         // [UI] — audio (SDD §9.3)
-        IniKeySpec.Bool(section: "UI", key: "noMenuMusic", m => m.UI.NoMenuMusic, (m, v) => m.UI.NoMenuMusic = v),
-        IniKeySpec.Str(section: "UI", key: "menuMusic", m => m.UI.MenuMusic, (m,      v) => m.UI.MenuMusic = v),
+        IniKeySpec.Bool(section: "UI", key: "noMenuMusic", m => m.Ui.NoMenuMusic, (m, v) => m.Ui.NoMenuMusic = v),
+        IniKeySpec.Str(section: "UI", key: "menuMusic", m => m.Ui.MenuMusic, (m,      v) => m.Ui.MenuMusic = v),
         IniKeySpec.Int(section: "UI",
                        key: "menuMusicAttenuation",
-                       m => m.UI.MenuMusicAttenuation,
-                       (m, v) => m.UI.MenuMusicAttenuation = v,
+                       m => m.Ui.MenuMusicAttenuation,
+                       (m, v) => m.Ui.MenuMusicAttenuation = v,
                        (int)IniRanges.MenuMusicAttenuationMin,
                        (int)IniRanges.MenuMusicAttenuationMax),
         IniKeySpec.Int(section: "UI",
                        key: "userAttenuation",
-                       m => m.UI.UserAttenuation,
-                       (m, v) => m.UI.UserAttenuation = v,
+                       m => m.Ui.UserAttenuation,
+                       (m, v) => m.Ui.UserAttenuation = v,
                        (int)IniRanges.UserAttenuationMin,
                        (int)IniRanges.UserAttenuationMax),
-        IniKeySpec.Bool(section: "UI", key: "playMovie", m => m.UI.PlayMovie, (m, v) => m.UI.PlayMovie = v),
-        IniKeySpec.Int(section: "UI", key: "movievolume1", m => m.UI.MovieVolume1, (m, v) => m.UI.MovieVolume1 = v, (int)IniRanges.MovieVolumeMin, (int)IniRanges.MovieVolumeMax),
-        IniKeySpec.Bool(section: "UI", key: "playSecondMovie", m => m.UI.PlaySecondMovie, (m, v) => m.UI.PlaySecondMovie = v),
-        IniKeySpec.Int(section: "UI", key: "movievolume2", m => m.UI.MovieVolume2, (m, v) => m.UI.MovieVolume2 = v, (int)IniRanges.MovieVolumeMin, (int)IniRanges.MovieVolumeMax),
+        IniKeySpec.Bool(section: "UI", key: "playMovie", m => m.Ui.PlayMovie, (m, v) => m.Ui.PlayMovie = v),
+        IniKeySpec.Int(section: "UI", key: "movievolume1", m => m.Ui.MovieVolume1, (m, v) => m.Ui.MovieVolume1 = v, (int)IniRanges.MovieVolumeMin, (int)IniRanges.MovieVolumeMax),
+        IniKeySpec.Bool(section: "UI", key: "playSecondMovie", m => m.Ui.PlaySecondMovie, (m, v) => m.Ui.PlaySecondMovie = v),
+        IniKeySpec.Int(section: "UI", key: "movievolume2", m => m.Ui.MovieVolume2, (m, v) => m.Ui.MovieVolume2 = v, (int)IniRanges.MovieVolumeMin, (int)IniRanges.MovieVolumeMax),
 
         // [UI] — gameplay cash (SDD §9.4)
         IniKeySpec.Int(section: "UI",
                        key: "MSStartingCash",
-                       m => m.UI.MSStartingCash,
-                       (m, v) => m.UI.MSStartingCash = v,
-                       (int)IniRanges.MSStartingCashMin,
-                       (int)IniRanges.MSStartingCashMax),
+                       m => m.Ui.StartingCash,
+                       (m, v) => m.Ui.StartingCash = v,
+                       (int)IniRanges.StartingCashMin,
+                       (int)IniRanges.StartingCashMax),
         IniKeySpec.Int(section: "UI",
                        key: "MSCashIncrement",
-                       m => m.UI.MSCashIncrement,
-                       (m, v) => m.UI.MSCashIncrement = v,
-                       (int)IniRanges.MSCashIncrementMin,
-                       (int)IniRanges.MSCashIncrementMax),
-        IniKeySpec.Int(section: "UI", key: "MSMinCash", m => m.UI.MSMinCash, (m, v) => m.UI.MSMinCash = v, (int)IniRanges.MSMinCashMin, (int)IniRanges.MSMinCashMax),
-        IniKeySpec.Int(section: "UI", key: "MSMaxCash", m => m.UI.MSMaxCash, (m, v) => m.UI.MSMaxCash = v, (int)IniRanges.MSMaxCashMin, (int)IniRanges.MSMaxCashMax),
+                       m => m.Ui.CashIncrement,
+                       (m, v) => m.Ui.CashIncrement = v,
+                       (int)IniRanges.CashIncrementMin,
+                       (int)IniRanges.CashIncrementMax),
+        IniKeySpec.Int(section: "UI", key: "MSMinCash", m => m.Ui.MinCash, (m, v) => m.Ui.MinCash = v, (int)IniRanges.MinCashMin, (int)IniRanges.MinCashMax),
+        IniKeySpec.Int(section: "UI", key: "MSMaxCash", m => m.Ui.MaxCash, (m, v) => m.Ui.MaxCash = v, (int)IniRanges.MaxCashMin, (int)IniRanges.MaxCashMax),
 
         // [UI] — interface (SDD §9.5)
-        IniKeySpec.Bool(section: "UI", key: "useAlternateCursors", m => m.UI.UseAlternateCursors, (m, v) => m.UI.UseAlternateCursors = v),
-        IniKeySpec.Int(section: "UI", key: "tooltipDelay", m => m.UI.TooltipDelay, (m, v) => m.UI.TooltipDelay = v, (int)IniRanges.TooltipDelayMin, (int)IniRanges.TooltipDelayMax),
+        IniKeySpec.Bool(section: "UI", key: "useAlternateCursors", m => m.Ui.UseAlternateCursors, (m, v) => m.Ui.UseAlternateCursors = v),
+        IniKeySpec.Int(section: "UI", key: "tooltipDelay", m => m.Ui.TooltipDelay, (m, v) => m.Ui.TooltipDelay = v, (int)IniRanges.TooltipDelayMin, (int)IniRanges.TooltipDelayMax),
         IniKeySpec.Int(section: "UI",
                        key: "tooltipDuration",
-                       m => m.UI.TooltipDuration,
-                       (m, v) => m.UI.TooltipDuration = v,
+                       m => m.Ui.TooltipDuration,
+                       (m, v) => m.Ui.TooltipDuration = v,
                        (int)IniRanges.TooltipDurationMin,
                        (int)IniRanges.TooltipDurationMax),
-        IniKeySpec.Bool(section: "UI", key: "MessageDisplay", m => m.UI.MessageDisplay, (m, v) => m.UI.MessageDisplay = v),
+        IniKeySpec.Bool(section: "UI", key: "MessageDisplay", m => m.Ui.MessageDisplay, (m, v) => m.Ui.MessageDisplay = v),
         IniKeySpec.Int(section: "UI",
                        key: "mouseScrollThreshold",
-                       m => m.UI.MouseScrollThreshold,
-                       (m, v) => m.UI.MouseScrollThreshold = v,
+                       m => m.Ui.MouseScrollThreshold,
+                       (m, v) => m.Ui.MouseScrollThreshold = v,
                        (int)IniRanges.MouseScrollThresholdMin,
                        (int)IniRanges.MouseScrollThresholdMax),
         IniKeySpec.Int(section: "UI",
                        key: "mouseScrollDelay",
-                       m => m.UI.MouseScrollDelay,
-                       (m, v) => m.UI.MouseScrollDelay = v,
+                       m => m.Ui.MouseScrollDelay,
+                       (m, v) => m.Ui.MouseScrollDelay = v,
                        (int)IniRanges.MouseScrollDelayMin,
                        (int)IniRanges.MouseScrollDelayMax),
         IniKeySpec.Int(section: "UI",
                        key: "mouseScrollX",
-                       m => m.UI.MouseScrollX,
-                       (m, v) => m.UI.MouseScrollX = v,
+                       m => m.Ui.MouseScrollX,
+                       (m, v) => m.Ui.MouseScrollX = v,
                        (int)IniRanges.MouseScrollSpeedMin,
                        (int)IniRanges.MouseScrollSpeedMax),
         IniKeySpec.Int(section: "UI",
                        key: "mouseScrollY",
-                       m => m.UI.MouseScrollY,
-                       (m, v) => m.UI.MouseScrollY = v,
+                       m => m.Ui.MouseScrollY,
+                       (m, v) => m.Ui.MouseScrollY = v,
                        (int)IniRanges.MouseScrollSpeedMin,
                        (int)IniRanges.MouseScrollSpeedMax),
-        IniKeySpec.Int(section: "UI", key: "keyScrollX", m => m.UI.KeyScrollX, (m, v) => m.UI.KeyScrollX = v, (int)IniRanges.KeyScrollSpeedMin, (int)IniRanges.KeyScrollSpeedMax),
-        IniKeySpec.Int(section: "UI", key: "keyScrollY", m => m.UI.KeyScrollY, (m, v) => m.UI.KeyScrollY = v, (int)IniRanges.KeyScrollSpeedMin, (int)IniRanges.KeyScrollSpeedMax),
+        IniKeySpec.Int(section: "UI", key: "keyScrollX", m => m.Ui.KeyScrollX, (m, v) => m.Ui.KeyScrollX = v, (int)IniRanges.KeyScrollSpeedMin, (int)IniRanges.KeyScrollSpeedMax),
+        IniKeySpec.Int(section: "UI", key: "keyScrollY", m => m.Ui.KeyScrollY, (m, v) => m.Ui.KeyScrollY = v, (int)IniRanges.KeyScrollSpeedMin, (int)IniRanges.KeyScrollSpeedMax),
         IniKeySpec.Int(section: "UI",
                        key: "minimumMessageInterval",
-                       m => m.UI.MinimumMessageInterval,
-                       (m, v) => m.UI.MinimumMessageInterval = v,
+                       m => m.Ui.MinimumMessageInterval,
+                       (m, v) => m.Ui.MinimumMessageInterval = v,
                        (int)IniRanges.MinimumMessageIntervalMin,
                        (int)IniRanges.MinimumMessageIntervalMax),
-        IniKeySpec.Int(section: "UI", key: "helpType", m => m.UI.HelpType, (m, v) => m.UI.HelpType = v, (int)IniRanges.HelpTypeMin, (int)IniRanges.HelpTypeMax),
+        IniKeySpec.Int(section: "UI", key: "helpType", m => m.Ui.HelpType, (m, v) => m.Ui.HelpType = v, (int)IniRanges.HelpTypeMin, (int)IniRanges.HelpTypeMax),
 
         // [UI] — runtime state preserved on round-trip (SDD §9.9)
-        IniKeySpec.NullableInt(section: "UI", key: "lastWindowX", m => m.UI.LastWindowX, (m,                                 v) => m.UI.LastWindowX = v),
-        IniKeySpec.NullableInt(section: "UI", key: "lastWindowY", m => m.UI.LastWindowY, (m,                                 v) => m.UI.LastWindowY = v),
-        IniKeySpec.Bool(section: "UI", key: "startedFirstTutorial", m => m.UI.StartedFirstTutorial, (m,                      v) => m.UI.StartedFirstTutorial = v),
-        IniKeySpec.Bool(section: "UI", key: "startedDinoTutorial", m => m.UI.StartedDinoTutorial, (m,                        v) => m.UI.StartedDinoTutorial = v),
-        IniKeySpec.Bool(section: "UI", key: "startedAquaTutorial", m => m.UI.StartedAquaTutorial, (m,                        v) => m.UI.StartedAquaTutorial = v),
-        IniKeySpec.NullableInt(section: "UI", key: "progresscalls", m => m.UI.ProgressCalls, (m,                             v) => m.UI.ProgressCalls = v),
-        IniKeySpec.NullableInt(section: "UI", key: "defaultEditCharLimit", m => m.UI.DefaultEditCharLimit, (m,               v) => m.UI.DefaultEditCharLimit = v),
-        IniKeySpec.NullableInt(section: "UI", key: "completedExhibitAttenuation", m => m.UI.CompletedExhibitAttenuation, (m, v) => m.UI.CompletedExhibitAttenuation = v),
+        IniKeySpec.NullableInt(section: "UI", key: "lastWindowX", m => m.Ui.LastWindowX, (m,                                 v) => m.Ui.LastWindowX = v),
+        IniKeySpec.NullableInt(section: "UI", key: "lastWindowY", m => m.Ui.LastWindowY, (m,                                 v) => m.Ui.LastWindowY = v),
+        IniKeySpec.Bool(section: "UI", key: "startedFirstTutorial", m => m.Ui.StartedFirstTutorial, (m,                      v) => m.Ui.StartedFirstTutorial = v),
+        IniKeySpec.Bool(section: "UI", key: "startedDinoTutorial", m => m.Ui.StartedDinoTutorial, (m,                        v) => m.Ui.StartedDinoTutorial = v),
+        IniKeySpec.Bool(section: "UI", key: "startedAquaTutorial", m => m.Ui.StartedAquaTutorial, (m,                        v) => m.Ui.StartedAquaTutorial = v),
+        IniKeySpec.NullableInt(section: "UI", key: "progresscalls", m => m.Ui.ProgressCalls, (m,                             v) => m.Ui.ProgressCalls = v),
+        IniKeySpec.NullableInt(section: "UI", key: "defaultEditCharLimit", m => m.Ui.DefaultEditCharLimit, (m,               v) => m.Ui.DefaultEditCharLimit = v),
+        IniKeySpec.NullableInt(section: "UI", key: "completedExhibitAttenuation", m => m.Ui.CompletedExhibitAttenuation, (m, v) => m.Ui.CompletedExhibitAttenuation = v),
 
         // [advanced] — graphics & 8-bit audio (SDD §9.2, §9.3)
         IniKeySpec.Int(section: "advanced", key: "level", m => m.Advanced.Level, (m,                  v) => m.Advanced.Level = v, (int)IniRanges.LevelMin, (int)IniRanges.LevelMax),
@@ -114,8 +114,9 @@ internal static class ZooIniDefaults
         IniKeySpec.Bool(section: "advanced", key: "normal", m => m.Advanced.Normal, (m,               v) => m.Advanced.Normal = v),
         IniKeySpec.Bool(section: "advanced", key: "use8BitSound", m => m.Advanced.Use8BitSound, (m,   v) => m.Advanced.Use8BitSound = v),
 
+        // ReSharper disable once GrammarMistakeInComment
         // [ai] (SDD §9.4)
-        IniKeySpec.Int(section: "ai", key: "maxGuests", m => m.AI.MaxGuests, (m, v) => m.AI.MaxGuests = v, (int)IniRanges.MaxGuestsMin, (int)IniRanges.MaxGuestsMax),
+        IniKeySpec.Int(section: "ai", key: "maxGuests", m => m.Ai.MaxGuests, (m, v) => m.Ai.MaxGuests = v, (int)IniRanges.MaxGuestsMin, (int)IniRanges.MaxGuestsMax),
 
         // [debug] (SDD §9.8)
         IniKeySpec.Bool(section: "debug", key: "drawfps", m => m.Debug.DrawFps, (m, v) => m.Debug.DrawFps = v),
@@ -127,7 +128,7 @@ internal static class ZooIniDefaults
 
         // [language] (SDD §9.7)
         // Deliberately no min/max: the SDD treats LANGID values as opaque, and the parser shouldn't reject a valid Windows
-        // LANGID just because we picked a defensive cap. Defensive XAML caps live in IniRanges for any future raw-field re-exposure.
+        // LANGID just because of a defensive cap. Defensive XAML caps live in IniRanges for any future raw-field re-exposure.
         IniKeySpec.Int(section: "language", key: "lang", m => m.Language.Lang, (m,       v) => m.Language.Lang = v),
         IniKeySpec.Int(section: "language", key: "sublang", m => m.Language.SubLang, (m, v) => m.Language.SubLang = v),
 

@@ -29,7 +29,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _launcher     = launcher;
         Ini           = ini;
 
-        // Bubble Ini.IsDirty changes up so HasPendingIniChanges + LaunchGameCommand.CanExecute stay current.
+        // Bubble Ini.IsDirty changes up so HasPendingIniChanges + LaunchGameCommand.CanExecute() stay current.
         Ini.PropertyChanged += OnIniPropertyChanged;
     }
 
@@ -58,12 +58,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     ///     warning TextBlock's <c> IsVisible </c>.
     /// </summary>
     /// <remarks>
-    ///     Computed (not <c> [ObservableProperty] </c>) so the source of truth stays on <see cref="IniSettingsViewModel" />. <see cref="OnIniPropertyChanged" /> raises
+    ///     Computed (not <c> [ObservableProperty]</c>) so the source of truth stays on <see cref="IniSettingsViewModel" />. <see cref="OnIniPropertyChanged" /> raises
     ///     <c> PropertyChanged </c> for this property when <c> Ini.IsDirty </c> flips.
     /// </remarks>
     public bool HasPendingIniChanges => Ini.IsDirty;
 
-    /// <summary>ViewModel for the INI Configurations tab. Receives the cached model on every successful locate via <see cref="ApplyResult" />.</summary>
+    /// <summary>ViewModel for the INI Configurations tab. Receives the cached model on every successful locate operation via <see cref="ApplyResult" />.</summary>
     public IniSettingsViewModel Ini { get; }
 
     [ ObservableProperty ]
@@ -135,7 +135,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         LaunchGameCommand.NotifyCanExecuteChanged();
     }
 
-    // HasExe is an [ObservableProperty]; the source generator emits OnHasExeChanged for us to hook.
+    // HasExe is an [ObservableProperty]; the source generator emits OnHasExeChanged to hook.
     partial void OnHasExeChanged(bool value) => LaunchGameCommand.NotifyCanExecuteChanged();
 
     /// <summary>Opens the folder picker, then re-runs startup against the chosen directory. Bound to a "Locate Manually…" menu item.</summary>

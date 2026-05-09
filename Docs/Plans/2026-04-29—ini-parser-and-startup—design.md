@@ -16,10 +16,10 @@ so that subsequent milestones (settings tabs, save/undo, launch) can be wired up
 
 This milestone delivers:
 
-- `IFileLocatorService` / `FileLocatorService` (auto + manual discovery)
+- `IFileLocatorService` / `FileLocatorService` (auto and manual discovery)
 - `IIniParserService` / `IniParserService` (round-trip parser with comment/order preservation)
 - `ILauncherConfigService` / `LauncherConfigService` (persisted JSON config for game directory)
-- `IStartupService` / `StartupService` (orchestrates the locate → parse → ensure-backup sequence)
+- `IStartupService` / `StartupService` (orchestrates the `locate → parse → ensure-backup` sequence)
 - `IVersioningService` / `VersioningService` (interface + minimal `EnsureOriginalBackupAsync` only — full implementation deferred)
 - DI wiring in `App.axaml.cs`
 - `MainWindowViewModel` driving startup and exposing observable state
@@ -89,7 +89,7 @@ public interface IFileLocatorService
    `Install_Path`, `InstallPath`, and `Path` and use the first that resolves to an existing directory.
 4. Return `LocatorResult { ExeFound = false, IniFound = false, … }` if nothing is found. Do not open a folder picker.
 
-**Manual overload:** validates the directory contains `zoo.exe`, then checks for `zoo.ini` next to it. The auto overload internally delegates to this once a candidate directory is
+**Manual overload:** validates the directory contains `zoo.exe`, then checks for `zoo.ini` next to it. The auto-overload internally delegates to this once a candidate directory is
 identified, so existence-checks are not duplicated.
 
 **Async:** registry/file-system probes are synchronous APIs. The auto-overload wraps the strategy chain in `Task.Run` so callers' `await` does not block the UI thread.
@@ -122,7 +122,7 @@ internal sealed record IniComment(string RawText) : IniLine;
 internal sealed record IniBlank : IniLine;
 ```
 
-**Known-keys registry:** `Models/ZooIniDefaults.cs` is the single source of truth (SDD §11). Each entry binds an INI section + key to a typed property on `ZooIniModel` via small
+**Known-keys registry:** `Models/ZooIniDefaults.cs` is the single source of truth (SDD §11). Each entry binds an INI section and key to a typed property on `ZooIniModel` via small
 typed factory helpers (`IniKeySpec.Bool`, `IniKeySpec.Int`, `IniKeySpec.Str`). Section names are matched case-insensitively. Boolean parsing accepts `"0"`/`"1"` and tolerates
 `true`/`false`. Out-of-range integers fall back to defaults.
 
@@ -137,9 +137,10 @@ typed factory helpers (`IniKeySpec.Bool`, `IniKeySpec.Int`, `IniKeySpec.Str`). S
 **Write flow:**
 
 1. If `model.RawDocument` is null, build a fresh document by emitting `[section]` headers and known keys in `KnownKeys` order, plus any `UnknownKeys`.
-2. Otherwise walk `RawDocument.Lines`, replacing the value of each `IniKeyValue` line whose section+key matches a known key with the model's current value. Append known-but-missing
+2. Otherwise, walk `RawDocument.Lines`, replacing the value of each `IniKeyValue` line whose section+key matches a known key with the model's current value. Append
+   known-but-missing
    keys at the end of their section. Append unknown keys verbatim.
-3. Atomic write per SDD §11: serialize to `iniFilePath + ".tmp"`, then `IFileSystem.File.Move(tmp, iniFilePath, overwrite: true)`.
+3. Atomic writes per SDD §11: serialize to `iniFilePath + ".tmp"`, then `IFileSystem.File.Move(tmp, iniFilePath, overwrite: true)`.
 
 **`GetDefaults()`:** returns `new ZooIniModel()` — submodel constructors already supply documented defaults.
 
@@ -166,7 +167,7 @@ public sealed class LauncherConfig
   `Environment.GetFolderPath(SpecialFolder.ApplicationData)`).
 - `LoadAsync` returns a fresh default config if the file is missing, empty, or fails to parse (logs but does not throw).
 - `SaveAsync` ensures the parent directory exists and writes via `JsonSerializer` with `WriteIndented = true` and camelCase property names, matching the SDD §7.2 example.
-- Atomic write: temp file + `File.Move(overwrite: true)`.
+- Atomic writes: temp file + `File.Move(overwrite: true)`.
 - No caching: each `LoadAsync` re-reads from disk. The startup service calls `LoadAsync` once; the in-memory copy lives on `MainWindowViewModel` thereafter.
 
 **Dependencies:** `IFileSystem`, plus the AppData root path string.
@@ -188,7 +189,7 @@ public interface IVersioningService
 Only `EnsureOriginalBackupAsync` and the two `*Exists` predicates are implemented in this milestone. The two `Exists` predicates are trivial and useful to have ready; the three
 deferred methods throw `NotImplementedException` and will be filled in when versioning is tackled as a dedicated task.
 
-`EnsureOriginalBackupAsync` follows SDD §8.1 exactly: if `<iniFilePath>.original` does not exist, copy `<iniFilePath>` to it. Otherwise no-op.
+`EnsureOriginalBackupAsync` follows SDD §8.1 exactly: if `<iniFilePath>.original` does not exist, copy `<iniFilePath>` to it. Otherwise, no-op.
 
 **Dependencies:** `IFileSystem`.
 
@@ -241,7 +242,7 @@ Replace the `Greeting` placeholder with:
   `LauncherConfig`).
 - Constructor: takes `IStartupService` and `IFolderPicker`.
 - `InitializeAsync` — called from `MainWindow.Loaded`; sets `IsBusy`, calls the startup service, applies the result.
-- `LocateManuallyAsync` command — opens the picker via `IFolderPicker`, then calls `_startup.ApplyManualDirectoryAsync(picked)` and re-applies the result.
+- `LocateManuallyAsync` command — opens the picker via `IFolderPicker`, then calls, and re-applies the result.
 
 `IFolderPicker` is a small interface registered with the DI container after `MainWindow` loads (the Avalonia implementation needs the active `TopLevel`).
 
@@ -297,13 +298,13 @@ StartupResult flows back to VM; observable properties updated; status bar reflec
 | Folder-picker cancelled                            | VM no-ops                                                                                                       | Status unchanged                                                                                |
 | Folder-picker returns invalid directory            | `StartupService.ApplyManualDirectoryAsync` returns `GameDirectoryUnknown`                                       | Status warning: "No zoo.exe found in selected folder."                                          |
 
-All file I/O is wrapped in try/catch at the service boundary; the VM never sees an unhandled exception. Errors bubble up as data (status enums + warning strings).
+All file I/O are wrapped in try/catch at the service boundary; the VM never sees an unhandled exception. Errors bubble up as data (status enums + warning strings).
 
 ---
 
 ## 7. Testability shape
 
-Tests are not part of this milestone but the code is written to be testable:
+Tests are not part of this milestone, but the code is written to be testable:
 
 - All file ops go through `System.IO.Abstractions.IFileSystem` (mockable via `MockFileSystem`).
 - Registry access goes through a hand-rolled `IRegistryReader`.

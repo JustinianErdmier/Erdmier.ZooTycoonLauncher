@@ -38,7 +38,7 @@ Match the gitmoji to the conventional type (`feat`→✨, `fix`→🐛, `refacto
 task, not per file.
 
 **After each completed task, automatically ask the user whether to commit** (via `AskUserQuestion` or an inline yes/no). Propose the conventional-commit message you would use,
-list the files that would be staged, and wait for explicit approval before running `git commit`. Never commit silently, and never commit on the user's behalf without that
+list the files that would be staged, and wait for explicit approval before running `git commit`. Never commit silently and never commit on the user's behalf without that
 per-task confirmation.
 
 ## Architecture

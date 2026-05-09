@@ -69,6 +69,7 @@ public class App : Application
 
         services.AddTransient<InstallationPickerViewModel>();
         services.AddTransient<ManageInstallationsViewModel>();
+        services.AddTransient<InvalidInstallationsViewModel>();
 
         services.AddTransient<IniSettingsViewModel>();
         services.AddTransient<MainWindowViewModel>();

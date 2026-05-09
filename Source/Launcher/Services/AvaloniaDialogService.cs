@@ -51,10 +51,13 @@ public sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public Task ShowInvalidInstallationsAlertAsync(IReadOnlyList<Installation> invalid)
+    public async Task ShowInvalidInstallationsAlertAsync(IReadOnlyList<Installation> invalid)
     {
-        // Wired up in Task 8 once InvalidInstallationsViewModel exists.
-        throw new NotImplementedException("InvalidInstallationsViewModel is introduced in Task 8.");
+        var vm = _services.GetRequiredService<InvalidInstallationsViewModel>();
+        vm.LoadEntries(invalid);
+
+        var dialog = new Views.InvalidInstallationsView { DataContext = vm };
+        await dialog.ShowDialog(_owner!);
     }
 
     /// <inheritdoc />

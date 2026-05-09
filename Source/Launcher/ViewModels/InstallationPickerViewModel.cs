@@ -25,10 +25,11 @@ public sealed partial class InstallationPickerViewModel : ViewModelBase
     public partial InstallationListItem? SelectedItem { get; set; }
 
     /// <summary>
-    ///     <see langword="true" /> when the selected installation is valid and the OK button should be enabled.
-    ///     Updated whenever <see cref="SelectedItem" /> changes.
+    ///     <see langword="true" /> whenever an item is selected. Invalid installations are allowed through OK so the
+    ///     calling ViewModel can present the Fix / Remove / Ignore alert before opening the entry; the suffix on
+    ///     <see cref="InstallationListItem.DisplayLabel" /> warns the user the entry is broken.
     /// </summary>
-    public bool CanConfirm => SelectedItem?.IsValid ?? false;
+    public bool CanConfirm => SelectedItem is not null;
 
     /// <summary>
     ///     The underlying <see cref="Installation" /> of the current selection, exposed for the View's OK click

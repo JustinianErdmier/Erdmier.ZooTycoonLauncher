@@ -180,6 +180,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ RelayCommand(CanExecute = nameof(HasInstallations)) ]
     private async Task ChangeInstallationAsync()
     {
+        // Refresh IsValid flags so the picker shows accurate (default) / (invalid) suffixes.
+        await _installations.RevalidateAllAsync();
+
         IReadOnlyList<Installation> all    = await _installations.GetAllAsync();
         Installation?               picked = await _dialog.ShowPickerAsync(all, Config.LastOpenedInstallationId);
 
@@ -188,9 +191,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
+        // If the chosen entry is invalid, prompt the user to Fix / Remove / Ignore it before opening.
+        Installation? resolved = await ResolveInvalidPickAsync(picked);
+
+        if (resolved is null)
+        {
+            // User removed it or chose Ignore on an invalid entry — leave the active installation unchanged.
+            return;
+        }
+
         IsBusy        = true;
         StatusMessage = "Opening installation…";
-        StartupResult result = await _startup.OpenInstallationByIdAsync(picked.Id);
+        StartupResult result = await _startup.OpenInstallationByIdAsync(resolved.Id);
         ApplyResult(result);
         IsBusy = false;
     }
@@ -252,7 +264,34 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return result; // User cancelled — keep AwaitingUserSelection.
         }
 
-        return await _startup.OpenInstallationByIdAsync(picked.Id);
+        Installation? resolved = await ResolveInvalidPickAsync(picked);
+
+        if (resolved is null)
+        {
+            return result; // User removed/ignored the invalid pick — stay in AwaitingUserSelection.
+        }
+
+        return await _startup.OpenInstallationByIdAsync(resolved.Id);
+    }
+
+    /// <summary>
+    ///     If <paramref name="picked" /> is invalid, shows the combined invalid-installations alert so the user can
+    ///     Fix / Remove / Ignore it, then re-fetches the (possibly updated) entry and returns it if it is now valid.
+    ///     Returns <paramref name="picked" /> unchanged when it was already valid, or <see langword="null" /> when the
+    ///     user removed the entry or chose Ignore (leaving it invalid).
+    /// </summary>
+    private async Task<Installation?> ResolveInvalidPickAsync(Installation picked)
+    {
+        if (picked.IsValid)
+        {
+            return picked;
+        }
+
+        await _dialog.ShowInvalidInstallationsAlertAsync(new[] { picked });
+
+        IReadOnlyList<Installation> refreshed = await _installations.GetAllAsync();
+
+        return refreshed.FirstOrDefault(i => i.Id == picked.Id && i.IsValid);
     }
 
     /// <summary>

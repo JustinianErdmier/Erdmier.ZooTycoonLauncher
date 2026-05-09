@@ -65,8 +65,9 @@ public class App : Application
         services.AddSingleton<IFolderPicker, AvaloniaFolderPicker>();
         services.AddSingleton<IShellService, WindowsShellService>();
         services.AddSingleton<ILauncherService, LauncherService>();
+        services.AddSingleton<IDialogService, AvaloniaDialogService>();
 
-        // IDialogService and dialog ViewModels are registered as they are introduced in subsequent tasks.
+        // Dialog ViewModels are registered as they are introduced in subsequent tasks.
 
         services.AddTransient<IniSettingsViewModel>();
         services.AddTransient<MainWindowViewModel>();

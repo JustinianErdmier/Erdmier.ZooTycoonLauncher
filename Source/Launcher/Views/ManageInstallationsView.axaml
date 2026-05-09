@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Erdmier.ZooTycoonLauncher.Launcher.ViewModels"
+        xmlns:models="clr-namespace:Erdmier.ZooTycoonLauncher.Launcher.Models"
+        x:Class="Erdmier.ZooTycoonLauncher.Launcher.Views.ManageInstallationsView"
+        x:DataType="vm:ManageInstallationsViewModel"
+        Title="Manage Installations"
+        Width="500"
+        Height="340"
+        CanResize="False"
+        CanMaximize="False"
+        CanMinimize="False"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <DockPanel Margin="8">
+        <StackPanel DockPanel.Dock="Bottom"
+                    Margin="0,8,0,0"
+                    Spacing="4">
+            <TextBlock Text="{Binding StatusMessage}"
+                       IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Foreground="Red"
+                       TextWrapping="Wrap" />
+            <Button Content="Close"
+                    Click="OnCloseClick"
+                    HorizontalAlignment="Right"
+                    MinWidth="70" />
+        </StackPanel>
+
+        <Grid ColumnDefinitions="*,Auto">
+            <ListBox Grid.Column="0"
+                     ItemsSource="{Binding Installations}"
+                     SelectedItem="{Binding SelectedInstallation}"
+                     Margin="0,0,8,0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="models:Installation">
+                        <TextBlock Text="{Binding DisplayName}"
+                                   Padding="2" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Grid.Column="1"
+                        Spacing="4"
+                        Width="90">
+                <Button Content="Add…"
+                        Command="{Binding AddCommand}"
+                        HorizontalAlignment="Stretch" />
+                <Button Content="Remove"
+                        Command="{Binding RemoveCommand}"
+                        HorizontalAlignment="Stretch" />
+                <Button Content="Rename…"
+                        Command="{Binding RenameCommand}"
+                        HorizontalAlignment="Stretch" />
+                <Button Content="Fix…"
+                        Command="{Binding FixCommand}"
+                        HorizontalAlignment="Stretch" />
+                <Separator />
+                <Button Content="Set Default"
+                        Command="{Binding SetAsDefaultCommand}"
+                        HorizontalAlignment="Stretch" />
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</Window>

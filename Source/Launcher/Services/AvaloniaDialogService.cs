@@ -41,10 +41,13 @@ public sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public Task ShowManageAsync()
+    public async Task ShowManageAsync()
     {
-        // Wired up in Task 7 once ManageInstallationsViewModel exists.
-        throw new NotImplementedException("ManageInstallationsViewModel is introduced in Task 7.");
+        var vm = _services.GetRequiredService<ManageInstallationsViewModel>();
+        await vm.LoadAsync();
+
+        var dialog = new Views.ManageInstallationsView { DataContext = vm };
+        await dialog.ShowDialog(_owner!);
     }
 
     /// <inheritdoc />

@@ -68,6 +68,7 @@ public class App : Application
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
 
         services.AddTransient<InstallationPickerViewModel>();
+        services.AddTransient<ManageInstallationsViewModel>();
 
         services.AddTransient<IniSettingsViewModel>();
         services.AddTransient<MainWindowViewModel>();

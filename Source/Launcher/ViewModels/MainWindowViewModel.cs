@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,10 +12,14 @@ using Erdmier.ZooTycoonLauncher.Launcher.Services;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
 
-/// <summary>Top-level orchestrating ViewModel. Owns the cached <see cref="ZooIniModel" /> and current paths, and exposes commands for manual file location.</summary>
+/// <summary>Top-level orchestrating ViewModel. Owns the active installation, cached <see cref="ZooIniModel" />, and commands for installation management.</summary>
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
+    private readonly IDialogService _dialog;
+
     private readonly IFolderPicker _folderPicker;
+
+    private readonly IInstallationService _installations;
 
     private readonly ILauncherService _launcher;
 
@@ -22,13 +27,29 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IStartupService _startup;
 
-    public MainWindowViewModel(IStartupService startup, IFolderPicker folderPicker, IShellService shell, ILauncherService launcher, IniSettingsViewModel ini)
+    /// <summary>Initialises a new instance of <see cref="MainWindowViewModel" /> with all required services.</summary>
+    /// <param name="startup">Startup service that orchestrates the multi-installation launch flow.</param>
+    /// <param name="installations">Installation service used by the picker and Manage dialog.</param>
+    /// <param name="dialog">Dialog service used to show modal pickers, alerts, and confirmations.</param>
+    /// <param name="folderPicker">Folder-picker shim used by the manual locate command.</param>
+    /// <param name="shell">Shell service used to reveal located paths in File Explorer.</param>
+    /// <param name="launcher">Game launcher used to spawn <c>zoo.exe</c>.</param>
+    /// <param name="ini">ViewModel for the INI Configurations tab.</param>
+    public MainWindowViewModel(IStartupService      startup,
+                               IInstallationService installations,
+                               IDialogService       dialog,
+                               IFolderPicker        folderPicker,
+                               IShellService        shell,
+                               ILauncherService     launcher,
+                               IniSettingsViewModel ini)
     {
-        _startup      = startup;
-        _folderPicker = folderPicker;
-        _shell        = shell;
-        _launcher     = launcher;
-        Ini           = ini;
+        _startup       = startup;
+        _installations = installations;
+        _dialog        = dialog;
+        _folderPicker  = folderPicker;
+        _shell         = shell;
+        _launcher      = launcher;
+        Ini            = ini;
 
         // Bubble Ini.IsDirty changes up so HasPendingIniChanges + LaunchGameCommand.CanExecute() stay current.
         Ini.PropertyChanged += OnIniPropertyChanged;
@@ -36,8 +57,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>Parameterless ctor used by the XAML designer only. Will be unused at runtime once DI is wired in <c>App.axaml.cs</c>.</summary>
     public MainWindowViewModel()
-        : this(NullStartupService.Instance, NullFolderPicker.Instance, NullShellService.Instance, NullLauncherService.Instance, new IniSettingsViewModel())
+        : this(NullStartupService.Instance,
+               NullInstallationService.Instance,
+               NullDialogService.Instance,
+               NullFolderPicker.Instance,
+               NullShellService.Instance,
+               NullLauncherService.Instance,
+               new IniSettingsViewModel())
     { }
+
+    /// <summary>The active Zoo Tycoon installation for this session. <see langword="null" /> when no installation is open.</summary>
+    [ ObservableProperty ]
+    public partial Installation? ActiveInstallation { get; set; }
 
     /// <summary>The cached persisted launcher config. Always non-null after <see cref="InitializeAsync" /> completes.</summary>
     public LauncherConfig Config { get; private set; } = new();
@@ -53,6 +84,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     [ ObservableProperty ]
     public partial bool HasIni { get; set; }
+
+    /// <summary><see langword="true" /> when at least one installation is registered. Gates <see cref="ChangeInstallationCommand" />.</summary>
+    [ ObservableProperty ]
+    public partial bool HasInstallations { get; set; }
 
     /// <summary>
     ///     Mirrors <see cref="IniSettingsViewModel.IsDirty" />. Drives the unsaved-changes warning above the Launch button and gates <see cref="CanLaunchGame" />. Bound to the
@@ -85,15 +120,26 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial string StatusMessage { get; set; } = string.Empty;
 
-    /// <summary>Runs the full startup flow. Called from <c>MainWindow.OnLoaded</c>.</summary>
+    /// <summary>Runs the full startup flow, handling picker and invalid-installation dialogs as needed. Called from <c>MainWindow.OnLoaded</c>.</summary>
     public async Task InitializeAsync()
     {
         IsBusy        = true;
         StatusMessage = "Locating Zoo Tycoon…";
+
         StartupResult result = await _startup.InitializeAsync();
 
-        ApplyResult(result);
+        if (result.Status == StartupStatus.AwaitingUserSelection)
+        {
+            result = await HandlePickerAsync(result);
+        }
 
+        if (result.Status == StartupStatus.AllInstallationsInvalid
+            || result.InvalidInstallations.Count > 0)
+        {
+            result = await HandleInvalidInstallationsAsync(result);
+        }
+
+        ApplyResult(result);
         IsBusy = false;
     }
 
@@ -121,7 +167,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         StatusMessage = "Launching Zoo Tycoon…";
         LaunchResult result = await _launcher.LaunchAsync(ExePath);
-
         StatusMessage = result.Success ? "Game launched." : $"Launch failed: {result.ErrorMessage}";
     }
 
@@ -130,6 +175,132 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     ///     and <see cref="OnIniPropertyChanged" />).
     /// </summary>
     private bool CanLaunchGame() => HasExe && !HasPendingIniChanges;
+
+    /// <summary>Opens the installation picker so the user can switch to a different registered installation.</summary>
+    [ RelayCommand(CanExecute = nameof(HasInstallations)) ]
+    private async Task ChangeInstallationAsync()
+    {
+        IReadOnlyList<Installation> all    = await _installations.GetAllAsync();
+        Installation?               picked = await _dialog.ShowPickerAsync(all);
+
+        if (picked is null)
+        {
+            return;
+        }
+
+        IsBusy        = true;
+        StatusMessage = "Opening installation…";
+        StartupResult result = await _startup.OpenInstallationByIdAsync(picked.Id);
+        ApplyResult(result);
+        IsBusy = false;
+    }
+
+    /// <summary>Opens the Manage Installations dialog and refreshes <see cref="HasInstallations" /> when it closes.</summary>
+    [ RelayCommand ]
+    private async Task ManageInstallationsAsync()
+    {
+        await _dialog.ShowManageAsync();
+
+        // Refresh HasInstallations after the dialog closes in case the user added or removed entries.
+        IReadOnlyList<Installation> all = await _installations.GetAllAsync();
+        HasInstallations = all.Count > 0;
+        ChangeInstallationCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>Opens the folder picker, registers the chosen directory, and re-runs startup. Bound to the File menu's "Add Installation…" item.</summary>
+    [ RelayCommand ]
+    private async Task LocateManuallyAsync()
+    {
+        string? picked = await _folderPicker.PickFolderAsync(title: "Locate Zoo Tycoon installation directory");
+
+        if (picked is null)
+        {
+            return;
+        }
+
+        IsBusy        = true;
+        StatusMessage = "Verifying selected directory…";
+        StartupResult result = await _startup.ApplyManualDirectoryAsync(picked);
+        ApplyResult(result);
+        IsBusy = false;
+    }
+
+    /// <summary>Shows the picker for the user to choose an installation; opens it on selection or returns the original result on cancel.</summary>
+    private async Task<StartupResult> HandlePickerAsync(StartupResult result)
+    {
+        IReadOnlyList<Installation> all    = await _installations.GetAllAsync();
+        Installation?               picked = await _dialog.ShowPickerAsync(all);
+
+        if (picked is null)
+        {
+            return result; // User cancelled — keep AwaitingUserSelection.
+        }
+
+        return await _startup.OpenInstallationByIdAsync(picked.Id);
+    }
+
+    /// <summary>
+    ///     Shows the combined invalid-installations alert; on close, re-evaluates the installation list and opens the most-recently
+    ///     used valid installation, or falls back to <see cref="StartupStatus.GameDirectoryUnknown" /> if none remain.
+    /// </summary>
+    private async Task<StartupResult> HandleInvalidInstallationsAsync(StartupResult result)
+    {
+        await _dialog.ShowInvalidInstallationsAlertAsync(result.InvalidInstallations);
+
+        if (result.Status != StartupStatus.AllInstallationsInvalid)
+        {
+            return result; // Partial invalid — active installation is already set.
+        }
+
+        // Find the best valid installation after the user applied Fix/Remove/Ignore.
+        IReadOnlyList<Installation> all       = await _installations.GetAllAsync();
+        Installation?               bestValid = all.Where(i => i.IsValid).OrderByDescending(i => i.LastOpened).FirstOrDefault();
+
+        if (bestValid is not null)
+        {
+            return await _startup.OpenInstallationByIdAsync(bestValid.Id);
+        }
+
+        // All installations are still invalid or were removed — fall back to GameDirectoryUnknown.
+        return new StartupResult(StartupStatus.GameDirectoryUnknown,
+                                 GameDirectory: null,
+                                 ExePath: null,
+                                 IniPath: null,
+                                 Model: null,
+                                 result.Config,
+                                 Warning: "No valid installations. Use Manage Installations to add one.",
+                                 ActiveInstallation: null,
+                                 InvalidInstallations: []);
+    }
+
+    /// <summary>Copies the supplied <see cref="StartupResult" /> into the bindable VM properties and updates the status message.</summary>
+    private void ApplyResult(StartupResult result)
+    {
+        Model              = result.Model;
+        Config             = result.Config;
+        ActiveInstallation = result.ActiveInstallation;
+        GameDirectory      = result.GameDirectory;
+        IniPath            = result.IniPath;
+        ExePath            = result.ExePath;
+        HasExe             = result.ExePath is not null;
+        HasIni             = result.Model is not null;
+        HasInstallations   = result.Config.Installations.Count > 0;
+        IniEntries         = BuildIniEntries(result.Model);
+
+        StatusMessage = result.Status switch
+        {
+            StartupStatus.Ready                   => "Ready.",
+            StartupStatus.GameDirectoryUnknown    => result.Warning ?? "Zoo Tycoon could not be located.",
+            StartupStatus.IniMissing              => result.Warning ?? "Unable to find zoo.ini.",
+            StartupStatus.ExeMissing              => result.Warning ?? "Unable to find zoo.exe.",
+            StartupStatus.IniParseFailed          => result.Warning ?? "Failed to parse zoo.ini.",
+            StartupStatus.AwaitingUserSelection   => "Select an installation to continue.",
+            StartupStatus.AllInstallationsInvalid => result.Warning ?? "All registered installations are invalid.",
+            var _                                 => string.Empty
+        };
+
+        Ini.ApplyModel(result.Model, result.IniPath);
+    }
 
     private void OnIniPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -146,49 +317,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // HasExe is an [ObservableProperty]; the source generator emits OnHasExeChanged to hook.
     partial void OnHasExeChanged(bool value) => LaunchGameCommand.NotifyCanExecuteChanged();
 
-    /// <summary>Opens the folder picker, then re-runs startup against the chosen directory. Bound to a "Locate Manually…" menu item.</summary>
-    [ RelayCommand ]
-    private async Task LocateManuallyAsync()
-    {
-        string? picked = await _folderPicker.PickFolderAsync(title: "Locate Zoo Tycoon installation directory");
-
-        if (picked is null)
-        {
-            return;
-        }
-
-        IsBusy        = true;
-        StatusMessage = "Verifying selected directory…";
-        StartupResult result = await _startup.ApplyManualDirectoryAsync(picked);
-
-        ApplyResult(result);
-
-        IsBusy = false;
-    }
-
-    private void ApplyResult(StartupResult result)
-    {
-        Model         = result.Model;
-        Config        = result.Config;
-        GameDirectory = result.GameDirectory;
-        IniPath       = result.IniPath;
-        ExePath       = result.ExePath;
-        HasExe        = result.ExePath is not null;
-        HasIni        = result.Model is not null;
-        IniEntries    = BuildIniEntries(result.Model);
-
-        StatusMessage = result.Status switch
-        {
-            StartupStatus.Ready                => "Ready.",
-            StartupStatus.GameDirectoryUnknown => result.Warning ?? "Zoo Tycoon could not be located.",
-            StartupStatus.IniMissing           => result.Warning ?? "Unable to find zoo.ini.",
-            StartupStatus.ExeMissing           => result.Warning ?? "Unable to find zoo.exe.",
-            StartupStatus.IniParseFailed       => result.Warning ?? "Failed to parse zoo.ini.",
-            var _                              => string.Empty
-        };
-
-        Ini.ApplyModel(result.Model, result.IniPath);
-    }
+    // ReSharper disable once UnusedParameterInPartialMethod
+    partial void OnHasInstallationsChanged(bool value) => ChangeInstallationCommand.NotifyCanExecuteChanged();
 
     private static IReadOnlyList<IniDisplayEntry> BuildIniEntries(ZooIniModel? model)
     {
@@ -233,6 +363,44 @@ file sealed class NullStartupService : IStartupService
                Warning: null,
                ActiveInstallation: null,
                InvalidInstallations: []);
+}
+
+file sealed class NullInstallationService : IInstallationService
+{
+    public static readonly NullInstallationService Instance = new();
+
+    public Task<bool> ValidateAsync(string gameDirectory) => Task.FromResult(false);
+
+    public Task RevalidateAllAsync() => Task.CompletedTask;
+
+    public Task<IReadOnlyList<Installation>> GetAllAsync() => Task.FromResult<IReadOnlyList<Installation>>([]);
+
+    public Task<Installation> AddAsync(string gameDirectory, string? name = null)
+        => Task.FromResult(new Installation { GameDirectory = gameDirectory, Name = name });
+
+    public Task RemoveAsync(Guid id) => Task.CompletedTask;
+
+    public Task UpdateAsync(Guid id, string? name = null, string? gameDirectory = null) => Task.CompletedTask;
+
+    public Task SetLastOpenedAsync(Guid id) => Task.CompletedTask;
+
+    public Task<LocatorResult> DiscoverAsync()
+        => Task.FromResult(new LocatorResult(ExeFound: false, IniFound: false, ExePath: null, IniPath: null, GameDirectory: null));
+}
+
+file sealed class NullDialogService : IDialogService
+{
+    public static readonly NullDialogService Instance = new();
+
+    public Task<Installation?> ShowPickerAsync(IEnumerable<Installation> installations) => Task.FromResult<Installation?>(result: null);
+
+    public Task ShowManageAsync() => Task.CompletedTask;
+
+    public Task ShowInvalidInstallationsAlertAsync(IReadOnlyList<Installation> invalid) => Task.CompletedTask;
+
+    public Task<bool> ConfirmAsync(string message, string title = "Confirm") => Task.FromResult(false);
+
+    public Task<string?> ShowInputAsync(string prompt, string title, string? defaultValue = null) => Task.FromResult<string?>(result: null);
 }
 
 file sealed class NullFolderPicker : IFolderPicker

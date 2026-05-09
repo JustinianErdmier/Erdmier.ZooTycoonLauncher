@@ -63,15 +63,14 @@ public sealed class AvaloniaDialogService : IDialogService
     /// <inheritdoc />
     public async Task<bool> ConfirmAsync(string message, string title = "Confirm")
     {
-        var dialog = new Views.InputDialogView(message)
+        var dialog = new Views.ConfirmDialogView(message)
                      {
                          Title = title
                      };
 
-        // Re-use InputDialogView as a yes/no prompt: OK = non-null result, Cancel = null.
-        string? result = await dialog.ShowDialog<string?>(_owner!);
+        object? result = await dialog.ShowDialog<object?>(_owner!);
 
-        return result is not null;
+        return result is true;
     }
 
     /// <inheritdoc />

@@ -1,15 +1,19 @@
-﻿# Software Design Document
+# Software Design Document
 
 ## Zoo Tycoon Launcher
 
-- **Version:** 1.1
-- **Last Revision Date:** 8 May 2026
-- **Status:** Living Draft — tracked alongside milestone plans under `~/Docs/Plans/`(`./Plans`)
+- **Version:** 1.2
+- **Last Revision Date:** 9 May 2026
+- **Status:** Living Draft — tracked alongside milestone plans under `~/Docs/Plans/` (`./Plans`)
 
-> **Implementation status (2026-05-08).** Milestones delivered to date: file locator + registry probe + launcher-config persistence, INI parser with round-trip fidelity,
+> **Implementation status (2026-05-09).** Milestones delivered to date: file locator + registry probe + launcher-config persistence, INI parser with round-trip fidelity,
 > versioning service (`zoo.ini.original` written on first run, `zoo.ini.undo` snapshot taken before every save), startup orchestration via `IStartupService`, the INI
-> Configurations tab with grouped editors and dirty-tracked save/discard, and the Launch Game button (with a pending-INI-changes guard). Deferred: a true Home/Overview tab with
-> live system data, the Undo Last Save / Full Reset commands, and the test project. See `~/Docs/Plans/`(`./Plans`) for per-milestone design and execution records.
+> Configurations tab with grouped editors, dirty-tracked save/discard, hover-driven field descriptions in the status area, and the Launch Game button (with a pending-INI-changes
+> guard). Deferred: a true Home/Overview tab with live system data, the Undo Last Save / Full Reset commands, Save Files tab, Custom Content tab, and the test project.
+>
+> **Planned revamp (pre-Save Files/Custom Content tabs).** Multi-installation management is the next major milestone: the launcher config, startup flow, and UI will all be
+> reworked to support registering, naming, switching between, and validating multiple Zoo Tycoon installations. See [§5.4](#54-multi-installation-startup-flow),
+> [§6.5](#65-installationservice), [§7.2](#72-launcher-configuration), and [§7.3](#73-installation-model) for the full design.
 
 ---
 
@@ -20,7 +24,7 @@
 3. [Definitions and Acronyms](#3-Definitions-and-Acronyms)
 4. [System Overview](#4-System-Overview)
 5. [Architecture](#5-Architecture)
-6. [Example Module Descriptions](#6-Example-Module-Descriptions)
+6. [Module Descriptions](#6-Module-Descriptions)
 7. [Data Design](#7-Data-Design)
 8. [File Versioning System](#8-File-Versioning-System)
 9. [Configuration Settings Reference](#9-Configuration-Settings-Reference)
@@ -38,7 +42,8 @@ This document describes the software design for a custom launcher application fo
 through which users may discover, read, modify, and persist the game's `zoo.ini` configuration file, and subsequently launch the game. The launcher also implements a lightweight
 file versioning system to protect users against accidental misconfiguration.
 
-The application is a native Windows desktop application written in **C# (.NET 10)** using the **Avalonia UI** framework with its built-in **Fluent Theme**.
+The application is a native Windows desktop application written in **C# (.NET 10)** using the **Avalonia UI** framework with the **Classic Avalonia Theme**, giving it the visual
+appearance of a Windows 95/98-era application consistent with the era of the game.
 
 ---
 
@@ -46,18 +51,19 @@ The application is a native Windows desktop application written in **C# (.NET 10
 
 The launcher covers the following functional areas:
 
-- Automatic discovery of `zoo.exe` and `zoo.ini` on the host machine.
-- Parsing and in-memory representation of all known `zoo.ini` keys.
-- A tabbed GUI which will allow the user to view and edit settings grouped by category.
-- Persisting changes back to `zoo.ini` on disk.
-- A file versioning system providing an original backup and a single-level undo.
-- Launching `zoo.exe` directly from the application.
-- Resetting `zoo.ini` to factory defaults or to the last saved state.
+- **Multi-installation management.** Users may register one or more Zoo Tycoon installations with the launcher, assign each a custom name, and switch between them. Adding or
+  removing an installation in the launcher does not install or uninstall the game on the user's computer — it only registers or deregisters that directory with the launcher.
+- **Automatic discovery** of `zoo.exe` and `zoo.ini` on the host machine when no installations are registered.
+- **Parsing and in-memory representation** of all known `zoo.ini` keys, including round-trip fidelity for unknown keys, comments, and blank lines.
+- **A tabbed GUI** allowing the user to view and edit settings grouped by category.
+- **Persisting changes** back to `zoo.ini` on disk.
+- **A file versioning system** providing an original backup and a single-level undo.
+- **Launching `zoo.exe`** directly from the application.
+- **Resetting `zoo.ini`** to factory defaults or to the last saved state.
 
 The launcher does **not** cover:
 
 - Mod management or installation.
-- Save-game management.
 - Network or multiplayer configuration.
 - Any modification of the game's executable or assets.
 
@@ -72,6 +78,7 @@ The launcher does **not** cover:
 | `zoo.ini.undo`     | A copy of `zoo.ini` taken immediately before each save operation, representing the previous saved state. |
 | `zoo.exe`          | The Zoo Tycoon game executable.                                                                          |
 | INI                | A plain-text key–value configuration file format using `[Section]` headers.                              |
+| Installation       | A registered Zoo Tycoon installation: a directory containing both `zoo.exe` and `zoo.ini`.               |
 | SDD                | Software Design Document.                                                                                |
 | VM                 | ViewModel (in the context of the MVVM pattern).                                                          |
 | MVVM               | Model–View–ViewModel architectural pattern.                                                              |
@@ -97,6 +104,8 @@ The launcher does **not** cover:
 │                          │  ├─────────────────────┤ │   │
 │                          │  │  FileLocatorService │ │   │
 │                          │  ├─────────────────────┤ │   │
+│                          │  │  InstallationService│ │   │
+│                          │  ├─────────────────────┤ │   │
 │                          │  │  VersioningService  │ │   │
 │                          │  ├─────────────────────┤ │   │
 │                          │  │  LauncherService    │ │   │
@@ -110,6 +119,7 @@ The launcher does **not** cover:
 │                          │  zoo.ini.original         │   │
 │                          │  zoo.ini.undo             │   │
 │                          │  zoo.exe                  │   │
+│                          │  launcher.config          │   │
 │                          └──────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -123,138 +133,154 @@ no database or network layer.
 
 ### 5.1 Architectural Pattern
 
-**MVVM (Model–View–ViewModel)** is used as the primary pattern, consistent with Avalonia best practice. Data binding is two-way wherever settings are editable. Commands (e.g. Save,
-Reset, Launch) are exposed from ViewModels as `ICommand` implementations using CommunityToolkit.Mvvm.
+**MVVM (Model–View–ViewModel)** is used as the primary pattern, consistent with Avalonia best practice. Data binding is two-way wherever settings are editable. Commands (e.g.
+Save, Reset, Launch) are exposed from ViewModels as `ICommand` implementations using `CommunityToolkit.Mvvm`. Source generators (`[ObservableProperty]`, `[RelayCommand]`) are
+used throughout; hand-rolled INPC is not permitted.
 
-### 5.2 Initial Project Structure Example
+### 5.2 Actual Project Structure
 
 ```
 Launcher/
 ├── Launcher.csproj
-├── App.axaml
-├── App.axaml.cs
+├── App.axaml / App.axaml.cs
 ├── Assets/
 │   └── (icons, images)
 ├── Models/
-│   ├── ZooIniModel.cs
-│   ├── UserSettings.cs
-│   ├── UISettings.cs
-│   ├── AdvancedSettings.cs
-│   ├── AISettings.cs
-│   ├── DebugSettings.cs
-│   ├── LanguageSettings.cs
-│   ├── MapSettings.cs
-│   ├── LocatorResult.cs
-│   └── LaunchResult.cs
+│   ├── ZooIniModel.cs          — in-memory representation of zoo.ini
+│   ├── ZooIniDefaults.cs       — single source of truth for all known INI keys (IniKeySpec list)
+│   ├── IniRanges.cs            — numeric min/max constants for XAML NumericUpDown bindings
+│   ├── IniDocument.cs          — raw line-by-line structure for round-trip writes
+│   ├── IniDisplayEntry.cs      — flat key/value pair for the General tab read-only list
+│   ├── LauncherConfig.cs       — persisted launcher settings (see §7.2)
+│   ├── Installation.cs         — single registered installation entry (see §7.3)
+│   ├── LaunchBehaviour.cs      — enum: OpenLastUsed | PromptToChoose
+│   ├── StartupResult.cs        — output of IStartupService (status + located paths + model)
+│   ├── StartupStatus.cs        — enum: Ready | GameDirectoryUnknown | IniMissing | …
+│   └── LaunchResult.cs         — output of ILauncherService (Success + ErrorMessage)
 ├── Services/
-│   ├── IIniParserService.cs
-│   ├── IniParserService.cs
-│   ├── IFileLocatorService.cs
-│   ├── FileLocatorService.cs
-│   ├── IVersioningService.cs
-│   ├── VersioningService.cs
-│   ├── ILauncherService.cs
-│   └── LauncherService.cs
+│   ├── IIniParserService.cs / IniParserService.cs
+│   ├── IFileLocatorService.cs / FileLocatorService.cs
+│   ├── IInstallationService.cs / InstallationService.cs
+│   ├── IVersioningService.cs / VersioningService.cs
+│   ├── ILauncherService.cs / LauncherService.cs
+│   ├── ILauncherConfigService.cs / LauncherConfigService.cs
+│   ├── IStartupService.cs / StartupService.cs
+│   ├── IRegistryReader.cs / WindowsRegistryReader.cs
+│   ├── IFolderPicker.cs / AvaloniaFolderPicker.cs
+│   └── IShellService.cs / WindowsShellService.cs
 ├── ViewModels/
-│   ├── MainWindowViewModel.cs
-│   ├── StatusViewModel.cs
-│   ├── DisplaySettingsViewModel.cs
-│   ├── GraphicsSettingsViewModel.cs
-│   ├── AudioSettingsViewModel.cs
-│   ├── GameplaySettingsViewModel.cs
-│   ├── InterfaceSettingsViewModel.cs
-│   ├── MapSettingsViewModel.cs
-│   ├── LanguageSettingsViewModel.cs
-│   └── DebugSettingsViewModel.cs
+│   ├── ViewModelBase.cs
+│   ├── MainWindowViewModel.cs  — top-level orchestrator
+│   └── IniSettingsViewModel.cs — INI Configurations tab
 └── Views/
-    ├── MainWindow.axaml
-    ├── MainWindow.axaml.cs
-    ├── StatusView.axaml
-    ├── DisplaySettingsView.axaml
-    ├── GraphicsSettingsView.axaml
-    ├── AudioSettingsView.axaml
-    ├── GameplaySettingsView.axaml
-    ├── InterfaceSettingsView.axaml
-    ├── MapSettingsView.axaml
-    ├── LanguageSettingsView.axaml
-    └── DebugSettingsView.axaml
+    ├── MainWindow.axaml / MainWindow.axaml.cs
+    └── ViewLocator.cs
 ```
 
 ### 5.3 Dependency Injection
 
-Services are registered in `App.OnFrameworkInitializationCompleted` using Microsoft.Extensions.DependencyInjection and exposed via `App.Services`. ViewModels receive their
-dependencies via constructor injection. The actual composition root also includes `IStartupService` (orchestrates the locate → parse → ensure-backup sequence),
-`ILauncherConfigService`
-(persists `%AppData%\ZooTycoonLauncher\launcher.config`), `IRegistryReader` / `WindowsRegistryReader` (HKLM probes), `IFolderPicker` / `AvaloniaFolderPicker`, and `IShellService`
-/ `WindowsShellService`. The folder picker depends on the live `TopLevel`, so `MainWindow.OnLoaded` hands it in once the window exists.
+Services are registered in `App.OnFrameworkInitializationCompleted` using
+`Microsoft.Extensions.DependencyInjection` and exposed via `App.Services`. ViewModels receive their dependencies via constructor injection. The folder picker depends on the live
+`TopLevel`, so `MainWindow.OnLoaded` hands it in once the window exists.
 
 ```csharp
-// Example registration (App.axaml.cs)
+// App.axaml.cs (actual registrations)
+services.AddSingleton<IFileSystem, FileSystem>();               // System.IO.Abstractions
+services.AddSingleton<IRegistryReader, WindowsRegistryReader>();
+services.AddSingleton<ILauncherConfigService, LauncherConfigService>();
 services.AddSingleton<IFileLocatorService, FileLocatorService>();
+services.AddSingleton<IInstallationService, InstallationService>();
 services.AddSingleton<IIniParserService, IniParserService>();
 services.AddSingleton<IVersioningService, VersioningService>();
 services.AddSingleton<ILauncherService, LauncherService>();
 services.AddSingleton<IStartupService, StartupService>();
-services.AddSingleton<ILauncherConfigService, LauncherConfigService>();
-services.AddSingleton<IRegistryReader, WindowsRegistryReader>();
 services.AddSingleton<IFolderPicker, AvaloniaFolderPicker>();
 services.AddSingleton<IShellService, WindowsShellService>();
+services.AddTransient<IniSettingsViewModel>();
 services.AddTransient<MainWindowViewModel>();
 ```
 
+### 5.4 Multi-Installation Startup Flow
+
+On every launch, `IStartupService.InitializeAsync` evaluates the launcher config and opens the appropriate installation. The flow is governed by two config properties:
+`LaunchBehaviour` and the `Installations` list.
+
+```
+┌── No installations in config ──────────────────────────────────────────────────┐
+│                                                                                 │
+│  LaunchBehaviour = OpenLastUsed                                                 │
+│    → Auto-discover via registry / hard-coded paths (§6.1)                      │
+│      ├── Found     → Register it, open it                                      │
+│      └── Not found → Prompt user to locate manually                            │
+│                                                                                 │
+│  LaunchBehaviour = PromptToChoose                                               │
+│    → Prompt user to locate an installation manually                             │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌── Installations in config ──────────────────────────────────────────────────────┐
+│                                                                                  │
+│  LaunchBehaviour = OpenLastUsed                                                  │
+│    → Validate the last-opened installation                                       │
+│      ├── Valid     → Open it                                                     │
+│      └── Invalid   → Try each remaining installation in config order             │
+│            ├── At least one valid                                                │
+│            │     → Open the first valid one                                      │
+│            │     → Alert user about invalid entries (Fix / Remove / Ignore)      │
+│            │       Mark invalid entries as IsValid = false in config             │
+│            └── None valid                                                        │
+│                  → Alert user about all invalid entries (Fix / Remove / Ignore)  │
+│                  → Mark all as IsValid = false                                   │
+│                  → Prompt user to locate a new installation manually             │
+│                                                                                  │
+│  LaunchBehaviour = PromptToChoose                                                │
+│    → Show installation picker listing all registered installations               │
+│    → User selects one                                                            │
+│      ├── Valid     → Open it                                                     │
+│      └── Invalid   → Alert user (Fix / Remove / Open Another)                   │
+│                                                                                  │
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
+
+**"Fix"** means the user is prompted to re-locate the directory for that installation entry — the entry is updated in place rather than removed and re-added, preserving the
+installation's `Id`, `Name`, and history. **"Remove"** deletes the entry from the config. **"Ignore"** leaves it flagged as `IsValid = false` and proceeds.
+
+> **Note:** The launcher makes no changes to the game installation on disk during Fix, Remove, or Ignore. These operations only affect `launcher.config`.
+
 ---
 
-## 6. Example Module Descriptions
+## 6. Module Descriptions
 
 ### 6.1 FileLocatorService
 
-**Responsibility:** Locate `zoo.exe` and `zoo.ini` on the host file system.
+**Responsibility:** Given a candidate directory (or no directory), confirm that `zoo.exe` and `zoo.ini` are present. Also performs automatic discovery when no directory is
+provided.
 
 **Interface:**
 
 ```csharp
 public interface IFileLocatorService
 {
-    /// <summary>
-    /// Attempts to locate zoo.exe and zoo.ini automatically.
-    /// </summary>
+    /// <summary>Attempts to locate zoo.exe and zoo.ini automatically.</summary>
     Task<LocatorResult> LocateFilesAsync();
 
-    /// <summary>
-    /// Allows the user to manually specify the directory containing zoo.exe.
-    /// </summary>
+    /// <summary>Confirms that zoo.exe and zoo.ini exist within the given directory.</summary>
     Task<LocatorResult> LocateFilesAsync(string directoryPath);
 }
 ```
 
-`LocatorResult` is defined in `Models/LocatorResult.cs`:
+**Auto-discovery strategy (in priority order):**
 
-```csharp
-public record LocatorResult(
-    bool ExeFound,
-    bool IniFound,
-    string? ExePath,
-    string? IniPath,
-    string? GameDirectory
-);
-```
-
-**Discovery Strategy (in priority order):**
-
-1. Check the launcher's own persisted setting for the game directory (from a local `launcher.config` file).
-2. Query the Windows Registry for Zoo Tycoon installation paths:
-    - `HKLM\SOFTWARE\Microsoft Games\Zoo Tycoon\1.0`
-    - `HKLM\SOFTWARE\WOW6432Node\Microsoft Games\Zoo Tycoon\1.0`
-3. Check common default installation directories:
-    - `C:\Program Files (x86)\Microsoft Games\Zoo Tycoon\`
-    - `C:\Program Files\Microsoft Games\Zoo Tycoon\`
-4. If none of the above succeeds, prompt the user via a folder-picker dialogue.
+1. Persisted `GameDirectory` from `launcher.config` (the most recently used directory).
+2. Eight value-name variants under `HKLM\SOFTWARE\Microsoft Games\Zoo Tycoon\1.0` and the WOW6432Node equivalent.
+3. Hard-coded paths: `%ProgramFiles(x86)%\Microsoft Games\Zoo Tycoon` and `%ProgramFiles%\Microsoft Games\Zoo Tycoon`.
+4. If none of the above succeeds, it returns a failure result — the caller prompts the user via the folder picker.
 
 ---
 
 ### 6.2 IniParserService
 
-**Responsibility:** Read `zoo.ini` from disk into a typed `ZooIniModel` and write a `ZooIniModel` back to disk, preserving comments and key ordering where possible.
+**Responsibility:** Read `zoo.ini` from disk into a typed `ZooIniModel` and write a `ZooIniModel` back to disk, preserving comments, blank lines, and key ordering.
 
 **Interface:**
 
@@ -268,42 +294,34 @@ public interface IIniParserService
 
 **Behaviour:**
 
-- The parser reads the file line by line. Section headers (`[SectionName]`) and key–value pairs (`Key=Value`) are stored. Comment lines (`;` prefix) and blank lines are preserved
-  in an ordered structure so that round-trip writes do not destroy the file's formatting.
-- Keys that are present in the file but not known to the launcher are stored in a `Dictionary<string, string> UnknownKeys` collection and written back verbatim, ensuring no data
-  loss.
-- Keys that are absent from the file but known to the launcher are treated as having their default values; they are written to the file on the next save.
-- All string-to-typed-value conversions (integers, booleans, enumerations) are performed here, with fallback to defaults on parse failure.
+- The parser tokenises the file into an `IniDocument` (a sequence of `IniLine` records: `IniSectionHeader`, `IniKeyValue`, `IniComment`, `IniBlank`). This structure is stashed
+  on `ZooIniModel.RawDocument` and re-emitted verbatim on the next write operation, preserving comments, blank lines, and key ordering.
+- Keys present in the file but not known to the launcher are stored verbatim in `ZooIniModel.UnknownKeys` (`"Section.Key"` → `"Value"`) and written back on every save.
+- Keys absent from the file but known to the launcher are treated as having their default values and written to the file on the next save.
+- All string-to-typed-value conversions are performed here, with silent fallback to the property's current value on parse failure (SDD §10).
+- Writes use the temp-file-then-`Move(overwrite: true)` pattern (SDD §11) to guarantee atomic updates.
 
 ---
 
 ### 6.3 VersioningService
 
-**Responsibility:** Manage the `zoo.ini.original` and `zoo.ini.undo` backup files. See [Section 8](#8-File-Versioning-System) for full detail.
+**Responsibility:** Manage the `zoo.ini.original` and `zoo.ini.undo` backup files. See [§8](#8-File-Versioning-System) for full detail.
 
 **Interface:**
 
 ```csharp
 public interface IVersioningService
 {
-    /// <summary>
-    /// Called once on first launch. Creates zoo.ini.original if it does not already exist.
-    /// </summary>
+    /// <summary>Creates zoo.ini.original on first launch if it does not already exist.</summary>
     Task EnsureOriginalBackupAsync(string iniFilePath);
 
-    /// <summary>
-    /// Copies the current zoo.ini to zoo.ini.undo before a save operation.
-    /// </summary>
+    /// <summary>Copies the current zoo.ini to zoo.ini.undo before a save operation.</summary>
     Task CreateUndoSnapshotAsync(string iniFilePath);
 
-    /// <summary>
-    /// Restores zoo.ini from zoo.ini.undo.
-    /// </summary>
+    /// <summary>Restores zoo.ini from zoo.ini.undo.</summary>
     Task<bool> RestoreUndoAsync(string iniFilePath);
 
-    /// <summary>
-    /// Restores zoo.ini from zoo.ini.original.
-    /// </summary>
+    /// <summary>Restores zoo.ini from zoo.ini.original.</summary>
     Task<bool> RestoreOriginalAsync(string iniFilePath);
 
     bool UndoSnapshotExists(string iniFilePath);
@@ -326,35 +344,64 @@ public interface ILauncherService
 }
 ```
 
-`LaunchResult` is defined in `Models/LaunchResult.cs`:
-
-```csharp
-public record LaunchResult(bool Success, string? ErrorMessage);
-```
-
 **Behaviour:**
 
-- The game is launched via `System.Diagnostics.Process.Start`.
-- The working directory is set to the game's installation directory.
-- The launcher remains open after launch; it does not exit or minimise automatically (this may be made configurable in a future version).
-- If the process fails to start (e.g. the executable is missing or access is denied), a `LaunchResult` with `Success = false` and an appropriate `ErrorMessage` is returned.
+- The game is launched via `System.Diagnostics.Process.Start` with `UseShellExecute = true`, giving the OS the same launch semantics as a double click.
+- The working directory is set to the game's installation directory so the game resolves `zoo.ini` and its assets via expected relative paths.
+- The launcher remains open after launch and does not exit or minimise automatically (configurable in a future version — see §14 Q1).
+- On failure, a `LaunchResult` with `Success = false` and the OS error message is returned and surfaced in the status bar.
 
 ---
 
-### 6.5 ViewModels
+### 6.5 InstallationService
 
-Each settings category has its own ViewModel. All ViewModels inherit from a common `ViewModelBase` (which implements `INotifyPropertyChanged` via CommunityToolkit.Mvvm's
-`ObservableObject`).
+**Responsibility:** Validate and manage the list of registered Zoo Tycoon installations stored in `launcher.config`. Acts as the bridge between raw directory paths and typed
+`Installation` records.
 
-**MainWindowViewModel** orchestrates the application. It holds:
+**Interface:**
 
-- `StatusViewModel` — read-only status information.
-- One ViewModel per settings tab.
-- Commands: `SaveChangesCommand`, `UndoLastSaveCommand`, `FullResetCommand`, `LoadIniCommand`, `LaunchGameCommand`.
-- An `IsDirty` flag that tracks whether unsaved changes exist.
+```csharp
+public interface IInstallationService
+{
+    /// <summary>Returns true if the given directory contains both zoo.exe and zoo.ini.</summary>
+    Task<bool> ValidateAsync(string gameDirectory);
 
-**Tab ViewModels** each expose observable properties corresponding to their respective settings group. Each property setter marks `IsDirty = true` on the parent
-`MainWindowViewModel`.
+    /// <summary>Re-validates all installations in the config and updates IsValid accordingly.</summary>
+    Task RevalidateAllAsync();
+
+    /// <summary>Registers a new installation. Throws if the directory is not valid.</summary>
+    Task<Installation> AddAsync(string gameDirectory, string? name = null);
+
+    /// <summary>Removes an installation by Id.</summary>
+    Task RemoveAsync(Guid id);
+
+    /// <summary>Updates the name or game directory of an existing installation.</summary>
+    Task UpdateAsync(Guid id, string? name = null, string? gameDirectory = null);
+}
+```
+
+---
+
+### 6.6 ViewModels
+
+All ViewModels inherit from `ViewModelBase` (`ObservableObject` from CommunityToolkit.Mvvm). Source generators are used for all observable properties (`[ObservableProperty]`
+on `partial` properties) and commands (`[RelayCommand]` on `private` async methods).
+
+**`MainWindowViewModel`** is the top-level orchestrator. It holds:
+
+- `IniSettingsViewModel Ini` — the INI Configurations tab.
+- Paths and status flags (`ExePath`, `IniPath`, `HasExe`, `HasIni`, `IsBusy`, `StatusMessage`).
+- `HasPendingIniChanges` — computed mirror of `Ini.IsDirty`; gates `LaunchGameCommand` and the unsaved-changes warning.
+- `IsStatusBarVisible` — computed: hides the status bar when the message is `"Ready."`.
+- Commands: `LaunchGameCommand`, `LocateManuallyCommand`, `RevealInExplorerCommand`.
+
+**`IniSettingsViewModel`** owns the INI Configurations tab. It holds:
+
+- One observable property per editable INI key, plus a `*Tooltip` string for each (built once at construction from the `Tt.*` XAML resource dictionary and the defaults model).
+- `IsDirty` — flipped on any edit, cleared on save/discard.
+- `HoverDescription` — set by `MainWindow.axaml.cs` via bubbled `PointerMoved`; drives `DisplayStatus`.
+- `DisplayStatus` — computed: `HoverDescription ?? StatusMessage`; shown in the status area above the Discard/Undo/Save buttons.
+- Commands: `SaveCommand`, `DiscardCommand`, `UndoCommand`.
 
 ---
 
@@ -362,35 +409,94 @@ Each settings category has its own ViewModel. All ViewModels inherit from a comm
 
 ### 7.1 ZooIniModel
 
-`ZooIniModel` is a plain C# class (not a record, to allow property change tracking if needed) that acts as the in-memory representation of `zoo.ini`. It is composed of
-strongly typed submodels, one per settings category.
+`ZooIniModel` is a plain C# class composed of strongly typed submodels, one per INI section. It is not a record, so property-change tracking can be added if needed. Unknown
+keys are preserved in `UnknownKeys` for round-trip fidelity.
 
 ```csharp
 public class ZooIniModel
 {
     public UserSettings     User     { get; set; } = new();
-    public UISettings       UI       { get; set; } = new();
+    public UiSettings       Ui       { get; set; } = new();
     public AdvancedSettings Advanced { get; set; } = new();
-    public AISettings       AI       { get; set; } = new();
+    public AiSettings       Ai       { get; set; } = new();
     public DebugSettings    Debug    { get; set; } = new();
     public LanguageSettings Language { get; set; } = new();
     public MapSettings      Map      { get; set; } = new();
     public Dictionary<string, string> UnknownKeys { get; set; } = new();
+
+    internal IniDocument? RawDocument { get; init; }
 }
 ```
 
-Each submodel class exposes properties with default values matching Zoo Tycoon's known defaults. See [Section 9](#9-Configuration-Settings-Reference) for the full settings
-reference.
+See [§9](#9-Configuration-Settings-Reference) for the full settings reference.
 
 ### 7.2 Launcher Configuration
 
-A small `launcher.config` JSON file is stored in `%AppData%\ZooTycoonLauncher\` to persist the user's game directory path and any launcher-specific preferences between sessions.
-This file is entirely separate from `zoo.ini` and is managed by a lightweight `LauncherConfigService` (not described in full detail here as it is low complexity).
+`launcher.config` is a JSON file stored in `%AppData%\ZooTycoonLauncher\`. It is managed by `ILauncherConfigService` and written atomically (temp file + `Move(overwrite: true)`).
+
+**Model:**
+
+```csharp
+public class LauncherConfig
+{
+    public List<Installation> Installations       { get; set; } = [];
+    public Guid?              LastOpenedInstallationId { get; set; }
+    public LaunchBehaviour    LaunchBehaviour     { get; set; } = LaunchBehaviour.OpenLastUsed;
+    public bool               MinimiseOnLaunch    { get; set; } = false;
+}
+
+public enum LaunchBehaviour
+{
+    OpenLastUsed,
+    PromptToChoose
+}
+```
+
+**Example `launcher.config`:**
 
 ```json
 {
-  "gameDirectory": "C:\\Program Files (x86)\\Microsoft Games\\Zoo Tycoon",
-  "minimiseOnLaunch": false
+  "installations":            [
+    {
+      "id":            "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name":          "My Zoo Tycoon",
+      "gameDirectory": "C:\\Program Files (x86)\\Microsoft Games\\Zoo Tycoon",
+      "isValid":       true,
+      "lastOpened":    "2026-05-09T12:00:00Z"
+    }
+  ],
+  "lastOpenedInstallationId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "launchBehaviour":          "OpenLastUsed",
+  "minimiseOnLaunch":         false
+}
+```
+
+### 7.3 Installation Model
+
+Each entry in `LauncherConfig.Installations` is an `Installation` record:
+
+```csharp
+public class Installation
+{
+    /// <summary>Stable identifier. Never changes, even if the directory or name is updated.</summary>
+    public Guid      Id            { get; set; } = Guid.NewGuid();
+
+    /// <summary>User-assigned friendly name. Null means the UI falls back to the directory path.</summary>
+    public string?   Name          { get; set; }
+
+    /// <summary>Absolute path to the directory containing zoo.exe and zoo.ini.</summary>
+    public string    GameDirectory { get; set; } = string.Empty;
+
+    /// <summary>
+    ///     False if the last validation attempt found zoo.exe or zoo.ini missing. An installation
+    ///     must pass validation to be added, but may become invalid afterwards (e.g. game uninstalled,
+    ///     drive disconnected). Invalid installations are still retained in config until the user
+    ///     explicitly removes them.
+    /// </summary>
+    public bool      IsValid       { get; set; } = true;
+
+    /// <summary>UTC timestamp of the last time this installation was opened in the launcher. Null if never opened.</summary>
+    public DateTime? LastOpened    { get; set; }
 }
 ```
 
@@ -409,15 +515,11 @@ The versioning system operates on two backup files that reside in the same direc
 | **Restored via** | "Full Reset" action in the GUI.                                                                  |
 | **Purpose**      | Represents the pristine, pre-launcher state of the configuration.                                |
 
-**Creation logic:**
-
 ```csharp
 // In VersioningService.EnsureOriginalBackupAsync
 var originalPath = iniFilePath + ".original";
 if (!File.Exists(originalPath))
-{
     File.Copy(iniFilePath, originalPath);
-}
 ```
 
 ### 8.2 zoo.ini.undo
@@ -428,40 +530,36 @@ if (!File.Exists(originalPath))
 | **Restored via**      | "Undo Last Save" action in the GUI.                                             |
 | **Purpose**           | Provides a single-level undo, allowing the user to revert the most recent save. |
 
-**Snapshot logic (called before each write operation):**
-
 ```csharp
 // In VersioningService.CreateUndoSnapshotAsync
 var undoPath = iniFilePath + ".undo";
 File.Copy(iniFilePath, undoPath, overwrite: true);
 ```
 
-**Save sequence (in MainWindowViewModel.SaveChangesCommand):**
+**Save sequence (in `IniSettingsViewModel.SaveAsync`):**
 
-1. Call `VersioningService.CreateUndoSnapshotAsync` — captures the current `zoo.ini` to `zoo.ini.undo`.
-2. Call `IniParserService.WriteAsync` — writes the new settings to `zoo.ini`.
-3. Reload the in-memory model from disk to confirm the write operation succeeded.
-4. Update `IsDirty = false`.
+1. Call `VersioningService.CreateUndoSnapshotAsync` — captures `zoo.ini` → `zoo.ini.undo`.
+2. Call `IniParserService.WriteAsync` — atomically writes the new settings.
+3. Re-read `zoo.ini` from disk to confirm and reflect any normalisation.
+4. Set `IsDirty = false`.
 
-**Undo sequence (in MainWindowViewModel.UndoLastSaveCommand):**
+**Undo sequence (in `IniSettingsViewModel.UndoCommand` — deferred):**
 
 1. Confirm with the user via a dialogue.
 2. Call `VersioningService.RestoreUndoAsync` — copies `zoo.ini.undo` over `zoo.ini`.
-3. Reload the in-memory model from `zoo.ini`.
-4. Refresh all ViewModels.
+3. Reload and refresh all bindings.
 
-**Full Reset sequence (in MainWindowViewModel.FullResetCommand):**
+**Full Reset sequence (deferred):**
 
 1. Confirm with the user via a dialogue.
 2. Call `VersioningService.RestoreOriginalAsync` — copies `zoo.ini.original` over `zoo.ini`.
-3. Reload the in-memory model from `zoo.ini`.
-4. Refresh all ViewModels.
+3. Reload and refresh all bindings.
 
 ---
 
 ## 9. Configuration Settings Reference
 
-This section documents all `zoo.ini` settings that the launcher will expose in its GUI. Keys, section names, and observed values are derived from inspection of a real `zoo.ini`
+This section documents all `zoo.ini` settings that the launcher exposes in its GUI. Keys, section names, and observed values are derived from inspection of a real `zoo.ini`
 file. Each submodel in `ZooIniModel` corresponds directly to an INI section.
 
 > **Note on defaults:** Where a setting's factory default differs from the observed file value, the known factory default is listed. Where the factory default is uncertain, the
@@ -480,15 +578,12 @@ Model class: `UserSettings`
 | `UpdateRate`   | Integer | `15`    | `1`–`60`              | Game logic update rate (ticks per second).               |
 | `DrawRate`     | Integer | `60`    | `15`–`120`            | Target frame rate cap (FPS).                             |
 
-> **Note:** `screenwidth` and `screenheight` are presented in the GUI as a single combined resolution picker (e.g. `1280x768`) but are written as two separate keys. `fullscreen` is
-> presented as a screen mode selector alongside the resolution picker.
+> **Note:** `fullscreen` is presented in the GUI as a screen mode drop-down (Fullscreen / Windowed) alongside the width and height fields.
 
 ### 9.2 Graphics Quality Settings
 
 INI Section: `[advanced]`  
 Model class: `AdvancedSettings`
-
-The `[advanced]` section controls the game's performance/quality trade-off. The inline comments in `zoo.ini` document the meaning of the `level` enumeration values.
 
 | Key             | Type    | Default | Range / Options | Description                                                                                 |
 |-----------------|---------|---------|-----------------|---------------------------------------------------------------------------------------------|
@@ -501,7 +596,7 @@ The `[advanced]` section controls the game's performance/quality trade-off. The 
 ### 9.3 Audio Settings
 
 INI Sections: `[UI]`, `[advanced]`  
-Model classes: `UISettings`, `AdvancedSettings`
+Model classes: `UiSettings`, `AdvancedSettings`
 
 | Key                    | INI Section  | Type    | Default               | Range / Options    | Description                                                                     |
 |------------------------|--------------|---------|-----------------------|--------------------|---------------------------------------------------------------------------------|
@@ -518,7 +613,7 @@ Model classes: `UISettings`, `AdvancedSettings`
 ### 9.4 Gameplay Settings
 
 INI Sections: `[UI]`, `[ai]`  
-Model classes: `UISettings`, `AISettings`
+Model classes: `UiSettings`, `AiSettings`
 
 | Key               | INI Section | Type    | Default  | Range / Options   | Description                                                   |
 |-------------------|-------------|---------|----------|-------------------|---------------------------------------------------------------|
@@ -531,7 +626,7 @@ Model classes: `UISettings`, `AISettings`
 ### 9.5 Interface and UI Settings
 
 INI Section: `[UI]`  
-Model class: `UISettings`
+Model class: `UiSettings`
 
 | Key                      | Type    | Default | Range / Options | Description                                                                  |
 |--------------------------|---------|---------|-----------------|------------------------------------------------------------------------------|
@@ -568,8 +663,8 @@ Model class: `LanguageSettings`
 | `lang`    | Integer | `9` *(observed)* | Windows LANGID integer    | Windows primary language identifier. |
 | `sublang` | Integer | `1` *(observed)* | Windows SUBLANGID integer | Windows sub-language identifier.     |
 
-> **Note:** `lang` and `sublang` correspond to Windows LANGID/SUBLANGID constants (e.g. `lang=9, sublang=1` = English (United States)). The launcher will expose these as a friendly
-> language drop-down populated from the set of language strings bundled with the game installation.
+> **Note:** `lang` and `sublang` correspond to Windows LANGID/SUBLANGID constants (e.g. `lang=9, sublang=1` = English (United States)). The launcher exposes these as a friendly
+> language drop-down.
 
 ### 9.8 Debug Settings
 
@@ -587,8 +682,8 @@ Model class: `DebugSettings`
 
 ### 9.9 Read-Only and Runtime State Keys
 
-The following keys are present in `zoo.ini` but are written and managed by the game at runtime. They are not editable via the launcher GUI and are displayed as read-only
-information in the status area where relevant. The INI parser preserves them verbatim on every save.
+The following keys are present in `zoo.ini` but are written and managed by the game at runtime. They are not editable via the launcher GUI. The INI parser preserves them verbatim
+on every save.
 
 | Key                           | INI Section | Description                                                             |
 |-------------------------------|-------------|-------------------------------------------------------------------------|
@@ -618,18 +713,21 @@ are never presented in the GUI.
 
 ## 10. Error Handling
 
-| Scenario                                             | Behaviour                                                                                                                          |
-|------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| `zoo.exe` not found                                  | Status area shows a warning. The "Launch Game" button is disabled. User is prompted to locate the game manually.                   |
-| `zoo.ini` not found                                  | Status area shows a warning. Settings tabs are disabled. User is prompted to locate the file or create a default one.              |
-| `zoo.ini` parse failure (malformed key)              | The offending key is stored verbatim in `UnknownKeys` and a non-blocking warning is logged. Parsing continues.                     |
-| Write failure (e.g. read-only file)                  | A modal error dialogue is shown. The undo snapshot created before the failed write is discarded. The file on disk is not modified. |
-| `zoo.ini.original` already exists on first launch    | No action is taken. The existing original is preserved.                                                                            |
-| `zoo.ini.undo` does not exist when Undo is requested | The "Undo Last Save" button is disabled.                                                                                           |
-| Game fails to launch                                 | A modal error dialogue displays the OS error message.                                                                              |
+| Scenario                                             | Behaviour                                                                                                                                                 |
+|------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `zoo.exe` not found                                  | Status bar shows a warning. The Launch Game button is disabled. User is prompted to locate the game manually.                                             |
+| `zoo.ini` not found                                  | Status bar shows a warning. Settings tabs are disabled.                                                                                                   |
+| `zoo.ini` parse failure (malformed key)              | The offending key is stored verbatim in `UnknownKeys` and a non-blocking warning is logged. Parsing continues.                                            |
+| Out-of-range or unparseable INI value                | Silently falls back to the property's current value (intentional — §11 Reliability). The original text is preserved in `RawDocument` until the next save. |
+| Write failure (e.g. read-only file)                  | A modal error dialogue is shown. The undo snapshot is retained. The file on disk is not modified.                                                         |
+| `zoo.ini.original` already exists on first launch    | No action is taken. The existing original is preserved.                                                                                                   |
+| `zoo.ini.undo` does not exist when Undo is requested | The Undo button is disabled.                                                                                                                              |
+| Game fails to launch                                 | A modal error dialogue displays the OS error message.                                                                                                     |
+| Installation becomes invalid after registration      | `Installation.IsValid` is set to `false`. On next launch the startup flow alerts the user and offers Fix / Remove / Ignore (see §5.4).                    |
+| All registered installations are invalid on startup  | The user is alerted to all invalid entries and offered Fix / Remove / Ignore before being prompted to locate a new installation.                          |
+| User cancels installation location prompt            | The launcher opens with no active installation; all tabs that require an installation are disabled.                                                       |
 
-All file I/O operations are wrapped in `try-catch` blocks. Exceptions are caught at the service layer and translated into result objects or error messages that are surfaced to the
-ViewModel layer for display.
+All file I/O operations are wrapped in `try-catch` blocks. Exceptions are caught at the service layer and translated into result objects or status messages surfaced to the VM.
 
 ---
 
@@ -639,23 +737,25 @@ ViewModel layer for display.
 |---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Performance**     | The application must launch and display its main window within 2 seconds on a modern machine. INI file parsing must complete within 500 ms.                                                                                 |
 | **Reliability**     | The launcher must never corrupt `zoo.ini`. Writes are performed atomically: the new content is written to a temporary file first, then the temporary file is moved over `zoo.ini` using `File.Move` with `overwrite: true`. |
-| **Usability**       | All settings must display their default value as hint text. Changed-but-unsaved values must be visually distinguished from saved values. The user must be prompted to confirm destructive actions (Undo, Full Reset).       |
+| **Usability**       | All settings display their description and default value when the field is hovered. Changed-but-unsaved values are tracked via the `IsDirty` flag. The user is prompted to confirm destructive actions (Undo, Full Reset).  |
 | **Compatibility**   | Target: Windows 10 and Windows 11, x64. The launcher targets .NET 10.                                                                                                                                                       |
 | **Maintainability** | All known INI keys and their defaults are defined in a single location (`ZooIniDefaults.cs`) to simplify future additions.                                                                                                  |
-| **UI**              | The Avalonia Fluent Theme is used throughout. No custom theme is implemented at this stage.                                                                                                                                 |
+| **UI**              | The Classic Avalonia Theme is used throughout, giving the launcher the visual appearance of a Windows 95/98-era application consistent with the era of the game.                                                            |
 
 ---
 
 ## 12. Dependencies and Third-Party Libraries
 
-| Package                                    | Version            | Purpose                                               |
-|--------------------------------------------|--------------------|-------------------------------------------------------|
-| `Avalonia`                                 | 11.x               | UI framework                                          |
-| `Avalonia.Themes.Fluent`                   | 11.x               | Fluent visual theme                                   |
-| `Avalonia.Desktop`                         | 11.x               | Desktop application host                              |
-| `CommunityToolkit.Mvvm`                    | 8.x                | `ObservableObject`, `RelayCommand`, source generators |
-| `Microsoft.Extensions.DependencyInjection` | 8.x                | Dependency injection container                        |
-| `System.Text.Json`                         | *(in-box .NET 10)* | Launcher config file serialisation                    |
+| Package                                    | Version            | Purpose                                                  |
+|--------------------------------------------|--------------------|----------------------------------------------------------|
+| `Avalonia`                                 | 11.x               | UI framework                                             |
+| `Classic.Avalonia.Theme`                   | *latest*           | Windows 95/98-era visual theme                           |
+| `Avalonia.Desktop`                         | 11.x               | Desktop application host                                 |
+| `CommunityToolkit.Mvvm`                    | 8.x                | `ObservableObject`, `RelayCommand`, source generators    |
+| `Microsoft.Extensions.DependencyInjection` | 8.x                | Dependency injection container                           |
+| `System.IO.Abstractions`                   | *latest*           | `IFileSystem` abstraction for testable file I/O          |
+| `JetBrains.Annotations`                    | *latest*           | `[UsedImplicitly]` and other static-analysis annotations |
+| `System.Text.Json`                         | *(in-box .NET 10)* | Launcher config file serialisation                       |
 
 No third-party INI parser library is used; parsing is implemented directly to preserve comments, ordering, and round-trip fidelity.
 
@@ -669,19 +769,23 @@ No third-party INI parser library is used; parsing is implemented directly to pr
 - The launcher runs on **Windows only**. Avalonia's cross-platform capabilities are not exploited; Windows-specific APIs (Registry, `Process.Start` with Windows conventions) are
   used freely.
 - The launcher does not require an internet connection for any functionality.
-- Only one `zoo.ini` file is managed at a time. Multi-installation support is not in scope for v1.0.
+- Adding or removing an installation in the launcher does not install or uninstall the game on the user's computer. It only registers or deregisters that directory with the
+  launcher.
+- `zoo.exe` and `zoo.ini` must reside in the same directory. There is no supported configuration where they are split across directories.
 
 ---
 
 ## 14. Open Questions
 
-| # | Question                                                                                                                                                                                   | Owner    | Status   |
-|---|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|----------|
-| 1 | Should the launcher minimise to the system tray when the game is launched, or remain visible?                                                                                              | Design   | Open     |
-| 2 | Should a "create default zoo.ini" option be provided when no `zoo.ini` is found?                                                                                                           | Design   | Open     |
-| 3 | Are there additional `zoo.ini` keys not yet documented here that should be exposed? Requires testing against multiple Zoo Tycoon builds and expansion packs (Dinosaur Digs, Marine Mania). | Research | Open     |
-| 4 | Should the launcher support command-line arguments to `zoo.exe` (e.g. `-f` for fullscreen)?                                                                                                | Design   | Open     |
-| 5 | Should a "profile" system be considered for v2.0, allowing users to save and switch between multiple INI configurations?                                                                   | Future   | Deferred |
+| # | Question                                                                                                                                                                                   | Owner    | Status                                                                                |
+|---|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------------------------------------------------------------------------------|
+| 1 | Should the launcher minimise to the system tray when the game is launched, or remain visible?                                                                                              | Design   | Open                                                                                  |
+| 2 | Should a "create default zoo.ini" option be provided when no `zoo.ini` is found?                                                                                                           | Design   | Open                                                                                  |
+| 3 | Are there additional `zoo.ini` keys not yet documented here that should be exposed? Requires testing against multiple Zoo Tycoon builds and expansion packs (Dinosaur Digs, Marine Mania). | Research | Open                                                                                  |
+| 4 | Should the launcher support command-line arguments to `zoo.exe` (e.g. `-f` for fullscreen)?                                                                                                | Design   | Open                                                                                  |
+| 5 | What is the exact UI treatment for the installation header — a dedicated panel below the menu bar, or integrated into the window title?                                                    | Design   | Open (multi-installation milestone)                                                   |
+| 6 | When the user selects "Fix" for an invalid installation, should the fix update the directory in place (preserving the entry's `Id`, `Name`, history) or create a new entry?                | Design   | Open (multi-installation milestone) — in-place update is the current intent; see §5.4 |
+| 7 | Should the installation picker (shown when `LaunchBehaviour = PromptToChoose`) be a modal dialogue or a dedicated startup screen?                                                          | Design   | Open (multi-installation milestone)                                                   |
 
 ---
 

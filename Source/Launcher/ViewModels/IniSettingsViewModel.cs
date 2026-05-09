@@ -26,7 +26,7 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
 public sealed partial class IniSettingsViewModel : ViewModelBase
 {
     /// <summary>
-    ///     Canonical defaults model. <c> new ZooIniModel() </c> picks up every submodel property initialiser (e.g. <c> UserSettings.ScreenWidth = 800</c>), so this single instance
+    ///     Canonical defaults model. <c>new ZooIniModel()</c> picks up every submodel property initialiser (e.g. <c>UserSettings.ScreenWidth = 800</c>), so this single instance
     ///     is the source of truth for every tooltip's "Default:" line.
     /// </summary>
     private static readonly ZooIniModel DefaultsModel = new();
@@ -234,7 +234,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
     public string NormalTooltip { get; } = BuildTooltip(resourceKey: "TT.Normal", section: "advanced", key: "normal");
 
-    /// <summary>Friendly inverted view over <see cref="NoMenuMusic" />: <c> true </c> = play menu music. Bound from the Audio GroupBox checkbox.</summary>
+    /// <summary>Friendly inverted view over <see cref="NoMenuMusic" />: <c>true</c> = play menu music. Bound from the Audio GroupBox checkbox.</summary>
     public bool PlayMenuMusic
     {
         get => !NoMenuMusic;
@@ -533,7 +533,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
     private bool CanSave() => IsDirty && _model is not null && !string.IsNullOrEmpty(_iniPath);
 
-    /// <summary>Re-reads <c> zoo.ini </c> from disk and applies it, throwing away any in-memory edits. Bound to the Discard button.</summary>
+    /// <summary>Re-reads <c>zoo.ini</c> from disk and applies it, throwing away any in-memory edits. Bound to the Discard button.</summary>
     /// <remarks>
     ///     Re-reads from disk rather than re-syncing from the cached <see cref="_model" /> because <see cref="SaveAsync" /> mutates that model in place before the file write
     ///     operation — after a failed save, the model holds the intended values, not the on-disk values. Rereading is the only way to guarantee Discard restores the user to the file's
@@ -568,7 +568,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     private bool CanDiscard() => IsDirty && !string.IsNullOrEmpty(_iniPath);
 
     /// <summary>
-    ///     Restores <c> zoo.ini </c> from the <c> zoo.ini.undo </c> snapshot. Stubbed for this milestone — wired up so the button shows visibly disabled rather than executing a
+    ///     Restores <c>zoo.ini</c> from the <c>zoo.ini.undo</c> snapshot. Stubbed for this milestone — wired up so the button shows visibly disabled rather than executing a
     ///     no-op handler.
     /// </summary>
     /// <remarks>
@@ -732,8 +732,8 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     }
 
     /// <summary>
-    ///     Looks up the prose from the <c> TT.* </c> resource, finds the matching <see cref="IniKeySpec" /> in <see cref="ZooIniDefaults.KnownKeys" />, reads the default value off
-    ///     <see cref="DefaultsModel" />, and returns <c> "{prose}\n\nDefault: {value}"</c>.
+    ///     Looks up the prose from the <c>TT.*</c> resource, finds the matching <see cref="IniKeySpec" /> in <see cref="ZooIniDefaults.KnownKeys" />, reads the default value off
+    ///     <see cref="DefaultsModel" />, and returns <c>"{prose}\n\nDefault: {value}"</c>.
     /// </summary>
     private static string BuildTooltip(string resourceKey, string section, string key)
     {
@@ -761,7 +761,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     }
 
     /// <summary>
-    ///     Pulls a string out of the merged <c> Application.Resources </c> dictionary. Returns empty if Avalonia hasn't booted yet (designer pre-init) or the key is missing — the
+    ///     Pulls a string out of the merged <c>Application.Resources</c> dictionary. Returns empty if Avalonia hasn't booted yet (designer pre-init) or the key is missing — the
     ///     tooltip silently degrades to "Default: …" alone, which is preferable to crashing the VM.
     /// </summary>
     private static string LookupResourceString(string resourceKey)

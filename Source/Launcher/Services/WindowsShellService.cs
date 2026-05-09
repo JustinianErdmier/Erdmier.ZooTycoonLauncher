@@ -5,7 +5,7 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 
 /// <inheritdoc cref="IShellService" />
 /// <remarks>
-///     Uses <c> explorer.exe /select,&lt;path&gt;</c> Explorer is forgiving here — if the target file no longer exists, it falls back to opening the parent directory; if even
+///     Uses <c>explorer.exe /select,&lt;path&gt;</c> Explorer is forgiving here — if the target file no longer exists, it falls back to opening the parent directory; if even
 ///     the parent is gone, the user's profile directory is shown. We deliberately don't pre-validate the path, so deletions between launch and click don't surface a different code
 ///     path than the happy case.
 /// </remarks>

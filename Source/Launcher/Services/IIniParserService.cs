@@ -5,12 +5,12 @@ using Erdmier.ZooTycoonLauncher.Launcher.Models;
 namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 
 /// <summary>
-///     Reads <c> zoo.ini </c> from disk into a typed <see cref="ZooIniModel" /> and writes a <see cref="ZooIniModel" /> back to disk, preserving comments and key ordering on a
+///     Reads <c>zoo.ini</c> from disk into a typed <see cref="ZooIniModel" /> and writes a <see cref="ZooIniModel" /> back to disk, preserving comments and key ordering on a
 ///     round-trip.
 /// </summary>
 public interface IIniParserService
 {
-    /// <summary>Reads and parses <c> zoo.ini </c> from <paramref name="iniFilePath" />.</summary>
+    /// <summary>Reads and parses <c>zoo.ini</c> from <paramref name="iniFilePath" />.</summary>
     /// <exception cref="System.IO.IOException">
     ///     Thrown if the file cannot be read. Callers (typically <see cref="StartupService" />) translate this into
     ///     <see cref="StartupStatus.IniParseFailed" />.

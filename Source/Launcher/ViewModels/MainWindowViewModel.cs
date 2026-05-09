@@ -33,7 +33,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Ini.PropertyChanged += OnIniPropertyChanged;
     }
 
-    /// <summary>Parameterless ctor used by the XAML designer only. Will be unused at runtime once DI is wired in <c> App.axaml.cs </c>.</summary>
+    /// <summary>Parameterless ctor used by the XAML designer only. Will be unused at runtime once DI is wired in <c>App.axaml.cs</c>.</summary>
     public MainWindowViewModel()
         : this(NullStartupService.Instance, NullFolderPicker.Instance, NullShellService.Instance, NullLauncherService.Instance, new IniSettingsViewModel())
     { }
@@ -55,11 +55,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>
     ///     Mirrors <see cref="IniSettingsViewModel.IsDirty" />. Drives the unsaved-changes warning above the Launch button and gates <see cref="CanLaunchGame" />. Bound to the
-    ///     warning TextBlock's <c> IsVisible </c>.
+    ///     warning TextBlock's <c>IsVisible</c>.
     /// </summary>
     /// <remarks>
-    ///     Computed (not <c> [ObservableProperty]</c>) so the source of truth stays on <see cref="IniSettingsViewModel" />. <see cref="OnIniPropertyChanged" /> raises
-    ///     <c> PropertyChanged </c> for this property when <c> Ini.IsDirty </c> flips.
+    ///     Computed (not <c>[ObservableProperty]</c>) so the source of truth stays on <see cref="IniSettingsViewModel" />. <see cref="OnIniPropertyChanged" /> raises
+    ///     <c>PropertyChanged</c> for this property when <c>Ini.IsDirty</c> flips.
     /// </remarks>
     public bool HasPendingIniChanges => Ini.IsDirty;
 
@@ -75,7 +75,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial bool IsBusy { get; set; }
 
-    /// <summary>The cached in-memory <c> zoo.ini </c>. Set by <see cref="InitializeAsync" /> on successful parse.</summary>
+    /// <summary>The cached in-memory <c>zoo.ini</c>. Set by <see cref="InitializeAsync" /> on successful parse.</summary>
     public ZooIniModel? Model { get; private set; }
 
     [ ObservableProperty ]
@@ -101,7 +101,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ RelayCommand ]
     private void RevealInExplorer(string? path) => _shell.RevealInExplorer(path);
 
-    /// <summary>Spawns <c> zoo.exe </c> via <see cref="ILauncherService" />. Bound to the General tab's "Launch Game" button.</summary>
+    /// <summary>Spawns <c>zoo.exe</c> via <see cref="ILauncherService" />. Bound to the General tab's "Launch Game" button.</summary>
     [ RelayCommand(CanExecute = nameof(CanLaunchGame)) ]
     private async Task LaunchGameAsync()
     {

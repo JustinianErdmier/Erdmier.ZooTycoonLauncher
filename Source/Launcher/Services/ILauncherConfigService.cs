@@ -4,7 +4,7 @@ using Erdmier.ZooTycoonLauncher.Launcher.Models;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 
-/// <summary>Loads and saves the launcher's persisted JSON configuration in <c> %AppData%\ZooTycoonLauncher\launcher.config</c>.</summary>
+/// <summary>Loads and saves the launcher's persisted JSON configuration in <c>%AppData%\ZooTycoonLauncher\launcher.config</c>.</summary>
 public interface ILauncherConfigService
 {
     /// <summary>Path to the JSON config file on the disk. Stable for the lifetime of the service.</summary>

@@ -5,7 +5,7 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 
 /// <summary>
 ///     Discriminator for the underlying typed value of an <see cref="IniKeySpec" />. Used by display-side formatters that need to turn the spec's INI-string output back into
-///     something human (e.g. <c> "1" </c> → <c> "On" </c> for bools).
+///     something human (e.g. <c>"1"</c> → <c>"On"</c> for bools).
 /// </summary>
 internal enum IniSpecKind { Bool, Int, NullableInt, Str, NullableStr }
 
@@ -24,16 +24,16 @@ internal sealed class IniKeySpec
         Write   = write;
     }
 
-    /// <summary>Key name, e.g. <c> "fullscreen" </c>. Compared case-insensitively when matching INI lines.</summary>
+    /// <summary>Key name, e.g. <c>"fullscreen"</c>. Compared case-insensitively when matching INI lines.</summary>
     public string Key { get; }
 
-    /// <summary>Underlying typed kind. Display-side formatters consult this to decide whether <c> Read </c>'s output should be shown verbatim or translated (e.g. bools to "On"/"Off").</summary>
+    /// <summary>Underlying typed kind. Display-side formatters consult this to decide whether <c>Read</c>'s output should be shown verbatim or translated (e.g. bools to "On"/"Off").</summary>
     public IniSpecKind Kind { get; }
 
     /// <summary>Reads the current typed value from the model and serialises it to its INI string form.</summary>
     public Func<ZooIniModel, string> Read { get; }
 
-    /// <summary>Section name (without brackets), e.g. <c> "user" </c> or <c> "UI" </c>. Compared case-insensitively when matching INI lines.</summary>
+    /// <summary>Section name (without brackets), e.g. <c>"user"</c> or <c>"UI"</c>. Compared case-insensitively when matching INI lines.</summary>
     public string Section { get; }
 
     /// <summary>Parses an INI string value and assigns it to the model. Falls back to the typed property's default on parse failure.</summary>

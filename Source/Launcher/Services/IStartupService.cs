@@ -5,7 +5,7 @@ using Erdmier.ZooTycoonLauncher.Launcher.Models;
 namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 
 /// <summary>
-///     Orchestrates the launcher's startup flow: load config, locate game files, parse <c> zoo.ini </c>, ensure the original backup exists, and persist the discovered game
+///     Orchestrates the launcher's startup flow: load config, locate game files, parse <c>zoo.ini</c>, ensure the original backup exists, and persist the discovered game
 ///     directory.
 /// </summary>
 public interface IStartupService

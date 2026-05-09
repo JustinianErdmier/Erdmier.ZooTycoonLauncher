@@ -19,7 +19,7 @@ internal abstract record IniLine;
 /// <param name="RawText"> The original line text, preserved verbatim for a round-trip. </param>
 internal sealed record IniSectionHeader(string Name, string RawText) : IniLine;
 
-/// <summary>A key-value line of the form <c> Key=Value </c>.</summary>
+/// <summary>A key-value line of the form <c>Key=Value</c>.</summary>
 /// <param name="Section"> The name of the section this key belongs to (without brackets). </param>
 /// <param name="Key"> The key name, normalised to its original casing. </param>
 /// <param name="Value"> The current value as a string. Updated by <see cref="Services.IniParserService.WriteAsync" /> when a known key's typed value has changed. </param>
@@ -33,7 +33,7 @@ internal sealed record IniKeyValue(string Section, string Key, string Value, str
         };
 }
 
-/// <summary>A comment line beginning with <c> ; </c>.</summary>
+/// <summary>A comment line beginning with <c>;</c>.</summary>
 /// <param name="RawText"> The original line text, preserved verbatim. </param>
 internal sealed record IniComment(string RawText) : IniLine;
 

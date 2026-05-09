@@ -41,6 +41,6 @@ public sealed class AvaloniaFolderPicker : IFolderPicker
         return string.IsNullOrEmpty(path) ? null : path;
     }
 
-    /// <summary>Wires the picker to a live window. Called from <c> MainWindow.OnLoaded</c>.</summary>
+    /// <summary>Wires the picker to a live window. Called from <c>MainWindow.OnLoaded</c>.</summary>
     public void SetTopLevel(TopLevel topLevel) => _topLevel = topLevel;
 }

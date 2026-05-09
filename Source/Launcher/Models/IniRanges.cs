@@ -3,12 +3,12 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 // ReSharper disable once GrammarMistakeInComment
 /// <summary>
 ///     Single source of truth for every numeric range applied to <see cref="ZooIniModel" /> integer keys. Consumed by <see cref="ZooIniDefaults" /> for parser-side validation
-///     and by the XAML <c> NumericUpDown </c> controls on the INI tab via <c> {x:Static models:IniRanges.&lt;Name&gt;} </c> for UI-side clamping. Some keys (e.g. screen dimensions)
+///     and by the XAML <c>NumericUpDown</c> controls on the INI tab via <c>{x:Static models:IniRanges.&lt;Name&gt;}</c> for UI-side clamping. Some keys (e.g. screen dimensions)
 ///     are intentionally unbounded by <see cref="ZooIniDefaults" /> but still expose XAML-only defensive caps here.
 /// </summary>
 /// <remarks>
-///     Public because Avalonia's compiled-binding pipeline needs reflective access to types referenced from XAML via <c> {x:Static}</c>. Constants are declared as
-///     <see cref="decimal" /> because <c> NumericUpDown.Minimum </c> / <c> NumericUpDown.Maximum </c> are typed <see cref="decimal" /> and the compiled-XAML pipeline does not
+///     Public because Avalonia's compiled-binding pipeline needs reflective access to types referenced from XAML via <c>{x:Static}</c>. Constants are declared as
+///     <see cref="decimal" /> because <c>NumericUpDown.Minimum</c> / <c>NumericUpDown.Maximum</c> are typed <see cref="decimal" /> and the compiled-XAML pipeline does not
 ///     implicitly convert <see cref="int" />. Parser-side <see cref="ZooIniDefaults" /> casts back to <see cref="int" /> at the call site — every value is well within
 ///     <see cref="int" /> range by construction, so the cast is lossless.
 /// </remarks>
@@ -91,7 +91,7 @@ public static class IniRanges
 
     public const decimal MovieVolumeMax = 0;
 
-    /// <summary>Movie volume in dB-style attenuation. <c> 0 </c> = full; <c> -10000 </c> = silent.</summary>
+    /// <summary>Movie volume in dB-style attenuation. <c>0</c> = full; <c>-10000</c> = silent.</summary>
     public const decimal MovieVolumeMin = -10000;
 
     public const decimal ScreenHeightMax = 16384;

@@ -16,10 +16,10 @@ public sealed class LanguageOption
     /// <summary>Display name shown in the drop-down.</summary>
     public string DisplayName { get; }
 
-    /// <summary>Windows primary language identifier. Maps to the <c> [language]/lang </c> INI key.</summary>
+    /// <summary>Windows primary language identifier. Maps to the <c>[language]/lang</c> INI key.</summary>
     public int Lang { get; }
 
-    /// <summary>Windows sub-language identifier. Maps to the <c> [language]/sublang </c> INI key.</summary>
+    /// <summary>Windows sub-language identifier. Maps to the <c>[language]/sublang</c> INI key.</summary>
     public int SubLang { get; }
 
     /// <inheritdoc />

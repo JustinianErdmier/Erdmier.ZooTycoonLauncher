@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System;
 using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,7 +12,11 @@ using Erdmier.ZooTycoonLauncher.Launcher.Services;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
 
-/// <summary>ViewModel for the Manage Installations dialog. Supports add, remove, rename, fix, and set-default operations.</summary>
+/// <summary>
+///     ViewModel for the Manage Installations dialog. Supports add, remove, rename, fix, and set-default operations.
+///     Each row is wrapped in an <see cref="InstallationListItem" /> so the list renders
+///     <c>(default)</c> / <c>(invalid)</c> indicators alongside the installation name.
+/// </summary>
 public sealed partial class ManageInstallationsViewModel : ViewModelBase
 {
     private readonly IDialogService _dialog;
@@ -32,24 +38,25 @@ public sealed partial class ManageInstallationsViewModel : ViewModelBase
         _dialog        = dialog;
     }
 
-    /// <summary>The installations currently registered in <c>launcher.config</c>.</summary>
+    /// <summary>The installations currently registered, wrapped with default/invalid indicators.</summary>
     [ ObservableProperty ]
-    public partial ObservableCollection<Installation> Installations { get; set; } = [];
+    public partial ObservableCollection<InstallationListItem> Items { get; set; } = [];
 
-    /// <summary>The installation currently selected in the list, or <see langword="null" /> if none.</summary>
+    /// <summary>The row currently selected in the list, or <see langword="null" /> if none.</summary>
     [ ObservableProperty ]
-    public partial Installation? SelectedInstallation { get; set; }
+    public partial InstallationListItem? SelectedItem { get; set; }
 
     /// <summary>Transient status text shown beneath the list. Cleared on the next successful operation.</summary>
     [ ObservableProperty ]
     public partial string? StatusMessage { get; set; }
 
-    /// <summary>Loads the current installations list from config.</summary>
+    /// <summary>Loads the current installations list from config along with the default-id flag.</summary>
     public async Task LoadAsync()
     {
-        IReadOnlyList<Installation> all = await _installations.GetAllAsync();
+        IReadOnlyList<Installation> all       = await _installations.GetAllAsync();
+        Guid?                       defaultId = await _installations.GetDefaultIdAsync();
 
-        Installations = new ObservableCollection<Installation>(all);
+        Items = new ObservableCollection<InstallationListItem>(all.Select(i => new InstallationListItem(i, defaultId.HasValue && i.Id == defaultId.Value)));
     }
 
     /// <summary>Prompts for a directory and friendly name, then registers the installation.</summary>
@@ -83,12 +90,12 @@ public sealed partial class ManageInstallationsViewModel : ViewModelBase
     [ RelayCommand(CanExecute = nameof(HasSelection)) ]
     private async Task RemoveAsync()
     {
-        if (SelectedInstallation is null)
+        if (SelectedItem is null)
         {
             return;
         }
 
-        bool confirmed = await _dialog.ConfirmAsync($"Remove \"{SelectedInstallation.DisplayName}\" from the launcher? The game files on disk are not affected.",
+        bool confirmed = await _dialog.ConfirmAsync($"Remove \"{SelectedItem.DisplayName}\" from the launcher? The game files on disk are not affected.",
                                                     title: "Remove Installation");
 
         if (!confirmed)
@@ -96,7 +103,7 @@ public sealed partial class ManageInstallationsViewModel : ViewModelBase
             return;
         }
 
-        await _installations.RemoveAsync(SelectedInstallation.Id);
+        await _installations.RemoveAsync(SelectedItem.Id);
         await LoadAsync();
     }
 
@@ -104,19 +111,19 @@ public sealed partial class ManageInstallationsViewModel : ViewModelBase
     [ RelayCommand(CanExecute = nameof(HasSelection)) ]
     private async Task RenameAsync()
     {
-        if (SelectedInstallation is null)
+        if (SelectedItem is null)
         {
             return;
         }
 
-        string? newName = await _dialog.ShowInputAsync(prompt: "New name:", title: "Rename Installation", SelectedInstallation.Name);
+        string? newName = await _dialog.ShowInputAsync(prompt: "New name:", title: "Rename Installation", SelectedItem.Installation.Name);
 
         if (newName is null)
         {
             return;
         }
 
-        await _installations.UpdateAsync(SelectedInstallation.Id, string.IsNullOrWhiteSpace(newName) ? null : newName);
+        await _installations.UpdateAsync(SelectedItem.Id, string.IsNullOrWhiteSpace(newName) ? null : newName);
         await LoadAsync();
     }
 
@@ -124,12 +131,12 @@ public sealed partial class ManageInstallationsViewModel : ViewModelBase
     [ RelayCommand(CanExecute = nameof(CanFix)) ]
     private async Task FixAsync()
     {
-        if (SelectedInstallation is null)
+        if (SelectedItem is null)
         {
             return;
         }
 
-        string? picked = await _folderPicker.PickFolderAsync(title: "Locate replacement directory for " + SelectedInstallation.DisplayName);
+        string? picked = await _folderPicker.PickFolderAsync(title: "Locate replacement directory for " + SelectedItem.DisplayName);
 
         if (picked is null)
         {
@@ -145,7 +152,7 @@ public sealed partial class ManageInstallationsViewModel : ViewModelBase
             return;
         }
 
-        await _installations.UpdateAsync(SelectedInstallation.Id, gameDirectory: picked);
+        await _installations.UpdateAsync(SelectedItem.Id, gameDirectory: picked);
         StatusMessage = null;
         await LoadAsync();
     }
@@ -154,24 +161,27 @@ public sealed partial class ManageInstallationsViewModel : ViewModelBase
     [ RelayCommand(CanExecute = nameof(HasSelection)) ]
     private async Task SetAsDefaultAsync()
     {
-        if (SelectedInstallation is null)
+        if (SelectedItem is null)
         {
             return;
         }
 
-        await _installations.SetLastOpenedAsync(SelectedInstallation.Id);
-        StatusMessage = $"\"{SelectedInstallation.DisplayName}\" set as default.";
+        await _installations.SetLastOpenedAsync(SelectedItem.Id);
+        StatusMessage = $"\"{SelectedItem.DisplayName}\" set as default.";
+
+        // Refresh the list so the (default) indicator moves to the new entry.
+        await LoadAsync();
     }
 
     /// <summary><see langword="true" /> when an installation is selected; gates Remove, Rename, and Set Default.</summary>
-    private bool HasSelection() => SelectedInstallation is not null;
+    private bool HasSelection() => SelectedItem is not null;
 
     /// <summary><see langword="true" /> only when an invalid installation is selected; Fix is meaningless for valid entries.</summary>
-    private bool CanFix() => SelectedInstallation is { IsValid: false };
+    private bool CanFix() => SelectedItem is { IsValid: false };
 
-    /// <summary>Source-generated change handler for <see cref="SelectedInstallation" />; refreshes the per-row command CanExecute states.</summary>
+    /// <summary>Source-generated change handler for <see cref="SelectedItem" />; refreshes the per-row command CanExecute states.</summary>
     // ReSharper disable once UnusedParameterInPartialMethod
-    partial void OnSelectedInstallationChanged(Installation? value)
+    partial void OnSelectedItemChanged(InstallationListItem? value)
     {
         RemoveCommand.NotifyCanExecuteChanged();
         RenameCommand.NotifyCanExecuteChanged();

@@ -41,12 +41,12 @@
 
         <Grid ColumnDefinitions="*,Auto">
             <ListBox Grid.Column="0"
-                     ItemsSource="{Binding Installations}"
-                     SelectedItem="{Binding SelectedInstallation}"
+                     ItemsSource="{Binding Items}"
+                     SelectedItem="{Binding SelectedItem}"
                      Margin="0,0,8,0">
                 <ListBox.ItemTemplate>
-                    <DataTemplate DataType="models:Installation">
-                        <TextBlock Text="{Binding DisplayName}"
+                    <DataTemplate DataType="vm:InstallationListItem">
+                        <TextBlock Text="{Binding DisplayLabel}"
                                    Padding="2" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>

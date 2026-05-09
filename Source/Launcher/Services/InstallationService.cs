@@ -161,6 +161,14 @@ public sealed class InstallationService : IInstallationService
     }
 
     /// <inheritdoc />
+    public async Task<Guid?> GetDefaultIdAsync()
+    {
+        LauncherConfig config = await _config.LoadAsync();
+
+        return config.LastOpenedInstallationId;
+    }
+
+    /// <inheritdoc />
     public async Task<LocatorResult> DiscoverAsync()
     {
         foreach (string path in DefaultInstallPaths)

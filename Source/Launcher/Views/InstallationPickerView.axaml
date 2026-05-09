@@ -41,11 +41,11 @@
                     MinWidth="70" />
         </StackPanel>
 
-        <ListBox ItemsSource="{Binding Installations}"
-                 SelectedItem="{Binding SelectedInstallation}">
+        <ListBox ItemsSource="{Binding Items}"
+                 SelectedItem="{Binding SelectedItem}">
             <ListBox.ItemTemplate>
-                <DataTemplate DataType="models:Installation">
-                    <TextBlock Text="{Binding DisplayName}"
+                <DataTemplate DataType="vm:InstallationListItem">
+                    <TextBlock Text="{Binding DisplayLabel}"
                                Padding="2" />
                 </DataTemplate>
             </ListBox.ItemTemplate>

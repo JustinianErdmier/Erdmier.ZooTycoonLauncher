@@ -44,6 +44,12 @@ public interface IInstallationService
     Task SetLastOpenedAsync(Guid id);
 
     /// <summary>
+    ///     Returns the persisted <see cref="LauncherConfig.LastOpenedInstallationId" />, used by the Manage and Picker
+    ///     dialogs to render a "(default)" indicator next to the matching installation.
+    /// </summary>
+    Task<Guid?> GetDefaultIdAsync();
+
+    /// <summary>
     ///     Runs auto-discovery (hard-coded install paths, then registry probes) and returns a
     ///     <see cref="LocatorResult" /> for the first valid directory found.
     ///     Returns a failure result when nothing is found.

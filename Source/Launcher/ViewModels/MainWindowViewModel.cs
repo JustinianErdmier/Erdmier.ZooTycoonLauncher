@@ -181,7 +181,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task ChangeInstallationAsync()
     {
         IReadOnlyList<Installation> all    = await _installations.GetAllAsync();
-        Installation?               picked = await _dialog.ShowPickerAsync(all);
+        Installation?               picked = await _dialog.ShowPickerAsync(all, Config.LastOpenedInstallationId);
 
         if (picked is null)
         {
@@ -245,7 +245,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task<StartupResult> HandlePickerAsync(StartupResult result)
     {
         IReadOnlyList<Installation> all    = await _installations.GetAllAsync();
-        Installation?               picked = await _dialog.ShowPickerAsync(all);
+        Installation?               picked = await _dialog.ShowPickerAsync(all, result.Config.LastOpenedInstallationId);
 
         if (picked is null)
         {
@@ -400,6 +400,8 @@ file sealed class NullInstallationService : IInstallationService
 
     public Task SetLastOpenedAsync(Guid id) => Task.CompletedTask;
 
+    public Task<Guid?> GetDefaultIdAsync() => Task.FromResult<Guid?>(result: null);
+
     public Task<LocatorResult> DiscoverAsync()
         => Task.FromResult(new LocatorResult(ExeFound: false, IniFound: false, ExePath: null, IniPath: null, GameDirectory: null));
 }
@@ -408,7 +410,7 @@ file sealed class NullDialogService : IDialogService
 {
     public static readonly NullDialogService Instance = new();
 
-    public Task<Installation?> ShowPickerAsync(IEnumerable<Installation> installations) => Task.FromResult<Installation?>(result: null);
+    public Task<Installation?> ShowPickerAsync(IEnumerable<Installation> installations, Guid? defaultId = null) => Task.FromResult<Installation?>(result: null);
 
     public Task ShowManageAsync() => Task.CompletedTask;
 

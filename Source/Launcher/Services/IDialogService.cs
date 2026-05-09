@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,7 +11,11 @@ public interface IDialogService
 {
     /// <summary>Shows the installation picker and returns the selected installation, or <see langword="null" /> if the user cancelled.</summary>
     /// <param name="installations">Installations to display in the picker.</param>
-    Task<Installation?> ShowPickerAsync(IEnumerable<Installation> installations);
+    /// <param name="defaultId">
+    ///     <see cref="LauncherConfig.LastOpenedInstallationId" /> at the time of the call. The matching entry is rendered
+    ///     with a <c>(default)</c> suffix in the list. Pass <see langword="null" /> when no default is set.
+    /// </param>
+    Task<Installation?> ShowPickerAsync(IEnumerable<Installation> installations, Guid? defaultId = null);
 
     /// <summary>Opens the Manage Installations dialog.</summary>
     Task ShowManageAsync();

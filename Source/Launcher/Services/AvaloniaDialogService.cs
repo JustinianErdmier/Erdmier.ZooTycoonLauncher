@@ -30,10 +30,10 @@ public sealed class AvaloniaDialogService : IDialogService
     public void SetOwner(Window owner) => _owner = owner;
 
     /// <inheritdoc />
-    public async Task<Installation?> ShowPickerAsync(IEnumerable<Installation> installations)
+    public async Task<Installation?> ShowPickerAsync(IEnumerable<Installation> installations, Guid? defaultId = null)
     {
         var vm = _services.GetRequiredService<InstallationPickerViewModel>();
-        vm.Load(installations);
+        vm.Load(installations, defaultId);
 
         var dialog = new Views.InstallationPickerView { DataContext = vm };
 

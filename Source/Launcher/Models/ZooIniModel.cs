@@ -29,8 +29,8 @@ public class ZooIniModel
     public UiSettings Ui { get; set; } = new();
 
     /// <summary>
-    ///     Keys present in <c>zoo.ini</c> that are not known to the launcher, including the contents of unmanaged sections such as <c>[mgr]</c>, <c>[lib]</c>,
-    ///     <c>[resource]</c>, and <c>[scenario]</c>. Stored as <c>"Section.Key"</c> => <c>"Value"</c> and written back verbatim on save to ensure no data loss.
+    ///     Keys present in <c>zoo.ini</c> that are not known to the launcher, including the contents of unmanaged sections such as <c>[mgr]</c>, <c>[lib]</c>, <c>[resource]</c>, and
+    ///     <c>[scenario]</c>. Stored as <c>"Section.Key"</c> => <c>"Value"</c> and written back verbatim on save to ensure no data loss.
     /// </summary>
     public Dictionary<string, string> UnknownKeys { get; set; } = new();
 

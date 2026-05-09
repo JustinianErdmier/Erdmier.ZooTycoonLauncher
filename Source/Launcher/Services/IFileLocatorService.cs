@@ -8,8 +8,8 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 public interface IFileLocatorService
 {
     /// <summary>
-    ///     Attempts to locate <c>zoo.exe</c> and <c>zoo.ini</c> automatically by checking the persisted launcher config, common installation paths, and the Windows Registry, in
-    ///     that order.
+    ///     Attempts to locate <c>zoo.exe</c> and <c>zoo.ini</c> automatically by checking the persisted launcher config, common installation paths, and the Windows Registry, in that
+    ///     order.
     /// </summary>
     Task<LocatorResult> LocateFilesAsync();
 

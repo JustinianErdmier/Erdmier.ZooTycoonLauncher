@@ -11,8 +11,8 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.Services;
 /// <inheritdoc cref="ILauncherService" />
 /// <remarks>
 ///     Uses <see cref="Process.Start(ProcessStartInfo)" /> with <see cref="ProcessStartInfo.UseShellExecute" /> = <see langword="true" /> so the OS resolves the same launch
-///     semantics a user double-clicking the file would get (PATH lookup, manifests, side-by-side assemblies). <c>WorkingDirectory</c> is set to the directory of <c>zoo.exe</c> so
-///     the game finds <c>zoo.ini</c> and its asset folders via its expected relative-path lookups.
+///     semantics a user double-clicking the file would get (PATH lookup, manifests, side-by-side assemblies). <c>WorkingDirectory</c> is set to the directory of <c>zoo.exe</c> so the
+///     game finds <c>zoo.ini</c> and its asset folders via its expected relative-path lookups.
 /// </remarks>
 public sealed class LauncherService : ILauncherService
 {

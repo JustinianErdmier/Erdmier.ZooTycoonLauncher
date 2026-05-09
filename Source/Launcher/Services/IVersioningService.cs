@@ -14,8 +14,8 @@ public interface IVersioningService
     Task EnsureOriginalBackupAsync(string iniFilePath);
 
     /// <summary>
-    ///     Copies the current <c>zoo.ini</c> to <c>zoo.ini.undo</c> before a save operation. Always overwrites the previous snapshot so undo always reverts to the
-    ///     immediately-prior on-disk content.
+    ///     Copies the current <c>zoo.ini</c> to <c>zoo.ini.undo</c> before a save operation. Always overwrites the previous snapshot so undo always reverts to the immediately-prior
+    ///     on-disk content.
     /// </summary>
     Task CreateUndoSnapshotAsync(string iniFilePath);
 

@@ -13,6 +13,8 @@
         <File Path="Docs/Plans/2026-05-08—ini-tab—design.md" />
         <File Path="Docs/Plans/2026-05-08—ini-tab.md" />
         <File Path="Docs/Plans/2026-05-08—overview-dynamic-data.md" />
+        <File Path="Docs/Plans/2026-05-09—multi-installation—design.md" />
+        <File Path="Docs/Plans/2026-05-09—multi-installation.md" />
     </Folder>
     <Folder Name="/SolutionItems/Docs/Templates/">
         <File Path="Docs/Templates/milestone-design-template.md" />

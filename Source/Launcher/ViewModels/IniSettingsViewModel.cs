@@ -19,14 +19,21 @@ namespace Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
 /// </summary>
 public sealed partial class IniSettingsViewModel : ViewModelBase
 {
-    private readonly IIniParserService _parser;
-    private readonly IVersioningService _versioning;
+    /// <summary>
+    ///     Canonical defaults model. <c> new ZooIniModel() </c> picks up every submodel property initializer (e.g. <c> UserSettings.ScreenWidth = 800 </c>), so this single instance
+    ///     is the source of truth for every tooltip's "Default:" line.
+    /// </summary>
+    private static readonly ZooIniModel _defaultsModel = new();
 
-    // Reference to the disk-of-record model. Preserved across edits so the parser's RawDocument is reused on save (comments + ordering survive).
-    private ZooIniModel? _model;
+    private readonly IIniParserService _parser;
+
+    private readonly IVersioningService _versioning;
 
     // Path to zoo.ini, supplied by MainWindowViewModel via ApplyModel. Null => save is impossible (game not located).
     private string? _iniPath;
+
+    // Reference to the disk-of-record model. Preserved across edits so the parser's RawDocument is reused on save (comments + ordering survive).
+    private ZooIniModel? _model;
 
     // Suppresses MarkDirty during ApplyModel so syncing from disk doesn't flip IsDirty to true.
     private bool _suppressDirtyTracking;
@@ -45,151 +52,64 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     }
 
     [ ObservableProperty ]
-    public partial bool IsDirty { get; set; }
+    public partial bool Click { get; set; }
+
+    public string ClickTooltip { get; } = BuildTooltip(resourceKey: "TT.Click", section: "advanced", key: "click");
 
     [ ObservableProperty ]
-    public partial string? StatusMessage { get; set; }
+    public partial bool Drag { get; set; }
+
+    public string DragTooltip { get; } = BuildTooltip(resourceKey: "TT.Drag", section: "advanced", key: "drag");
+
+    // ── [debug] (SDD §9.8) ────────────────────────────────────────────────────────────────────────────────────────────
+
+    [ ObservableProperty ]
+    public partial bool DrawFps { get; set; }
+
+    public string DrawFpsTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawFps", section: "debug", key: "drawfps");
+
+    [ ObservableProperty ]
+    public partial int DrawFpsX { get; set; } = 720;
+
+    public string DrawFpsXTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawFpsX", section: "debug", key: "drawfpsx");
+
+    [ ObservableProperty ]
+    public partial int DrawFpsY { get; set; } = 20;
+
+    public string DrawFpsYTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawFpsY", section: "debug", key: "drawfpsy");
+
+    [ ObservableProperty ]
+    public partial int DrawRate { get; set; } = 60;
+
+    public string DrawRateTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawRate", section: "user", key: "DrawRate");
 
     // ── [user] — display & performance (SDD §9.1) ──────────────────────────────────────────────────────────────────────
 
-    [ ObservableProperty ] public partial bool Fullscreen { get; set; } = true;
-    [ ObservableProperty ] public partial int ScreenWidth { get; set; } = 800;
-    [ ObservableProperty ] public partial int ScreenHeight { get; set; } = 600;
-    [ ObservableProperty ] public partial int UpdateRate { get; set; } = 15;
-    [ ObservableProperty ] public partial int DrawRate { get; set; } = 60;
+    [ ObservableProperty ]
+    public partial bool Fullscreen { get; set; } = true;
 
-    partial void OnFullscreenChanged(bool value)
-    {
-        MarkDirty();
-        OnPropertyChanged(nameof(ScreenModeIndex));
-    }
+    [ ObservableProperty ]
+    public partial int HelpType { get; set; } = 1;
 
-    partial void OnScreenWidthChanged(int value) => MarkDirty();
-    partial void OnScreenHeightChanged(int value) => MarkDirty();
-    partial void OnUpdateRateChanged(int value) => MarkDirty();
-    partial void OnDrawRateChanged(int value) => MarkDirty();
+    public string HelpTypeTooltip { get; } = BuildTooltip(resourceKey: "TT.HelpType", section: "UI", key: "helpType");
 
-    /// <summary>Friendly drop-down view over <see cref="Fullscreen" />: 0 = Fullscreen, 1 = Windowed. Bound from the Display &amp; Performance "Screen mode" combo.</summary>
-    public int ScreenModeIndex
-    {
-        get => Fullscreen ? 0 : 1;
-        set => Fullscreen = value == 0;
-    }
+    [ ObservableProperty ]
+    public partial bool IsDirty { get; set; }
 
-    // ── [advanced] — graphics quality (SDD §9.2) ──────────────────────────────────────────────────────────────────────
+    [ ObservableProperty ]
+    public partial int KeyScrollX { get; set; } = 64;
 
-    [ ObservableProperty ] public partial int Level { get; set; } = 2;
-    [ ObservableProperty ] public partial bool LoadHalfAnims { get; set; }
-    [ ObservableProperty ] public partial bool Drag { get; set; }
-    [ ObservableProperty ] public partial bool Click { get; set; }
-    [ ObservableProperty ] public partial bool Normal { get; set; }
+    public string KeyScrollXTooltip { get; } = BuildTooltip(resourceKey: "TT.KeyScrollX", section: "UI", key: "keyScrollX");
 
-    partial void OnLevelChanged(int value) => MarkDirty();
-    partial void OnLoadHalfAnimsChanged(bool value) => MarkDirty();
-    partial void OnDragChanged(bool value) => MarkDirty();
-    partial void OnClickChanged(bool value) => MarkDirty();
-    partial void OnNormalChanged(bool value) => MarkDirty();
+    [ ObservableProperty ]
+    public partial int KeyScrollY { get; set; } = 64;
 
-    // ── [UI] + [advanced] — audio (SDD §9.3) ──────────────────────────────────────────────────────────────────────────
-
-    [ ObservableProperty ] public partial bool NoMenuMusic { get; set; }
-    [ ObservableProperty ] public partial string MenuMusic { get; set; } = "sounds/mainmenu.wav";
-    [ ObservableProperty ] public partial int MenuMusicAttenuation { get; set; } = 1500;
-    [ ObservableProperty ] public partial int UserAttenuation { get; set; }
-    [ ObservableProperty ] public partial bool PlayMovie { get; set; }
-    [ ObservableProperty ] public partial int MovieVolume1 { get; set; } = -1000;
-    [ ObservableProperty ] public partial bool PlaySecondMovie { get; set; }
-    [ ObservableProperty ] public partial int MovieVolume2 { get; set; } = -1000;
-    [ ObservableProperty ] public partial bool Use8BitSound { get; set; }
-
-    partial void OnNoMenuMusicChanged(bool value)
-    {
-        MarkDirty();
-        OnPropertyChanged(nameof(PlayMenuMusic));
-    }
-
-    partial void OnMenuMusicChanged(string value) => MarkDirty();
-    partial void OnMenuMusicAttenuationChanged(int value) => MarkDirty();
-    partial void OnUserAttenuationChanged(int value) => MarkDirty();
-    partial void OnPlayMovieChanged(bool value) => MarkDirty();
-    partial void OnMovieVolume1Changed(int value) => MarkDirty();
-    partial void OnPlaySecondMovieChanged(bool value) => MarkDirty();
-    partial void OnMovieVolume2Changed(int value) => MarkDirty();
-    partial void OnUse8BitSoundChanged(bool value) => MarkDirty();
-
-    /// <summary>Friendly inverted view over <see cref="NoMenuMusic" />: <c> true </c> = play menu music. Bound from the Audio GroupBox checkbox.</summary>
-    public bool PlayMenuMusic
-    {
-        get => !NoMenuMusic;
-        set => NoMenuMusic = !value;
-    }
-
-    // ── [UI] + [ai] — gameplay (SDD §9.4) ─────────────────────────────────────────────────────────────────────────────
-
-    [ ObservableProperty ] public partial int MSStartingCash { get; set; } = 70_000;
-    [ ObservableProperty ] public partial int MSCashIncrement { get; set; } = 5_000;
-    [ ObservableProperty ] public partial int MSMinCash { get; set; } = 10_000;
-    [ ObservableProperty ] public partial int MSMaxCash { get; set; } = 500_000;
-    [ ObservableProperty ] public partial int MaxGuests { get; set; } = 1_000;
-
-    partial void OnMSStartingCashChanged(int value) => MarkDirty();
-    partial void OnMSCashIncrementChanged(int value) => MarkDirty();
-    partial void OnMSMinCashChanged(int value) => MarkDirty();
-    partial void OnMSMaxCashChanged(int value) => MarkDirty();
-    partial void OnMaxGuestsChanged(int value) => MarkDirty();
-
-    // ── [UI] — interface (SDD §9.5) ───────────────────────────────────────────────────────────────────────────────────
-
-    [ ObservableProperty ] public partial bool UseAlternateCursors { get; set; }
-    [ ObservableProperty ] public partial int TooltipDelay { get; set; } = 1;
-    [ ObservableProperty ] public partial int TooltipDuration { get; set; } = 3_000;
-    [ ObservableProperty ] public partial bool MessageDisplay { get; set; } = true;
-    [ ObservableProperty ] public partial int MouseScrollThreshold { get; set; } = 1;
-    [ ObservableProperty ] public partial int MouseScrollDelay { get; set; } = 1;
-    [ ObservableProperty ] public partial int MouseScrollX { get; set; } = 27;
-    [ ObservableProperty ] public partial int MouseScrollY { get; set; } = 27;
-    [ ObservableProperty ] public partial int KeyScrollX { get; set; } = 64;
-    [ ObservableProperty ] public partial int KeyScrollY { get; set; } = 64;
-    [ ObservableProperty ] public partial int MinimumMessageInterval { get; set; } = 60;
-    [ ObservableProperty ] public partial int HelpType { get; set; } = 1;
-
-    partial void OnUseAlternateCursorsChanged(bool value) => MarkDirty();
-    partial void OnTooltipDelayChanged(int value) => MarkDirty();
-    partial void OnTooltipDurationChanged(int value) => MarkDirty();
-    partial void OnMessageDisplayChanged(bool value) => MarkDirty();
-    partial void OnMouseScrollThresholdChanged(int value) => MarkDirty();
-    partial void OnMouseScrollDelayChanged(int value) => MarkDirty();
-    partial void OnMouseScrollXChanged(int value) => MarkDirty();
-    partial void OnMouseScrollYChanged(int value) => MarkDirty();
-    partial void OnKeyScrollXChanged(int value) => MarkDirty();
-    partial void OnKeyScrollYChanged(int value) => MarkDirty();
-    partial void OnMinimumMessageIntervalChanged(int value) => MarkDirty();
-    partial void OnHelpTypeChanged(int value) => MarkDirty();
-
-    // ── [Map] (SDD §9.6) ──────────────────────────────────────────────────────────────────────────────────────────────
-
-    [ ObservableProperty ] public partial int MapX { get; set; } = 75;
-    [ ObservableProperty ] public partial int MapY { get; set; } = 75;
-
-    partial void OnMapXChanged(int value) => MarkDirty();
-    partial void OnMapYChanged(int value) => MarkDirty();
+    public string KeyScrollYTooltip { get; } = BuildTooltip(resourceKey: "TT.KeyScrollY", section: "UI", key: "keyScrollY");
 
     // ── [language] (SDD §9.7) ─────────────────────────────────────────────────────────────────────────────────────────
 
-    [ ObservableProperty ] public partial int Lang { get; set; } = 9;
-    [ ObservableProperty ] public partial int SubLang { get; set; } = 1;
-
-    partial void OnLangChanged(int value)
-    {
-        MarkDirty();
-        OnPropertyChanged(nameof(SelectedLanguage));
-    }
-
-    partial void OnSubLangChanged(int value)
-    {
-        MarkDirty();
-        OnPropertyChanged(nameof(SelectedLanguage));
-    }
+    [ ObservableProperty ]
+    public partial int Lang { get; set; } = 9;
 
     /// <summary>Hard-coded canonical list of common Windows LANGID/SUBLANGID combinations. Install-driven enumeration is a follow-up (see design §3.6).</summary>
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
@@ -206,40 +126,158 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
         new(lang: 29, subLang: 1, displayName: "Swedish (Sweden)")
     ];
 
-    /// <summary>
-    ///     Returns the option that matches the current <see cref="Lang" />/<see cref="SubLang" /> pair, or <see langword="null" /> if no match — in which case the drop-down shows
-    ///     nothing selected and the underlying integer fields are preserved verbatim by the parser.
-    /// </summary>
-    public LanguageOption? SelectedLanguage
-    {
-        get => LanguageOptions.FirstOrDefault(o => o.Lang == Lang && o.SubLang == SubLang);
-        set
-        {
-            if (value is null)
-            {
-                return;
-            }
+    // Language: composite of [language]/lang + [language]/sublang. The default LangID 9 / SubLang 1 = English (United States).
+    public string LanguageTooltip { get; } = BuildTooltipFromOverride(resourceKey: "TT.Language", defaultDisplay: "English (United States)");
 
-            Lang    = value.Lang;
-            SubLang = value.SubLang;
-        }
+    // ── [advanced] — graphics quality (SDD §9.2) ──────────────────────────────────────────────────────────────────────
+
+    [ ObservableProperty ]
+    public partial int Level { get; set; } = 2;
+
+    public string LevelTooltip { get; } = BuildTooltip(resourceKey: "TT.Level", section: "advanced", key: "level");
+
+    [ ObservableProperty ]
+    public partial bool LoadHalfAnims { get; set; }
+
+    public string LoadHalfAnimsTooltip { get; } = BuildTooltip(resourceKey: "TT.LoadHalfAnims", section: "advanced", key: "loadHalfAnims");
+
+    [ ObservableProperty ]
+    public partial int LogCutoff { get; set; } = 1;
+
+    public string LogCutoffTooltip { get; } = BuildTooltip(resourceKey: "TT.LogCutoff", section: "debug", key: "logCutoff");
+
+    // ── [Map] (SDD §9.6) ──────────────────────────────────────────────────────────────────────────────────────────────
+
+    [ ObservableProperty ]
+    public partial int MapX { get; set; } = 75;
+
+    public string MapXTooltip { get; } = BuildTooltip(resourceKey: "TT.MapX", section: "Map", key: "mapX");
+
+    [ ObservableProperty ]
+    public partial int MapY { get; set; } = 75;
+
+    public string MapYTooltip { get; } = BuildTooltip(resourceKey: "TT.MapY", section: "Map", key: "mapY");
+
+    [ ObservableProperty ]
+    public partial int MaxGuests { get; set; } = 1_000;
+
+    public string MaxGuestsTooltip { get; } = BuildTooltip(resourceKey: "TT.MaxGuests", section: "ai", key: "maxGuests");
+
+    [ ObservableProperty ]
+    public partial string MenuMusic { get; set; } = "sounds/mainmenu.wav";
+
+    [ ObservableProperty ]
+    public partial int MenuMusicAttenuation { get; set; } = 1500;
+
+    public string MenuMusicAttenuationTooltip { get; } = BuildTooltip(resourceKey: "TT.MenuMusicAttenuation", section: "UI", key: "menuMusicAttenuation");
+
+    public string MenuMusicTooltip { get; } = BuildTooltip(resourceKey: "TT.MenuMusic", section: "UI", key: "menuMusic");
+
+    [ ObservableProperty ]
+    public partial bool MessageDisplay { get; set; } = true;
+
+    public string MessageDisplayTooltip { get; } = BuildTooltip(resourceKey: "TT.MessageDisplay", section: "UI", key: "MessageDisplay");
+
+    [ ObservableProperty ]
+    public partial int MinimumMessageInterval { get; set; } = 60;
+
+    public string MinimumMessageIntervalTooltip { get; } = BuildTooltip(resourceKey: "TT.MinimumMessageInterval", section: "UI", key: "minimumMessageInterval");
+
+    [ ObservableProperty ]
+    public partial int MouseScrollDelay { get; set; } = 1;
+
+    public string MouseScrollDelayTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollDelay", section: "UI", key: "mouseScrollDelay");
+
+    [ ObservableProperty ]
+    public partial int MouseScrollThreshold { get; set; } = 1;
+
+    public string MouseScrollThresholdTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollThreshold", section: "UI", key: "mouseScrollThreshold");
+
+    [ ObservableProperty ]
+    public partial int MouseScrollX { get; set; } = 27;
+
+    public string MouseScrollXTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollX", section: "UI", key: "mouseScrollX");
+
+    [ ObservableProperty ]
+    public partial int MouseScrollY { get; set; } = 27;
+
+    public string MouseScrollYTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollY", section: "UI", key: "mouseScrollY");
+
+    [ ObservableProperty ]
+    public partial int MovieVolume1 { get; set; } = -1000;
+
+    public string MovieVolume1Tooltip { get; } = BuildTooltip(resourceKey: "TT.MovieVolume1", section: "UI", key: "movievolume1");
+
+    [ ObservableProperty ]
+    public partial int MovieVolume2 { get; set; } = -1000;
+
+    public string MovieVolume2Tooltip { get; } = BuildTooltip(resourceKey: "TT.MovieVolume2", section: "UI", key: "movievolume2");
+
+    [ ObservableProperty ]
+    public partial int MSCashIncrement { get; set; } = 5_000;
+
+    public string MSCashIncrementTooltip { get; } = BuildTooltip(resourceKey: "TT.MSCashIncrement", section: "UI", key: "MSCashIncrement");
+
+    [ ObservableProperty ]
+    public partial int MSMaxCash { get; set; } = 500_000;
+
+    public string MSMaxCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSMaxCash", section: "UI", key: "MSMaxCash");
+
+    [ ObservableProperty ]
+    public partial int MSMinCash { get; set; } = 10_000;
+
+    public string MSMinCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSMinCash", section: "UI", key: "MSMinCash");
+
+    // ── [UI] + [ai] — gameplay (SDD §9.4) ─────────────────────────────────────────────────────────────────────────────
+
+    [ ObservableProperty ]
+    public partial int MSStartingCash { get; set; } = 70_000;
+
+    public string MSStartingCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSStartingCash", section: "UI", key: "MSStartingCash");
+
+    // ── [UI] + [advanced] — audio (SDD §9.3) ──────────────────────────────────────────────────────────────────────────
+
+    [ ObservableProperty ]
+    public partial bool NoMenuMusic { get; set; }
+
+    [ ObservableProperty ]
+    public partial bool Normal { get; set; }
+
+    public string NormalTooltip { get; } = BuildTooltip(resourceKey: "TT.Normal", section: "advanced", key: "normal");
+
+    /// <summary>Friendly inverted view over <see cref="NoMenuMusic" />: <c> true </c> = play menu music. Bound from the Audio GroupBox checkbox.</summary>
+    public bool PlayMenuMusic
+    {
+        get => !NoMenuMusic;
+
+        set => NoMenuMusic = !value;
     }
 
-    // ── [debug] (SDD §9.8) ────────────────────────────────────────────────────────────────────────────────────────────
+    // PlayMenuMusic is the inverse of [UI]/noMenuMusic. NoMenuMusic defaults to false → PlayMenuMusic default = "On".
+    public string PlayMenuMusicTooltip { get; } = BuildTooltipFromOverride(resourceKey: "TT.PlayMenuMusic", defaultDisplay: "On");
 
-    [ ObservableProperty ] public partial bool DrawFps { get; set; }
-    [ ObservableProperty ] public partial int DrawFpsX { get; set; } = 720;
-    [ ObservableProperty ] public partial int DrawFpsY { get; set; } = 20;
-    [ ObservableProperty ] public partial int LogCutoff { get; set; } = 1;
-    [ ObservableProperty ] public partial bool SendLogfile { get; set; } = true;
-    [ ObservableProperty ] public partial bool SendDebugger { get; set; } = true;
+    [ ObservableProperty ]
+    public partial bool PlayMovie { get; set; }
 
-    partial void OnDrawFpsChanged(bool value) => MarkDirty();
-    partial void OnDrawFpsXChanged(int value) => MarkDirty();
-    partial void OnDrawFpsYChanged(int value) => MarkDirty();
-    partial void OnLogCutoffChanged(int value) => MarkDirty();
-    partial void OnSendLogfileChanged(bool value) => MarkDirty();
-    partial void OnSendDebuggerChanged(bool value) => MarkDirty();
+    public string PlayMovieTooltip { get; } = BuildTooltip(resourceKey: "TT.PlayMovie", section: "UI", key: "playMovie");
+
+    [ ObservableProperty ]
+    public partial bool PlaySecondMovie { get; set; }
+
+    public string PlaySecondMovieTooltip { get; } = BuildTooltip(resourceKey: "TT.PlaySecondMovie", section: "UI", key: "playSecondMovie");
+
+    [ ObservableProperty ]
+    public partial int ScreenHeight { get; set; } = 600;
+
+    public string ScreenHeightTooltip { get; } = BuildTooltip(resourceKey: "TT.ScreenHeight", section: "user", key: "screenheight");
+
+    /// <summary>Friendly drop-down view over <see cref="Fullscreen" />: 0 = Fullscreen, 1 = Windowed. Bound from the Display &amp; Performance "Screen mode" combo.</summary>
+    public int ScreenModeIndex
+    {
+        get => Fullscreen ? 0 : 1;
+
+        set => Fullscreen = value == 0;
+    }
 
     // ── Tooltip strings ───────────────────────────────────────────────────────────────────────────────────────────────
     //
@@ -253,149 +291,78 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
     public string ScreenModeTooltip { get; } = BuildTooltipFromOverride(resourceKey: "TT.ScreenMode", defaultDisplay: "Fullscreen");
 
+    [ ObservableProperty ]
+    public partial int ScreenWidth { get; set; } = 800;
+
     public string ScreenWidthTooltip { get; } = BuildTooltip(resourceKey: "TT.ScreenWidth", section: "user", key: "screenwidth");
 
-    public string ScreenHeightTooltip { get; } = BuildTooltip(resourceKey: "TT.ScreenHeight", section: "user", key: "screenheight");
+    /// <summary>
+    ///     Returns the option that matches the current <see cref="Lang" />/<see cref="SubLang" /> pair, or <see langword="null" /> if no match — in which case the drop-down shows
+    ///     nothing selected and the underlying integer fields are preserved verbatim by the parser.
+    /// </summary>
+    public LanguageOption? SelectedLanguage
+    {
+        get => LanguageOptions.FirstOrDefault(o => o.Lang == Lang && o.SubLang == SubLang);
 
-    public string UpdateRateTooltip { get; } = BuildTooltip(resourceKey: "TT.UpdateRate", section: "user", key: "UpdateRate");
+        set
+        {
+            if (value is null)
+            {
+                return;
+            }
 
-    public string DrawRateTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawRate", section: "user", key: "DrawRate");
+            Lang    = value.Lang;
+            SubLang = value.SubLang;
+        }
+    }
 
-    public string LevelTooltip { get; } = BuildTooltip(resourceKey: "TT.Level", section: "advanced", key: "level");
-
-    public string LoadHalfAnimsTooltip { get; } = BuildTooltip(resourceKey: "TT.LoadHalfAnims", section: "advanced", key: "loadHalfAnims");
-
-    public string DragTooltip { get; } = BuildTooltip(resourceKey: "TT.Drag", section: "advanced", key: "drag");
-
-    public string ClickTooltip { get; } = BuildTooltip(resourceKey: "TT.Click", section: "advanced", key: "click");
-
-    public string NormalTooltip { get; } = BuildTooltip(resourceKey: "TT.Normal", section: "advanced", key: "normal");
-
-    // PlayMenuMusic is the inverse of [UI]/noMenuMusic. NoMenuMusic defaults to false → PlayMenuMusic default = "On".
-    public string PlayMenuMusicTooltip { get; } = BuildTooltipFromOverride(resourceKey: "TT.PlayMenuMusic", defaultDisplay: "On");
-
-    public string MenuMusicTooltip { get; } = BuildTooltip(resourceKey: "TT.MenuMusic", section: "UI", key: "menuMusic");
-
-    public string MenuMusicAttenuationTooltip { get; } = BuildTooltip(resourceKey: "TT.MenuMusicAttenuation", section: "UI", key: "menuMusicAttenuation");
-
-    public string UserAttenuationTooltip { get; } = BuildTooltip(resourceKey: "TT.UserAttenuation", section: "UI", key: "userAttenuation");
-
-    public string PlayMovieTooltip { get; } = BuildTooltip(resourceKey: "TT.PlayMovie", section: "UI", key: "playMovie");
-
-    public string MovieVolume1Tooltip { get; } = BuildTooltip(resourceKey: "TT.MovieVolume1", section: "UI", key: "movievolume1");
-
-    public string PlaySecondMovieTooltip { get; } = BuildTooltip(resourceKey: "TT.PlaySecondMovie", section: "UI", key: "playSecondMovie");
-
-    public string MovieVolume2Tooltip { get; } = BuildTooltip(resourceKey: "TT.MovieVolume2", section: "UI", key: "movievolume2");
-
-    public string Use8BitSoundTooltip { get; } = BuildTooltip(resourceKey: "TT.Use8BitSound", section: "advanced", key: "use8BitSound");
-
-    public string MSStartingCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSStartingCash", section: "UI", key: "MSStartingCash");
-
-    public string MSCashIncrementTooltip { get; } = BuildTooltip(resourceKey: "TT.MSCashIncrement", section: "UI", key: "MSCashIncrement");
-
-    public string MSMinCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSMinCash", section: "UI", key: "MSMinCash");
-
-    public string MSMaxCashTooltip { get; } = BuildTooltip(resourceKey: "TT.MSMaxCash", section: "UI", key: "MSMaxCash");
-
-    public string MaxGuestsTooltip { get; } = BuildTooltip(resourceKey: "TT.MaxGuests", section: "ai", key: "maxGuests");
-
-    public string UseAlternateCursorsTooltip { get; } = BuildTooltip(resourceKey: "TT.UseAlternateCursors", section: "UI", key: "useAlternateCursors");
-
-    public string TooltipDelayTooltip { get; } = BuildTooltip(resourceKey: "TT.TooltipDelay", section: "UI", key: "tooltipDelay");
-
-    public string TooltipDurationTooltip { get; } = BuildTooltip(resourceKey: "TT.TooltipDuration", section: "UI", key: "tooltipDuration");
-
-    public string MessageDisplayTooltip { get; } = BuildTooltip(resourceKey: "TT.MessageDisplay", section: "UI", key: "MessageDisplay");
-
-    public string MouseScrollThresholdTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollThreshold", section: "UI", key: "mouseScrollThreshold");
-
-    public string MouseScrollDelayTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollDelay", section: "UI", key: "mouseScrollDelay");
-
-    public string MouseScrollXTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollX", section: "UI", key: "mouseScrollX");
-
-    public string MouseScrollYTooltip { get; } = BuildTooltip(resourceKey: "TT.MouseScrollY", section: "UI", key: "mouseScrollY");
-
-    public string KeyScrollXTooltip { get; } = BuildTooltip(resourceKey: "TT.KeyScrollX", section: "UI", key: "keyScrollX");
-
-    public string KeyScrollYTooltip { get; } = BuildTooltip(resourceKey: "TT.KeyScrollY", section: "UI", key: "keyScrollY");
-
-    public string MinimumMessageIntervalTooltip { get; } = BuildTooltip(resourceKey: "TT.MinimumMessageInterval", section: "UI", key: "minimumMessageInterval");
-
-    public string HelpTypeTooltip { get; } = BuildTooltip(resourceKey: "TT.HelpType", section: "UI", key: "helpType");
-
-    public string MapXTooltip { get; } = BuildTooltip(resourceKey: "TT.MapX", section: "Map", key: "mapX");
-
-    public string MapYTooltip { get; } = BuildTooltip(resourceKey: "TT.MapY", section: "Map", key: "mapY");
-
-    // Language: composite of [language]/lang + [language]/sublang. The default LangID 9 / SubLang 1 = English (United States).
-    public string LanguageTooltip { get; } = BuildTooltipFromOverride(resourceKey: "TT.Language", defaultDisplay: "English (United States)");
-
-    public string DrawFpsTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawFps", section: "debug", key: "drawfps");
-
-    public string DrawFpsXTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawFpsX", section: "debug", key: "drawfpsx");
-
-    public string DrawFpsYTooltip { get; } = BuildTooltip(resourceKey: "TT.DrawFpsY", section: "debug", key: "drawfpsy");
-
-    public string LogCutoffTooltip { get; } = BuildTooltip(resourceKey: "TT.LogCutoff", section: "debug", key: "logCutoff");
-
-    public string SendLogfileTooltip { get; } = BuildTooltip(resourceKey: "TT.SendLogfile", section: "debug", key: "sendLogfile");
+    [ ObservableProperty ]
+    public partial bool SendDebugger { get; set; } = true;
 
     public string SendDebuggerTooltip { get; } = BuildTooltip(resourceKey: "TT.SendDebugger", section: "debug", key: "sendDebugger");
 
-    /// <summary>Canonical defaults model. <c> new ZooIniModel() </c> picks up every submodel property initializer (e.g. <c> UserSettings.ScreenWidth = 800 </c>), so this single instance is the source of truth for every tooltip's "Default:" line.</summary>
-    private static readonly ZooIniModel _defaultsModel = new();
+    [ ObservableProperty ]
+    public partial bool SendLogfile { get; set; } = true;
 
-    /// <summary>Looks up the prose from the <c> TT.* </c> resource, finds the matching <see cref="IniKeySpec" /> in <see cref="ZooIniDefaults.KnownKeys" />, reads the default value off <see cref="_defaultsModel" />, and returns <c> "{prose}\n\nDefault: {value}" </c>.</summary>
-    private static string BuildTooltip(string resourceKey, string section, string key)
-    {
-        string prose = LookupResourceString(resourceKey);
+    public string SendLogfileTooltip { get; } = BuildTooltip(resourceKey: "TT.SendLogfile", section: "debug", key: "sendLogfile");
 
-        IniKeySpec? spec = ZooIniDefaults.KnownKeys.FirstOrDefault(k => string.Equals(k.Section, section, StringComparison.OrdinalIgnoreCase) && string.Equals(k.Key, key, StringComparison.OrdinalIgnoreCase));
+    [ ObservableProperty ]
+    public partial string? StatusMessage { get; set; }
 
-        if (spec is null)
-        {
-            return prose;
-        }
+    [ ObservableProperty ]
+    public partial int SubLang { get; set; } = 1;
 
-        string defaultDisplay = FormatDefault(spec.Read(_defaultsModel), spec.Kind);
+    [ ObservableProperty ]
+    public partial int TooltipDelay { get; set; } = 1;
 
-        return string.IsNullOrEmpty(defaultDisplay) ? prose : $"{prose}\n\nDefault: {defaultDisplay}";
-    }
+    public string TooltipDelayTooltip { get; } = BuildTooltip(resourceKey: "TT.TooltipDelay", section: "UI", key: "tooltipDelay");
 
-    /// <summary>Variant for derived tooltips (e.g. ScreenMode, PlayMenuMusic, Language) where the displayed default is composed by the VM, not read directly off a single key.</summary>
-    private static string BuildTooltipFromOverride(string resourceKey, string defaultDisplay)
-    {
-        string prose = LookupResourceString(resourceKey);
+    [ ObservableProperty ]
+    public partial int TooltipDuration { get; set; } = 3_000;
 
-        return string.IsNullOrEmpty(defaultDisplay) ? prose : $"{prose}\n\nDefault: {defaultDisplay}";
-    }
+    public string TooltipDurationTooltip { get; } = BuildTooltip(resourceKey: "TT.TooltipDuration", section: "UI", key: "tooltipDuration");
 
-    /// <summary>Pulls a string out of the merged <c> Application.Resources </c> dictionary. Returns empty if Avalonia hasn't booted yet (designer pre-init) or the key is missing — the tooltip silently degrades to "Default: …" alone, which is preferable to crashing the VM.</summary>
-    private static string LookupResourceString(string resourceKey)
-    {
-        // ResourceDictionary.TryGetResource (not Application.TryFindResource — that doesn't exist in Avalonia 11). Pass theme: null to fall back through the merged dictionary chain.
-        if (Application.Current is { } app
-            && app.Resources.TryGetResource(resourceKey, theme: null, out object? value)
-            && value is string s)
-        {
-            return s;
-        }
+    [ ObservableProperty ]
+    public partial int UpdateRate { get; set; } = 15;
 
-        return string.Empty;
-    }
+    public string UpdateRateTooltip { get; } = BuildTooltip(resourceKey: "TT.UpdateRate", section: "user", key: "UpdateRate");
 
-    /// <summary>Translates an <see cref="IniKeySpec" />'s INI-string output into a human-friendly default-value display. Bools become "On"/"Off"; null/empty optional values become "(none)" / "(empty)"; everything else is shown verbatim.</summary>
-    private static string FormatDefault(string raw, IniSpecKind kind)
-    {
-        return kind switch
-        {
-            IniSpecKind.Bool                                                                       => raw == "1" ? "On" : "Off",
-            IniSpecKind.NullableInt or IniSpecKind.NullableStr when string.IsNullOrEmpty(raw)      => "(none)",
-            IniSpecKind.Str when string.IsNullOrEmpty(raw)                                         => "(empty)",
-            var _                                                                                  => raw
-        };
-    }
+    [ ObservableProperty ]
+    public partial bool Use8BitSound { get; set; }
+
+    public string Use8BitSoundTooltip { get; } = BuildTooltip(resourceKey: "TT.Use8BitSound", section: "advanced", key: "use8BitSound");
+
+    // ── [UI] — interface (SDD §9.5) ───────────────────────────────────────────────────────────────────────────────────
+
+    [ ObservableProperty ]
+    public partial bool UseAlternateCursors { get; set; }
+
+    public string UseAlternateCursorsTooltip { get; } = BuildTooltip(resourceKey: "TT.UseAlternateCursors", section: "UI", key: "useAlternateCursors");
+
+    [ ObservableProperty ]
+    public partial int UserAttenuation { get; set; }
+
+    public string UserAttenuationTooltip { get; } = BuildTooltip(resourceKey: "TT.UserAttenuation", section: "UI", key: "userAttenuation");
 
     /// <summary>Replaces the working state with values from <paramref name="model" />, resets <see cref="IsDirty" />, and stashes <paramref name="iniPath" /> for the save path.</summary>
     public void ApplyModel(ZooIniModel? model, string? iniPath)
@@ -422,6 +389,114 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
         IsDirty = false;
     }
 
+    partial void OnFullscreenChanged(bool value)
+    {
+        MarkDirty();
+        OnPropertyChanged(nameof(ScreenModeIndex));
+    }
+
+    partial void OnScreenWidthChanged(int value) => MarkDirty();
+
+    partial void OnScreenHeightChanged(int value) => MarkDirty();
+
+    partial void OnUpdateRateChanged(int value) => MarkDirty();
+
+    partial void OnDrawRateChanged(int value) => MarkDirty();
+
+    partial void OnLevelChanged(int value) => MarkDirty();
+
+    partial void OnLoadHalfAnimsChanged(bool value) => MarkDirty();
+
+    partial void OnDragChanged(bool value) => MarkDirty();
+
+    partial void OnClickChanged(bool value) => MarkDirty();
+
+    partial void OnNormalChanged(bool value) => MarkDirty();
+
+    partial void OnNoMenuMusicChanged(bool value)
+    {
+        MarkDirty();
+        OnPropertyChanged(nameof(PlayMenuMusic));
+    }
+
+    partial void OnMenuMusicChanged(string value) => MarkDirty();
+
+    partial void OnMenuMusicAttenuationChanged(int value) => MarkDirty();
+
+    partial void OnUserAttenuationChanged(int value) => MarkDirty();
+
+    partial void OnPlayMovieChanged(bool value) => MarkDirty();
+
+    partial void OnMovieVolume1Changed(int value) => MarkDirty();
+
+    partial void OnPlaySecondMovieChanged(bool value) => MarkDirty();
+
+    partial void OnMovieVolume2Changed(int value) => MarkDirty();
+
+    partial void OnUse8BitSoundChanged(bool value) => MarkDirty();
+
+    partial void OnMSStartingCashChanged(int value) => MarkDirty();
+
+    partial void OnMSCashIncrementChanged(int value) => MarkDirty();
+
+    partial void OnMSMinCashChanged(int value) => MarkDirty();
+
+    partial void OnMSMaxCashChanged(int value) => MarkDirty();
+
+    partial void OnMaxGuestsChanged(int value) => MarkDirty();
+
+    partial void OnUseAlternateCursorsChanged(bool value) => MarkDirty();
+
+    partial void OnTooltipDelayChanged(int value) => MarkDirty();
+
+    partial void OnTooltipDurationChanged(int value) => MarkDirty();
+
+    partial void OnMessageDisplayChanged(bool value) => MarkDirty();
+
+    partial void OnMouseScrollThresholdChanged(int value) => MarkDirty();
+
+    partial void OnMouseScrollDelayChanged(int value) => MarkDirty();
+
+    partial void OnMouseScrollXChanged(int value) => MarkDirty();
+
+    partial void OnMouseScrollYChanged(int value) => MarkDirty();
+
+    partial void OnKeyScrollXChanged(int value) => MarkDirty();
+
+    partial void OnKeyScrollYChanged(int value) => MarkDirty();
+
+    partial void OnMinimumMessageIntervalChanged(int value) => MarkDirty();
+
+    partial void OnHelpTypeChanged(int value) => MarkDirty();
+
+    partial void OnMapXChanged(int value) => MarkDirty();
+
+    partial void OnMapYChanged(int value) => MarkDirty();
+
+    partial void OnLangChanged(int value)
+    {
+        MarkDirty();
+        OnPropertyChanged(nameof(SelectedLanguage));
+    }
+
+    partial void OnSubLangChanged(int value)
+    {
+        MarkDirty();
+        OnPropertyChanged(nameof(SelectedLanguage));
+    }
+
+    partial void OnDrawFpsChanged(bool value) => MarkDirty();
+
+    partial void OnDrawFpsXChanged(int value) => MarkDirty();
+
+    partial void OnDrawFpsYChanged(int value) => MarkDirty();
+
+    partial void OnLogCutoffChanged(int value) => MarkDirty();
+
+    partial void OnSendLogfileChanged(bool value) => MarkDirty();
+
+    partial void OnSendDebuggerChanged(bool value) => MarkDirty();
+
     /// <summary>Writes the current working values back to <see cref="_model" /> and persists to disk. Bound to the Save button's Command.</summary>
     [ RelayCommand(CanExecute = nameof(CanSave)) ]
     private async Task SaveAsync()
@@ -430,6 +505,7 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
             || string.IsNullOrEmpty(_iniPath))
         {
             StatusMessage = "Cannot save: zoo.ini path is unknown.";
+
             return;
         }
 
@@ -475,9 +551,8 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
     /// <summary>Re-reads <c> zoo.ini </c> from disk and applies it, throwing away any in-memory edits. Bound to the Discard button.</summary>
     /// <remarks>
-    ///     Re-reads from disk rather than re-syncing from the cached <see cref="_model" /> because <see cref="SaveAsync" /> mutates that model in place before the file write —
-    ///     after a failed save, the model holds the intended values, not the on-disk values. Re-reading is the only way to guarantee Discard restores the user to the file's actual
-    ///     state.
+    ///     Re-reads from disk rather than re-syncing from the cached <see cref="_model" /> because <see cref="SaveAsync" /> mutates that model in place before the file write — after
+    ///     a failed save, the model holds the intended values, not the on-disk values. Re-reading is the only way to guarantee Discard restores the user to the file's actual state.
     /// </remarks>
     [ RelayCommand(CanExecute = nameof(CanDiscard)) ]
     private async Task DiscardAsync()
@@ -507,8 +582,14 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
     private bool CanDiscard() => IsDirty && !string.IsNullOrEmpty(_iniPath);
 
-    /// <summary>Restores <c> zoo.ini </c> from the <c> zoo.ini.undo </c> snapshot. Stubbed for this milestone — wired up so the button shows visibly disabled rather than executing a no-op handler.</summary>
-    /// <remarks>TODO: hook up to <see cref="IVersioningService.RestoreUndoAsync" /> (currently throws <see cref="NotImplementedException" />) and gate <see cref="CanUndo" /> on <see cref="IVersioningService.UndoSnapshotExists" />.</remarks>
+    /// <summary>
+    ///     Restores <c> zoo.ini </c> from the <c> zoo.ini.undo </c> snapshot. Stubbed for this milestone — wired up so the button shows visibly disabled rather than executing a
+    ///     no-op handler.
+    /// </summary>
+    /// <remarks>
+    ///     TODO: hook up to <see cref="IVersioningService.RestoreUndoAsync" /> (currently throws <see cref="NotImplementedException" />) and gate <see cref="CanUndo" /> on
+    ///     <see cref="IVersioningService.UndoSnapshotExists" />.
+    /// </remarks>
     [ RelayCommand(CanExecute = nameof(CanUndo)) ]
     private void Undo()
     { }
@@ -664,23 +745,94 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
         model.Debug.SendLogfile  = SendLogfile;
         model.Debug.SendDebugger = SendDebugger;
     }
+
+    /// <summary>
+    ///     Looks up the prose from the <c> TT.* </c> resource, finds the matching <see cref="IniKeySpec" /> in <see cref="ZooIniDefaults.KnownKeys" />, reads the default value off
+    ///     <see cref="_defaultsModel" />, and returns <c> "{prose}\n\nDefault: {value}" </c>.
+    /// </summary>
+    private static string BuildTooltip(string resourceKey, string section, string key)
+    {
+        string prose = LookupResourceString(resourceKey);
+
+        IniKeySpec? spec = ZooIniDefaults.KnownKeys.FirstOrDefault(k => string.Equals(k.Section, section, StringComparison.OrdinalIgnoreCase)
+                                                                        && string.Equals(k.Key, key, StringComparison.OrdinalIgnoreCase));
+
+        if (spec is null)
+        {
+            return prose;
+        }
+
+        string defaultDisplay = FormatDefault(spec.Read(_defaultsModel), spec.Kind);
+
+        return string.IsNullOrEmpty(defaultDisplay) ? prose : $"{prose}\n\nDefault: {defaultDisplay}";
+    }
+
+    /// <summary>Variant for derived tooltips (e.g. ScreenMode, PlayMenuMusic, Language) where the displayed default is composed by the VM, not read directly off a single key.</summary>
+    private static string BuildTooltipFromOverride(string resourceKey, string defaultDisplay)
+    {
+        string prose = LookupResourceString(resourceKey);
+
+        return string.IsNullOrEmpty(defaultDisplay) ? prose : $"{prose}\n\nDefault: {defaultDisplay}";
+    }
+
+    /// <summary>
+    ///     Pulls a string out of the merged <c> Application.Resources </c> dictionary. Returns empty if Avalonia hasn't booted yet (designer pre-init) or the key is missing — the
+    ///     tooltip silently degrades to "Default: …" alone, which is preferable to crashing the VM.
+    /// </summary>
+    private static string LookupResourceString(string resourceKey)
+    {
+        // ResourceDictionary.TryGetResource (not Application.TryFindResource — that doesn't exist in Avalonia 11). Pass theme: null to fall back through the merged dictionary
+        // chain.
+        if (Application.Current is { } app
+            && app.Resources.TryGetResource(resourceKey, theme: null, out object? value)
+            && value is string s)
+        {
+            return s;
+        }
+
+        return string.Empty;
+    }
+
+    /// <summary>
+    ///     Translates an <see cref="IniKeySpec" />'s INI-string output into a human-friendly default-value display. Bools become "On"/"Off"; null/empty optional values become
+    ///     "(none)" / "(empty)"; everything else is shown verbatim.
+    /// </summary>
+    private static string FormatDefault(string raw, IniSpecKind kind)
+    {
+        return kind switch
+        {
+            IniSpecKind.Bool                                                                  => raw == "1" ? "On" : "Off",
+            IniSpecKind.NullableInt or IniSpecKind.NullableStr when string.IsNullOrEmpty(raw) => "(none)",
+            IniSpecKind.Str when string.IsNullOrEmpty(raw)                                    => "(empty)",
+            var _                                                                             => raw
+        };
+    }
 }
 
 file sealed class NullIniParserService : IIniParserService
 {
     public static readonly NullIniParserService Instance = new();
+
     public Task<ZooIniModel> ReadAsync(string iniFilePath) => Task.FromResult(new ZooIniModel());
+
     public Task WriteAsync(string iniFilePath, ZooIniModel model) => Task.CompletedTask;
+
     public ZooIniModel GetDefaults() => new();
 }
 
 file sealed class NullVersioningService : IVersioningService
 {
     public static readonly NullVersioningService Instance = new();
+
     public Task EnsureOriginalBackupAsync(string iniFilePath) => Task.CompletedTask;
+
     public Task CreateUndoSnapshotAsync(string iniFilePath) => Task.CompletedTask;
-    public Task<bool> RestoreUndoAsync(string iniFilePath) => Task.FromResult(false);
-    public Task<bool> RestoreOriginalAsync(string iniFilePath) => Task.FromResult(false);
+
+    public Task<bool> RestoreUndoAsync(string iniFilePath) => Task.FromResult(result: false);
+
+    public Task<bool> RestoreOriginalAsync(string iniFilePath) => Task.FromResult(result: false);
+
     public bool UndoSnapshotExists(string iniFilePath) => false;
+
     public bool OriginalBackupExists(string iniFilePath) => false;
 }

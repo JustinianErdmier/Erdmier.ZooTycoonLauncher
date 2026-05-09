@@ -13,7 +13,10 @@ public interface IVersioningService
     /// <summary>Called once on first launch. Creates <c> zoo.ini.original </c> alongside <paramref name="iniFilePath" /> if it does not already exist.</summary>
     Task EnsureOriginalBackupAsync(string iniFilePath);
 
-    /// <summary>Copies the current <c> zoo.ini </c> to <c> zoo.ini.undo </c> before a save operation. Always overwrites the previous snapshot so undo always reverts to the immediately-prior on-disk content.</summary>
+    /// <summary>
+    ///     Copies the current <c> zoo.ini </c> to <c> zoo.ini.undo </c> before a save operation. Always overwrites the previous snapshot so undo always reverts to the
+    ///     immediately-prior on-disk content.
+    /// </summary>
     Task CreateUndoSnapshotAsync(string iniFilePath);
 
     /// <summary>Restores <c> zoo.ini </c> from <c> zoo.ini.undo </c>. Not yet implemented.</summary>

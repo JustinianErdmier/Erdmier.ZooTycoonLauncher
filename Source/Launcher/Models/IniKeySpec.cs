@@ -3,15 +3,11 @@ using System.Globalization;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher.Models;
 
-/// <summary>Discriminator for the underlying typed value of an <see cref="IniKeySpec" />. Used by display-side formatters that need to turn the spec's INI-string output back into something human (e.g. <c> "1" </c> → <c> "On" </c> for bools).</summary>
-internal enum IniSpecKind
-{
-    Bool,
-    Int,
-    NullableInt,
-    Str,
-    NullableStr
-}
+/// <summary>
+///     Discriminator for the underlying typed value of an <see cref="IniKeySpec" />. Used by display-side formatters that need to turn the spec's INI-string output back into
+///     something human (e.g. <c> "1" </c> → <c> "On" </c> for bools).
+/// </summary>
+internal enum IniSpecKind { Bool, Int, NullableInt, Str, NullableStr }
 
 /// <summary>
 ///     Binds a single INI section + key to a typed property on <see cref="ZooIniModel" />. Used by <see cref="ZooIniDefaults.KnownKeys" /> as the registry of all keys the

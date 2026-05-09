@@ -221,8 +221,18 @@ file sealed class NullStartupService : IStartupService
 
     public Task<StartupResult> ApplyManualDirectoryAsync(string directoryPath) => Task.FromResult(EmptyResult());
 
+    public Task<StartupResult> OpenInstallationByIdAsync(Guid id) => Task.FromResult(EmptyResult());
+
     private static StartupResult EmptyResult()
-        => new(StartupStatus.GameDirectoryUnknown, GameDirectory: null, ExePath: null, IniPath: null, Model: null, new LauncherConfig(), Warning: null);
+        => new(StartupStatus.GameDirectoryUnknown,
+               GameDirectory: null,
+               ExePath: null,
+               IniPath: null,
+               Model: null,
+               new LauncherConfig(),
+               Warning: null,
+               ActiveInstallation: null,
+               InvalidInstallations: []);
 }
 
 file sealed class NullFolderPicker : IFolderPicker

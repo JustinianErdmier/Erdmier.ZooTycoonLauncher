@@ -6,16 +6,23 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
 using Erdmier.ZooTycoonLauncher.Launcher.Services;
+using Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
 using Erdmier.ZooTycoonLauncher.Launcher.Views;
 
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher;
 
-/// <summary>Represents the entry point of the application. Sets up the DI container, resolves <see cref="MainWindowViewModel" />, and assigns it as the main window's data context.</summary>
+/// <summary>
+///     Represents the entry point of the application. Sets up the DI container, resolves <see cref="MainWindowViewModel" />,
+///     and assigns it as the main window's data context.
+/// </summary>
 public class App : Application
 {
-    /// <summary>The application-wide service provider. Exposed as a static property so that <see cref="Views.MainWindow" /> can resolve the folder-picker shim after it loads.</summary>
+    /// <summary>
+    ///     The application-wide service provider. Exposed as a static property so that <see cref="Views.MainWindow" />
+    ///     can resolve the folder-picker shim and dialog service after it loads.
+    /// </summary>
     public static IServiceProvider? Services { get; private set; }
 
     /// <inheritdoc />
@@ -32,9 +39,9 @@ public class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow
-            {
-                DataContext = Services.GetRequiredService<MainWindowViewModel>()
-            };
+                                 {
+                                     DataContext = Services.GetRequiredService<MainWindowViewModel>()
+                                 };
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -51,6 +58,7 @@ public class App : Application
                                                                                       Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)));
 
         services.AddSingleton<IFileLocatorService, FileLocatorService>();
+        services.AddSingleton<IInstallationService, InstallationService>();
         services.AddSingleton<IIniParserService, IniParserService>();
         services.AddSingleton<IVersioningService, VersioningService>();
         services.AddSingleton<IStartupService, StartupService>();
@@ -58,8 +66,10 @@ public class App : Application
         services.AddSingleton<IShellService, WindowsShellService>();
         services.AddSingleton<ILauncherService, LauncherService>();
 
-        services.AddTransient<MainWindowViewModel>();
+        // IDialogService and dialog ViewModels are registered as they are introduced in subsequent tasks.
+
         services.AddTransient<IniSettingsViewModel>();
+        services.AddTransient<MainWindowViewModel>();
 
         return services.BuildServiceProvider();
     }

@@ -1,10 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
+using Classic.Avalonia.Theme;
+
 namespace Erdmier.ZooTycoonLauncher.Launcher.Views;
 
 /// <summary>A minimal single-line text-input dialog. No ViewModel — result is returned via <see cref="Window.ShowDialog{TResult}" />.</summary>
-public partial class InputDialogView : Window
+public partial class InputDialogView : ClassicWindow
 {
     /// <summary>
     ///     Parameterless constructor required by the Avalonia runtime XAML loader and the designer.

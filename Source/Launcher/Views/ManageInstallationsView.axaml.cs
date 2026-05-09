@@ -1,10 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
+using Classic.Avalonia.Theme;
+
 namespace Erdmier.ZooTycoonLauncher.Launcher.Views;
 
 /// <summary>List-editor dialog for adding, removing, renaming, fixing, and setting the default installation.</summary>
-public partial class ManageInstallationsView : Window
+public partial class ManageInstallationsView : ClassicWindow
 {
     /// <summary>Initialises a new instance of <see cref="ManageInstallationsView" />.</summary>
     public ManageInstallationsView()

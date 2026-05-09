@@ -11,6 +11,19 @@
         CanMinimize="False"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False">
+
+    <!--Mirror MainWindow's caption-button hiding so the Classic theme renders a true dialog title bar.-->
+    <Window.Styles>
+        <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+        <Style Selector="CaptionButtons /template/ Button#PART_RestoreButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+    </Window.Styles>
+
     <DockPanel Margin="8">
         <TextBlock DockPanel.Dock="Top"
                    TextWrapping="Wrap"

@@ -1,13 +1,15 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
+using Classic.Avalonia.Theme;
+
 using Erdmier.ZooTycoonLauncher.Launcher.Models;
 using Erdmier.ZooTycoonLauncher.Launcher.ViewModels;
 
 namespace Erdmier.ZooTycoonLauncher.Launcher.Views;
 
 /// <summary>Modal picker dialog that lets the user select one registered installation.</summary>
-public partial class InstallationPickerView : Window
+public partial class InstallationPickerView : ClassicWindow
 {
     /// <summary>Initialises a new instance of <see cref="InstallationPickerView" />.</summary>
     public InstallationPickerView()

@@ -36,6 +36,11 @@ public partial class MainWindow : ClassicWindow
             picker.SetTopLevel(this);
         }
 
+        if (App.Services?.GetService<IDialogService>() is AvaloniaDialogService dialogs)
+        {
+            dialogs.SetOwner(this);
+        }
+
         // PointerMoved bubbles — register on the ScrollViewer to catch movement over any INI control.
         // PointerEntered/Exited are direct events and do not bubble, so PointerMoved is used here instead.
         IniScrollViewer.PointerMoved  += OnIniScrollViewerPointerMoved;

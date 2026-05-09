@@ -195,16 +195,32 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IsBusy = false;
     }
 
-    /// <summary>Opens the Manage Installations dialog and refreshes <see cref="HasInstallations" /> when it closes.</summary>
+    /// <summary>
+    ///     Opens the Manage Installations dialog. When it closes, re-resolves the active installation so any rename,
+    ///     fix, or removal performed inside the dialog is reflected in the main window's installation panel and INI tab.
+    /// </summary>
     [ RelayCommand ]
     private async Task ManageInstallationsAsync()
     {
         await _dialog.ShowManageAsync();
 
-        // Refresh HasInstallations after the dialog closes in case the user added or removed entries.
+        // The dialog edits the installations list on disk; if the active installation was renamed, fixed, or removed
+        // we need to re-resolve it so the panel shows the updated DisplayName / GameDirectory (or clears when removed).
+        // OpenInstallationByIdAsync returns GameDirectoryUnknown when the id is no longer registered, which ApplyResult
+        // translates into a clean no-active state.
+        if (ActiveInstallation is not null)
+        {
+            IsBusy = true;
+            StartupResult result = await _startup.OpenInstallationByIdAsync(ActiveInstallation.Id);
+            ApplyResult(result);
+            IsBusy = false;
+
+            return;
+        }
+
+        // No active installation; just refresh the gating flag in case the user added one.
         IReadOnlyList<Installation> all = await _installations.GetAllAsync();
         HasInstallations = all.Count > 0;
-        ChangeInstallationCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>Opens the folder picker, registers the chosen directory, and re-runs startup. Bound to the File menu's "Add Installation…" item.</summary>

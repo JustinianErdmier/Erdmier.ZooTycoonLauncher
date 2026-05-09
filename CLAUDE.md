@@ -78,3 +78,8 @@ ordering by re-emitting from the cached `IniDocument`. Out-of-range or unparseab
   unused at runtime.
 - File writes that touch user data (config, INI) use the temp-file-then-`Move(overwrite: true)` pattern. Don't write in place.
 - `JetBrains.Annotations` is referenced; mark designer/runtime-only types with `[UsedImplicitly]` to keep ReSharper/Rider quiet.
+- **British English everywhere** — code comments, XML doc text, identifier wording where there's a choice (e.g. `Minimise`, `Initialise`, `Behaviour`, `Colour`), commit
+  messages, and Markdown docs. Don't switch a US spelling already established by an external API surface (`System.IO`, `Color`, etc.).
+- **All members and types are documented with XML doc comments** (`///`-prefixed `<summary>`, `<param>`, `<returns>`, `<remarks>`, `<exception>` as appropriate). Plain `//`
+  comments are for inline implementation notes only and never substitute for member/type documentation.
+- **`<c>…</c>` tags carry no inside whitespace.** Write `<c>zoo.ini</c>`, never `<c> zoo.ini </c>` / `<c>zoo.ini </c>` / `<c> zoo.ini</c>`. Same applies to `<code>…</code>`.

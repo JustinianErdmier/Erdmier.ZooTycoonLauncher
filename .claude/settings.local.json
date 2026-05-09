@@ -9,7 +9,12 @@
       "Bash(dotnet build *)",
       "Bash(gh api *)",
       "Bash(dotnet msbuild *)",
-      "PowerShell(dotnet msbuild *)"
+      "PowerShell(dotnet msbuild *)",
+      "PowerShell(dotnet build *)",
+      "PowerShell(dotnet clean *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'feat\\(✨\\): implement undo snapshot for atomic INI saves *)",
+      "Bash(git commit -m 'chore\\(🔧\\): allow dotnet build/clean shell commands in local permissions *)"
     ]
   }
 }

@@ -18,7 +18,7 @@
         CanMinimize="False"
         CanResize="False">
 
-    <!--The Classic theme’s caption-button template doesn’t honour CanMinimize/CanMaximize — only :fullscreen and :dialog:cantresize.-->
+    <!--The Classic theme's caption-button template doesn't honour CanMinimize/CanMaximize — only :fullscreen and :dialog:cantresize.-->
     <!--Collapse those parts. Hide them explicitly here since this window never minimises or maximises.-->
     <Window.Styles>
         <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
@@ -80,7 +80,8 @@
 
         <Border DockPanel.Dock="Bottom"
                 Padding="8,4"
-                BorderThickness="0,1,0,0">
+                BorderThickness="0,1,0,0"
+                IsVisible="{Binding IsStatusBarVisible}">
             <Grid ColumnDefinitions="Auto,*">
                 <ProgressBar Grid.Column="0"
                              Grid.Row="0"
@@ -199,7 +200,7 @@
                                    FontStyle="Italic"
                                    Margin="0,16,0,0" />
 
-                        <!--Button uses the RelayCommand’s CanExecute (HasExe && !HasPendingIniChanges) to drive IsEnabled — no separate IsEnabled binding needed.-->
+                        <!--Button uses the RelayCommand's CanExecute (HasExe && !HasPendingIniChanges) to drive IsEnabled — no separate IsEnabled binding needed.-->
                         <Button Content="Launch Game"
                                 Command="{Binding LaunchGameCommand}"
                                 HorizontalAlignment="Stretch"
@@ -212,38 +213,39 @@
                     <DockPanel LastChildFill="True">
                         <Border DockPanel.Dock="Bottom"
                                 Padding="6,8,6,4">
-                            <!--Three-button row over a status line. Discard (left), Undo (centre — stubbed, disabled),
-                                Save (right). Status TextBlock sits below the buttons, so failure messages don’t push them
-                                around. All three buttons drive their disabled state from their RelayCommand’s CanExecute,
-                                so no IsEnabled bindings are needed here.-->
+                            <!--Three-button row over a status/description line. Discard (left), Undo (centre — stubbed, disabled), Save (right).
+                                The TextBlock below the buttons shows save/discard feedback at rest and field descriptions while hovering over a control.
+                                All three buttons drive their disabled state from their RelayCommand's CanExecute, so no IsEnabled bindings are needed here.-->
                             <StackPanel Spacing="6">
+                                <TextBox Text="{Binding Ini.DisplayStatus}"
+                                         HorizontalAlignment="Stretch"
+                                         IsEnabled="False"
+                                         TextAlignment="Center"
+                                         TextWrapping="Wrap"
+                                         Foreground="Black"
+                                         Padding="5 0"
+                                         MinHeight="75" />
+
                                 <Grid ColumnDefinitions="*,*,*">
                                     <Button Grid.Column="0"
                                             Content="Discard"
                                             HorizontalAlignment="Left"
-                                            Padding="24,6"
                                             Command="{Binding Ini.DiscardCommand}" />
                                     <Button Grid.Column="1"
                                             Content="Undo"
                                             HorizontalAlignment="Center"
-                                            Padding="24,6"
                                             Command="{Binding Ini.UndoCommand}" />
                                     <Button Grid.Column="2"
                                             Content="Save"
                                             HorizontalAlignment="Right"
-                                            Padding="24,6"
                                             FontWeight="Bold"
                                             Command="{Binding Ini.SaveCommand}" />
                                 </Grid>
-
-                                <TextBlock Text="{Binding Ini.StatusMessage}"
-                                           HorizontalAlignment="Center"
-                                           TextAlignment="Center"
-                                           TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
 
-                        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                        <ScrollViewer x:Name="IniScrollViewer"
+                                      HorizontalScrollBarVisibility="Disabled"
                                       VerticalScrollBarVisibility="Auto">
                             <StackPanel Margin="6"
                                         Spacing="6"
@@ -263,7 +265,7 @@
                                                   Grid.Column="1"
                                                   Grid.ColumnSpan="3"
                                                   SelectedIndex="{Binding Ini.ScreenModeIndex}"
-                                                  ToolTip.Tip="{Binding Ini.ScreenModeTooltip}"
+                                                  Tag="{Binding Ini.ScreenModeTooltip}"
                                                   Margin="0,0,0,4">
                                             <ComboBoxItem>Fullscreen</ComboBoxItem>
                                             <ComboBoxItem>Windowed</ComboBoxItem>
@@ -281,7 +283,7 @@
                                                        Minimum="{x:Static models:IniRanges.ScreenWidthMin}"
                                                        Maximum="{x:Static models:IniRanges.ScreenWidthMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.ScreenWidthTooltip}"
+                                                       Tag="{Binding Ini.ScreenWidthTooltip}"
                                                        Margin="0,0,12,4" />
                                         <TextBlock Grid.Row="1"
                                                    Grid.Column="2"
@@ -294,7 +296,7 @@
                                                        Minimum="{x:Static models:IniRanges.ScreenHeightMin}"
                                                        Maximum="{x:Static models:IniRanges.ScreenHeightMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.ScreenHeightTooltip}"
+                                                       Tag="{Binding Ini.ScreenHeightTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <!--Row 2 — Update rate (spans cols 1–3).-->
@@ -310,7 +312,7 @@
                                                        Minimum="{x:Static models:IniRanges.UpdateRateMin}"
                                                        Maximum="{x:Static models:IniRanges.UpdateRateMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.UpdateRateTooltip}"
+                                                       Tag="{Binding Ini.UpdateRateTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <!--Row 3 — Draw rate (spans cols 1–3).-->
@@ -326,7 +328,7 @@
                                                        Minimum="{x:Static models:IniRanges.DrawRateMin}"
                                                        Maximum="{x:Static models:IniRanges.DrawRateMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.DrawRateTooltip}" />
+                                                       Tag="{Binding Ini.DrawRateTooltip}" />
                                     </Grid>
                                 </controls:GroupBox>
 
@@ -342,7 +344,7 @@
                                         <ComboBox Grid.Row="0"
                                                   Grid.Column="1"
                                                   SelectedIndex="{Binding Ini.Level}"
-                                                  ToolTip.Tip="{Binding Ini.LevelTooltip}"
+                                                  Tag="{Binding Ini.LevelTooltip}"
                                                   Margin="0,0,0,4">
                                             <ComboBoxItem>0 — Total Quality</ComboBoxItem>
                                             <ComboBoxItem>1 — Quality</ComboBoxItem>
@@ -356,28 +358,28 @@
                                                   Grid.ColumnSpan="2"
                                                   Content="Load reduced-detail animations"
                                                   IsChecked="{Binding Ini.LoadHalfAnims}"
-                                                  ToolTip.Tip="{Binding Ini.LoadHalfAnimsTooltip}"
+                                                  Tag="{Binding Ini.LoadHalfAnimsTooltip}"
                                                   Margin="0,0,0,4" />
                                         <CheckBox Grid.Row="2"
                                                   Grid.Column="0"
                                                   Grid.ColumnSpan="2"
                                                   Content="Reduce quality during drag"
                                                   IsChecked="{Binding Ini.Drag}"
-                                                  ToolTip.Tip="{Binding Ini.DragTooltip}"
+                                                  Tag="{Binding Ini.DragTooltip}"
                                                   Margin="0,0,0,4" />
                                         <CheckBox Grid.Row="3"
                                                   Grid.Column="0"
                                                   Grid.ColumnSpan="2"
                                                   Content="Reduce quality during click"
                                                   IsChecked="{Binding Ini.Click}"
-                                                  ToolTip.Tip="{Binding Ini.ClickTooltip}"
+                                                  Tag="{Binding Ini.ClickTooltip}"
                                                   Margin="0,0,0,4" />
                                         <CheckBox Grid.Row="4"
                                                   Grid.Column="0"
                                                   Grid.ColumnSpan="2"
                                                   Content="Reduce quality during normal operation"
                                                   IsChecked="{Binding Ini.Normal}"
-                                                  ToolTip.Tip="{Binding Ini.NormalTooltip}" />
+                                                  Tag="{Binding Ini.NormalTooltip}" />
                                     </Grid>
                                 </controls:GroupBox>
 
@@ -390,7 +392,7 @@
                                                   Grid.ColumnSpan="2"
                                                   Content="Play menu music"
                                                   IsChecked="{Binding Ini.PlayMenuMusic}"
-                                                  ToolTip.Tip="{Binding Ini.PlayMenuMusicTooltip}"
+                                                  Tag="{Binding Ini.PlayMenuMusicTooltip}"
                                                   Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="1"
@@ -401,7 +403,7 @@
                                         <TextBox Grid.Row="1"
                                                  Grid.Column="1"
                                                  Text="{Binding Ini.MenuMusic}"
-                                                 ToolTip.Tip="{Binding Ini.MenuMusicTooltip}"
+                                                 Tag="{Binding Ini.MenuMusicTooltip}"
                                                  Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="2"
@@ -415,7 +417,7 @@
                                                        Minimum="{x:Static models:IniRanges.MenuMusicAttenuationMin}"
                                                        Maximum="{x:Static models:IniRanges.MenuMusicAttenuationMax}"
                                                        Increment="100"
-                                                       ToolTip.Tip="{Binding Ini.MenuMusicAttenuationTooltip}"
+                                                       Tag="{Binding Ini.MenuMusicAttenuationTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="3"
@@ -429,7 +431,7 @@
                                                        Minimum="{x:Static models:IniRanges.UserAttenuationMin}"
                                                        Maximum="{x:Static models:IniRanges.UserAttenuationMax}"
                                                        Increment="100"
-                                                       ToolTip.Tip="{Binding Ini.UserAttenuationTooltip}"
+                                                       Tag="{Binding Ini.UserAttenuationTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <CheckBox Grid.Row="4"
@@ -437,7 +439,7 @@
                                                   Grid.ColumnSpan="2"
                                                   Content="Play first intro movie"
                                                   IsChecked="{Binding Ini.PlayMovie}"
-                                                  ToolTip.Tip="{Binding Ini.PlayMovieTooltip}"
+                                                  Tag="{Binding Ini.PlayMovieTooltip}"
                                                   Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="5"
@@ -451,7 +453,7 @@
                                                        Minimum="{x:Static models:IniRanges.MovieVolumeMin}"
                                                        Maximum="{x:Static models:IniRanges.MovieVolumeMax}"
                                                        Increment="100"
-                                                       ToolTip.Tip="{Binding Ini.MovieVolume1Tooltip}"
+                                                       Tag="{Binding Ini.MovieVolume1Tooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <CheckBox Grid.Row="6"
@@ -459,7 +461,7 @@
                                                   Grid.ColumnSpan="2"
                                                   Content="Play second intro movie"
                                                   IsChecked="{Binding Ini.PlaySecondMovie}"
-                                                  ToolTip.Tip="{Binding Ini.PlaySecondMovieTooltip}"
+                                                  Tag="{Binding Ini.PlaySecondMovieTooltip}"
                                                   Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="7"
@@ -473,7 +475,7 @@
                                                        Minimum="{x:Static models:IniRanges.MovieVolumeMin}"
                                                        Maximum="{x:Static models:IniRanges.MovieVolumeMax}"
                                                        Increment="100"
-                                                       ToolTip.Tip="{Binding Ini.MovieVolume2Tooltip}"
+                                                       Tag="{Binding Ini.MovieVolume2Tooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <CheckBox Grid.Row="8"
@@ -481,7 +483,7 @@
                                                   Grid.ColumnSpan="2"
                                                   Content="Force 8-bit audio (compatibility)"
                                                   IsChecked="{Binding Ini.Use8BitSound}"
-                                                  ToolTip.Tip="{Binding Ini.Use8BitSoundTooltip}" />
+                                                  Tag="{Binding Ini.Use8BitSoundTooltip}" />
                                     </Grid>
                                 </controls:GroupBox>
 
@@ -500,7 +502,7 @@
                                                        Minimum="{x:Static models:IniRanges.StartingCashMin}"
                                                        Maximum="{x:Static models:IniRanges.StartingCashMax}"
                                                        Increment="1000"
-                                                       ToolTip.Tip="{Binding Ini.StartingCashTooltip}"
+                                                       Tag="{Binding Ini.StartingCashTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="1"
@@ -514,7 +516,7 @@
                                                        Minimum="{x:Static models:IniRanges.CashIncrementMin}"
                                                        Maximum="{x:Static models:IniRanges.CashIncrementMax}"
                                                        Increment="100"
-                                                       ToolTip.Tip="{Binding Ini.CashIncrementTooltip}"
+                                                       Tag="{Binding Ini.CashIncrementTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="2"
@@ -528,7 +530,7 @@
                                                        Minimum="{x:Static models:IniRanges.MinCashMin}"
                                                        Maximum="{x:Static models:IniRanges.MinCashMax}"
                                                        Increment="1000"
-                                                       ToolTip.Tip="{Binding Ini.MinCashTooltip}"
+                                                       Tag="{Binding Ini.MinCashTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="3"
@@ -542,7 +544,7 @@
                                                        Minimum="{x:Static models:IniRanges.MaxCashMin}"
                                                        Maximum="{x:Static models:IniRanges.MaxCashMax}"
                                                        Increment="1000"
-                                                       ToolTip.Tip="{Binding Ini.MaxCashTooltip}"
+                                                       Tag="{Binding Ini.MaxCashTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="4"
@@ -556,7 +558,7 @@
                                                        Minimum="{x:Static models:IniRanges.MaxGuestsMin}"
                                                        Maximum="{x:Static models:IniRanges.MaxGuestsMax}"
                                                        Increment="50"
-                                                       ToolTip.Tip="{Binding Ini.MaxGuestsTooltip}" />
+                                                       Tag="{Binding Ini.MaxGuestsTooltip}" />
                                     </Grid>
                                 </controls:GroupBox>
 
@@ -569,7 +571,7 @@
                                                   Grid.ColumnSpan="2"
                                                   Content="Use alternate (monochrome) cursors"
                                                   IsChecked="{Binding Ini.UseAlternateCursors}"
-                                                  ToolTip.Tip="{Binding Ini.UseAlternateCursorsTooltip}"
+                                                  Tag="{Binding Ini.UseAlternateCursorsTooltip}"
                                                   Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="1"
@@ -583,7 +585,7 @@
                                                        Minimum="{x:Static models:IniRanges.TooltipDelayMin}"
                                                        Maximum="{x:Static models:IniRanges.TooltipDelayMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.TooltipDelayTooltip}"
+                                                       Tag="{Binding Ini.TooltipDelayTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="2"
@@ -597,7 +599,7 @@
                                                        Minimum="{x:Static models:IniRanges.TooltipDurationMin}"
                                                        Maximum="{x:Static models:IniRanges.TooltipDurationMax}"
                                                        Increment="100"
-                                                       ToolTip.Tip="{Binding Ini.TooltipDurationTooltip}"
+                                                       Tag="{Binding Ini.TooltipDurationTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <CheckBox Grid.Row="3"
@@ -605,7 +607,7 @@
                                                   Grid.ColumnSpan="2"
                                                   Content="Show in-game notification messages"
                                                   IsChecked="{Binding Ini.MessageDisplay}"
-                                                  ToolTip.Tip="{Binding Ini.MessageDisplayTooltip}"
+                                                  Tag="{Binding Ini.MessageDisplayTooltip}"
                                                   Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="4"
@@ -619,7 +621,7 @@
                                                        Minimum="{x:Static models:IniRanges.MouseScrollThresholdMin}"
                                                        Maximum="{x:Static models:IniRanges.MouseScrollThresholdMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.MouseScrollThresholdTooltip}"
+                                                       Tag="{Binding Ini.MouseScrollThresholdTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="5"
@@ -633,7 +635,7 @@
                                                        Minimum="{x:Static models:IniRanges.MouseScrollDelayMin}"
                                                        Maximum="{x:Static models:IniRanges.MouseScrollDelayMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.MouseScrollDelayTooltip}"
+                                                       Tag="{Binding Ini.MouseScrollDelayTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="6"
@@ -647,7 +649,7 @@
                                                        Minimum="{x:Static models:IniRanges.MouseScrollSpeedMin}"
                                                        Maximum="{x:Static models:IniRanges.MouseScrollSpeedMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.MouseScrollXTooltip}"
+                                                       Tag="{Binding Ini.MouseScrollXTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="7"
@@ -661,7 +663,7 @@
                                                        Minimum="{x:Static models:IniRanges.MouseScrollSpeedMin}"
                                                        Maximum="{x:Static models:IniRanges.MouseScrollSpeedMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.MouseScrollYTooltip}"
+                                                       Tag="{Binding Ini.MouseScrollYTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="8"
@@ -675,7 +677,7 @@
                                                        Minimum="{x:Static models:IniRanges.KeyScrollSpeedMin}"
                                                        Maximum="{x:Static models:IniRanges.KeyScrollSpeedMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.KeyScrollXTooltip}"
+                                                       Tag="{Binding Ini.KeyScrollXTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="9"
@@ -689,7 +691,7 @@
                                                        Minimum="{x:Static models:IniRanges.KeyScrollSpeedMin}"
                                                        Maximum="{x:Static models:IniRanges.KeyScrollSpeedMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.KeyScrollYTooltip}"
+                                                       Tag="{Binding Ini.KeyScrollYTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="10"
@@ -703,7 +705,7 @@
                                                        Minimum="{x:Static models:IniRanges.MinimumMessageIntervalMin}"
                                                        Maximum="{x:Static models:IniRanges.MinimumMessageIntervalMax}"
                                                        Increment="10"
-                                                       ToolTip.Tip="{Binding Ini.MinimumMessageIntervalTooltip}"
+                                                       Tag="{Binding Ini.MinimumMessageIntervalTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="11"
@@ -714,7 +716,7 @@
                                         <ComboBox Grid.Row="11"
                                                   Grid.Column="1"
                                                   SelectedIndex="{Binding Ini.HelpType}"
-                                                  ToolTip.Tip="{Binding Ini.HelpTypeTooltip}">
+                                                  Tag="{Binding Ini.HelpTypeTooltip}">
                                             <ComboBoxItem>0 — Off</ComboBoxItem>
                                             <ComboBoxItem>1 — Standard</ComboBoxItem>
                                             <ComboBoxItem>2 — Verbose</ComboBoxItem>
@@ -737,7 +739,7 @@
                                                        Minimum="{x:Static models:IniRanges.MapDimensionMin}"
                                                        Maximum="{x:Static models:IniRanges.MapDimensionMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.MapXTooltip}"
+                                                       Tag="{Binding Ini.MapXTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="1"
@@ -751,7 +753,7 @@
                                                        Minimum="{x:Static models:IniRanges.MapDimensionMin}"
                                                        Maximum="{x:Static models:IniRanges.MapDimensionMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.MapYTooltip}" />
+                                                       Tag="{Binding Ini.MapYTooltip}" />
                                     </Grid>
                                 </controls:GroupBox>
 
@@ -768,7 +770,7 @@
                                                   Grid.Column="1"
                                                   ItemsSource="{Binding Ini.LanguageOptions}"
                                                   SelectedItem="{Binding Ini.SelectedLanguage}"
-                                                  ToolTip.Tip="{Binding Ini.LanguageTooltip}">
+                                                  Tag="{Binding Ini.LanguageTooltip}">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate DataType="vm:LanguageOption">
                                                     <TextBlock Text="{Binding DisplayName}" />
@@ -787,7 +789,7 @@
                                                   Grid.ColumnSpan="2"
                                                   Content="Show FPS counter overlay"
                                                   IsChecked="{Binding Ini.DrawFps}"
-                                                  ToolTip.Tip="{Binding Ini.DrawFpsTooltip}"
+                                                  Tag="{Binding Ini.DrawFpsTooltip}"
                                                   Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="1"
@@ -801,7 +803,7 @@
                                                        Minimum="{x:Static models:IniRanges.DrawFpsPositionMin}"
                                                        Maximum="{x:Static models:IniRanges.DrawFpsPositionMax}"
                                                        Increment="10"
-                                                       ToolTip.Tip="{Binding Ini.DrawFpsXTooltip}"
+                                                       Tag="{Binding Ini.DrawFpsXTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="2"
@@ -815,7 +817,7 @@
                                                        Minimum="{x:Static models:IniRanges.DrawFpsPositionMin}"
                                                        Maximum="{x:Static models:IniRanges.DrawFpsPositionMax}"
                                                        Increment="10"
-                                                       ToolTip.Tip="{Binding Ini.DrawFpsYTooltip}"
+                                                       Tag="{Binding Ini.DrawFpsYTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <TextBlock Grid.Row="3"
@@ -829,7 +831,7 @@
                                                        Minimum="{x:Static models:IniRanges.LogCutoffMin}"
                                                        Maximum="{x:Static models:IniRanges.LogCutoffMax}"
                                                        Increment="1"
-                                                       ToolTip.Tip="{Binding Ini.LogCutoffTooltip}"
+                                                       Tag="{Binding Ini.LogCutoffTooltip}"
                                                        Margin="0,0,0,4" />
 
                                         <CheckBox Grid.Row="4"
@@ -837,14 +839,14 @@
                                                   Grid.ColumnSpan="2"
                                                   Content="Write log file to disk"
                                                   IsChecked="{Binding Ini.SendLogfile}"
-                                                  ToolTip.Tip="{Binding Ini.SendLogfileTooltip}"
+                                                  Tag="{Binding Ini.SendLogfileTooltip}"
                                                   Margin="0,0,0,4" />
                                         <CheckBox Grid.Row="5"
                                                   Grid.Column="0"
                                                   Grid.ColumnSpan="2"
                                                   Content="Send log output to attached debugger"
                                                   IsChecked="{Binding Ini.SendDebugger}"
-                                                  ToolTip.Tip="{Binding Ini.SendDebuggerTooltip}" />
+                                                  Tag="{Binding Ini.SendDebuggerTooltip}" />
                                     </Grid>
                                 </controls:GroupBox>
                             </StackPanel>

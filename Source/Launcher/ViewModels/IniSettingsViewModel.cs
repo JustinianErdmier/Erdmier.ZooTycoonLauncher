@@ -67,6 +67,9 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
 
     public string ClickTooltip { get; } = BuildTooltip(resourceKey: "Tt.Click", section: "advanced", key: "click");
 
+    /// <summary>The text shown in the INI tab status area. Returns <see cref="HoverDescription" /> when the pointer is over a field; otherwise <see cref="StatusMessage" />.</summary>
+    public string DisplayStatus => HoverDescription ?? StatusMessage ?? "Hover over an option to display its description and default value(s).";
+
     [ ObservableProperty ]
     public partial bool Drag { get; set; }
 
@@ -93,12 +96,16 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public string DrawRateTooltip { get; } = BuildTooltip(resourceKey: "Tt.DrawRate", section: "user", key: "DrawRate");
 
     [ ObservableProperty ]
-    private partial bool Fullscreen { get; set; } = true;
-
-    [ ObservableProperty ]
     public partial int HelpType { get; set; } = 1;
 
     public string HelpTypeTooltip { get; } = BuildTooltip(resourceKey: "Tt.HelpType", section: "UI", key: "helpType");
+
+    /// <summary>
+    ///     Set by <c>MainWindow</c> when the pointer enters an INI input control, cleared when it leaves the scroll area. Drives <see cref="DisplayStatus" /> to show the field
+    ///     description in the status area without displacing save/discard feedback.
+    /// </summary>
+    [ ObservableProperty ]
+    public partial string? HoverDescription { get; set; }
 
     [ ObservableProperty ]
     public partial bool IsDirty { get; set; }
@@ -112,11 +119,6 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public partial int KeyScrollY { get; set; } = 64;
 
     public string KeyScrollYTooltip { get; } = BuildTooltip(resourceKey: "Tt.KeyScrollY", section: "UI", key: "keyScrollY");
-
-    // ── [language] (SDD §9.7) ─────────────────────────────────────────────────────────────────────────────────────────
-
-    [ ObservableProperty ]
-    private partial int Lang { get; set; } = 9;
 
     /// <summary>Hard-coded canonical list of common Windows LANGID/SUBLANGID combinations. Install-driven enumeration is a follow-up (see design §3.6).</summary>
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
@@ -227,9 +229,6 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public string MovieVolume2Tooltip { get; } = BuildTooltip(resourceKey: "Tt.MovieVolume2", section: "UI", key: "movievolume2");
 
     [ ObservableProperty ]
-    private partial bool NoMenuMusic { get; set; }
-
-    [ ObservableProperty ]
     public partial bool Normal { get; set; }
 
     public string NormalTooltip { get; } = BuildTooltip(resourceKey: "Tt.Normal", section: "advanced", key: "normal");
@@ -314,9 +313,6 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public partial string? StatusMessage { get; set; }
 
     [ ObservableProperty ]
-    private partial int SubLang { get; set; } = 1;
-
-    [ ObservableProperty ]
     public partial int TooltipDelay { get; set; } = 1;
 
     public string TooltipDelayTooltip { get; } = BuildTooltip(resourceKey: "Tt.TooltipDelay", section: "UI", key: "tooltipDelay");
@@ -347,6 +343,20 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     public partial int UserAttenuation { get; set; }
 
     public string UserAttenuationTooltip { get; } = BuildTooltip(resourceKey: "Tt.UserAttenuation", section: "UI", key: "userAttenuation");
+
+    [ ObservableProperty ]
+    private partial bool Fullscreen { get; set; } = true;
+
+    // ── [language] (SDD §9.7) ─────────────────────────────────────────────────────────────────────────────────────────
+
+    [ ObservableProperty ]
+    private partial int Lang { get; set; } = 9;
+
+    [ ObservableProperty ]
+    private partial bool NoMenuMusic { get; set; }
+
+    [ ObservableProperty ]
+    private partial int SubLang { get; set; } = 1;
 
     /// <summary>Replaces the working state with values from <paramref name="model" />, resets <see cref="IsDirty" />, and stashes <paramref name="iniPath" /> for the save path.</summary>
     public void ApplyModel(ZooIniModel? model, string? iniPath)
@@ -626,6 +636,12 @@ public sealed partial class IniSettingsViewModel : ViewModelBase
     { }
 
     private bool CanUndo() => false;
+
+    // ReSharper disable once UnusedParameterInPartialMethod
+    partial void OnHoverDescriptionChanged(string? value) => OnPropertyChanged(nameof(DisplayStatus));
+
+    // ReSharper disable once UnusedParameterInPartialMethod
+    partial void OnStatusMessageChanged(string? value) => OnPropertyChanged(nameof(DisplayStatus));
 
     /// <summary>Re-evaluates Save and Discard CanExecute when <see cref="IsDirty" /> flips. Wired via the source generator's partial OnIsDirtyChanged.</summary>
 

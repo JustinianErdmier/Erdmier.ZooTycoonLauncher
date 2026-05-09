@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -75,6 +76,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial bool IsBusy { get; set; }
 
+    // NOTE: This implementation is temporary. Once the status bar is polished, this will be reworked or removed.
+    public bool IsStatusBarVisible => !(!string.IsNullOrEmpty(StatusMessage) && StatusMessage.StartsWith(value: "Ready.", StringComparison.OrdinalIgnoreCase));
+
+    // ReSharper disable once UnusedParameterInPartialMethod
+    partial void OnStatusMessageChanged(string value) => OnPropertyChanged(nameof(IsStatusBarVisible));
+
     /// <summary>The cached in-memory <c>zoo.ini</c>. Set by <see cref="InitializeAsync" /> on successful parse.</summary>
     public ZooIniModel? Model { get; private set; }
 
@@ -119,8 +126,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     /// <summary>
-    ///     Gates <see cref="LaunchGameCommand" />. Re-evaluated when <see cref="HasExe" /> or <see cref="HasPendingIniChanges" /> changes (see <see cref="OnHasExeChanged(bool)" /> and
-    ///     <see cref="OnIniPropertyChanged" />).
+    ///     Gates <see cref="LaunchGameCommand" />. Re-evaluated when <see cref="HasExe" /> or <see cref="HasPendingIniChanges" /> changes (see <see cref="OnHasExeChanged(bool)" />
+    ///     and <see cref="OnIniPropertyChanged" />).
     /// </summary>
     private bool CanLaunchGame() => HasExe && !HasPendingIniChanges;
 

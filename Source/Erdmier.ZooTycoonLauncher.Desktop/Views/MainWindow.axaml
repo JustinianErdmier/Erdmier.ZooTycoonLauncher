@@ -1,0 +1,15 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels"
+        x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Zoo Tycoon Launcher"
+        Width="800"
+        Height="600">
+    <Grid>
+        <TextBlock Text="{Binding Banner}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="20" />
+    </Grid>
+</Window>

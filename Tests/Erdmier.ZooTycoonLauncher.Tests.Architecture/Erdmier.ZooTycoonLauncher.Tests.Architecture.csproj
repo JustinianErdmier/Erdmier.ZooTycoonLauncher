@@ -18,5 +18,6 @@
         <ProjectReference Include="..\..\Source\Erdmier.ZooTycoonLauncher.Domain\Erdmier.ZooTycoonLauncher.Domain.csproj" />
         <ProjectReference Include="..\..\Source\Erdmier.ZooTycoonLauncher.Application\Erdmier.ZooTycoonLauncher.Application.csproj" />
         <ProjectReference Include="..\..\Source\Erdmier.ZooTycoonLauncher.Infrastructure\Erdmier.ZooTycoonLauncher.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\Source\Erdmier.ZooTycoonLauncher.Desktop\Erdmier.ZooTycoonLauncher.Desktop.csproj" />
     </ItemGroup>
 </Project>

@@ -7,6 +7,7 @@ public sealed class OneTypePerFileTests
         yield return [typeof(Domain.Installations.GameInstallation).Assembly];
         yield return [typeof(Application.Common.Abstractions.IAppStorageLocations).Assembly];
         yield return [typeof(Infrastructure.Common.Storage.AppStorageLocations).Assembly];
+        yield return [typeof(Erdmier.ZooTycoonLauncher.Desktop.App).Assembly];
     }
 
     [Theory]
@@ -23,11 +24,16 @@ public sealed class OneTypePerFileTests
         List<string> violations = new();
         foreach (Type type in publicTypes)
         {
-            string expectedFileName = StripGenericArity(type.Name) + ".cs";
-            string[] matches = Directory.GetFiles(projectDirectory, expectedFileName, SearchOption.AllDirectories);
+            string baseName = StripGenericArity(type.Name);
+
+            // Avalonia XAML code-behind files are named TypeName.axaml.cs rather than TypeName.cs.
+            string[] matches = Directory.GetFiles(projectDirectory, baseName + ".cs", SearchOption.AllDirectories)
+                .Concat(Directory.GetFiles(projectDirectory, baseName + ".axaml.cs", SearchOption.AllDirectories))
+                .ToArray();
+
             if (matches.Length == 0)
             {
-                violations.Add($"{type.FullName} — no file named {expectedFileName} in {projectDirectory}");
+                violations.Add($"{type.FullName} — no file named {baseName}.cs or {baseName}.axaml.cs in {projectDirectory}");
             }
         }
 

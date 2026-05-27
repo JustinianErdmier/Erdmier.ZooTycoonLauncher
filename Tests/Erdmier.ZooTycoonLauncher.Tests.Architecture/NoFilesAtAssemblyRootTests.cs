@@ -7,14 +7,19 @@ public sealed class NoFilesAtAssemblyRootTests
         yield return [ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Domain")];
         yield return [ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Application")];
         yield return [ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Infrastructure")];
+        yield return [ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop")];
     }
 
     [Theory]
     [MemberData(nameof(SourceProjectDirectories))]
     public void NoCsFileSitsAtProjectRoot(string projectDirectory)
     {
+        // GlobalUsings.cs and Avalonia entry-point files (App.axaml.cs, Program.cs) are
+        // conventional root-level files exempt from the no-root-files rule.
+        string[] exemptFileNames = [ "GlobalUsings.cs", "App.axaml.cs", "Program.cs" ];
+
         string[] rootCsFiles = Directory.GetFiles(projectDirectory, "*.cs", SearchOption.TopDirectoryOnly)
-            .Where(p => !Path.GetFileName(p).Equals("GlobalUsings.cs", StringComparison.Ordinal))
+            .Where(p => !exemptFileNames.Contains(Path.GetFileName(p), StringComparer.Ordinal))
             .ToArray();
 
         rootCsFiles.ShouldBeEmpty(

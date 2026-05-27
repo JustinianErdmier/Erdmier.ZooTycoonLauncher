@@ -39,6 +39,19 @@ public sealed class DependencyDirectionTests
         result.IsSuccessful.ShouldBeTrue(BuildFailureMessage(result));
     }
 
+    [Fact]
+    public void Desktop_OnlyReferencesInfrastructureFromCompositionNamespace()
+    {
+        TestResult result = Types.InAssembly(typeof(Erdmier.ZooTycoonLauncher.Desktop.App).Assembly)
+            .That()
+            .DoNotResideInNamespace("Erdmier.ZooTycoonLauncher.Desktop.Composition")
+            .ShouldNot()
+            .HaveDependencyOn(InfrastructureAssembly)
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue(BuildFailureMessage(result));
+    }
+
     private static string BuildFailureMessage(TestResult result) =>
         result.FailingTypeNames is null
             ? "Dependency-direction rule violated."

@@ -1,7 +1,7 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop;
 
 /// <summary>
-/// The Avalonia application class. Wires DI in <see cref="OnFrameworkInitializationCompleted" />.
+/// The Avalonia application class. Delegates DI wiring to <see cref="Composition.AppStartup" />.
 /// </summary>
 public sealed partial class App : Avalonia.Application
 {
@@ -14,15 +14,8 @@ public sealed partial class App : Avalonia.Application
     /// <inheritdoc />
     public override void OnFrameworkInitializationCompleted()
     {
-        ServiceCollection services = new();
-        services.AddInfrastructure();
-        services.AddDesktop();
-
-        ServiceProvider provider = services.BuildServiceProvider();
+        ServiceProvider provider = Composition.AppStartup.BuildAndInitialise();
         Services = provider;
-
-        // Run migrations synchronously here — the application can't usefully start without the DB.
-        provider.MigrateLauncherDatabaseAsync(CancellationToken.None).GetAwaiter().GetResult();
 
         if (ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
         {

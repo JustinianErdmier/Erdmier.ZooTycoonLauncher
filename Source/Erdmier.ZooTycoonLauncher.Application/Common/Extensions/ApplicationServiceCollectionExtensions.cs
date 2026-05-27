@@ -1,5 +1,4 @@
 using Erdmier.ZooTycoonLauncher.Application.Common.Behaviours;
-using FluentValidation;
 
 namespace Erdmier.ZooTycoonLauncher.Application.Common.Extensions;
 

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>Erdmier.ZooTycoonLauncher.Domain</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Ardalis.SmartEnum" />
+        <PackageReference Include="ErrorOr" />
+        <PackageReference Include="JetBrains.Annotations" />
+    </ItemGroup>
+</Project>

@@ -122,7 +122,7 @@ After every commit, run the clean+build to make sure nothing regressed; if a hoo
 
 ## Conventions (apply to every task)
 
-These are SDD- and CLAUDERef.md-derived. Apply mechanically; an architecture test in Task 12 catches drift.
+These are SDD- and CLAUDE.md-derived. Apply mechanically; an architecture test in Task 12 catches drift.
 
 1. **One type per file. No exceptions.** Class, record, struct, interface, enum, delegate each in its own file, named after the type, in a folder mirroring the namespace.
 2. **No files at any project root.** Every file lives under a subfolder mirroring its namespace (e.g. DI registration goes under `Common/Extensions/`, not at the project root).
@@ -134,7 +134,7 @@ These are SDD- and CLAUDERef.md-derived. Apply mechanically; an architecture tes
 8. **File-scoped namespaces** everywhere.
 9. **UTC for every timestamp.** Column names and properties carry the `Utc` suffix. Localisation only at the UI boundary.
 10. **PascalCase + plural** for table names (`LauncherSettings`, `GameInstallations`).
-11. **Commits:** conventional commit + gitmoji per CLAUDERef.md (e.g. `feat(✨):`, `fix(🐛):`, `chore(🔧):`, `refactor(♻️):`, `test(✅):`). Commit per logical task, not per file.
+11. **Commits:** conventional commit + gitmoji per CLAUDE.md (e.g. `feat(✨):`, `fix(🐛):`, `chore(🔧):`, `refactor(♻️):`, `test(✅):`). Commit per logical task, not per file.
 
 ---
 
@@ -234,7 +234,7 @@ Replace the contents of `Erdmier.ZooTycoonLauncher.slnx` with:
 <Solution>
     <Folder Name="/SolutionItems/">
         <File Path=".gitignore" />
-        <File Path="CLAUDERef.md" />
+        <File Path="CLAUDE.md" />
         <File Path="Directory.Build.props" />
         <File Path="Directory.Packages.props" />
     </Folder>

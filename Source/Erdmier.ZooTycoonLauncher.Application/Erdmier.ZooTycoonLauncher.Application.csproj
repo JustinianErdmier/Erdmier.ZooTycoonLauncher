@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>Erdmier.ZooTycoonLauncher.Application</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ErrorOr" />
+        <PackageReference Include="FluentValidation" />
+        <PackageReference Include="JetBrains.Annotations" />
+        <PackageReference Include="Mediator.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="System.IO.Abstractions" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Erdmier.ZooTycoonLauncher.Domain\Erdmier.ZooTycoonLauncher.Domain.csproj" />
+    </ItemGroup>
+</Project>

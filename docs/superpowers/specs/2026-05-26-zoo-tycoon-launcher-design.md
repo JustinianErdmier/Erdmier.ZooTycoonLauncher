@@ -10,7 +10,7 @@
 |--------------------------|-----------------------------------|
 | **Project**              | Zoo Tycoon Launcher               |
 | **Document**             | Software Design Document (SDD)    |
-| **Version**              | 1.1                               |
+| **Version**              | 1.2                               |
 | **Status**               | Draft for implementation          |
 | **Author**               | Justinian                         |
 | **Last updated**         | 26 May 2026                       |
@@ -23,6 +23,7 @@
 | 0.1     | 26 May 2026 | Justinian | Initial full draft, developed from the rewrite brief and confirmed brainstorming outcomes (architecture, persistence, startup, installation, INI tab).      |
 | 1.0     | 26 May 2026 | Justinian | Baselined for implementation; status changed from Draft to Draft for implementation pending Phase 0 research spikes (§7.8, §7.9).                           |
 | 1.1     | 26 May 2026 | Justinian | Added view-composition convention: each main-window state, each tab, and each INI section is its own UserControl + ViewModel pair (§9.2). Architecture test in §11.4 enforces the every-VM-has-a-View rule. |
+| 1.2     | 27 May 2026 | Justinian | Hi-fi prototype consumed and merged into §9 — File/Help menus only, no min/max chrome, 720 px main window, button-label cleanup (no ellipses on buttons); Installation Manager rename; new INI Config tab layout (sectioned list on the left, scrolling form on the right, hover + status help affordance, no dedicated help groupbox); Add/Edit Installation dialogue gains a folder input with `Browse…` (no picker-first flow); Restore Previous INI dialogue gains an inline diff (key · current · snapshot) and drops the Note column; Cannot Play Display section matches Ready's layout (muted, with a one-liner); Last played surfaced even in Cannot Play; [ai] section carries a stock-limit blurb; INI Config tab disabled in Looking / NoInstall / OpenPicker states; Settings dialogue picks up a `Theme` choice (System / Light / Dark) and a corresponding entity field. Old `docs/wireframes/` JPGs removed; replaced by a single screen-recording GIF at `docs/user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif`. The live hi-fi prototype in Claude Design remains the authoritative visual reference; the GIF is a quick in-repo glance. |
 
 ---
 
@@ -93,7 +94,7 @@ The launcher solves both: it persists strongly typed INI state in SQLite with fu
 
 **Installation.** A discrete `Microsoft Games\Zoo Tycoon\`-shaped directory containing at minimum `zoo.exe` (the launchable game) and ideally `zoo.ini` (the configuration file). The launcher tracks any number of installations by `Guid`, each with its own database (see [Section 6](#6-persistence-design)).
 
-**Default installation.** Exactly one installation, when there is at least one, is the **default**. It is the installation the launcher opens on start when `LauncherStartupPreference = DefaultInstallation`, the row whose name is rendered **bold** in the management dialogue, and the implicit "if I had to pick one, this one" target.
+**Default installation.** Exactly one installation, when there is at least one, is the **default**. It is the installation the launcher opens on start when `LauncherStartupPreference = DefaultInstallation`, the row whose name is rendered **bold** in the Installation Manager dialogue, and the implicit "if I had to pick one, this one" target.
 
 **INI snapshot.** A point-in-time materialisation of every recognised `zoo.ini` setting plus the original file's structure (comments, blank lines, key ordering, unknown keys). The launcher tracks three kinds: `Original` (captured once when the installation was first added), `Current` (the value the launcher believes is on disk *right now*), and `Historical` (every prior `Current` state, retained for restore).
 
@@ -319,6 +320,7 @@ public sealed class LauncherSettings
         = LauncherStartupPreference.DefaultInstallation;
     public bool CloseAfterGameLaunch { get; set; }
     public Guid? DefaultInstallationId { get; set; }
+    public LauncherTheme Theme { get; set; } = LauncherTheme.System;            // System | Light | Dark
 }
 ```
 
@@ -341,6 +343,15 @@ public sealed class LauncherStartupPreference : SmartEnum<LauncherStartupPrefere
     public static readonly LauncherStartupPreference NoInstallation         = new("NoInstallation",         4);
 
     private LauncherStartupPreference(string name, int id) : base(name, id) { }
+}
+
+public sealed class LauncherTheme : SmartEnum<LauncherTheme>
+{
+    public static readonly LauncherTheme System = new("System", 1);
+    public static readonly LauncherTheme Light  = new("Light",  2);
+    public static readonly LauncherTheme Dark   = new("Dark",   3);
+
+    private LauncherTheme(string name, int id) : base(name, id) { }
 }
 
 public sealed class IniSnapshotKind : SmartEnum<IniSnapshotKind>
@@ -502,6 +513,7 @@ erDiagram
 |                    | `LauncherStartupPreference`   | TEXT (SmartEnum) | Not null                                                                             |
 |                    | `CloseAfterGameLaunch`        | INTEGER (bool)   | Not null, default `0`                                                                |
 |                    | `DefaultInstallationId`       | TEXT (GUID)      | Nullable; FK → `GameInstallations.Id` `ON DELETE SET NULL` (defensive; see §7.2.4)   |
+|                    | `Theme`                       | TEXT (SmartEnum) | Not null, default `System`; one of `System` / `Light` / `Dark` (see §9.11)           |
 | `GameInstallations`| `Id`                          | TEXT (GUID)      | PK                                                                                   |
 |                    | `Name`                        | TEXT             | Not null, **unique**                                                                 |
 |                    | `Path`                        | TEXT             | Not null, **unique**                                                                 |
@@ -609,7 +621,7 @@ stateDiagram-v2
 - **`LastPlayedInstallation` / `LastOpenedInstallation`** with no candidate → fall back to `DefaultInstallation` resolution.
 - **Verify** = "directory exists; `zoo.exe` present (drives `HasExe`); `zoo.ini` present (drives `HasIni`); persist any change to the row, including `ModifiedUtc`".
 - **ParseIni** runs only when the installation has `HasExe = true`. When `HasIni = false`, the window settles to **Ready to Play** with the Launch Game button enabled; the INI tab routes to `NoIniPresent`. When parsing or persisting fails, the window settles to **Cannot Play** with Launch Game disabled; the INI tab routes to `CorruptedIni`.
-- **`LastOpenedUtc` semantics.** Set every time an installation becomes the active installation in the main window — auto-resolved at startup, picked from the picker, or selected from the management dialogue. Distinct from `LastPlayedUtc`, which is set only when the Launch Game button kicks off a successful process start.
+- **`LastOpenedUtc` semantics.** Set every time an installation becomes the active installation in the main window — auto-resolved at startup, picked from the picker, or selected from the Installation Manager dialogue. Distinct from `LastPlayedUtc`, which is set only when the Launch Game button kicks off a successful process start.
 
 #### 7.1.3 Sequence diagram — happy path
 
@@ -667,15 +679,18 @@ sequenceDiagram
 Three entry points share one slice (`AddInstallationCommand`):
 
 1. **Auto-locate at startup** — the `IInstallationLocator` walks: persisted last-known path → hard-coded `Program Files [(x86)]\Microsoft Games\Zoo Tycoon` → registry value-name variants under `HKLM\SOFTWARE\Microsoft\Microsoft Games\Zoo Tycoon\1.0`. First directory containing `zoo.exe` wins. The locator returns `LocatedDirectory | NotFound`. The Ref launcher's locator code informed this design; the new implementation is written fresh.
-2. **Manual from Installation Management dialogue** — user opens a folder picker.
-3. **Manual from No Game Installation Found wireframe** — user opens a folder picker.
+2. **Manual from the Installation Manager dialogue** — user clicks `Add`.
+3. **Manual from the No Game Installation Found state** — user clicks `Add Installation`.
 
-`AddInstallationCommand` then opens the **Add Installation** dialogue:
+`AddInstallationCommand` opens the **Add Installation** dialogue directly (the prototype rejected the earlier picker-first flow as un-Windows-95). The dialogue exposes:
 
-- **Name input field.** Placeholder rules:
+- **Name input.** Placeholder rules:
   - Zero existing installations → placeholder `Main`.
   - ≥ 1 existing → placeholder `Installation N` where `N = COUNT(*) + 1`; if that name collides with an existing installation (case-insensitive), increment `N` until unique.
+- **Folder input.** A read-write `TextBox` paired with a `Browse…` button. The user can type or paste the path directly, or click `Browse…` to open a folder picker rooted at `Program Files (x86)\Microsoft Games\`. Either way, the resolved path is committed to the field; verification (`HasExe` / `HasIni`) runs against that path on Save. This mirrors the conventional Win95 "input + button" idiom.
 - **Default checkbox.** When there are zero existing installations, the checkbox is **disabled and pre-checked** (the first installation is automatically the default). Otherwise unchecked by default.
+
+`Save` is disabled until both the name (trimmed, non-empty, not colliding case-insensitively with another installation) and the path (non-empty) are valid. `Cancel` discards the dialogue.
 
 On confirm:
 
@@ -683,9 +698,9 @@ On confirm:
 2. If Default was checked (or this is the first installation), set `LauncherSettings.DefaultInstallationId = newId`.
 3. Create `{newId}.db`; run migrations.
 4. If `HasIni = true`, parse `zoo.ini` and write `Original` + `Current` snapshots in one transaction (`Source = OriginalImport`, `Trigger = OriginalImport`).
-5. Publish `InstallationAddedMessage` (CommunityToolkit messenger) so the management dialogue and main window refresh.
+5. Publish `InstallationAddedMessage` (CommunityToolkit messenger) so the Installation Manager dialogue and main window refresh.
 
-#### 7.2.2 Installation Management dialogue
+#### 7.2.2 Installation Manager dialogue
 
 A modal hosting a `DataGrid` with two unheadered columns (Name, Status) and a right-side action panel (`Add`, `Info`, `Edit`, `Delete`, `Fix`).
 
@@ -696,7 +711,7 @@ A modal hosting a `DataGrid` with two unheadered columns (Name, Status) and a ri
   - `Info`, `Edit`, `Delete` require a selected row.
   - `Fix` requires a selected row whose validity is not `Valid`.
 
-Changes propagate via `IMessenger.Send(InstallationChangedMessage | InstallationAddedMessage | InstallationDeletedMessage | DefaultInstallationChangedMessage)`. Subscribers: the management dialogue's grid, the main window's tab content, the picker dialogue's grid.
+Changes propagate via `IMessenger.Send(InstallationChangedMessage | InstallationAddedMessage | InstallationDeletedMessage | DefaultInstallationChangedMessage)`. Subscribers: the Installation Manager dialogue's grid, the main window's tab content, the picker dialogue's grid.
 
 #### 7.2.3 Edit Installation
 
@@ -738,7 +753,7 @@ Read-only modal showing `AddedUtc`, `LastOpenedUtc`, `LastPlayedUtc`, all render
 
 #### 7.2.7 Picker dialogue (active-installation switcher)
 
-The same data grid as the management dialogue without the action panel; selecting a row + clicking `OK` runs `SwitchInstallationCommand`, which re-enters the startup pipeline pointed at the chosen installation. If the active installation has unsaved INI changes, an unsaved-changes guard prompts first ([Section 7.3](#73-ini-config-tab-ini-present-state)).
+The same data grid as the Installation Manager dialogue without the action panel; selecting a row + clicking `OK` runs `SwitchInstallationCommand`, which re-enters the startup pipeline pointed at the chosen installation. If the active installation has unsaved INI changes, an unsaved-changes guard prompts first ([Section 7.3](#73-ini-config-tab-ini-present-state)).
 
 ### 7.3 INI Config tab — Ini Present state
 
@@ -977,17 +992,27 @@ The locator returns `LocatedDirectory(path) | NotFound`. It never opens any dial
 
 ## 9. User interface
 
-The MVP UI uses **Avalonia 11 + Classic.Avalonia** for a Windows 95/98 aesthetic. The main window is a single `ClassicWindow` with tabs along the top (General, INI Config, …). Modal dialogues use `ClassicWindow` too so they get proper title bars (a fix established in the Ref build).
+The MVP UI uses **Avalonia 11 + Classic.Avalonia** for a Windows 95/98 aesthetic. The main window is a single `ClassicWindow` with tabs along the top (General, INI Config). Modal dialogues use `ClassicWindow` too so they get proper title bars (a fix established in the Ref build).
 
-### 9.1 Main window and tabs
+Cross-cutting UI conventions — token registry (light/dark swatches), standard INI row layout, group-box + icon header pattern, dialogue footer rules, status-bar help wiring, theming hooks, icon-name contract — live in [`docs/user-interface-design/conventions.md`](../../user-interface-design/conventions.md). When an agent implements one slice of §9, the expected reading order is **SDD §9.x → conventions.md → glance at the prototype GIF**. Don't duplicate conventions in §9; describe screen-specific behaviour here, and point at the conventions doc for everything that recurs.
 
-The main window has five top-to-bottom states reflecting the startup state machine (§7.1):
+The authoritative visual reference for the MVP is the **live hi-fi prototype in Claude Design** (HTML/CSS/JS; built from the Claude Design handoff bundle that produced this revision of the SDD). A single screen-recording GIF at [`docs/user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif`](../user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif) is committed to the repo as a quick reference covering every state, every dialogue, the INI tab help affordance, and the dark/light theme switch. The prototype is *not* a production target — match the visual output, not its internal structure.
 
-- **Looking for Zoo Tycoon** — branded panel with a progress spinner; shown briefly while `BootHandler` runs.
-- **Ready to Play** — main view with tabs (General, INI Config). General tab carries the Launch Game button, the screen-modes counters (§7.9), and basic installation info.
-- **Cannot Play** — main view; Launch Game disabled; explanatory banner; INI Config tab routes to CorruptedIni or NoIniPresent depending on the cause.
-- **No Game Installation Found** — single-pane prompt offering to locate or add an installation manually.
-- **Open Game Installation** — single-pane prompt to open one of the registered installations (only state where `LauncherStartupPreference = NoInstallation`).
+### 9.1 Main window and chrome
+
+- **Title bar.** Single line: small launcher icon (`AppMark` 16 px) + title text (`Zoo Tycoon Launcher V<version>`) + **close-only** button group on the right. The classic minimise and maximise buttons are intentionally absent — the launcher is a fixed-size utility window. `ClassicWindow.CanMinimise` / `.CanMaximise` resolve to `false`.
+- **Window size.** Fixed at **720 × 460 px** (silver chrome). The width is sized so the INI Config tab's footer button row (`Undo` · `Restore defaults` · `Save` · `Revert`) sits on a single line; the height is sized so the INI Config form area scrolls within the form pane rather than the window resizing. Both are non-resizable.
+- **Menu strip.** Just **File** and **Help** — Edit and View are removed. See §9.10 for the full item list.
+- **Tab strip.** Two tabs along the top edge of the content area: **General** (Alt-G) and **INI Config** (Alt-I). The INI Config tab is **disabled** in the Looking, NoGameInstallationFound, and OpenGameInstallation states (no installation is open, so there is nothing to edit). It is **enabled but routes to the No-INI sub-state** in the CannotPlay state when the cause is a missing `zoo.ini`.
+- **Status bar.** Three cells along the bottom: (1) elastic primary message (state name + active installation), (2) fixed ~160-px secondary detail (boot phase / display summary / "Fix required" / INI hover help — see §9.3.2), (3) fixed version label (`v<n.n.n>`).
+
+The five top-to-bottom states reflect the startup state machine (§7.1):
+
+- **Looking for Zoo Tycoon** — `Status` group box with a search icon, a bold "Looking for Zoo Tycoon…" line, a marquee progress bar, and a rotating muted-grey sub-line that cycles through the boot phases (`Loading Launcher.db…`, `Reading launcher settings…`, `Querying registry: HKLM\…`, `Probing C:\Program Files (x86)\Microsoft Games…`, `Verifying zoo.exe…`, `Verifying zoo.ini…`, `Parsing INI structure…`). INI Config tab is disabled while this state is live.
+- **Ready to Play** — `Installation Profile:` label + bold installation name above two group boxes: **Status** (check icon + EXE / INI / Path table + a prominent `Launch Game` default button at the right) and **Display** (monitor icon + 4-row table: current resolution, adapter, available screen modes count, possible ZT1 modes count — §7.9). A muted footer line shows `Last played: <UTC>` or `Never`.
+- **Cannot Play** — same shape as Ready to Play. The Status group box swaps the check icon for a warning icon, headlines `Cannot Play` in maroon, omits the Path row, shows an explanatory muted paragraph, and adds two action buttons (`Fix`, `Manage Installations`). The Launch Game button is disabled. The Display group box has **the same layout as Ready** but the entire group is muted (`opacity: 0.55` or equivalent), with a one-liner appended in italics: *"Display detection succeeded but the game cannot launch until the INI is restored."*. The `Last played` footer line is still shown.
+- **No Game Installation Found** — `Status` group box (critical icon + bold heading + muted explanation + prominent `Add Installation` default button) above an `Auto-locate trail` group box: a mono-spaced 4-row table of probed locations and the reason each failed (`no value`, `directory missing`, `empty`).
+- **Open Game Installation** — `Status` group box (folder icon + muted "Startup preference is set to `NoInstallation`. Choose an installation below…") above a 3-column data grid (Name, Path, Status) and a button row (`Add` · `Info` · `Manage` · spacer · `Open` default). Double-click on a row also opens the installation. This is the only state reachable when `LauncherStartupPreference = NoInstallation`.
 
 ### 9.2 View composition
 
@@ -1059,63 +1084,126 @@ Each dialogue is a `UserControl` hosted by a transient `ClassicWindow` (the Ref 
 
 Source-side rule (enforced by an architecture test in §11.4): every public `*ViewModel` class in the Desktop project has a corresponding `*View.axaml` file under the parallel folder, and vice versa. New section, tab, or state? Adding the pair is a single drop-in change; the `ViewLocator` and DI take care of the rest.
 
-Reference wireframes live under `docs/Wireframes/`:
+The hi-fi prototype GIF at [`docs/user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif`](../user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif) — and the live prototype it was recorded from — are the visual reference. They are reference, not pixel-perfect contracts; minor affordances may be added during implementation.
 
-- `Looking_for_ZooTycoon_Wireframe.jpg`
-- `Ready_to_Play_Wireframe.jpg`
-- `Cannot_Play_Wireframe.jpg`
-- `No_Game_Installation_Found__Wireframe.jpg`
-- `Open_Game_Installation_Wireframe.jpg`
-- `Installation_Management_Wireframe.jpg`
-- `Add_Installation_Dialogue_Wireframe.jpg`
-- `Fix_Installation_Dialogue_Wireframe.jpg`
-- `Installation_Info_Wireframe.jpg`
+### 9.3 INI Config tab
 
-These are reference, not pixel-perfect contracts; minor affordances may be added during implementation. The bordered boxes in the wireframes for action panels and metadata regions are visual boundaries only and are *not* rendered as borders in the final UI.
+The INI Config tab uses a two-pane split layout rather than the long vertically-scrolled accordion of the Ref launcher:
 
-### 9.4 Installation Management dialogue
+- **Section list (left, ~160 px).** A sunken panel listing the eight sections in INI order: `[user]`, `[UI]`, `[advanced]`, `[ai]`, `[debug]`, `[language]`, `[Map]`, `[scenario]`. The selected section is painted in the navy/white selection style. A small muted label above the list reads `Section`.
+- **Form pane (right, fills remaining).** A sunken panel containing a single section's controls; **vertically scrolls** when content overflows. The section header reads `<section> section of zoo.ini` and a muted descriptor (`Display and performance`, `Audio, gameplay, and interface`, etc.) sits just above. The pane keeps `min-width: 0` so wide combos cannot blow out the layout (the prototype hit this with the long language labels; the Avalonia equivalent is `ScrollViewer` + `MaxWidth` discipline on `Grid` columns).
+- **Footer row.** Below both panes, a single horizontal row of: hover/dirty status label (left, see §9.3.2), spacer, then `Undo`, `Restore defaults`, `Save` (default), `Revert`. `Save` and `Revert` are disabled when there are no pending changes. Button labels carry no ellipses.
 
-`ClassicWindow` modal. Two-column `DataGrid` (Name, Status) with no headers; right-side action panel (`Add`, `Info`, `Edit`, `Delete`, `Fix`). Selection drives enablement (§7.2.2). The default row is bolded and pinned to the top (§7.2.2).
+`[UI]` is internally split into three sub-headers (`Audio`, `Gameplay (cash)`, `Interface`); other sections render as flat row lists. Each row is `190 px label` + flexible value control, with the label rendered in mono and an optional muted hint sub-line (`px`, `1–60 ticks/sec`, `-10000 silent → 0 full`, etc.). The `[scenario]` section organises its checkboxes by tier (Tutorial / Beginner / Intermediate / Advanced / Expert) in a two-column grid.
+
+#### 9.3.1 INI Config sub-states
+
+`IniConfigTabView` swaps between three sub-state UserControls inside its `ContentControl` (§9.2):
+
+- **IniPresent** — the editor described above. Active when `HasIni = true` and the parse succeeded.
+- **NoIniPresent** — a single `INI status` group box with a warning icon, "No INI present" headline, an explanation, and two action buttons: `Create zoo.ini from defaults` (default) and `Locate existing zoo.ini`. Active in `CannotPlay` when `HasIni = false`.
+- **Disabled placeholder** — a muted centred message: *"INI editing becomes available once an installation is open and its `zoo.ini` has been parsed."* Rendered when the tab itself is disabled (Looking / NoInstall / OpenPicker); having the placeholder behind the disabled tab keeps the panel from flashing empty if the tab is briefly visible during a state transition.
+
+The `CorruptedIni` sub-state previously named in §9.2 is not currently materialised — the prototype showed that `NoIniPresent` covers the only failure mode we surface today (missing file). If a corrupted-but-present scenario emerges from Phase 0 INI research, a third sub-state can be added without restructuring.
+
+#### 9.3.2 Hover-and-status help affordance
+
+The prototype evaluated a dedicated help group box at the bottom of the tab (Ref-style) and rejected it as visually noisy. The chosen pattern, also evaluated in the prototype and selected by the user, is **hover + status**:
+
+- **Hover the row** → an OS-level tooltip displays the full description (sourced verbatim from `Resources/IniTooltips.axaml` in the Ref build).
+- **Hover/focus the row** → the editor's footer status label switches from the dirty-state indicator to a short italicised one-liner derived from the same prose. Once the cursor leaves the row, the footer reverts to its dirty / saved indicator (`● Unsaved changes` in maroon-bold, or `All changes saved · Last write: <UTC>` in muted grey).
+
+Defaults stay on the input controls themselves (placeholders and bounds), not in the help text. The Ref launcher's tooltip-on-parent-panel trick (§7.3.1) still applies — the panel that owns both label and input is what carries `ToolTip.Tip` so the whole row triggers the tip.
+
+### 9.4 Installation Manager dialogue
+
+`ClassicWindow` modal titled `Installation Manager` (renamed from the previous "Installation Management" — the singular form reads as a proper noun naming the dialogue). Roughly 580 px wide.
+
+- **Three-column `DataGrid`:** `Name` (35%), `Path` (45%, mono small), `Status` (20%, validity badge).
+- **Right-side vertical action panel** (~90 px): `Add`, `Info`, `Edit`, `Delete`, gap, `Fix`. Selection drives enablement (§7.2.2). `Fix` is enabled only when the selected row is not valid.
+- **Footer:** muted row count + helper text (`Double-click a row to open`), then a right-aligned `Close` button (default).
+- Sort order: the default row pins to the top with `Name` rendered bold + ` · default` suffix; remaining rows sort alphabetically (case-insensitive).
 
 ### 9.5 Add / Edit / Info / Fix dialogues
 
-- **Add Installation** — `ClassicWindow` modal. Two inputs (Name TextBox + Default Checkbox) and a confirmation row (`OK` / `Cancel`). Placeholder rules per §7.2.1.
-- **Edit Installation** — same view, title `Edit Installation`, inputs pre-populated.
-- **Installation Info** — read-only modal showing `AddedUtc`, `LastOpenedUtc`, `LastPlayedUtc` (localised).
-- **Fix Installation** — modal whose layout depends on validity (§7.2.5).
+- **Add / Edit Installation** — `ClassicWindow` modal, ~420 px wide. A large folder-catalog icon + brief heading and muted prose introduces the dialogue. Three inputs:
+  - **Name** TextBox (placeholder per §7.2.1; renders in `--input--invalid` red when the trimmed name collides with an existing installation).
+  - **Folder** TextBox + `Browse…` button on the same line (mono text). The user can type/paste the path directly, or use `Browse…` to open the folder picker (this is the conventional Win95 idiom; the earlier "picker first" flow has been retired).
+  - **Mark as default installation** Checkbox below the inputs (disabled and pre-checked when this is the first installation, per §7.2.1).
+  - **Save** (default, disabled until validation passes) + **Cancel** in the footer. Both labels carry no ellipses. Edit mode keeps the same view; only the title bar reads `Edit Installation` and inputs are pre-populated.
+- **Installation Info** — read-only modal showing `Name` (bold), `Path` (mono), `Status` (validity badge), `Default` (Yes/No), `Added`, `Last opened`, `Last played` (all localised; "—" when null), and `History entries` count. Folder icon in title bar, info icon in the dialogue body. `Close` (default) in the footer.
+- **Fix Installation** — `ClassicWindow` modal, warning icon in the title bar. Two group boxes (`Fix EXE`, `Fix INI`); each carries a mail-stamp icon (cross when the file is missing, tick when present), a short status headline (red `No EXE found!` / amber `No INI found` / green `EXE present` / green `INI present`), a muted explanation, and a `Locate` / `Create` action button (disabled when the file is already present). `OK` (default) in the footer dismisses the dialogue; the row's validity re-evaluates on close.
+- **Delete Installation** — `ClassicWindow` modal, warning icon both in title bar and body. Confirms removal of the installation and its database; if the row being deleted is the default, the dialogue shows which installation will be promoted (`<name> will be promoted to default`). Buttons: `Delete`, `Cancel` (default).
 
-### 9.6 Picker dialogue
+### 9.6 Picker (Open Game Installation)
 
-Active-installation switcher. Same data grid as the management dialogue without the action panel. `OK` runs `SwitchInstallationCommand`; `Cancel` keeps the current installation active.
+The picker is **not a modal dialogue** — it is the `OpenGameInstallation` main-window state described in §9.1. Same data shape as the Installation Manager (Name / Path / Status), but with `Open` (default) replacing the row of management actions. There is no separate "switch installation" picker in the MVP; switching is done from the Installation Manager (double-click a row, or select + `Open`).
 
-### 9.7 Historical INI Config dialogue
+### 9.7 Restore Previous INI dialogue
 
-`ClassicWindow` modal. Read-only mirror of the IniPresent tab with a snapshot picker at the top. `Restore` / `Cancel` buttons. Tooltip parity with the IniPresent tab (§7.3.1); `Current: <value>` line conditional on the source mode (§7.6).
+`ClassicWindow` modal titled `Restore Previous INI` (formerly "Historical INI Config" — the rename came out of the prototype). Roughly 620 px wide. Replaces the read-only-mirror-of-the-tab pattern; the dialogue now focuses on **comparing snapshots to current**:
+
+- **Snapshot grid** (`DataGrid`, ~140 px tall): three columns — `Captured` (UTC, mono), `Trigger` (`OriginalImport` / `LauncherGui` / `Manual`), `Δ keys` (count, right-aligned mono). No `Note` column — the prototype's earlier "auto-generated note" idea was scoped out (no AI in the launcher).
+- **Diff viewer** (sunken panel, ~140 px tall, scrolls): a sticky-header table with three columns — `Key` (mono, `[section]/keyname`), `Current` (mono, maroon in light / pink in dark), `Snapshot` (mono, navy in light / blue in dark). Each row is one key whose value differs between the current state and the selected snapshot. Header text labels the columns so the colour difference is supplementary, not required. The diff panel shows a centred muted *"No differences — this snapshot matches the current state."* when there is nothing to show.
+- **Footer:** `Restore` (default; disabled when the diff is empty), `Cancel`.
+
+The diff is computed by enumerating every `(section, key)` present in either snapshot's values and emitting rows where the values disagree (kind-aware comparison — `Bool` `true`/`1` are equivalent; `NullableInt` empty `==` empty). Rendering shows up to a few hundred rows comfortably; beyond that the sunken panel scrolls.
 
 ### 9.8 Settings dialogue
 
-`ClassicWindow` modal launched from a menu item. Inputs:
+`ClassicWindow` modal titled `Settings`, opened from `File → Settings`. Roughly 460 px wide. Three group boxes:
 
-- **Startup preference** (`LauncherStartupPreference` ComboBox).
-- **Close launcher after game launch** (Checkbox).
+- **Startup** — four-radio group bound to `LauncherStartupPreference`. Labels: `The default installation`, `The installation I last played`, `The installation I last opened in the launcher`, `No installation — show the picker`.
+- **Game launch** — single checkbox: `Close launcher after the game starts`. Muted helper: *"When ticked, the launcher exits as soon as `zoo.exe` reports started."*
+- **Theme** — three-radio row bound to `LauncherTheme`: `System default`, `Light`, `Dark`. Muted helper: *"Affects the launcher only; in-game appearance is unchanged."*
 
-Settings bind to `LauncherSettings` (single-row table) through `ISettingsService`.
+Footer: `OK` (default) writes to `LauncherSettings` via `ISettingsService` and closes; `Cancel` discards. The theme change applies live on `OK` (see §9.11) — there is no application-level "reload" step.
 
-### 9.9 Wireframe inventory and dialogue map
+### 9.9 About dialogue
 
-| Wireframe                                    | UI element it specifies                                                  |
-|----------------------------------------------|--------------------------------------------------------------------------|
-| `Looking_for_ZooTycoon_Wireframe.jpg`        | Main window — `LookingForZooTycoon` state                                |
-| `Ready_to_Play_Wireframe.jpg`                | Main window — `ReadyToPlay` state                                        |
-| `Cannot_Play_Wireframe.jpg`                  | Main window — `CannotPlay` state                                         |
-| `No_Game_Installation_Found__Wireframe.jpg`  | Main window — `NoGameInstallationFound` state                            |
-| `Open_Game_Installation_Wireframe.jpg`       | Main window — `OpenGameInstallation` state                               |
-| `Installation_Management_Wireframe.jpg`      | Installation Management dialogue                                         |
-| `Add_Installation_Dialogue_Wireframe.jpg`    | Add Installation dialogue (and Edit Installation, modulo title)          |
-| `Fix_Installation_Dialogue_Wireframe.jpg`    | Fix Installation dialogue                                                |
-| `Installation_Info_Wireframe.jpg`            | Installation Info dialogue                                               |
+`ClassicWindow` modal titled `About Zoo Tycoon Launcher`, info-icon in the title bar. The body holds the launcher's app logo on the left and four lines on the right: bold product name, `Version <n.n.n> (build <YYYY.MM.DD>)`, a one-line muted descriptor, an etched separator, then `.NET 10 · Avalonia 11.3 · Classic.Avalonia / SQLite via EF Core · Serilog file sink / © <year> <author>`. Footer: `OK` (default).
 
-The Historical INI Config dialogue has no wireframe; it mirrors the IniPresent tab in read-only with a snapshot picker on top.
+### 9.10 Menu structure
+
+Two top-level menus only. Accelerators in `<u>` underscores match Win95 convention.
+
+| Menu     | Item                      | Command          | Shortcut | Notes                                                                 |
+|----------|---------------------------|------------------|----------|-----------------------------------------------------------------------|
+| **File** | <u>O</u>pen Installation… | `open-install`   |          | Opens the Installation Manager focused on `Open`.                     |
+|          | Installation <u>M</u>anager… | `manage`      |          | Opens the §9.4 dialogue.                                              |
+|          | <u>C</u>lose Installation | `close-install`  |          | Disabled when no installation is open. No separator before this item. |
+|          | —                         |                  |          |                                                                       |
+|          | <u>S</u>ettings           | `settings`       |          | Opens the §9.8 dialogue. No ellipsis (no further input solicited).    |
+|          | —                         |                  |          |                                                                       |
+|          | E<u>x</u>it               | `exit`           | Alt+F4   |                                                                       |
+| **Help** | <u>C</u>ontents           | `help`           | F1       | Stubbed for the MVP — opens nothing but is kept so the eventual CHM/manual has a home. Surfacing it now communicates intent.    |
+|          | —                         |                  |          |                                                                       |
+|          | <u>A</u>bout              | `about`          |          | Opens the §9.9 dialogue. No "Zoo Tycoon Launcher" suffix in the menu item — the dialogue title already carries it. |
+
+`Edit` and `View` menus are not present. The toolbar from the Ref launcher is also dropped — actions belong in the menu, the tab content, and the dialogues, not in a third place.
+
+### 9.11 Theming and dark mode
+
+The launcher supports three themes selected from §9.8 and persisted on `LauncherSettings.Theme`:
+
+- **System** (default) — follows the OS-level light/dark preference at runtime. Avalonia exposes this via `Application.Current.ActualThemeVariant`; the launcher subscribes to `RequestedThemeVariant` changes and updates the active palette live.
+- **Light** — silver-on-navy Win95 palette (the prototype's default), regardless of OS.
+- **Dark** — dark-grey-on-navy palette, regardless of OS. The dark palette retains the same bevel topology (white is still "the light bevel highlight"; black is still "the deepest bevel edge") but every token is re-pointed so the silver / white / gray / black quartet flips to a coherent Win9x-after-dark scheme. Accent reds, blues, greens, and ambers are re-saturated for legibility on dark surfaces.
+
+Implementation outline (Avalonia):
+
+- A `IThemeService` interface in Application owns the current `LauncherTheme`, exposes a `ThemeVariant Current { get; }`, and emits `ThemeChanged` when the resolved variant changes (whether by user choice or OS-level shift in System mode).
+- A `ResourceDictionary`-based `LauncherClassicTheme` in Desktop carries the token set and exposes Light / Dark variants. Classic.Avalonia's own theme is applied first; the launcher's tokens override the bits that need to differ between modes (colour swatches in §9.3 form rows, the maroon / navy diff colouring in §9.7, the muted greys, etc.).
+- View-level usage prefers `DynamicResource` over `StaticResource` so swatch swaps propagate without a re-render.
+- The prototype's `dk-c-*` utility classes (`dk-c-red`, `dk-c-navy`, `dk-c-maroon`, `dk-c-amber`, `dk-c-green`, `dk-c-dim`) become resource keys (`AccentRed`, `AccentNavy`, etc.) in Avalonia — each pair resolves to a different swatch under the Dark variant.
+
+The Settings dialogue's `OK` calls `IThemeService.SetTheme(LauncherTheme)`; the service writes through `ISettingsService`, recomputes the active variant, raises `ThemeChanged`. Views bound through `DynamicResource` repaint immediately. The theme is read once at startup from `LauncherSettings.Theme`.
+
+### 9.12 Prototype reference
+
+A single screen-recording GIF — [`docs/user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif`](../user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif) — captures every state, every dialogue, the INI Config tab help affordance, and the dark/light theme switch in one pass. The recording is the in-repo glance; the **live hi-fi prototype in Claude Design** remains the authoritative visual reference (it surfaces hover behaviour, transitions, and the help-on-hover footer affordance that a static frame can't show).
+
+Bordered boxes in the recording for action panels or metadata regions are visual boundaries only and are *not* rendered as borders in the final UI.
 
 ---
 
@@ -1219,11 +1307,12 @@ The architecture happens to be cross-platform-portable (Clean Architecture; Infr
 ### 13.2 Phase 1 — MVP
 
 - **Foundations.** Four-project solution scaffold, DI composition, Serilog file sink, EF Core + SQLite, `Launcher.db` migrations, `IAppStorageLocations`, architecture tests pinned from day one.
-- **Installation lifecycle.** Auto-locator (registry + Program Files + persisted path), Add / Edit / Delete / Fix installations, default-installation promotion (the corrected delete rule), Installation Management dialogue (DataGrid + actions), Installation Info dialogue.
+- **Installation lifecycle.** Auto-locator (registry + Program Files + persisted path), Add / Edit / Delete / Fix installations, default-installation promotion (the corrected delete rule), Installation Manager dialogue (DataGrid + actions), Installation Info dialogue.
 - **Startup flow.** Boot pipeline + state machine, Looking for Zoo Tycoon / Ready to Play / Cannot Play / No Game Installation Found / Open Game Installation wireframes wired to states, last-opened / last-played timestamping.
-- **INI Config tab.** IniPresentState (eight sections), NoIniPresentState (No INI Present group box), CorruptedIniState (Corrupted INI group box), Historical INI Config dialogue, tooltip parity fix, atomic save with snapshot archiving.
+- **INI Config tab.** IniPresent sub-state (split layout, eight sections, hover + status help — §9.3.2), NoIniPresent sub-state, Restore Previous INI dialogue with inline diff (§9.7), tooltip parity fix, atomic save with snapshot archiving.
 - **Screen modes on the General tab.** Available modes count, ZT1-compatible modes count, resolution dropdown sourced from the filtered list.
 - **Launch Game.** Process start with working-directory and arguments matched to the Ref launcher; `CloseAfterGameLaunch` honoured.
+- **Settings + theming.** Settings dialogue (§9.8) covers `LauncherStartupPreference`, `CloseAfterGameLaunch`, and `LauncherTheme` (System / Light / Dark — §9.11). Theme applies live via `IThemeService` + `DynamicResource` swatches.
 
 ### 13.3 Phase 2 — Saves & Mods (deferred; SDD sketch only)
 
@@ -1284,7 +1373,7 @@ ZT1 (2001) is a 32-bit Windows binary. Compatibility on Windows 11 24H2+ is gene
 | Term                                  | Definition                                                                                                                                                |
 |---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Installation**                      | A discrete `Microsoft Games\Zoo Tycoon\`-shaped directory with `zoo.exe` (and ideally `zoo.ini`).                                                          |
-| **Default installation**              | Exactly one installation (when ≥ 1 exists) designated as the launcher's default; rendered bold in the management dialogue; pre-selected on startup.       |
+| **Default installation**              | Exactly one installation (when ≥ 1 exists) designated as the launcher's default; rendered bold in the Installation Manager dialogue; pre-selected on startup.       |
 | **INI snapshot**                      | A point-in-time materialisation of every recognised `zoo.ini` setting plus the file's structure (comments, blanks, key ordering, unknown keys).           |
 | **Original / Current / Historical**   | The three kinds of INI snapshot: the first-ever capture, the launcher's belief about what's on disk now, and every prior `Current` state.                 |
 | **Structure blob**                    | The raw INI file text captured on a snapshot, used to re-emit the file with comments, blanks, and key ordering preserved.                                 |

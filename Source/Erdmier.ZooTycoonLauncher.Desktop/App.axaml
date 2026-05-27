@@ -1,0 +1,15 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:composition="using:Erdmier.ZooTycoonLauncher.Desktop.Composition"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.App"
+             RequestedThemeVariant="{x:Static ClassicTheme.Classic}">
+    <Application.DataTemplates>
+        <composition:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <ClassicTheme />
+        <StyleInclude Source="avares://Classic.Avalonia.Theme.DataGrid/Classic.axaml" />
+        <StyleInclude Source="avares://Classic.Avalonia.Theme.Dock/Classic.axaml" />
+    </Application.Styles>
+</Application>

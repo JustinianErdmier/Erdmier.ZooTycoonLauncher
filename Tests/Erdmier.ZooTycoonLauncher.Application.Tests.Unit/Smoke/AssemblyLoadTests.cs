@@ -2,11 +2,12 @@ namespace Erdmier.ZooTycoonLauncher.Application.Tests.Unit.Smoke;
 
 public sealed class AssemblyLoadTests
 {
-    [Fact]
+    [ Fact ]
     public void ApplicationAssemblyLoadsAndExposesAbstractions()
     {
         Type abstraction = typeof(IAppStorageLocations);
 
-        abstraction.Assembly.GetName().Name.ShouldBe("Erdmier.ZooTycoonLauncher.Application");
+        abstraction.Assembly.GetName()
+                   .Name.ShouldBe(expected: "Erdmier.ZooTycoonLauncher.Application");
     }
 }

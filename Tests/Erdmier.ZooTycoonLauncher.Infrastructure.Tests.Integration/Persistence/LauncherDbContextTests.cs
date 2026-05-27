@@ -1,13 +1,10 @@
+using System.Data.Common;
+
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration.Persistence;
 
 public sealed class LauncherDbContextTests : IDisposable
 {
-    private readonly string _databasePath;
-
-    public LauncherDbContextTests()
-    {
-        _databasePath = Path.Combine(Path.GetTempPath(), $"zoolauncher-test-{Guid.NewGuid()}.db");
-    }
+    private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"zoolauncher-test-{Guid.NewGuid()}.db");
 
     public void Dispose()
     {
@@ -20,58 +17,64 @@ public sealed class LauncherDbContextTests : IDisposable
         }
     }
 
-    [Fact]
+    [ Fact ]
     public async Task Migrate_OnFreshDatabase_CreatesLauncherSettingsAndGameInstallationsTables()
     {
         await using LauncherDbContext context = BuildContext();
 
         await context.Database.MigrateAsync();
 
-        bool launcherSettingsExists = await TableExistsAsync(context, "LauncherSettings");
-        bool gameInstallationsExists = await TableExistsAsync(context, "GameInstallations");
+        bool launcherSettingsExists  = await TableExistsAsync(context, tableName: "LauncherSettings");
+        bool gameInstallationsExists = await TableExistsAsync(context, tableName: "GameInstallations");
 
         launcherSettingsExists.ShouldBeTrue();
         gameInstallationsExists.ShouldBeTrue();
     }
 
-    [Fact]
+    [ Fact ]
     public async Task LauncherSettings_RejectsInsertWithIdNotEqualToOne()
     {
         await using LauncherDbContext context = BuildContext();
         await context.Database.MigrateAsync();
 
-        LauncherSettings rogue = new() { Id = 2 };
+        LauncherSettings rogue = new()
+        {
+            Id = 2
+        };
+
         context.LauncherSettings.Add(rogue);
 
         await Should.ThrowAsync<DbUpdateException>(async () => await context.SaveChangesAsync());
     }
 
-    [Fact]
+    [ Fact ]
     public async Task GameInstallations_Name_IsCaseInsensitiveUnique()
     {
         await using LauncherDbContext context = BuildContext();
         await context.Database.MigrateAsync();
 
         Guid sharedPathRoot = Guid.NewGuid();
+
         context.GameInstallations.Add(new GameInstallation
         {
-            Id = Guid.CreateVersion7(),
-            Name = "Main",
-            Path = $"C:/Games/A-{sharedPathRoot}",
-            HasExe = true,
-            HasIni = true,
-            AddedUtc = DateTime.UtcNow,
+            Id       = Guid.CreateVersion7(),
+            Name     = "Main",
+            Path     = $"C:/Games/A-{sharedPathRoot}",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
         });
+
         await context.SaveChangesAsync();
 
         context.GameInstallations.Add(new GameInstallation
         {
-            Id = Guid.CreateVersion7(),
-            Name = "main", // same name, different casing
-            Path = $"C:/Games/B-{sharedPathRoot}",
-            HasExe = true,
-            HasIni = true,
-            AddedUtc = DateTime.UtcNow,
+            Id       = Guid.CreateVersion7(),
+            Name     = "main", // same name, different casing
+            Path     = $"C:/Games/B-{sharedPathRoot}",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
         });
 
         await Should.ThrowAsync<DbUpdateException>(async () => await context.SaveChangesAsync());
@@ -80,22 +83,24 @@ public sealed class LauncherDbContextTests : IDisposable
     private LauncherDbContext BuildContext()
     {
         DbContextOptions<LauncherDbContext> options = new DbContextOptionsBuilder<LauncherDbContext>()
-            .UseSqlite($"Data Source={_databasePath}")
-            .Options;
+                                                      .UseSqlite($"Data Source={_databasePath}")
+                                                      .Options;
+
         return new LauncherDbContext(options);
     }
 
     private static async Task<bool> TableExistsAsync(LauncherDbContext context, string tableName)
     {
-        await using System.Data.Common.DbConnection connection = context.Database.GetDbConnection();
+        await using DbConnection connection = context.Database.GetDbConnection();
         await connection.OpenAsync();
-        await using System.Data.Common.DbCommand command = connection.CreateCommand();
+        await using DbCommand command = connection.CreateCommand();
         command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=$name";
-        System.Data.Common.DbParameter parameter = command.CreateParameter();
+        DbParameter parameter = command.CreateParameter();
         parameter.ParameterName = "$name";
-        parameter.Value = tableName;
+        parameter.Value         = tableName;
         command.Parameters.Add(parameter);
         object? result = await command.ExecuteScalarAsync();
+
         return result is not null;
     }
 }

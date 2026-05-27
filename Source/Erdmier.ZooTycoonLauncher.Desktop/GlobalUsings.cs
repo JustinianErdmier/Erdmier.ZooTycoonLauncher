@@ -1,9 +1,13 @@
 global using Avalonia;
 global using Avalonia.Controls;
 global using Avalonia.Markup.Xaml;
+
 global using CommunityToolkit.Mvvm.ComponentModel;
+
 global using Erdmier.ZooTycoonLauncher.Application.Common.Abstractions;
 global using Erdmier.ZooTycoonLauncher.Desktop.Composition;
 global using Erdmier.ZooTycoonLauncher.Infrastructure.Common.Extensions;
+
 global using JetBrains.Annotations;
+
 global using Microsoft.Extensions.DependencyInjection;

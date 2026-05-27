@@ -10,7 +10,7 @@
 |--------------------------|-----------------------------------|
 | **Project**              | Zoo Tycoon Launcher               |
 | **Document**             | Software Design Document (SDD)    |
-| **Version**              | 1.0                               |
+| **Version**              | 1.1                               |
 | **Status**               | Draft for implementation          |
 | **Author**               | Justinian                         |
 | **Last updated**         | 26 May 2026                       |
@@ -22,6 +22,7 @@
 |---------|-------------|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.1     | 26 May 2026 | Justinian | Initial full draft, developed from the rewrite brief and confirmed brainstorming outcomes (architecture, persistence, startup, installation, INI tab).      |
 | 1.0     | 26 May 2026 | Justinian | Baselined for implementation; status changed from Draft to Draft for implementation pending Phase 0 research spikes (§7.8, §7.9).                           |
+| 1.1     | 26 May 2026 | Justinian | Added view-composition convention: each main-window state, each tab, and each INI section is its own UserControl + ViewModel pair (§9.2). Architecture test in §11.4 enforces the every-VM-has-a-View rule. |
 
 ---
 
@@ -198,6 +199,7 @@ flowchart TD
 - **MVVM:** `CommunityToolkit.Mvvm` for `ObservableObject`, source-generated `[ObservableProperty]` on `partial` properties, `[RelayCommand]` on private async methods, and `IMessenger` for cross-view-model notifications. Used **in conjunction with** Avalonia's compiled bindings — Avalonia handles binding/styling/the compiled-binding pipeline, the toolkit reduces view-model boilerplate.
 - **View resolution:** the `ViewLocator` registered as an `Application.DataTemplates` entry maps each `*ViewModel` to its `*View` by string-replacing `"ViewModel"` → `"View"` and `Activator.CreateInstance`-ing it. Don't rename one half without the other.
 - **Compiled bindings:** `AvaloniaUseCompiledBindingsByDefault` is on; every XAML file declares `x:DataType` for bindings to compile.
+- **View composition:** the Desktop layer composes views the way Blazor / React / Angular compose components — `MainWindow.axaml` hosts only application chrome, with each main-window state, each tab, and each INI section landing as its own `UserControl` + `ViewModel` pair. Full convention in [Section 9.2](#92-view-composition).
 
 ### 4.4 Mediation and CQRS
 
@@ -987,7 +989,75 @@ The main window has five top-to-bottom states reflecting the startup state machi
 - **No Game Installation Found** — single-pane prompt offering to locate or add an installation manually.
 - **Open Game Installation** — single-pane prompt to open one of the registered installations (only state where `LauncherStartupPreference = NoInstallation`).
 
-### 9.2 Wireframes
+### 9.2 View composition
+
+The Desktop layer composes views the way Blazor / React / Angular compose components. `MainWindow.axaml` holds only the application chrome — the `ClassicWindow`, the menu strip, the status bar, and a `ContentControl` whose `Content` binds to the active `IMainWindowStateViewModel`. Everything else is a self-contained `UserControl` + `ViewModel` pair resolved by the existing `ViewLocator` (`*ViewModel` → `*View` by name).
+
+The motivation is to keep no single XAML file from growing into the unwieldy multi-thousand-line `MainWindow.axaml` of the Ref launcher — every view should be small enough to hold in your head at once.
+
+#### 9.2.1 Three layers of decomposition
+
+**Layer 1 — main-window states.** `MainWindow.axaml` swaps between five UserControls based on the startup state machine (§7.1). Each state is its own VM with only the bindings it needs:
+
+```text
+Desktop/Views/States/
+├── LookingForZooTycoonView.axaml          (+ .axaml.cs, paired with LookingForZooTycoonViewModel)
+├── ReadyToPlayView.axaml                  (hosts the TabControl in §9.1)
+├── CannotPlayView.axaml                   (hosts the TabControl in §9.1, Launch Game disabled)
+├── NoGameInstallationFoundView.axaml
+└── OpenGameInstallationView.axaml
+```
+
+`ReadyToPlayView` and `CannotPlayView` both host the tab strip; the two share a base view model (`PlayableStateViewModelBase`) that owns the tab collection. The difference between them is which tabs are enabled and what banner / button state they expose.
+
+**Layer 2 — tabs.** Each tab is a `UserControl` whose `DataContext` is its own `*TabViewModel`. The tab strip in `ReadyToPlayView` and `CannotPlayView` binds `TabControl.ItemsSource` to an `ObservableCollection<ITabViewModel>` and `TabControl.ContentTemplate` to a `DataTemplate` that uses `ViewLocator` to materialise the right `*TabView`:
+
+```text
+Desktop/Views/Tabs/
+├── GeneralTabView.axaml                   (Launch Game button, screen-mode counters, installation info)
+└── IniConfigTabView.axaml                 (hosts a ContentControl that swaps between the three INI sub-states)
+```
+
+`IniConfigTabView` holds only a `ContentControl` bound to one of three sub-state view models (`IniPresentViewModel`, `NoIniPresentViewModel`, `CorruptedIniViewModel`); each is its own `UserControl` under `Desktop/Views/IniStates/`. This keeps the tab itself tiny and the §7.3 / §7.4 / §7.5 state handling visually separate.
+
+**Layer 3 — INI sections.** `IniPresentView` lays out one section per `UserControl`, one file each:
+
+```text
+Desktop/Views/IniSections/
+├── UserSectionView.axaml          (+ UserSectionViewModel)
+├── UiSectionView.axaml            (+ UiSectionViewModel)
+├── MapSectionView.axaml           (+ MapSectionViewModel)
+├── AdvancedSectionView.axaml      (+ AdvancedSectionViewModel)
+├── AiSectionView.axaml            (+ AiSectionViewModel)
+├── DebugSectionView.axaml         (+ DebugSectionViewModel)
+├── LanguageSectionView.axaml      (+ LanguageSectionViewModel)
+└── ScenariosSectionView.axaml     (+ ScenariosSectionViewModel)
+```
+
+`IniConfigTabViewModel` composes the eight section view models as init-only properties; each section VM exposes only the observable properties for its own keys. Pending-edits aggregation (§7.3.2) sums an `IsDirty` flag across the eight sections.
+
+#### 9.2.2 Folder conventions
+
+Mirroring the namespace convention (no files at any project root, one type per file):
+
+```text
+Desktop/
+├── Composition/                           Composition root: DI registration, ViewLocator wiring.
+├── Views/
+│   ├── MainWindow.axaml                   Chrome only — kept under ~80 lines.
+│   ├── States/                            Layer 1
+│   ├── Tabs/                              Layer 2
+│   ├── IniStates/                         IniPresentView / NoIniPresentView / CorruptedIniView
+│   ├── IniSections/                       Layer 3
+│   └── Dialogues/                         Modal UserControls (Add, Edit, Info, Fix, Picker, Historical, Settings, Confirm)
+└── ViewModels/                            Mirrors Views/ exactly; every *View has a corresponding *ViewModel.
+```
+
+Each dialogue is a `UserControl` hosted by a transient `ClassicWindow` (the Ref launcher's fix for proper title bars on dialogues) rather than a top-level window of its own. Dialog dispatch goes through `IDialogService` (Application layer interface; Desktop-layer implementation owns the `ClassicWindow` lifetime).
+
+#### 9.2.3 Every view model has a view, every view has a view model
+
+Source-side rule (enforced by an architecture test in §11.4): every public `*ViewModel` class in the Desktop project has a corresponding `*View.axaml` file under the parallel folder, and vice versa. New section, tab, or state? Adding the pair is a single drop-in change; the `ViewLocator` and DI take care of the rest.
 
 Reference wireframes live under `docs/Wireframes/`:
 
@@ -1003,26 +1073,26 @@ Reference wireframes live under `docs/Wireframes/`:
 
 These are reference, not pixel-perfect contracts; minor affordances may be added during implementation. The bordered boxes in the wireframes for action panels and metadata regions are visual boundaries only and are *not* rendered as borders in the final UI.
 
-### 9.3 Installation Management dialogue
+### 9.4 Installation Management dialogue
 
 `ClassicWindow` modal. Two-column `DataGrid` (Name, Status) with no headers; right-side action panel (`Add`, `Info`, `Edit`, `Delete`, `Fix`). Selection drives enablement (§7.2.2). The default row is bolded and pinned to the top (§7.2.2).
 
-### 9.4 Add / Edit / Info / Fix dialogues
+### 9.5 Add / Edit / Info / Fix dialogues
 
 - **Add Installation** — `ClassicWindow` modal. Two inputs (Name TextBox + Default Checkbox) and a confirmation row (`OK` / `Cancel`). Placeholder rules per §7.2.1.
 - **Edit Installation** — same view, title `Edit Installation`, inputs pre-populated.
 - **Installation Info** — read-only modal showing `AddedUtc`, `LastOpenedUtc`, `LastPlayedUtc` (localised).
 - **Fix Installation** — modal whose layout depends on validity (§7.2.5).
 
-### 9.5 Picker dialogue
+### 9.6 Picker dialogue
 
 Active-installation switcher. Same data grid as the management dialogue without the action panel. `OK` runs `SwitchInstallationCommand`; `Cancel` keeps the current installation active.
 
-### 9.6 Historical INI Config dialogue
+### 9.7 Historical INI Config dialogue
 
 `ClassicWindow` modal. Read-only mirror of the IniPresent tab with a snapshot picker at the top. `Restore` / `Cancel` buttons. Tooltip parity with the IniPresent tab (§7.3.1); `Current: <value>` line conditional on the source mode (§7.6).
 
-### 9.7 Settings dialogue
+### 9.8 Settings dialogue
 
 `ClassicWindow` modal launched from a menu item. Inputs:
 
@@ -1031,7 +1101,7 @@ Active-installation switcher. Same data grid as the management dialogue without 
 
 Settings bind to `LauncherSettings` (single-row table) through `ISettingsService`.
 
-### 9.8 Wireframe inventory and dialogue map
+### 9.9 Wireframe inventory and dialogue map
 
 | Wireframe                                    | UI element it specifies                                                  |
 |----------------------------------------------|--------------------------------------------------------------------------|
@@ -1106,6 +1176,8 @@ Solution-spanning rules using `NetArchTest.Rules`:
 - `Desktop` references `Infrastructure` only from the composition root namespace (`Erdmier.ZooTycoonLauncher.Desktop.Composition`).
 - One-type-per-file: every public type's file name equals the type name (strict convention; reported as test failures per offender).
 - No files at any project root: every file lives under a subfolder mirroring its namespace.
+- **View composition pairing (§9.2):** every public class in `Desktop` whose name ends in `ViewModel` has a sibling file in the parallel `Views/…` folder whose name is the same stem ending in `View.axaml`; and vice versa — every `*View.axaml` has a sibling `*ViewModel.cs`. Reported as test failures per offender. (`MainWindow` is the documented exception — it's the host, not a state.)
+- **MainWindow stays a host:** `Views/MainWindow.axaml` does not exceed 100 lines (a guard against the Ref-launcher drift the §9.2 convention exists to prevent). Adjust the cap deliberately if Avalonia chrome demands more.
 
 ### 11.5 Tests in milestone plans
 

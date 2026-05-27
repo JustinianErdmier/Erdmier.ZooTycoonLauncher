@@ -994,6 +994,8 @@ The locator returns `LocatedDirectory(path) | NotFound`. It never opens any dial
 
 The MVP UI uses **Avalonia 11 + Classic.Avalonia** for a Windows 95/98 aesthetic. The main window is a single `ClassicWindow` with tabs along the top (General, INI Config). Modal dialogues use `ClassicWindow` too so they get proper title bars (a fix established in the Ref build).
 
+Cross-cutting UI conventions — token registry (light/dark swatches), standard INI row layout, group-box + icon header pattern, dialogue footer rules, status-bar help wiring, theming hooks, icon-name contract — live in [`docs/user-interface-design/conventions.md`](../../user-interface-design/conventions.md). When an agent implements one slice of §9, the expected reading order is **SDD §9.x → conventions.md → glance at the prototype GIF**. Don't duplicate conventions in §9; describe screen-specific behaviour here, and point at the conventions doc for everything that recurs.
+
 The authoritative visual reference for the MVP is the **live hi-fi prototype in Claude Design** (HTML/CSS/JS; built from the Claude Design handoff bundle that produced this revision of the SDD). A single screen-recording GIF at [`docs/user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif`](../user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif) is committed to the repo as a quick reference covering every state, every dialogue, the INI tab help affordance, and the dark/light theme switch. The prototype is *not* a production target — match the visual output, not its internal structure.
 
 ### 9.1 Main window and chrome

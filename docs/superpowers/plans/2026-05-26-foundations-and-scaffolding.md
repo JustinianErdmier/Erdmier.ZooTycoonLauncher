@@ -238,9 +238,6 @@ Replace the contents of `Erdmier.ZooTycoonLauncher.slnx` with:
         <File Path="Directory.Build.props" />
         <File Path="Directory.Packages.props" />
     </Folder>
-    <Folder Name="/SolutionItems/docs/">
-        <File Path="docs/SoftwareDesignDocumentRef.md" />
-    </Folder>
     <Folder Name="/SolutionItems/docs/superpowers/specs/">
         <File Path="docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md" />
     </Folder>

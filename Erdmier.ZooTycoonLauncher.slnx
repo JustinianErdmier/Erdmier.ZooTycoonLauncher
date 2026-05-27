@@ -1,25 +1,15 @@
 <Solution>
     <Folder Name="/SolutionItems/">
         <File Path=".gitignore" />
-        <File Path="CLAUDE.md" />
+        <File Path="CLAUDERef.md" />
     </Folder>
-    <Folder Name="/SolutionItems/Docs/">
-        <File Path="Docs/MilestonePlanningAndExecutionProcess.md" />
-        <File Path="Docs/SoftwareDesignDocument.md" />
+    <Folder Name="/SolutionItems/docs/">
+        <File Path="docs/SoftwareDesignDocumentRef.md" />
     </Folder>
-    <Folder Name="/SolutionItems/Docs/Plans/">
-        <File Path="Docs/Plans/2026-04-29—ini-parser-and-startup—design.md" />
-        <File Path="Docs/Plans/2026-04-29—ini-parser-and-startup.md" />
-        <File Path="Docs/Plans/2026-05-08—ini-tab—design.md" />
-        <File Path="Docs/Plans/2026-05-08—ini-tab.md" />
-        <File Path="Docs/Plans/2026-05-08—overview-dynamic-data.md" />
-        <File Path="Docs/Plans/2026-05-09—multi-installation—design.md" />
-        <File Path="Docs/Plans/2026-05-09—multi-installation.md" />
+    <Folder Name="/SolutionItems/docs/superpowers/specs/">
+        <File Path="docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md" />
     </Folder>
-    <Folder Name="/SolutionItems/Docs/Templates/">
-        <File Path="Docs/Templates/milestone-design-template.md" />
-    </Folder>
-    <Folder Name="/Source/">
-        <Project Path="Source/Launcher/Launcher.csproj" />
+    <Folder Name="/References/">
+        <Project Path="References/Erdmier.ZooTycoonLauncherRef/Erdmier.ZooTycoonLauncherRef.csproj" />
     </Folder>
 </Solution>

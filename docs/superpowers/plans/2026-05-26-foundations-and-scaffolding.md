@@ -37,6 +37,7 @@ This plan creates the solution skeleton plus the minimum surface to make it runn
 | `Source/Erdmier.ZooTycoonLauncher.Domain/Installations/InstallationValidity.cs` | SmartEnum (SDD §5.2).                                |
 | `Source/Erdmier.ZooTycoonLauncher.Domain/Settings/LauncherSettings.cs`     | POCO entity, single-row (SDD §5.1).                  |
 | `Source/Erdmier.ZooTycoonLauncher.Domain/Settings/LauncherStartupPreference.cs` | SmartEnum (SDD §5.2).                                |
+| `Source/Erdmier.ZooTycoonLauncher.Domain/Settings/LauncherTheme.cs`        | SmartEnum (SDD §5.2; System / Light / Dark — §9.11). |
 | `Source/Erdmier.ZooTycoonLauncher.Domain/IniSnapshots/IniSnapshot.cs`      | POCO entity (SDD §5.1).                              |
 | `Source/Erdmier.ZooTycoonLauncher.Domain/IniSnapshots/IniValue.cs`         | POCO entity (SDD §5.1).                              |
 | `Source/Erdmier.ZooTycoonLauncher.Domain/IniSnapshots/IniSnapshotKind.cs`  | SmartEnum (SDD §5.2).                                |
@@ -341,7 +342,7 @@ public sealed class InstallationValidity : SmartEnum<InstallationValidity>
     /// <summary>Both <c>zoo.exe</c> and <c>zoo.ini</c> are missing; the installation is wholly invalid.</summary>
     public static readonly InstallationValidity InvalidNoExeOrIni = new("InvalidNoExeOrIni", 4, "Invalid — No EXE or INI",  "Red");
 
-    /// <summary>Display string shown in the Installation Management grid.</summary>
+    /// <summary>Display string shown in the Installation Manager grid.</summary>
     public string DisplayName { get; }
 
     /// <summary>Colour token consumed by the XAML row template (Green for Valid, Red for the others).</summary>
@@ -437,14 +438,37 @@ public sealed class LauncherStartupPreference : SmartEnum<LauncherStartupPrefere
     /// <summary>Open the installation with the most recent <c>LastOpenedUtc</c>; fall back to default if none.</summary>
     public static readonly LauncherStartupPreference LastOpenedInstallation = new("LastOpenedInstallation", 3);
 
-    /// <summary>Open no installation; present the <c>OpenGameInstallation</c> wireframe.</summary>
+    /// <summary>Open no installation; present the <c>OpenGameInstallation</c> state.</summary>
     public static readonly LauncherStartupPreference NoInstallation         = new("NoInstallation",         4);
 
     private LauncherStartupPreference(string name, int id) : base(name, id) { }
 }
 ```
 
-- [ ] **Step 6: Add `LauncherSettings` entity (folder: `Settings/`)**
+- [ ] **Step 6: Add `LauncherTheme` SmartEnum (folder: `Settings/`)**
+
+```csharp
+namespace Erdmier.ZooTycoonLauncher.Domain.Settings;
+
+/// <summary>
+/// The launcher's theme choice (SDD §5.2, §9.11). Persisted on <see cref="LauncherSettings.Theme" />.
+/// </summary>
+public sealed class LauncherTheme : SmartEnum<LauncherTheme>
+{
+    /// <summary>Follow the operating system's light/dark preference at runtime.</summary>
+    public static readonly LauncherTheme System = new("System", 1);
+
+    /// <summary>Force the classic silver-on-navy Win95 palette regardless of OS preference.</summary>
+    public static readonly LauncherTheme Light  = new("Light",  2);
+
+    /// <summary>Force the dark-grey-on-navy palette regardless of OS preference.</summary>
+    public static readonly LauncherTheme Dark   = new("Dark",   3);
+
+    private LauncherTheme(string name, int id) : base(name, id) { }
+}
+```
+
+- [ ] **Step 7: Add `LauncherSettings` entity (folder: `Settings/`)**
 
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Domain.Settings;
@@ -468,10 +492,13 @@ public sealed class LauncherSettings
 
     /// <summary>The id of the default installation (nullable when no installations are registered).</summary>
     public Guid? DefaultInstallationId { get; set; }
+
+    /// <summary>The launcher's theme choice (SDD §9.11); default is <see cref="LauncherTheme.System" />.</summary>
+    public LauncherTheme Theme { get; set; } = LauncherTheme.System;
 }
 ```
 
-- [ ] **Step 7: Add `IniSnapshotKind`, `IniSnapshotTrigger`, `IniValueSource`, `IniValueKind` SmartEnums (folder: `IniSnapshots/`)**
+- [ ] **Step 8: Add `IniSnapshotKind`, `IniSnapshotTrigger`, `IniValueSource`, `IniValueKind` SmartEnums (folder: `IniSnapshots/`)**
 
 `IniSnapshotKind.cs`:
 
@@ -579,7 +606,7 @@ public sealed class IniValueKind : SmartEnum<IniValueKind>
 }
 ```
 
-- [ ] **Step 8: Add `IniValue` entity (folder: `IniSnapshots/`)**
+- [ ] **Step 9: Add `IniValue` entity (folder: `IniSnapshots/`)**
 
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Domain.IniSnapshots;
@@ -612,7 +639,7 @@ public sealed class IniValue
 }
 ```
 
-- [ ] **Step 9: Add `IniSnapshot` entity (folder: `IniSnapshots/`)**
+- [ ] **Step 10: Add `IniSnapshot` entity (folder: `IniSnapshots/`)**
 
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Domain.IniSnapshots;
@@ -643,7 +670,7 @@ public sealed class IniSnapshot
 }
 ```
 
-- [ ] **Step 10: Clean + build**
+- [ ] **Step 11: Clean + build**
 
 ```powershell
 dotnet clean Erdmier.ZooTycoonLauncher.slnx; dotnet build Source/Erdmier.ZooTycoonLauncher.Domain/Erdmier.ZooTycoonLauncher.Domain.csproj
@@ -651,7 +678,7 @@ dotnet clean Erdmier.ZooTycoonLauncher.slnx; dotnet build Source/Erdmier.ZooTyco
 
 Expected: build SUCCEEDED for the Domain project. The slnx-level build will still fail (other projects not yet created).
 
-- [ ] **Step 11: Commit**
+- [ ] **Step 12: Commit**
 
 ```powershell
 git add Source/Erdmier.ZooTycoonLauncher.Domain
@@ -1067,6 +1094,13 @@ public sealed class LauncherSettingsConfiguration : Microsoft.EntityFrameworkCor
 
         builder.Property(s => s.CloseAfterGameLaunch).IsRequired();
         builder.Property(s => s.DefaultInstallationId);
+
+        builder.Property(s => s.Theme)
+               .HasConversion(
+                    static v => v.Name,
+                    static v => LauncherTheme.FromName(v, ignoreCase: false))
+               .HasDefaultValue(LauncherTheme.System)
+               .IsRequired();
     }
 }
 ```

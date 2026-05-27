@@ -32,6 +32,9 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
 
+    <!-- Transitive pin: resolve NU1903 vulnerability in System.Security.Cryptography.Xml 9.0.0 -->
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.8" />
+
     <!-- DI / Logging / IO -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />

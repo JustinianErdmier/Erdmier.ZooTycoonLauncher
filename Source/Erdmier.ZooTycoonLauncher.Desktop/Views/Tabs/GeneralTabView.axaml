@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Tabs.GeneralTabView"
+             x:DataType="vm:GeneralTabViewModel">
+    <StackPanel Margin="8"
+                Spacing="4">
+        <TextBlock Text="{Binding InstallationName}"
+                   FontWeight="Bold" />
+        <TextBlock Text="{Binding InstallationPath}" />
+        <Button Content="Launch Game"
+                IsEnabled="False"
+                Margin="0,8,0,0" />
+        <TextBlock Text="Screen modes — coming soon"
+                   Margin="0,8,0,0" />
+        <TextBlock Text="Last played — coming soon" />
+    </StackPanel>
+</UserControl>

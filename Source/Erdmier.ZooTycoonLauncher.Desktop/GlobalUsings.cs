@@ -1,12 +1,20 @@
 global using Avalonia;
 global using Avalonia.Controls;
+global using Avalonia.Interactivity;
 global using Avalonia.Markup.Xaml;
 
 global using CommunityToolkit.Mvvm.ComponentModel;
+global using CommunityToolkit.Mvvm.Input;
 
-global using Erdmier.ZooTycoonLauncher.Application.Common.Abstractions;
+global using ErrorOr;
+
+global using Mediator;
+
 global using Erdmier.ZooTycoonLauncher.Application.Common.Extensions;
+global using Erdmier.ZooTycoonLauncher.Application.Common.Models;
 global using Erdmier.ZooTycoonLauncher.Desktop.Composition;
+global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels;
+global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 global using Erdmier.ZooTycoonLauncher.Infrastructure.Common.Extensions;
 
 global using JetBrains.Annotations;

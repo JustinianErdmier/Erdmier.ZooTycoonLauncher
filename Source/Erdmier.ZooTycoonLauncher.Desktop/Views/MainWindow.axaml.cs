@@ -13,7 +13,7 @@ public sealed partial class MainWindow : Window
 
         if (DataContext is MainWindowViewModel vm)
         {
-            vm.BootCommand.Execute(null);
+            vm.BootCommand.Execute(parameter: null);
         }
     }
 }

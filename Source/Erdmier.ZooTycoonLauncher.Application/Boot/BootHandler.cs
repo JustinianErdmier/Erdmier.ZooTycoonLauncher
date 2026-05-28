@@ -3,17 +3,17 @@ namespace Erdmier.ZooTycoonLauncher.Application.Boot;
 /// <summary>Handler for <see cref="BootCommand" />. Implements the SDD §7.1.1 startup state machine.</summary>
 public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResult>>
 {
-    private readonly TimeProvider                _clock;
+    private readonly TimeProvider _clock;
 
-    private readonly IInstallationRepository     _installations;
+    private readonly IIniSnapshotService _iniSnapshots;
 
-    private readonly IInstallationLocator        _locator;
+    private readonly IInstallationRepository _installations;
 
-    private readonly IIniSnapshotService         _iniSnapshots;
+    private readonly IInstallationLocator _locator;
 
     private readonly ILauncherSettingsRepository _settings;
 
-    private readonly IInstallationVerifier       _verifier;
+    private readonly IInstallationVerifier _verifier;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="settings">Launcher settings repository.</param>
@@ -47,7 +47,7 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
             return new BootResult(BootOutcome.OpenGameInstallation, ActiveInstallation: null, LocatedCandidatePath: null);
         }
 
-        if (settings.LauncherStartupPreference == LauncherStartupPreference.LastPlayedInstallation
+        if (settings.LauncherStartupPreference    == LauncherStartupPreference.LastPlayedInstallation
             || settings.LauncherStartupPreference == LauncherStartupPreference.LastOpenedInstallation)
         {
             bool useLastPlayed = settings.LauncherStartupPreference == LauncherStartupPreference.LastPlayedInstallation;
@@ -55,8 +55,10 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
             IReadOnlyList<GameInstallation> all = await _installations.GetAllAsync(cancellationToken);
 
             GameInstallation? candidate = useLastPlayed
-                ? all.OrderByDescending(r => r.LastPlayedUtc).FirstOrDefault(r => r.LastPlayedUtc is not null)
-                : all.OrderByDescending(r => r.LastOpenedUtc).FirstOrDefault(r => r.LastOpenedUtc is not null);
+                                              ? all.OrderByDescending(r => r.LastPlayedUtc)
+                                                   .FirstOrDefault(r => r.LastPlayedUtc is not null)
+                                              : all.OrderByDescending(r => r.LastOpenedUtc)
+                                                   .FirstOrDefault(r => r.LastOpenedUtc is not null);
 
             if (candidate is not null)
             {
@@ -106,11 +108,14 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
     {
         VerificationResult result = await _verifier.VerifyAsync(row.Path, cancellationToken);
 
-        if (row.HasExe != result.HasExe || row.HasIni != result.HasIni)
+        if (row.HasExe    != result.HasExe
+            || row.HasIni != result.HasIni)
         {
-            row.HasExe      = result.HasExe;
-            row.HasIni      = result.HasIni;
-            row.ModifiedUtc = _clock.GetUtcNow().UtcDateTime;
+            row.HasExe = result.HasExe;
+            row.HasIni = result.HasIni;
+
+            row.ModifiedUtc = _clock.GetUtcNow()
+                                    .UtcDateTime;
 
             await _installations.UpdateAsync(row, cancellationToken);
         }
@@ -127,7 +132,8 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
             return new BootResult(BootOutcome.CannotPlay, Project(row, settings), LocatedCandidatePath: null);
         }
 
-        row.LastOpenedUtc = _clock.GetUtcNow().UtcDateTime;
+        row.LastOpenedUtc = _clock.GetUtcNow()
+                                  .UtcDateTime;
 
         await _installations.UpdateAsync(row, cancellationToken);
 
@@ -139,7 +145,7 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
                row.Name,
                row.Path,
                row.Validity,
-               IsDefault: settings.DefaultInstallationId == row.Id,
+               settings.DefaultInstallationId == row.Id,
                row.AddedUtc,
                row.ModifiedUtc,
                row.LastPlayedUtc,

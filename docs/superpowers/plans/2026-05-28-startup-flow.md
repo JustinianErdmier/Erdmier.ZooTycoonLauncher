@@ -1,12 +1,17 @@
 # Startup Flow Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps
+> use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Wire the `BootCommand` → `BootHandler` state machine (SDD §7.1.1) into the Desktop layer so the launcher transitions from its placeholder banner to one of five real main-window states on startup.
+**Goal:** Wire the `BootCommand` → `BootHandler` state machine (SDD §7.1.1) into the Desktop layer so the launcher transitions from its placeholder banner to one of five real
+main-window states on startup.
 
-**Architecture:** `BootHandler` implements SDD §7.1.1 in full, dispatched via Mediator from `MainWindowViewModel.BootAsync`. The result is routed to one of five state `UserControl`+`ViewModel` pairs via a `ContentControl` resolved by the existing `ViewLocator`. Tab ViewModels and Views are skeleton-only (no real content). `NullIniSnapshotService` gains a `SynchroniseAsync` no-op stub.
+**Architecture:** `BootHandler` implements SDD §7.1.1 in full, dispatched via Mediator from `MainWindowViewModel.BootAsync`. The result is routed to one of five state
+`UserControl`+`ViewModel` pairs via a `ContentControl` resolved by the existing `ViewLocator`. Tab ViewModels and Views are skeleton-only (no real content).
+`NullIniSnapshotService` gains a `SynchroniseAsync` no-op stub.
 
-**Tech Stack:** .NET 10 / C# 13, Avalonia 11.3, CommunityToolkit.Mvvm (`[ObservableProperty]`, `[RelayCommand]`), Mediator (martinothamar), ErrorOr, NSubstitute, Shouldly, xUnit, FakeTimeProvider.
+**Tech Stack:** .NET 10 / C# 13, Avalonia 11.3, CommunityToolkit.Mvvm (`[ObservableProperty]`, `[RelayCommand]`), Mediator (martinothamar), ErrorOr, NSubstitute, Shouldly, xUnit,
+FakeTimeProvider.
 
 **Spec:** `docs/superpowers/specs/2026-05-28-startup-flow-design.md`
 
@@ -15,6 +20,7 @@
 ## Task 1: IIniSnapshotService.SynchroniseAsync + NullIniSnapshotService stub
 
 **Files:**
+
 - Modify: `Source/Erdmier.ZooTycoonLauncher.Application/Common/Abstractions/IIniSnapshotService.cs`
 - Modify: `Source/Erdmier.ZooTycoonLauncher.Infrastructure/IniSnapshots/NullIniSnapshotService.cs`
 
@@ -128,6 +134,7 @@ git commit -m "feat(✨): add IIniSnapshotService.SynchroniseAsync stub"
 ## Task 2: BootCommand + BootResult types
 
 **Files:**
+
 - Create: `Source/Erdmier.ZooTycoonLauncher.Application/Boot/BootCommand.cs`
 - Create: `Source/Erdmier.ZooTycoonLauncher.Application/Boot/BootResult.cs`
 - Modify: `Tests/Erdmier.ZooTycoonLauncher.Application.Tests.Unit/GlobalUsings.cs`
@@ -143,7 +150,7 @@ public sealed record BootCommand : ICommand<ErrorOr<BootResult>>;
 
 - [ ] **Step 2: Create `BootResult.cs`**
 
-`BootOutcome` and `BootResult` are a tightly-coupled pair never used separately — documented exception to the one-type-per-file rule.
+`BootOutcome` and `BootResult` are a tightly coupled pair never used separately — documented exception to the one-type-per-file rule.
 
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Application.Boot;
@@ -207,6 +214,7 @@ git commit -m "feat(✨): add BootCommand and BootResult types"
 ## Task 3: BootHandler (TDD)
 
 **Files:**
+
 - Create: `Tests/Erdmier.ZooTycoonLauncher.Application.Tests.Unit/Boot/BootHandlerTests.cs`
 - Create: `Source/Erdmier.ZooTycoonLauncher.Application/Boot/BootHandler.cs`
 
@@ -792,7 +800,7 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
 }
 ```
 
-- [ ] **Step 4: Run tests — verify all 11 pass**
+- [ ] **Step 4: Run tests — verify all 11 of them pass**
 
 ```
 dotnet test Tests/Erdmier.ZooTycoonLauncher.Application.Tests.Unit/Erdmier.ZooTycoonLauncher.Application.Tests.Unit.csproj
@@ -819,6 +827,7 @@ git commit -m "feat(✨): add BootHandler with full §7.1.1 state machine"
 ## Task 4: Tab ViewModels + Tab Views
 
 **Files:**
+
 - Create: `Source/Erdmier.ZooTycoonLauncher.Desktop/ViewModels/Tabs/GeneralTabViewModel.cs`
 - Create: `Source/Erdmier.ZooTycoonLauncher.Desktop/ViewModels/Tabs/IniConfigTabViewModel.cs`
 - Create: `Source/Erdmier.ZooTycoonLauncher.Desktop/ViewModels/Tabs/ScenariosTabViewModel.cs`
@@ -882,7 +891,7 @@ global using Microsoft.Extensions.DependencyInjection;
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 
-/// <summary>View model for the General tab inside the ReadyToPlay and CannotPlay states. Skeleton — content lands in the Launch Game and Screen Modes slices.</summary>
+/// <summary>The view model for the General tab inside the ReadyToPlay and CannotPlay states. Skeleton — content lands in the Launch Game and Screen Modes slices.</summary>
 public sealed partial class GeneralTabViewModel : ViewModelBase
 {
     /// <summary>Initialises a new instance.</summary>
@@ -915,7 +924,7 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 
-/// <summary>View model for the INI Config tab. Skeleton — content lands in the INI Config slice.</summary>
+/// <summary>The view model for the INI Config tab. Skeleton — content lands in the INI Config slice.</summary>
 public sealed partial class IniConfigTabViewModel : ViewModelBase;
 ```
 
@@ -924,7 +933,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase;
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 
-/// <summary>View model for the Scenarios tab. Skeleton — content lands in the INI Config slice.</summary>
+/// <summary>The view model for the Scenarios tab. Skeleton — content lands in the INI Config slice.</summary>
 public sealed partial class ScenariosTabViewModel : ViewModelBase;
 ```
 
@@ -1040,6 +1049,7 @@ git commit -m "feat(✨): add tab ViewModels and views skeleton"
 ## Task 5: Boot State ViewModels
 
 **Files:**
+
 - Create: `Source/Erdmier.ZooTycoonLauncher.Desktop/ViewModels/Boot/LookingForZooTycoonViewModel.cs`
 - Create: `Source/Erdmier.ZooTycoonLauncher.Desktop/ViewModels/Boot/ReadyToPlayViewModel.cs`
 - Create: `Source/Erdmier.ZooTycoonLauncher.Desktop/ViewModels/Boot/CannotPlayViewModel.cs`
@@ -1051,7 +1061,7 @@ git commit -m "feat(✨): add tab ViewModels and views skeleton"
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
-/// <summary>View model for the transient "looking for Zoo Tycoon" state shown while <c>BootCommand</c> is in flight.</summary>
+/// <summary>The view model for the transient "looking for Zoo Tycoon" state shown while <c>BootCommand</c> is in flight.</summary>
 public sealed partial class LookingForZooTycoonViewModel : ViewModelBase;
 ```
 
@@ -1060,7 +1070,7 @@ public sealed partial class LookingForZooTycoonViewModel : ViewModelBase;
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
-/// <summary>View model for the ReadyToPlay state — the active installation is valid and the game can be launched.</summary>
+/// <summary>The view model for the ReadyToPlay state — the active installation is valid and the game can be launched.</summary>
 public sealed partial class ReadyToPlayViewModel : ViewModelBase
 {
     /// <summary>Initialises a new instance.</summary>
@@ -1109,7 +1119,7 @@ public sealed partial class ReadyToPlayViewModel : ViewModelBase
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
-/// <summary>View model for the CannotPlay state — the active installation is invalid or synchronisation failed.</summary>
+/// <summary>The view model for the CannotPlay state — the active installation is invalid or synchronisation failed.</summary>
 public sealed partial class CannotPlayViewModel : ViewModelBase
 {
     /// <summary>Initialises a new instance.</summary>
@@ -1158,7 +1168,7 @@ public sealed partial class CannotPlayViewModel : ViewModelBase
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
-/// <summary>View model for the NoGameInstallationFound state. Optionally surfaces a candidate path the locator found but could not add because the dialogue is deferred.</summary>
+/// <summary>The view model for the NoGameInstallationFound state. Optionally surfaces a candidate path the locator found but could not add because the dialogue is deferred.</summary>
 public sealed partial class NoGameInstallationFoundViewModel : ViewModelBase
 {
     /// <summary>Initialises a new instance.</summary>
@@ -1184,7 +1194,7 @@ public sealed partial class NoGameInstallationFoundViewModel : ViewModelBase
 ```csharp
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
-/// <summary>View model for the OpenGameInstallation state — shown when the startup preference is <c>NoInstallation</c>.</summary>
+/// <summary>The view model for the OpenGameInstallation state — shown when the startup preference is <c>NoInstallation</c>.</summary>
 public sealed partial class OpenGameInstallationViewModel : ViewModelBase;
 ```
 
@@ -1206,6 +1216,7 @@ git commit -m "feat(✨): add Boot state ViewModels"
 ## Task 6: Boot State Views
 
 **Files:**
+
 - Create: `Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Boot/LookingForZooTycoonView.axaml` + `.axaml.cs`
 - Create: `Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Boot/ReadyToPlayView.axaml` + `.axaml.cs`
 - Create: `Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Boot/CannotPlayView.axaml` + `.axaml.cs`
@@ -1420,13 +1431,15 @@ git commit -m "feat(✨): add Boot state views"
 ## Task 7: MainWindowViewModel + MainWindow wiring
 
 **Files:**
+
 - Modify: `Source/Erdmier.ZooTycoonLauncher.Desktop/ViewModels/MainWindowViewModel.cs`
 - Modify: `Source/Erdmier.ZooTycoonLauncher.Desktop/Views/MainWindow.axaml`
 - Modify: `Source/Erdmier.ZooTycoonLauncher.Desktop/Views/MainWindow.axaml.cs`
 
 - [ ] **Step 1: Replace `MainWindowViewModel.cs`**
 
-The local alias `AppBoot` avoids the naming clash between the generated `BootCommand` property (IAsyncRelayCommand, produced by `[RelayCommand]` on `BootAsync`) and the `BootCommand` record in `Application.Boot`.
+The local alias `AppBoot` avoids the naming clash between the generated `BootCommand` property (IAsyncRelayCommand, produced by `[RelayCommand]` on `BootAsync`) and the
+`BootCommand` record in `Application.Boot`.
 
 ```csharp
 using AppBoot = Erdmier.ZooTycoonLauncher.Application.Boot;
@@ -1516,7 +1529,8 @@ public sealed partial class MainWindow : Window
 dotnet build Erdmier.ZooTycoonLauncher.slnx
 ```
 
-Expected: clean build. If there are CS8602 nullable warnings on `result.ActiveInstallation!`, the `!` operator is correct — `ActiveInstallation` is non-null whenever `ReadyToPlay` or `CannotPlay` is returned by the handler.
+Expected: clean build. If there are CS8602 nullable warnings on `result.ActiveInstallation!`, the `!` operator is correct — `ActiveInstallation` is non-null whenever `ReadyToPlay`
+or `CannotPlay` is returned by the handler.
 
 - [ ] **Step 5: Run all tests**
 
@@ -1540,18 +1554,18 @@ git commit -m "feat(✨): wire BootCommand into MainWindowViewModel and MainWind
 ## Self-Review Checklist
 
 - **Spec coverage:**
-  - ✅ `BootCommand` + `BootResult` + `BootHandler` — Task 2 + 3
-  - ✅ `IIniSnapshotService.SynchroniseAsync` stub — Task 1
-  - ✅ `MainWindowViewModel` dispatches BootCommand from OnLoaded — Task 7
-  - ✅ Five state VM + View pairs — Tasks 5 + 6
-  - ✅ Three tab VM + View pairs — Task 4
-  - ✅ Designer constructors on VMs that take parameters — Tasks 4 + 5
-  - ✅ All 11 `BootHandlerTests` — Task 3
-  - ✅ `LocatedCandidatePath` surfaced in `NoGameInstallationFoundView` — Task 6
+    - ✅ `BootCommand` + `BootResult` + `BootHandler` — Task 2 + 3
+    - ✅ `IIniSnapshotService.SynchroniseAsync` stub — Task 1
+    - ✅ `MainWindowViewModel` dispatches BootCommand from OnLoaded — Task 7
+    - ✅ Five state VM and View pairs — Tasks 5 + 6
+    - ✅ Three tab VM and View pairs — Task 4
+    - ✅ Designer constructors on VMs that take parameters — Tasks 4 + 5
+    - ✅ All 11 `BootHandlerTests` — Task 3
+    - ✅ `LocatedCandidatePath` surfaced in `NoGameInstallationFoundView` — Task 6
 
 - **Type consistency across tasks:**
-  - `BootCommand`, `BootResult`, `BootOutcome` defined in Task 2; used by `AppBoot.*` alias in Task 7
-  - `GeneralTabViewModel(InstallationSummary)` defined in Task 4; used as `new GeneralTabViewModel(installation)` in Tasks 5
-  - `InstallationSummary` — available via `global using Erdmier.ZooTycoonLauncher.Application.Common.Models` added in Task 4
+    - `BootCommand`, `BootResult`, `BootOutcome` defined in Task 2; used by `AppBoot.*` alias in Task 7
+    - `GeneralTabViewModel(InstallationSummary)` defined in Task 4; used as `new GeneralTabViewModel(installation)` in Tasks 5
+    - `InstallationSummary` — available via `global using Erdmier.ZooTycoonLauncher.Application.Common.Models` added in Task 4
 
 - **No placeholders** — all steps contain complete code.

@@ -10,12 +10,18 @@ public sealed class BootHandlerTests
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
 
         settings.GetAsync(Arg.Any<CancellationToken>())
-                .Returns(new LauncherSettings { DefaultInstallationId = id });
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = id
+                });
 
         GameInstallation row = new()
         {
-            Id = id, Name = "Main", Path = @"C:\ZT",
-            HasExe = true, HasIni = true,
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
             AddedUtc = DateTime.UtcNow
         };
 
@@ -34,8 +40,12 @@ public sealed class BootHandlerTests
         snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
                  .Returns(Result.Success);
 
-        BootHandler handler = new(settings, installations, verifier,
-                                  Substitute.For<IInstallationLocator>(), snapshots, TimeProvider.System);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -52,12 +62,18 @@ public sealed class BootHandlerTests
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
 
         settings.GetAsync(Arg.Any<CancellationToken>())
-                .Returns(new LauncherSettings { DefaultInstallationId = id });
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = id
+                });
 
         GameInstallation row = new()
         {
-            Id = id, Name = "Main", Path = @"C:\ZT",
-            HasExe = true, HasIni = true,
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
             AddedUtc = DateTime.UtcNow
         };
 
@@ -71,9 +87,12 @@ public sealed class BootHandlerTests
         verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
                 .Returns(new VerificationResult(DirectoryExists: true, HasExe: false, HasIni: true));
 
-        BootHandler handler = new(settings, installations, verifier,
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
                                   Substitute.For<IInstallationLocator>(),
-                                  Substitute.For<IIniSnapshotService>(), TimeProvider.System);
+                                  Substitute.For<IIniSnapshotService>(),
+                                  TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -90,12 +109,18 @@ public sealed class BootHandlerTests
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
 
         settings.GetAsync(Arg.Any<CancellationToken>())
-                .Returns(new LauncherSettings { DefaultInstallationId = id });
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = id
+                });
 
         GameInstallation row = new()
         {
-            Id = id, Name = "Main", Path = @"C:\ZT",
-            HasExe = true, HasIni = true,
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
             AddedUtc = DateTime.UtcNow
         };
 
@@ -114,8 +139,12 @@ public sealed class BootHandlerTests
         snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
                  .Returns(Error.Failure(code: "Ini.SyncFailed", description: "boom"));
 
-        BootHandler handler = new(settings, installations, verifier,
-                                  Substitute.For<IInstallationLocator>(), snapshots, TimeProvider.System);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -134,12 +163,18 @@ public sealed class BootHandlerTests
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
 
         settings.GetAsync(Arg.Any<CancellationToken>())
-                .Returns(new LauncherSettings { DefaultInstallationId = id });
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = id
+                });
 
         GameInstallation row = new()
         {
-            Id = id, Name = "Main", Path = @"C:\ZT",
-            HasExe = true, HasIni = true,
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
             AddedUtc = DateTime.UtcNow
         };
 
@@ -153,9 +188,12 @@ public sealed class BootHandlerTests
         verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
                 .Returns(new VerificationResult(DirectoryExists: true, HasExe: false, HasIni: true));
 
-        BootHandler handler = new(settings, installations, verifier,
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
                                   Substitute.For<IInstallationLocator>(),
-                                  Substitute.For<IIniSnapshotService>(), clock);
+                                  Substitute.For<IIniSnapshotService>(),
+                                  clock);
 
         await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -178,12 +216,18 @@ public sealed class BootHandlerTests
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
 
         settings.GetAsync(Arg.Any<CancellationToken>())
-                .Returns(new LauncherSettings { DefaultInstallationId = id });
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = id
+                });
 
         GameInstallation row = new()
         {
-            Id = id, Name = "Main", Path = @"C:\ZT",
-            HasExe = true, HasIni = false,
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = false,
             AddedUtc = DateTime.UtcNow
         };
 
@@ -202,8 +246,12 @@ public sealed class BootHandlerTests
         snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
                  .Returns(Result.Success);
 
-        BootHandler handler = new(settings, installations, verifier,
-                                  Substitute.For<IInstallationLocator>(), snapshots, clock);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  clock);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -232,12 +280,18 @@ public sealed class BootHandlerTests
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
 
         settings.GetAsync(Arg.Any<CancellationToken>())
-                .Returns(new LauncherSettings { DefaultInstallationId = id });
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = id
+                });
 
         GameInstallation row = new()
         {
-            Id = id, Name = "Main", Path = @"C:\ZT",
-            HasExe = true, HasIni = true,
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
             AddedUtc = DateTime.UtcNow
         };
 
@@ -256,8 +310,12 @@ public sealed class BootHandlerTests
         snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
                  .Returns(Result.Success);
 
-        BootHandler handler = new(settings, installations, verifier,
-                                  Substitute.For<IInstallationLocator>(), snapshots, clock);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  clock);
 
         await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -269,10 +327,23 @@ public sealed class BootHandlerTests
     [ Fact ]
     public async Task Handle_PromotesDefault_WhenDefaultIdNullAndRowsExist()
     {
-        Guid             promotedId = Guid.CreateVersion7();
-        GameInstallation promoted   = new() { Id = promotedId, Name = "Alpha", Path = @"C:\ZT", HasExe = true, HasIni = true, AddedUtc = DateTime.UtcNow };
+        Guid promotedId = Guid.CreateVersion7();
 
-        LauncherSettings            settingsRow   = new() { DefaultInstallationId = null };
+        GameInstallation promoted = new()
+        {
+            Id       = promotedId,
+            Name     = "Alpha",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        LauncherSettings settingsRow = new()
+        {
+            DefaultInstallationId = null
+        };
+
         ILauncherSettingsRepository settings      = Substitute.For<ILauncherSettingsRepository>();
         IInstallationRepository     installations = Substitute.For<IInstallationRepository>();
 
@@ -292,8 +363,12 @@ public sealed class BootHandlerTests
         snapshots.SynchroniseAsync(promoted, Arg.Any<CancellationToken>())
                  .Returns(Result.Success);
 
-        BootHandler handler = new(settings, installations, verifier,
-                                  Substitute.For<IInstallationLocator>(), snapshots, TimeProvider.System);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -318,17 +393,20 @@ public sealed class BootHandlerTests
                      .Returns((GameInstallation?)null);
 
         locator.LocateAsync(persistedLastKnownPath: null, Arg.Any<CancellationToken>())
-               .Returns(new LocatedDirectory(Path: @"C:\Games\ZT", Trail: Array.Empty<LocationProbeAttempt>()));
+               .Returns(new LocatedDirectory(Path: @"C:\Games\ZT", Array.Empty<LocationProbeAttempt>()));
 
-        BootHandler handler = new(settings, installations,
-                                  Substitute.For<IInstallationVerifier>(), locator,
-                                  Substitute.For<IIniSnapshotService>(), TimeProvider.System);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  Substitute.For<IInstallationVerifier>(),
+                                  locator,
+                                  Substitute.For<IIniSnapshotService>(),
+                                  TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
         result.IsError.ShouldBeFalse();
         result.Value.Outcome.ShouldBe(BootOutcome.NoGameInstallationFound);
-        result.Value.LocatedCandidatePath.ShouldBe(@"C:\Games\ZT");
+        result.Value.LocatedCandidatePath.ShouldBe(expected: @"C:\Games\ZT");
     }
 
     [ Fact ]
@@ -345,11 +423,14 @@ public sealed class BootHandlerTests
                      .Returns((GameInstallation?)null);
 
         locator.LocateAsync(persistedLastKnownPath: null, Arg.Any<CancellationToken>())
-               .Returns(new LocatedDirectory(Path: null, Trail: Array.Empty<LocationProbeAttempt>()));
+               .Returns(new LocatedDirectory(Path: null, Array.Empty<LocationProbeAttempt>()));
 
-        BootHandler handler = new(settings, installations,
-                                  Substitute.For<IInstallationVerifier>(), locator,
-                                  Substitute.For<IIniSnapshotService>(), TimeProvider.System);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  Substitute.For<IInstallationVerifier>(),
+                                  locator,
+                                  Substitute.For<IIniSnapshotService>(),
+                                  TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -364,7 +445,10 @@ public sealed class BootHandlerTests
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
 
         settings.GetAsync(Arg.Any<CancellationToken>())
-                .Returns(new LauncherSettings { LauncherStartupPreference = LauncherStartupPreference.NoInstallation });
+                .Returns(new LauncherSettings
+                {
+                    LauncherStartupPreference = LauncherStartupPreference.NoInstallation
+                });
 
         BootHandler handler = new(settings,
                                   Substitute.For<IInstallationRepository>(),
@@ -393,8 +477,24 @@ public sealed class BootHandlerTests
                     DefaultInstallationId     = id
                 });
 
-        GameInstallation noLastPlayed = new() { Id = Guid.CreateVersion7(), Name = "A", Path = @"C:\A", AddedUtc = DateTime.UtcNow, LastPlayedUtc = null };
-        GameInstallation defaultRow   = new() { Id = id,                   Name = "B", Path = @"C:\B", HasExe = true, HasIni = true, AddedUtc = DateTime.UtcNow };
+        GameInstallation noLastPlayed = new()
+        {
+            Id            = Guid.CreateVersion7(),
+            Name          = "A",
+            Path          = @"C:\A",
+            AddedUtc      = DateTime.UtcNow,
+            LastPlayedUtc = null
+        };
+
+        GameInstallation defaultRow = new()
+        {
+            Id       = id,
+            Name     = "B",
+            Path     = @"C:\B",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
 
         IInstallationRepository installations = Substitute.For<IInstallationRepository>();
 
@@ -414,8 +514,12 @@ public sealed class BootHandlerTests
         snapshots.SynchroniseAsync(defaultRow, Arg.Any<CancellationToken>())
                  .Returns(Result.Success);
 
-        BootHandler handler = new(settings, installations, verifier,
-                                  Substitute.For<IInstallationLocator>(), snapshots, TimeProvider.System);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -438,8 +542,24 @@ public sealed class BootHandlerTests
                     DefaultInstallationId     = id
                 });
 
-        GameInstallation noLastOpened = new() { Id = Guid.CreateVersion7(), Name = "A", Path = @"C:\A", AddedUtc = DateTime.UtcNow, LastOpenedUtc = null };
-        GameInstallation defaultRow   = new() { Id = id,                   Name = "B", Path = @"C:\B", HasExe = true, HasIni = true, AddedUtc = DateTime.UtcNow };
+        GameInstallation noLastOpened = new()
+        {
+            Id            = Guid.CreateVersion7(),
+            Name          = "A",
+            Path          = @"C:\A",
+            AddedUtc      = DateTime.UtcNow,
+            LastOpenedUtc = null
+        };
+
+        GameInstallation defaultRow = new()
+        {
+            Id       = id,
+            Name     = "B",
+            Path     = @"C:\B",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
 
         IInstallationRepository installations = Substitute.For<IInstallationRepository>();
 
@@ -459,8 +579,12 @@ public sealed class BootHandlerTests
         snapshots.SynchroniseAsync(defaultRow, Arg.Any<CancellationToken>())
                  .Returns(Result.Success);
 
-        BootHandler handler = new(settings, installations, verifier,
-                                  Substitute.For<IInstallationLocator>(), snapshots, TimeProvider.System);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 

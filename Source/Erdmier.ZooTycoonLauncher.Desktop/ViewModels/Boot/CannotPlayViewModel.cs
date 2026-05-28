@@ -1,7 +1,7 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
-/// <summary>View model for the CannotPlay state — the active installation is invalid or synchronisation failed.</summary>
-public sealed partial class CannotPlayViewModel : ViewModelBase
+/// <summary>The view model for the CannotPlay state — the active installation is invalid or synchronisation failed.</summary>
+public sealed class CannotPlayViewModel : ViewModelBase
 {
     /// <summary>Initialises a new instance.</summary>
     /// <param name="installation">The resolved active installation (invalid).</param>
@@ -16,13 +16,23 @@ public sealed partial class CannotPlayViewModel : ViewModelBase
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
-    public CannotPlayViewModel() : this(new InstallationSummary(Guid.Empty,
-                                                                 "Designer Installation",
-                                                                 @"C:\Program Files (x86)\Microsoft Games\Zoo Tycoon",
-                                                                 InstallationValidity.InvalidNoExe,
-                                                                 IsDefault: false,
-                                                                 DateTime.UtcNow,
-                                                                 null, null, null)) { }
+    public CannotPlayViewModel()
+        : this(new InstallationSummary(Guid.Empty,
+                                       Name: "Designer Installation",
+                                       Path: @"C:\Program Files (x86)\Microsoft Games\Zoo Tycoon",
+                                       InstallationValidity.InvalidNoExe,
+                                       IsDefault: false,
+                                       DateTime.UtcNow,
+                                       ModifiedUtc: null,
+                                       LastPlayedUtc: null,
+                                       LastOpenedUtc: null))
+    { }
+
+    /// <summary>General tab view model.</summary>
+    public GeneralTabViewModel GeneralTab { get; }
+
+    /// <summary>INI Config tab view model.</summary>
+    public IniConfigTabViewModel IniConfigTab { get; }
 
     /// <summary>The installation's user-visible name.</summary>
     public string InstallationName { get; }
@@ -32,12 +42,6 @@ public sealed partial class CannotPlayViewModel : ViewModelBase
 
     /// <summary><see langword="true" /> when this is the default installation.</summary>
     public bool IsDefault { get; }
-
-    /// <summary>General tab view model.</summary>
-    public GeneralTabViewModel GeneralTab { get; }
-
-    /// <summary>INI Config tab view model.</summary>
-    public IniConfigTabViewModel IniConfigTab { get; }
 
     /// <summary>Scenarios tab view model.</summary>
     public ScenariosTabViewModel ScenariosTab { get; }

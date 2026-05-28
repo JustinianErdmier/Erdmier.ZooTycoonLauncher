@@ -20,8 +20,8 @@ public interface IIniSnapshotService
     Task<ErrorOr<Success>> CaptureOriginalAsync(GameInstallation installation, CancellationToken cancellationToken);
 
     /// <summary>
-    ///     Checks whether <c>zoo.ini</c> has drifted on disk since the <c>Current</c> snapshot was written. When drift is detected, archives <c>Current</c> to
-    ///     <c>Historical</c> and writes a new <c>Current</c> from the on-disk values. No-op when <see cref="GameInstallation.HasIni" /> is <see langword="false" />.
+    ///     Checks whether <c>zoo.ini</c> has drifted on disk since the <c>Current</c> snapshot was written. When drift is detected, archives <c>Current</c> to <c>Historical</c> and
+    ///     writes a new <c>Current</c> from the on-disk values. No-op when <see cref="GameInstallation.HasIni" /> is <see langword="false" />.
     /// </summary>
     /// <param name="installation">The installation to synchronise.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

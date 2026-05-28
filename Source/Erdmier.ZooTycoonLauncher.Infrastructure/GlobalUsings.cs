@@ -13,6 +13,8 @@ global using Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Launcher.Repos
 global using JetBrains.Annotations;
 
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.EntityFrameworkCore.Design;
 global using Microsoft.Extensions.DependencyInjection;
 
 global using Serilog;

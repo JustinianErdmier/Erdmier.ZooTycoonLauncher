@@ -12,6 +12,7 @@ public sealed class InstallationRepositoryTests : IDisposable
 
         DbContextOptions<LauncherDbContext> options = new DbContextOptionsBuilder<LauncherDbContext>()
                                                      .UseSqlite($"Data Source={_databasePath}")
+                                                     .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
                                                      .Options;
 
         _context = new LauncherDbContext(options);

@@ -8,6 +8,8 @@ public static class InfrastructureServiceCollectionExtensions
     /// <returns>The service collection, for chaining.</returns>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
+        services.AddSingleton(TimeProvider.System);
+
         services.AddSingleton<IFileSystem, FileSystem>();
         services.AddSingleton<IAppStorageLocations, AppStorageLocations>();
 

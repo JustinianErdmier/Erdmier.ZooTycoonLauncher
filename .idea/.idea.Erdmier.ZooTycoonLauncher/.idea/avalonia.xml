@@ -4,6 +4,7 @@
     <option name="projectPerEditor">
       <map>
         <entry key="Source/Erdmier.ZooTycoonLauncher.Desktop/App.axaml" value="Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj" />
+        <entry key="Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Boot/CannotPlayView.axaml" value="Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj" />
         <entry key="Source/Erdmier.ZooTycoonLauncher.Desktop/Views/MainWindow.axaml" value="Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj" />
         <entry key="Source/Launcher/App.axaml" value="Source/Launcher/Launcher.csproj" />
         <entry key="Source/Launcher/Resources/IniTooltips.axaml" value="Source/Launcher/Launcher.csproj" />

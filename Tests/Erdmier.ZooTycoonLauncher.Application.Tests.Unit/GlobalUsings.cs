@@ -4,7 +4,6 @@ global using System.Linq;
 global using System.Threading;
 global using System.Threading.Tasks;
 
-global using Erdmier.ZooTycoonLauncher.Application.Boot;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Abstractions;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Models;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Add;
@@ -16,6 +15,7 @@ global using Erdmier.ZooTycoonLauncher.Application.Installations.SetDefault;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Relocate;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Update;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Verify;
+global using Erdmier.ZooTycoonLauncher.Application.Boot;
 global using Erdmier.ZooTycoonLauncher.Domain.Installations;
 global using Erdmier.ZooTycoonLauncher.Domain.Settings;
 

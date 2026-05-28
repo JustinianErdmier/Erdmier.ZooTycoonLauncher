@@ -24,6 +24,8 @@ global using FluentValidation.Results;
 
 global using ErrorOr;
 
+global using Microsoft.Extensions.Time.Testing;
+
 global using NSubstitute;
 
 global using Shouldly;

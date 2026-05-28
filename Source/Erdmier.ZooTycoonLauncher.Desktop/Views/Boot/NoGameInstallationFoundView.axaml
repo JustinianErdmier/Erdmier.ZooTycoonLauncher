@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.NoGameInstallationFoundView"
+             x:DataType="vm:NoGameInstallationFoundViewModel">
+    <StackPanel HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="8"
+                Margin="16">
+        <TextBlock Text="No Zoo Tycoon installation was found."
+                   FontWeight="Bold" />
+        <StackPanel IsVisible="{Binding HasLocatedPath}"
+                    Spacing="4">
+            <TextBlock Text="A candidate was found at:" />
+            <TextBox Text="{Binding LocatedCandidatePath}"
+                     IsReadOnly="True" />
+        </StackPanel>
+        <Button Content="Add Installation"
+                IsEnabled="False"
+                ToolTip.Tip="Coming in a future update." />
+    </StackPanel>
+</UserControl>

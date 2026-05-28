@@ -1,6 +1,5 @@
 using Avalonia.Controls.ApplicationLifetimes;
 
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels;
 using Erdmier.ZooTycoonLauncher.Desktop.Views;
 
 namespace Erdmier.ZooTycoonLauncher.Desktop;

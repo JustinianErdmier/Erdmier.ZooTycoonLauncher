@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Tabs.IniConfigTabView"
+             x:DataType="vm:IniConfigTabViewModel">
+    <TextBlock Text="INI configuration — coming soon"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
+</UserControl>

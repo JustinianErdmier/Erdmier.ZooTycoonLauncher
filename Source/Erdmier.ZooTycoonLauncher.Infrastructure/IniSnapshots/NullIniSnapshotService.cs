@@ -19,7 +19,23 @@ public sealed class NullIniSnapshotService : IIniSnapshotService
 
         if (installation.HasIni)
         {
-            _logger.Warning(messageTemplate: "INI snapshot capture for {InstallationId} ({Name}) is deferred — replace NullIniSnapshotService when the INI Config slice lands.",
+            _logger.Warning(messageTemplate: "INI snapshot capture for {InstallationId} ({Name}) is deferred — replace NullIniSnapshotService when the INI Config slice lands",
+                            installation.Id,
+                            installation.Name);
+        }
+
+        return Task.FromResult<ErrorOr<Success>>(Result.Success);
+    }
+
+    /// <inheritdoc />
+    public Task<ErrorOr<Success>> SynchroniseAsync(GameInstallation installation, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (installation.HasIni)
+        {
+            _logger.Warning(messageTemplate:
+                            "INI snapshot synchronisation for {InstallationId} ({Name}) is deferred — replace NullIniSnapshotService when the INI Config slice lands",
                             installation.Id,
                             installation.Name);
         }

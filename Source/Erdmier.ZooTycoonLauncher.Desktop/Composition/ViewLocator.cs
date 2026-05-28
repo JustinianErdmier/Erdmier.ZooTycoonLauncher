@@ -1,7 +1,5 @@
 using Avalonia.Controls.Templates;
 
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.Composition;
 
 /// <summary>Maps each <c>*ViewModel</c> instance to its corresponding <c>*View</c> by name (SDD §4.3, §9.2).</summary>

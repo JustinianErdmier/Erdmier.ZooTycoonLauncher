@@ -76,7 +76,18 @@
       "Bash(xargs grep -l \"interface ICommand\")",
       "Bash(Get-Content \"C:\\\\Users\\\\justi\\\\.claude\\\\projects\\\\D--Source-Personal-Erdmier-ZooTycoonLauncher\\\\e7de448a-98ab-4e83-b7ec-3614b4ed0fbc\\\\tool-results\\\\b6nmjad20.txt\")",
       "Bash(Select-String -Pattern \"\\(error|warning|passed|failed|skipped|FAILED|PASSED\\)\")",
-      "Bash(Select-Object -Last 40)"
+      "Bash(Select-Object -Last 40)",
+      "Bash(ls -d .worktrees)",
+      "Bash(ls -d worktrees)",
+      "Bash(grep -rn -E \"docs[/\\\\\\\\]superpowers|installation-lifecycle|startup-flow|zoo-tycoon-launcher-design|startup-flow-design|greenfield-rewrite-bootstrap|installation-discovery|startup-orchestration\" --include=\"*.md\" --include=\"*.slnx\" .)",
+      "Bash(echo \"===EXIT $?===\")",
+      "PowerShell(dotnet build \"D:\\\\Source\\\\Personal\\\\Erdmier.ZooTycoonLauncher\\\\Tests\\\\Erdmier.ZooTycoonLauncher.Application.Tests.Unit\\\\Erdmier.ZooTycoonLauncher.Application.Tests.Unit.csproj\" 2>&1 | Where-Object { $_ -match 'FakeTimeProvider' } | Select-Object -First 20)",
+      "PowerShell(dotnet nuget search \"FakeTimeProvider\" --take 5 2>&1)",
+      "Bash(grep -E \"\\(^--- |^\\\\\\\\+\\\\\\\\+\\\\\\\\+ \\)\")",
+      "Bash(grep -vE \"^\\\\\\\\+\\\\\\\\+\\\\\\\\+\")",
+      "Bash(Select-String -Pattern \"error|warning|Build succeeded|FAILED\")",
+      "Bash(Select-Object -Last 10)",
+      "PowerShell(cd \"D:\\\\Source\\\\Personal\\\\Erdmier.ZooTycoonLauncher\"; $GIT_DIR = \\(Resolve-Path \\(git rev-parse --git-dir\\)\\).Path; $GIT_COMMON = \\(Resolve-Path \\(git rev-parse --git-common-dir\\)\\).Path; Write-Output \"GIT_DIR: $GIT_DIR\"; Write-Output \"GIT_COMMON: $GIT_COMMON\"; Write-Output \"Normal repo: $\\($GIT_DIR -eq $GIT_COMMON\\)\"; Write-Output \"Branch: $\\(git branch --show-current\\)\"; git log --oneline main..HEAD)"
     ]
   },
   "outputStyle": "Explanatory",

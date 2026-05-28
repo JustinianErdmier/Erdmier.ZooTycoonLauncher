@@ -5,6 +5,7 @@ global using Avalonia.Markup.Xaml;
 global using CommunityToolkit.Mvvm.ComponentModel;
 
 global using Erdmier.ZooTycoonLauncher.Application.Common.Abstractions;
+global using Erdmier.ZooTycoonLauncher.Application.Common.Extensions;
 global using Erdmier.ZooTycoonLauncher.Desktop.Composition;
 global using Erdmier.ZooTycoonLauncher.Infrastructure.Common.Extensions;
 

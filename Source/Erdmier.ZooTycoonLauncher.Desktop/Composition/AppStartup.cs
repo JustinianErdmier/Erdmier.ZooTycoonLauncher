@@ -13,6 +13,7 @@ internal static class AppStartup
         ServiceCollection services = new();
 
         services.AddInfrastructure();
+        services.AddApplication();
         services.AddDesktop();
 
         ServiceProvider provider = services.BuildServiceProvider();

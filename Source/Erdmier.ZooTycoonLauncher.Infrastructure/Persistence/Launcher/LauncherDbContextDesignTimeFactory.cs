@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore.Design;
-
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Launcher;
 
 /// <summary>

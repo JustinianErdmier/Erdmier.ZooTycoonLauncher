@@ -3,16 +3,18 @@ namespace Erdmier.ZooTycoonLauncher.Application.Installations.Update;
 /// <summary>Handler for <see cref="UpdateInstallationCommand" />.</summary>
 public sealed class UpdateInstallationHandler : ICommandHandler<UpdateInstallationCommand, ErrorOr<Success>>
 {
-    private readonly IInstallationRepository _installations;
-    private readonly ILauncherSettingsRepository _settings;
     private readonly TimeProvider _clock;
+
+    private readonly IInstallationRepository _installations;
+
+    private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
     public UpdateInstallationHandler(IInstallationRepository installations, ILauncherSettingsRepository settings, TimeProvider clock)
     {
         _installations = installations;
-        _settings = settings;
-        _clock = clock;
+        _settings      = settings;
+        _clock         = clock;
     }
 
     /// <inheritdoc />
@@ -22,11 +24,13 @@ public sealed class UpdateInstallationHandler : ICommandHandler<UpdateInstallati
 
         if (row is null)
         {
-            return Error.NotFound(code: "Installation.NotFound", description: $"No installation with id {command.InstallationId}.");
+            return Error.NotFound(code: "Installation.NotFound", $"No installation with id {command.InstallationId}.");
         }
 
         row.Name = command.Name.Trim();
-        row.ModifiedUtc = _clock.GetUtcNow().UtcDateTime;
+
+        row.ModifiedUtc = _clock.GetUtcNow()
+                                .UtcDateTime;
 
         await _installations.UpdateAsync(row, cancellationToken);
 

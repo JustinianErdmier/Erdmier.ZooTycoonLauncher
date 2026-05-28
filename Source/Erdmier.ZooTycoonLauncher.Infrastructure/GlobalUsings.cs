@@ -14,6 +14,7 @@ global using Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Launcher;
 global using Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Launcher.Repositories;
 
 global using ErrorOr;
+
 global using JetBrains.Annotations;
 
 global using Microsoft.Data.Sqlite;

@@ -4,14 +4,18 @@ namespace Erdmier.ZooTycoonLauncher.Application.Installations.Locate;
 public sealed class LocateZooTycoonHandler : IQueryHandler<LocateZooTycoonQuery, ErrorOr<LocatedDirectory>>
 {
     private readonly IInstallationLocator _locator;
+
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="locator">The locator.</param>
-    /// <param name="settings">Settings repository (consulted for the persisted last-known directory; that field is not modelled in <see cref="LauncherSettings" /> today, so the handler passes <see langword="null" /> for the persisted candidate).</param>
+    /// <param name="settings">
+    ///     Settings repository (consulted for the persisted last-known directory; that field is not modelled in <see cref="LauncherSettings" /> today, so the handler
+    ///     passes <see langword="null" /> for the persisted candidate).
+    /// </param>
     public LocateZooTycoonHandler(IInstallationLocator locator, ILauncherSettingsRepository settings)
     {
-        _locator = locator;
+        _locator  = locator;
         _settings = settings;
     }
 

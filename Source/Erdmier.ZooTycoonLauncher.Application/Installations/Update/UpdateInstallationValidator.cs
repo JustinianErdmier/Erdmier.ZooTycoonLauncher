@@ -12,11 +12,11 @@ public sealed class UpdateInstallationValidator : AbstractValidator<UpdateInstal
 
         RuleFor(c => c.Name)
             .NotEmpty()
-            .WithMessage("Name is required.")
+            .WithMessage(errorMessage: "Name is required.")
             .Must(name => !string.IsNullOrWhiteSpace(name?.Trim()))
-            .WithMessage("Name cannot be whitespace.")
+            .WithMessage(errorMessage: "Name cannot be whitespace.")
             .MustAsync(NameIsUniqueAsync)
-            .WithMessage("Another installation already uses this name.");
+            .WithMessage(errorMessage: "Another installation already uses this name.");
     }
 
     private async Task<bool> NameIsUniqueAsync(UpdateInstallationCommand command, string name, CancellationToken cancellationToken)
@@ -28,6 +28,6 @@ public sealed class UpdateInstallationValidator : AbstractValidator<UpdateInstal
             return true;
         }
 
-        return !await _installations.ExistsByNameAsync(trimmed, excludeId: command.InstallationId, cancellationToken);
+        return !await _installations.ExistsByNameAsync(trimmed, command.InstallationId, cancellationToken);
     }
 }

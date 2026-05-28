@@ -1,72 +1,72 @@
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Installation;
 
 /// <summary>
-/// File-system-backed implementation of <see cref="IInstallationDbContextFactory" />. Creates (when absent) or opens the
-/// per-installation database under <c>{DataRoot}\{installationId}.db</c>, runs migrations, and wraps the context in a
-/// disposable handle.
+///     File-system-backed implementation of <see cref="IInstallationDbContextFactory" />. Creates (when absent) or opens the per-installation database under
+///     <c>{DataRoot}\{installationId}.db</c>, runs migrations, and wraps the context in a disposable handle.
 /// </summary>
 public sealed class InstallationDbContextFactory : IInstallationDbContextFactory
 {
-	private readonly IAppStorageLocations _locations;
-	private readonly IFileSystem _fileSystem;
+    private readonly IFileSystem _fileSystem;
 
-	/// <summary>Initialises a new instance.</summary>
-	/// <param name="locations">Path locations.</param>
-	/// <param name="fileSystem">File-system abstraction (only used for delete; EF Core owns its own IO for read/write).</param>
-	public InstallationDbContextFactory(IAppStorageLocations locations, IFileSystem fileSystem)
-	{
-		_locations = locations;
-		_fileSystem = fileSystem;
-	}
+    private readonly IAppStorageLocations _locations;
 
-	/// <inheritdoc />
-	public async Task<IInstallationDbContextHandle> CreateAsync(Guid installationId, CancellationToken cancellationToken)
-	{
-		string databasePath = _locations.InstallationDatabasePath(installationId);
+    /// <summary>Initialises a new instance.</summary>
+    /// <param name="locations">Path locations.</param>
+    /// <param name="fileSystem">File-system abstraction (only used for delete; EF Core owns its own IO for read/write).</param>
+    public InstallationDbContextFactory(IAppStorageLocations locations, IFileSystem fileSystem)
+    {
+        _locations  = locations;
+        _fileSystem = fileSystem;
+    }
 
-		DbContextOptions<InstallationDbContext> options = new DbContextOptionsBuilder<InstallationDbContext>()
-		                                                   .UseSqlite($"Data Source={databasePath}")
-		                                                   .Options;
+    /// <inheritdoc />
+    public async Task<IInstallationDbContextHandle> CreateAsync(Guid installationId, CancellationToken cancellationToken)
+    {
+        string databasePath = _locations.InstallationDatabasePath(installationId);
 
-		InstallationDbContext context = new(options);
+        DbContextOptions<InstallationDbContext> options = new DbContextOptionsBuilder<InstallationDbContext>()
+                                                          .UseSqlite($"Data Source={databasePath}")
+                                                          .Options;
 
-		await context.Database.MigrateAsync(cancellationToken);
+        InstallationDbContext context = new(options);
 
-		return new Handle(context);
-	}
+        await context.Database.MigrateAsync(cancellationToken);
 
-	/// <inheritdoc />
-	public Task DeleteAsync(Guid installationId, CancellationToken cancellationToken)
-	{
-		// cancellationToken is not observed — SqliteConnection.ClearAllPools() and IFileSystem.File.Delete are synchronous.
-		SqliteConnection.ClearAllPools();
+        return new Handle(context);
+    }
 
-		string databasePath = _locations.InstallationDatabasePath(installationId);
+    /// <inheritdoc />
+    public Task DeleteAsync(Guid installationId, CancellationToken cancellationToken)
+    {
+        // cancellationToken is not observed — SqliteConnection.ClearAllPools() and IFileSystem.File.Delete are synchronous.
+        SqliteConnection.ClearAllPools();
 
-		if (_fileSystem.File.Exists(databasePath))
-		{
-			_fileSystem.File.Delete(databasePath);
-		}
+        string databasePath = _locations.InstallationDatabasePath(installationId);
 
-		foreach (string suffix in new[] { "-wal", "-shm", "-journal" })
-		{
-			string sidecar = databasePath + suffix;
+        if (_fileSystem.File.Exists(databasePath))
+        {
+            _fileSystem.File.Delete(databasePath);
+        }
 
-			if (_fileSystem.File.Exists(sidecar))
-			{
-				_fileSystem.File.Delete(sidecar);
-			}
-		}
+        foreach (string suffix in new[] { "-wal", "-shm", "-journal" })
+        {
+            string sidecar = databasePath + suffix;
 
-		return Task.CompletedTask;
-	}
+            if (_fileSystem.File.Exists(sidecar))
+            {
+                _fileSystem.File.Delete(sidecar);
+            }
+        }
 
-	private sealed class Handle : IInstallationDbContextHandle
-	{
-		private readonly InstallationDbContext _context;
+        return Task.CompletedTask;
+    }
 
-		public Handle(InstallationDbContext context) => _context = context;
+    private sealed class Handle : IInstallationDbContextHandle
+    {
+        private readonly InstallationDbContext _context;
 
-		public ValueTask DisposeAsync() => _context.DisposeAsync();
-	}
+        public Handle(InstallationDbContext context) => _context = context;
+
+        public ValueTask DisposeAsync() => _context.DisposeAsync();
+    }
 }

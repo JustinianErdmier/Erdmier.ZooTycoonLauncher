@@ -3,9 +3,11 @@ namespace Erdmier.ZooTycoonLauncher.Application.Installations.Verify;
 /// <summary>Handler for <see cref="VerifyInstallationQuery" />.</summary>
 public sealed class VerifyInstallationHandler : IQueryHandler<VerifyInstallationQuery, ErrorOr<VerificationResult>>
 {
-    private readonly IInstallationRepository _installations;
-    private readonly IInstallationVerifier _verifier;
     private readonly TimeProvider _clock;
+
+    private readonly IInstallationRepository _installations;
+
+    private readonly IInstallationVerifier _verifier;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="installations">Installation repository.</param>
@@ -14,8 +16,8 @@ public sealed class VerifyInstallationHandler : IQueryHandler<VerifyInstallation
     public VerifyInstallationHandler(IInstallationRepository installations, IInstallationVerifier verifier, TimeProvider clock)
     {
         _installations = installations;
-        _verifier = verifier;
-        _clock = clock;
+        _verifier      = verifier;
+        _clock         = clock;
     }
 
     /// <inheritdoc />
@@ -25,16 +27,19 @@ public sealed class VerifyInstallationHandler : IQueryHandler<VerifyInstallation
 
         if (row is null)
         {
-            return Error.NotFound(code: "Installation.NotFound", description: $"No installation with id {query.InstallationId}.");
+            return Error.NotFound(code: "Installation.NotFound", $"No installation with id {query.InstallationId}.");
         }
 
         VerificationResult result = await _verifier.VerifyAsync(row.Path, cancellationToken);
 
-        if (row.HasExe != result.HasExe || row.HasIni != result.HasIni)
+        if (row.HasExe    != result.HasExe
+            || row.HasIni != result.HasIni)
         {
             row.HasExe = result.HasExe;
             row.HasIni = result.HasIni;
-            row.ModifiedUtc = _clock.GetUtcNow().UtcDateTime;
+
+            row.ModifiedUtc = _clock.GetUtcNow()
+                                    .UtcDateTime;
 
             await _installations.UpdateAsync(row, cancellationToken);
         }

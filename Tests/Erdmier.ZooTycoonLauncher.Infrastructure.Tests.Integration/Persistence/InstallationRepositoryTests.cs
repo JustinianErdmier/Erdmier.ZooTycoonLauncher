@@ -1,9 +1,13 @@
+using Microsoft.EntityFrameworkCore.Diagnostics;
+
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration.Persistence;
 
 public sealed class InstallationRepositoryTests : IDisposable
 {
-    private readonly string _databasePath;
     private readonly LauncherDbContext _context;
+
+    private readonly string _databasePath;
+
     private readonly InstallationRepository _repository;
 
     public InstallationRepositoryTests()
@@ -11,9 +15,9 @@ public sealed class InstallationRepositoryTests : IDisposable
         _databasePath = Path.Combine(Path.GetTempPath(), $"zoolauncher-repo-{Guid.NewGuid()}.db");
 
         DbContextOptions<LauncherDbContext> options = new DbContextOptionsBuilder<LauncherDbContext>()
-                                                     .UseSqlite($"Data Source={_databasePath}")
-                                                     .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
-                                                     .Options;
+                                                      .UseSqlite($"Data Source={_databasePath}")
+                                                      .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
+                                                      .Options;
 
         _context = new LauncherDbContext(options);
         _context.Database.Migrate();
@@ -32,74 +36,75 @@ public sealed class InstallationRepositoryTests : IDisposable
         }
     }
 
-    [Fact]
+    [ Fact ]
     public async Task AddAsync_PersistsRow()
     {
-        GameInstallation installation = NewInstallation("Main", @"C:\Games\Zoo Tycoon");
+        GameInstallation installation = NewInstallation(name: "Main", path: @"C:\Games\Zoo Tycoon");
 
         await _repository.AddAsync(installation, CancellationToken.None);
 
         GameInstallation? read = await _repository.GetByIdAsync(installation.Id, CancellationToken.None);
         read.ShouldNotBeNull();
-        read.Name.ShouldBe("Main");
+        read.Name.ShouldBe(expected: "Main");
     }
 
-    [Fact]
+    [ Fact ]
     public async Task GetAllAsync_ReturnsRowsAlphabeticallyCaseInsensitive()
     {
-        await _repository.AddAsync(NewInstallation("zebra",    @"C:\Games\A-zebra"),    CancellationToken.None);
-        await _repository.AddAsync(NewInstallation("Antelope", @"C:\Games\B-antelope"), CancellationToken.None);
-        await _repository.AddAsync(NewInstallation("buffalo",  @"C:\Games\C-buffalo"),  CancellationToken.None);
+        await _repository.AddAsync(NewInstallation(name: "zebra", path: @"C:\Games\A-zebra"), CancellationToken.None);
+        await _repository.AddAsync(NewInstallation(name: "Antelope", path: @"C:\Games\B-antelope"), CancellationToken.None);
+        await _repository.AddAsync(NewInstallation(name: "buffalo", path: @"C:\Games\C-buffalo"), CancellationToken.None);
 
         IReadOnlyList<GameInstallation> all = await _repository.GetAllAsync(CancellationToken.None);
 
-        all.Select(i => i.Name).ShouldBe(["Antelope", "buffalo", "zebra"]);
+        all.Select(i => i.Name)
+           .ShouldBe(["Antelope", "buffalo", "zebra"]);
     }
 
-    [Fact]
+    [ Fact ]
     public async Task ExistsByNameAsync_IsCaseInsensitive_AndHonoursExcludeId()
     {
-        GameInstallation main = NewInstallation("Main", @"C:\Games\Main");
+        GameInstallation main = NewInstallation(name: "Main", path: @"C:\Games\Main");
         await _repository.AddAsync(main, CancellationToken.None);
 
-        (await _repository.ExistsByNameAsync("main", excludeId: null,    CancellationToken.None)).ShouldBeTrue();
-        (await _repository.ExistsByNameAsync("MAIN", excludeId: main.Id, CancellationToken.None)).ShouldBeFalse();
-        (await _repository.ExistsByNameAsync("Other", excludeId: null,   CancellationToken.None)).ShouldBeFalse();
+        (await _repository.ExistsByNameAsync(name: "main", excludeId: null, CancellationToken.None)).ShouldBeTrue();
+        (await _repository.ExistsByNameAsync(name: "MAIN", main.Id, CancellationToken.None)).ShouldBeFalse();
+        (await _repository.ExistsByNameAsync(name: "Other", excludeId: null, CancellationToken.None)).ShouldBeFalse();
     }
 
-    [Fact]
+    [ Fact ]
     public async Task ExistsByPathAsync_IsCaseInsensitive_AndHonoursExcludeId()
     {
-        GameInstallation main = NewInstallation("Main", @"C:\Games\Main");
+        GameInstallation main = NewInstallation(name: "Main", path: @"C:\Games\Main");
         await _repository.AddAsync(main, CancellationToken.None);
 
-        (await _repository.ExistsByPathAsync(@"c:\games\main",     excludeId: null,    CancellationToken.None)).ShouldBeTrue();
-        (await _repository.ExistsByPathAsync(@"C:\GAMES\MAIN",     excludeId: main.Id, CancellationToken.None)).ShouldBeFalse();
-        (await _repository.ExistsByPathAsync(@"C:\Games\Other",    excludeId: null,    CancellationToken.None)).ShouldBeFalse();
+        (await _repository.ExistsByPathAsync(path: @"c:\games\main", excludeId: null, CancellationToken.None)).ShouldBeTrue();
+        (await _repository.ExistsByPathAsync(path: @"C:\GAMES\MAIN", main.Id, CancellationToken.None)).ShouldBeFalse();
+        (await _repository.ExistsByPathAsync(path: @"C:\Games\Other", excludeId: null, CancellationToken.None)).ShouldBeFalse();
     }
 
-    [Fact]
+    [ Fact ]
     public async Task UpdateAsync_PersistsMutableFields()
     {
-        GameInstallation row = NewInstallation("Original", @"C:\Games\Original");
+        GameInstallation row = NewInstallation(name: "Original", path: @"C:\Games\Original");
         await _repository.AddAsync(row, CancellationToken.None);
 
-        row.Name = "Renamed";
-        row.HasExe = false;
+        row.Name        = "Renamed";
+        row.HasExe      = false;
         row.ModifiedUtc = DateTime.UtcNow;
         await _repository.UpdateAsync(row, CancellationToken.None);
 
         GameInstallation? read = await _repository.GetByIdAsync(row.Id, CancellationToken.None);
         read.ShouldNotBeNull();
-        read.Name.ShouldBe("Renamed");
+        read.Name.ShouldBe(expected: "Renamed");
         read.HasExe.ShouldBeFalse();
         read.ModifiedUtc.ShouldNotBeNull();
     }
 
-    [Fact]
+    [ Fact ]
     public async Task DeleteAsync_RemovesRow_AndIsIdempotent()
     {
-        GameInstallation row = NewInstallation("Doomed", @"C:\Games\Doomed");
+        GameInstallation row = NewInstallation(name: "Doomed", path: @"C:\Games\Doomed");
         await _repository.AddAsync(row, CancellationToken.None);
 
         await _repository.DeleteAsync(row.Id, CancellationToken.None);
@@ -108,33 +113,34 @@ public sealed class InstallationRepositoryTests : IDisposable
         await Should.NotThrowAsync(async () => await _repository.DeleteAsync(row.Id, CancellationToken.None));
     }
 
-    [Fact]
+    [ Fact ]
     public async Task FindDefaultPromotionCandidateAsync_ReturnsAlphabeticallyFirstByCaseInsensitiveName()
     {
-        await _repository.AddAsync(NewInstallation("zebra",    @"C:\Games\zebra"),    CancellationToken.None);
-        await _repository.AddAsync(NewInstallation("antelope", @"C:\Games\antelope"), CancellationToken.None);
-        await _repository.AddAsync(NewInstallation("Buffalo",  @"C:\Games\Buffalo"),  CancellationToken.None);
+        await _repository.AddAsync(NewInstallation(name: "zebra", path: @"C:\Games\zebra"), CancellationToken.None);
+        await _repository.AddAsync(NewInstallation(name: "antelope", path: @"C:\Games\antelope"), CancellationToken.None);
+        await _repository.AddAsync(NewInstallation(name: "Buffalo", path: @"C:\Games\Buffalo"), CancellationToken.None);
 
         GameInstallation? winner = await _repository.FindDefaultPromotionCandidateAsync(CancellationToken.None);
 
         winner.ShouldNotBeNull();
-        winner.Name.ShouldBe("antelope");
+        winner.Name.ShouldBe(expected: "antelope");
     }
 
-    [Fact]
+    [ Fact ]
     public async Task FindDefaultPromotionCandidateAsync_ReturnsNullWhenTableEmpty()
     {
         GameInstallation? winner = await _repository.FindDefaultPromotionCandidateAsync(CancellationToken.None);
         winner.ShouldBeNull();
     }
 
-    private static GameInstallation NewInstallation(string name, string path) => new()
-    {
-        Id = Guid.CreateVersion7(),
-        Name = name,
-        Path = path,
-        HasExe = true,
-        HasIni = true,
-        AddedUtc = DateTime.UtcNow,
-    };
+    private static GameInstallation NewInstallation(string name, string path)
+        => new()
+        {
+            Id       = Guid.CreateVersion7(),
+            Name     = name,
+            Path     = path,
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
 }

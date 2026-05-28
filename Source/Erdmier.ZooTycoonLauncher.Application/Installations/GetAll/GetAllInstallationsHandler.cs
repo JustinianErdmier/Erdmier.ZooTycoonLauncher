@@ -4,6 +4,7 @@ namespace Erdmier.ZooTycoonLauncher.Application.Installations.GetAll;
 public sealed class GetAllInstallationsHandler : IQueryHandler<GetAllInstallationsQuery, ErrorOr<IReadOnlyList<InstallationSummary>>>
 {
     private readonly IInstallationRepository _installations;
+
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
@@ -12,25 +13,24 @@ public sealed class GetAllInstallationsHandler : IQueryHandler<GetAllInstallatio
     public GetAllInstallationsHandler(IInstallationRepository installations, ILauncherSettingsRepository settings)
     {
         _installations = installations;
-        _settings = settings;
+        _settings      = settings;
     }
 
     /// <inheritdoc />
     public async ValueTask<ErrorOr<IReadOnlyList<InstallationSummary>>> Handle(GetAllInstallationsQuery query, CancellationToken cancellationToken)
     {
-        IReadOnlyList<GameInstallation> rows = await _installations.GetAllAsync(cancellationToken);
-        LauncherSettings settings = await _settings.GetAsync(cancellationToken);
+        IReadOnlyList<GameInstallation> rows     = await _installations.GetAllAsync(cancellationToken);
+        LauncherSettings                settings = await _settings.GetAsync(cancellationToken);
 
-        IReadOnlyList<InstallationSummary> summaries = rows.Select(row => new InstallationSummary(
-                                                               Id:            row.Id,
-                                                               Name:          row.Name,
-                                                               Path:          row.Path,
-                                                               Validity:      row.Validity,
-                                                               IsDefault:     settings.DefaultInstallationId == row.Id,
-                                                               AddedUtc:      row.AddedUtc,
-                                                               ModifiedUtc:   row.ModifiedUtc,
-                                                               LastPlayedUtc: row.LastPlayedUtc,
-                                                               LastOpenedUtc: row.LastOpenedUtc))
+        IReadOnlyList<InstallationSummary> summaries = rows.Select(row => new InstallationSummary(row.Id,
+                                                                                                  row.Name,
+                                                                                                  row.Path,
+                                                                                                  row.Validity,
+                                                                                                  settings.DefaultInstallationId == row.Id,
+                                                                                                  row.AddedUtc,
+                                                                                                  row.ModifiedUtc,
+                                                                                                  row.LastPlayedUtc,
+                                                                                                  row.LastOpenedUtc))
                                                            .ToList();
 
         return ErrorOrFactory.From(summaries);

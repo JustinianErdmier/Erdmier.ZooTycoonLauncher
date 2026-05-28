@@ -4,13 +4,14 @@ namespace Erdmier.ZooTycoonLauncher.Application.Installations.SetDefault;
 public sealed class SetDefaultInstallationHandler : ICommandHandler<SetDefaultInstallationCommand, ErrorOr<Success>>
 {
     private readonly IInstallationRepository _installations;
+
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
     public SetDefaultInstallationHandler(IInstallationRepository installations, ILauncherSettingsRepository settings)
     {
         _installations = installations;
-        _settings = settings;
+        _settings      = settings;
     }
 
     /// <inheritdoc />
@@ -20,7 +21,7 @@ public sealed class SetDefaultInstallationHandler : ICommandHandler<SetDefaultIn
 
         if (row is null)
         {
-            return Error.NotFound(code: "Installation.NotFound", description: $"No installation with id {command.InstallationId}.");
+            return Error.NotFound(code: "Installation.NotFound", $"No installation with id {command.InstallationId}.");
         }
 
         LauncherSettings settings = await _settings.GetAsync(cancellationToken);

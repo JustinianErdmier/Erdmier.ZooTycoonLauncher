@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Launcher.Configurations;
 
 /// <summary>EF Core configuration for <see cref="LauncherSettings" /> — single row enforced by a <c>CHECK</c> constraint.</summary>

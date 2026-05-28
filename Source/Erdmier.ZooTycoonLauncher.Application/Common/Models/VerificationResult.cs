@@ -1,8 +1,6 @@
 namespace Erdmier.ZooTycoonLauncher.Application.Common.Models;
 
-/// <summary>
-/// Outcome of <see cref="IInstallationVerifier.VerifyAsync" /> — the <c>HasExe</c> / <c>HasIni</c> flags computed against the supplied path.
-/// </summary>
+/// <summary>Outcome of <see cref="IInstallationVerifier.VerifyAsync" /> — the <c>HasExe</c> / <c>HasIni</c> flags computed against the supplied path.</summary>
 /// <param name="DirectoryExists"><see langword="true" /> when the supplied directory exists on disk.</param>
 /// <param name="HasExe"><see langword="true" /> when <c>zoo.exe</c> is present in the directory.</param>
 /// <param name="HasIni"><see langword="true" /> when <c>zoo.ini</c> is present in the directory.</param>

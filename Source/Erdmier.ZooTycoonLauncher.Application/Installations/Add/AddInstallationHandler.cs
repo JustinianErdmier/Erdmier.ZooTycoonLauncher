@@ -3,28 +3,32 @@ namespace Erdmier.ZooTycoonLauncher.Application.Installations.Add;
 /// <summary>Handler for <see cref="AddInstallationCommand" />. Implements SDD §7.2.1 steps 1-5 with deferred snapshot capture.</summary>
 public sealed class AddInstallationHandler : ICommandHandler<AddInstallationCommand, ErrorOr<AddInstallationResult>>
 {
-    private readonly IInstallationRepository _installations;
-    private readonly ILauncherSettingsRepository _settings;
-    private readonly IInstallationVerifier _verifier;
-    private readonly IInstallationDbContextFactory _dbFactory;
-    private readonly IIniSnapshotService _snapshots;
     private readonly TimeProvider _clock;
 
+    private readonly IInstallationDbContextFactory _dbFactory;
+
+    private readonly IInstallationRepository _installations;
+
+    private readonly ILauncherSettingsRepository _settings;
+
+    private readonly IIniSnapshotService _snapshots;
+
+    private readonly IInstallationVerifier _verifier;
+
     /// <summary>Initialises a new instance.</summary>
-    public AddInstallationHandler(
-        IInstallationRepository installations,
-        ILauncherSettingsRepository settings,
-        IInstallationVerifier verifier,
-        IInstallationDbContextFactory dbFactory,
-        IIniSnapshotService snapshots,
-        TimeProvider clock)
+    public AddInstallationHandler(IInstallationRepository       installations,
+                                  ILauncherSettingsRepository   settings,
+                                  IInstallationVerifier         verifier,
+                                  IInstallationDbContextFactory dbFactory,
+                                  IIniSnapshotService           snapshots,
+                                  TimeProvider                  clock)
     {
         _installations = installations;
-        _settings = settings;
-        _verifier = verifier;
-        _dbFactory = dbFactory;
-        _snapshots = snapshots;
-        _clock = clock;
+        _settings      = settings;
+        _verifier      = verifier;
+        _dbFactory     = dbFactory;
+        _snapshots     = snapshots;
+        _clock         = clock;
     }
 
     /// <inheritdoc />
@@ -36,21 +40,22 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
 
         if (!verification.DirectoryExists)
         {
-            return Error.Validation(code: "Installation.PathMissing", description: $"The folder \"{command.Path}\" does not exist.");
+            return Error.Validation(code: "Installation.PathMissing", $"The folder \"{command.Path}\" does not exist.");
         }
 
-        IReadOnlyList<GameInstallation> existing = await _installations.GetAllAsync(cancellationToken);
-        bool isFirst = existing.Count == 0;
-        bool becameDefault = command.MakeDefault || isFirst;
+        IReadOnlyList<GameInstallation> existing      = await _installations.GetAllAsync(cancellationToken);
+        bool                            isFirst       = existing.Count == 0;
+        bool                            becameDefault = command.MakeDefault || isFirst;
 
         GameInstallation row = new()
         {
-            Id = Guid.CreateVersion7(),
-            Name = trimmedName,
-            Path = command.Path,
+            Id     = Guid.CreateVersion7(),
+            Name   = trimmedName,
+            Path   = command.Path,
             HasExe = verification.HasExe,
             HasIni = verification.HasIni,
-            AddedUtc = _clock.GetUtcNow().UtcDateTime,
+            AddedUtc = _clock.GetUtcNow()
+                             .UtcDateTime
         };
 
         await _installations.AddAsync(row, cancellationToken);

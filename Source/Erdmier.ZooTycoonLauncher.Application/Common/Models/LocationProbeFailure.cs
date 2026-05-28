@@ -10,5 +10,5 @@ public enum LocationProbeFailure
     DirectoryMissing = 1,
 
     /// <summary>The candidate directory exists but does not contain <c>zoo.exe</c>.</summary>
-    NoExe = 2,
+    NoExe = 2
 }

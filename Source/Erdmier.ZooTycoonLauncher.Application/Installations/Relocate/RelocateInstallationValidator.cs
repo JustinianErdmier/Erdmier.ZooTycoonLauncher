@@ -13,9 +13,9 @@ public sealed class RelocateInstallationValidator : AbstractValidator<RelocateIn
 
         RuleFor(c => c.NewPath)
             .NotEmpty()
-            .WithMessage("Path is required.")
+            .WithMessage(errorMessage: "Path is required.")
             .MustAsync((command, path, cancellationToken) => PathIsUniqueAsync(command, path, cancellationToken))
-            .WithMessage("Another installation already uses this folder.");
+            .WithMessage(errorMessage: "Another installation already uses this folder.");
     }
 
     private async Task<bool> PathIsUniqueAsync(RelocateInstallationCommand command, string path, CancellationToken cancellationToken)
@@ -25,6 +25,6 @@ public sealed class RelocateInstallationValidator : AbstractValidator<RelocateIn
             return true;
         }
 
-        return !await _installations.ExistsByPathAsync(path, excludeId: command.InstallationId, cancellationToken);
+        return !await _installations.ExistsByPathAsync(path, command.InstallationId, cancellationToken);
     }
 }

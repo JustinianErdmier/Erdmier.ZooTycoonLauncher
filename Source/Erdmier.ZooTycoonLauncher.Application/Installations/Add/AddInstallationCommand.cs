@@ -1,8 +1,8 @@
 namespace Erdmier.ZooTycoonLauncher.Application.Installations.Add;
 
 /// <summary>
-/// Persists a new <see cref="GameInstallation" />, creates the per-installation database, runs migrations, and (deferred to the
-/// INI Config slice) captures the <c>Original</c> snapshot. See SDD §7.2.1.
+///     Persists a new <see cref="GameInstallation" />, creates the per-installation database, runs migrations, and (deferred to the INI Config slice) captures the
+///     <c>Original</c> snapshot. See SDD §7.2.1.
 /// </summary>
 /// <param name="Name">User-visible name; trimmed by the handler; case-insensitive uniqueness enforced.</param>
 /// <param name="Path">Absolute installation directory.</param>

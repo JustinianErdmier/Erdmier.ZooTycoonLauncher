@@ -1,5 +1,7 @@
 using System.Data.Common;
 
+using Microsoft.EntityFrameworkCore.Diagnostics;
+
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration.Persistence;
 
 public sealed class LauncherDbContextTests : IDisposable
@@ -84,7 +86,7 @@ public sealed class LauncherDbContextTests : IDisposable
     {
         DbContextOptions<LauncherDbContext> options = new DbContextOptionsBuilder<LauncherDbContext>()
                                                       .UseSqlite($"Data Source={_databasePath}")
-                                                      .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
+                                                      .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
                                                       .Options;
 
         return new LauncherDbContext(options);

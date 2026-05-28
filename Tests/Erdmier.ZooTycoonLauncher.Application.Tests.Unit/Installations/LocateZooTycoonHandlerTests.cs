@@ -2,15 +2,18 @@ namespace Erdmier.ZooTycoonLauncher.Application.Tests.Unit.Installations;
 
 public sealed class LocateZooTycoonHandlerTests
 {
-    [Fact]
+    [ Fact ]
     public async Task Handle_ReturnsLocatorResult()
     {
         IInstallationLocator locator = Substitute.For<IInstallationLocator>();
+
         locator.LocateAsync(Arg.Any<string?>(), Arg.Any<CancellationToken>())
-               .Returns(new LocatedDirectory(@"C:\Games\Found", new[] { new LocationProbeAttempt("S", @"C:\Games\Found", null) }));
+               .Returns(new LocatedDirectory(Path: @"C:\Games\Found", new[] { new LocationProbeAttempt(Source: "S", CandidatePath: @"C:\Games\Found", Failure: null) }));
 
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
-        settings.GetAsync(Arg.Any<CancellationToken>()).Returns(new LauncherSettings());
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings());
 
         LocateZooTycoonHandler handler = new(locator, settings);
 
@@ -18,6 +21,6 @@ public sealed class LocateZooTycoonHandlerTests
 
         result.IsError.ShouldBeFalse();
         result.Value.Found.ShouldBeTrue();
-        result.Value.Path.ShouldBe(@"C:\Games\Found");
+        result.Value.Path.ShouldBe(expected: @"C:\Games\Found");
     }
 }

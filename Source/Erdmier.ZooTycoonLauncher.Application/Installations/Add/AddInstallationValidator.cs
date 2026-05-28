@@ -13,17 +13,17 @@ public sealed class AddInstallationValidator : AbstractValidator<AddInstallation
 
         RuleFor(c => c.Name)
             .NotEmpty()
-            .WithMessage("Name is required.")
+            .WithMessage(errorMessage: "Name is required.")
             .Must(name => !string.IsNullOrWhiteSpace(name?.Trim()))
-            .WithMessage("Name cannot be whitespace.")
+            .WithMessage(errorMessage: "Name cannot be whitespace.")
             .MustAsync(NameIsUniqueAsync)
-            .WithMessage("Another installation already uses this name.");
+            .WithMessage(errorMessage: "Another installation already uses this name.");
 
         RuleFor(c => c.Path)
             .NotEmpty()
-            .WithMessage("Path is required.")
+            .WithMessage(errorMessage: "Path is required.")
             .MustAsync(PathIsUniqueAsync)
-            .WithMessage("Another installation already uses this folder.");
+            .WithMessage(errorMessage: "Another installation already uses this folder.");
     }
 
     private async Task<bool> NameIsUniqueAsync(string name, CancellationToken cancellationToken)

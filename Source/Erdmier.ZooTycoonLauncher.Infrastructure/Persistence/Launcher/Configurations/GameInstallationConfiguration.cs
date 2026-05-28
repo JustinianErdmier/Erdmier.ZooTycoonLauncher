@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Launcher.Configurations;
 
 /// <summary>EF Core configuration for <see cref="GameInstallation" /> — case-insensitive uniqueness on <c>Name</c> and <c>Path</c>.</summary>

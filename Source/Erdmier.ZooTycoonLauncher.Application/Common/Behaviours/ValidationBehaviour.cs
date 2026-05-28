@@ -1,9 +1,8 @@
 namespace Erdmier.ZooTycoonLauncher.Application.Common.Behaviours;
 
 /// <summary>
-/// Mediator pipeline behaviour that runs every registered <see cref="IValidator{T}" /> for the incoming message before
-/// invoking the next handler. When any validator produces failures, the pipeline short-circuits with an <see cref="ErrorOr{T}" />
-/// value carrying one validation <see cref="Error" /> per failure.
+///     Mediator pipeline behaviour that runs every registered <see cref="IValidator{T}" /> for the incoming message before invoking the next handler. When any validator produces
+///     failures, the pipeline short-circuits with an <see cref="ErrorOr{T}" /> value carrying one validation <see cref="Error" /> per failure.
 /// </summary>
 /// <typeparam name="TMessage">The Mediator message type (command or query).</typeparam>
 /// <typeparam name="TResponse">The handler's response type; must be <see cref="IErrorOr" /> so we can short-circuit cleanly.</typeparam>
@@ -31,7 +30,7 @@ public sealed class ValidationBehaviour<TMessage, TResponse> : IPipelineBehavior
 
         List<Error> errors = results.SelectMany(r => r.Errors)
                                     .Where(f => f is not null)
-                                    .Select(f => Error.Validation(code: f.PropertyName, description: f.ErrorMessage))
+                                    .Select(f => Error.Validation(f.PropertyName, f.ErrorMessage))
                                     .ToList();
 
         if (errors.Count == 0)

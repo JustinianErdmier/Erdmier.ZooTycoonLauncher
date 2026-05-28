@@ -1,12 +1,10 @@
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Discovery;
 
-/// <summary>
-/// File-system-backed implementation of <see cref="IInstallationVerifier" />. Probes the supplied directory for
-/// <c>zoo.exe</c> and <c>zoo.ini</c>.
-/// </summary>
+/// <summary>File-system-backed implementation of <see cref="IInstallationVerifier" />. Probes the supplied directory for <c>zoo.exe</c> and <c>zoo.ini</c>.</summary>
 public sealed class InstallationVerifier : IInstallationVerifier
 {
     private const string ExeFileName = "zoo.exe";
+
     private const string IniFileName = "zoo.ini";
 
     private readonly IFileSystem _fileSystem;
@@ -26,6 +24,6 @@ public sealed class InstallationVerifier : IInstallationVerifier
         bool hasExe = _fileSystem.File.Exists(_fileSystem.Path.Combine(path, ExeFileName));
         bool hasIni = _fileSystem.File.Exists(_fileSystem.Path.Combine(path, IniFileName));
 
-        return Task.FromResult(new VerificationResult(DirectoryExists: true, HasExe: hasExe, HasIni: hasIni));
+        return Task.FromResult(new VerificationResult(DirectoryExists: true, hasExe, hasIni));
     }
 }

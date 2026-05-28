@@ -20,8 +20,8 @@ public sealed class InstallationRepository : IInstallationRepository
     }
 
     /// <inheritdoc />
-    public Task<GameInstallation?> GetByIdAsync(Guid installationId, CancellationToken cancellationToken) =>
-        _context.GameInstallations.FirstOrDefaultAsync(i => i.Id == installationId, cancellationToken);
+    public Task<GameInstallation?> GetByIdAsync(Guid installationId, CancellationToken cancellationToken)
+        => _context.GameInstallations.FirstOrDefaultAsync(i => i.Id == installationId, cancellationToken);
 
     /// <inheritdoc />
     public async Task AddAsync(GameInstallation installation, CancellationToken cancellationToken)
@@ -55,20 +55,20 @@ public sealed class InstallationRepository : IInstallationRepository
     }
 
     /// <inheritdoc />
-    public Task<bool> ExistsByNameAsync(string name, Guid? excludeId, CancellationToken cancellationToken) =>
-        _context.GameInstallations
-                .Where(i => excludeId == null || i.Id != excludeId)
-                .AnyAsync(i => i.Name == name, cancellationToken);
+    public Task<bool> ExistsByNameAsync(string name, Guid? excludeId, CancellationToken cancellationToken)
+        => _context.GameInstallations
+                   .Where(i => excludeId == null || i.Id != excludeId)
+                   .AnyAsync(i => i.Name == name, cancellationToken);
 
     /// <inheritdoc />
-    public Task<bool> ExistsByPathAsync(string path, Guid? excludeId, CancellationToken cancellationToken) =>
-        _context.GameInstallations
-                .Where(i => excludeId == null || i.Id != excludeId)
-                .AnyAsync(i => i.Path == path, cancellationToken);
+    public Task<bool> ExistsByPathAsync(string path, Guid? excludeId, CancellationToken cancellationToken)
+        => _context.GameInstallations
+                   .Where(i => excludeId == null || i.Id != excludeId)
+                   .AnyAsync(i => i.Path == path, cancellationToken);
 
     /// <inheritdoc />
-    public Task<GameInstallation?> FindDefaultPromotionCandidateAsync(CancellationToken cancellationToken) =>
-        _context.GameInstallations
-                .OrderBy(i => i.Name.ToLower())
-                .FirstOrDefaultAsync(cancellationToken);
+    public Task<GameInstallation?> FindDefaultPromotionCandidateAsync(CancellationToken cancellationToken)
+        => _context.GameInstallations
+                   .OrderBy(i => i.Name.ToLower())
+                   .FirstOrDefaultAsync(cancellationToken);
 }

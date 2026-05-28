@@ -2,26 +2,29 @@ namespace Erdmier.ZooTycoonLauncher.Application.Tests.Unit.Installations;
 
 public sealed class VerifyInstallationHandlerTests
 {
-    [Fact]
+    [ Fact ]
     public async Task Handle_PersistsFlagChange_AndStampsModifiedUtc()
     {
-        DateTime fakeNow = new(2026, 5, 27, 12, 0, 0, DateTimeKind.Utc);
-        FakeTimeProvider clock = new(fakeNow);
+        DateTime         fakeNow = new(year: 2026, month: 5, day: 27, hour: 12, minute: 0, second: 0, DateTimeKind.Utc);
+        FakeTimeProvider clock   = new(fakeNow);
 
         GameInstallation row = new()
         {
-            Id = Guid.CreateVersion7(),
-            Name = "Main",
-            Path = @"C:\Games\Main",
-            HasExe = false,
-            HasIni = false,
-            AddedUtc = DateTime.UtcNow,
+            Id       = Guid.CreateVersion7(),
+            Name     = "Main",
+            Path     = @"C:\Games\Main",
+            HasExe   = false,
+            HasIni   = false,
+            AddedUtc = DateTime.UtcNow
         };
 
         IInstallationRepository installations = Substitute.For<IInstallationRepository>();
-        installations.GetByIdAsync(row.Id, Arg.Any<CancellationToken>()).Returns(row);
+
+        installations.GetByIdAsync(row.Id, Arg.Any<CancellationToken>())
+                     .Returns(row);
 
         IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
         verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
                 .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
 
@@ -33,26 +36,31 @@ public sealed class VerifyInstallationHandlerTests
         row.HasExe.ShouldBeTrue();
         row.HasIni.ShouldBeTrue();
         row.ModifiedUtc.ShouldBe(fakeNow);
-        await installations.Received(1).UpdateAsync(row, Arg.Any<CancellationToken>());
+
+        await installations.Received(requiredNumberOfCalls: 1)
+                           .UpdateAsync(row, Arg.Any<CancellationToken>());
     }
 
-    [Fact]
+    [ Fact ]
     public async Task Handle_NoPersist_WhenFlagsUnchanged()
     {
         GameInstallation row = new()
         {
-            Id = Guid.CreateVersion7(),
-            Name = "Main",
-            Path = @"C:\Games\Main",
-            HasExe = true,
-            HasIni = true,
-            AddedUtc = DateTime.UtcNow,
+            Id       = Guid.CreateVersion7(),
+            Name     = "Main",
+            Path     = @"C:\Games\Main",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
         };
 
         IInstallationRepository installations = Substitute.For<IInstallationRepository>();
-        installations.GetByIdAsync(row.Id, Arg.Any<CancellationToken>()).Returns(row);
+
+        installations.GetByIdAsync(row.Id, Arg.Any<CancellationToken>())
+                     .Returns(row);
 
         IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
         verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
                 .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
 
@@ -60,7 +68,8 @@ public sealed class VerifyInstallationHandlerTests
 
         await handler.Handle(new VerifyInstallationQuery(row.Id), CancellationToken.None);
 
-        await installations.DidNotReceive().UpdateAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>());
+        await installations.DidNotReceive()
+                           .UpdateAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>());
     }
 }
 

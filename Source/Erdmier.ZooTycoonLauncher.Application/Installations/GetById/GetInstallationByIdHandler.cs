@@ -4,6 +4,7 @@ namespace Erdmier.ZooTycoonLauncher.Application.Installations.GetById;
 public sealed class GetInstallationByIdHandler : IQueryHandler<GetInstallationByIdQuery, ErrorOr<InstallationSummary>>
 {
     private readonly IInstallationRepository _installations;
+
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
@@ -12,7 +13,7 @@ public sealed class GetInstallationByIdHandler : IQueryHandler<GetInstallationBy
     public GetInstallationByIdHandler(IInstallationRepository installations, ILauncherSettingsRepository settings)
     {
         _installations = installations;
-        _settings = settings;
+        _settings      = settings;
     }
 
     /// <inheritdoc />
@@ -22,20 +23,19 @@ public sealed class GetInstallationByIdHandler : IQueryHandler<GetInstallationBy
 
         if (row is null)
         {
-            return Error.NotFound(code: "Installation.NotFound", description: $"No installation with id {query.InstallationId}.");
+            return Error.NotFound(code: "Installation.NotFound", $"No installation with id {query.InstallationId}.");
         }
 
         LauncherSettings settings = await _settings.GetAsync(cancellationToken);
 
-        return new InstallationSummary(
-            Id:            row.Id,
-            Name:          row.Name,
-            Path:          row.Path,
-            Validity:      row.Validity,
-            IsDefault:     settings.DefaultInstallationId == row.Id,
-            AddedUtc:      row.AddedUtc,
-            ModifiedUtc:   row.ModifiedUtc,
-            LastPlayedUtc: row.LastPlayedUtc,
-            LastOpenedUtc: row.LastOpenedUtc);
+        return new InstallationSummary(row.Id,
+                                       row.Name,
+                                       row.Path,
+                                       row.Validity,
+                                       settings.DefaultInstallationId == row.Id,
+                                       row.AddedUtc,
+                                       row.ModifiedUtc,
+                                       row.LastPlayedUtc,
+                                       row.LastOpenedUtc);
     }
 }

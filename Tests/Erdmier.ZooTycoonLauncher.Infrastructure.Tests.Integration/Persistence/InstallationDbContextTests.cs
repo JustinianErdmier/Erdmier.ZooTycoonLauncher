@@ -1,13 +1,14 @@
+using System.Data.Common;
+
+using Microsoft.EntityFrameworkCore.Diagnostics;
+
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration.Persistence;
 
 public sealed class InstallationDbContextTests : IDisposable
 {
     private readonly string _databasePath;
 
-    public InstallationDbContextTests()
-    {
-        _databasePath = Path.Combine(Path.GetTempPath(), $"zoolauncher-install-test-{Guid.NewGuid()}.db");
-    }
+    public InstallationDbContextTests() => _databasePath = Path.Combine(Path.GetTempPath(), $"zoolauncher-install-test-{Guid.NewGuid()}.db");
 
     public void Dispose()
     {
@@ -26,8 +27,8 @@ public sealed class InstallationDbContextTests : IDisposable
 
         await context.Database.MigrateAsync();
 
-        bool snapshotsExists = await TableExistsAsync(context, "Snapshots");
-        bool valuesExists = await TableExistsAsync(context, "IniValues");
+        bool snapshotsExists = await TableExistsAsync(context, tableName: "Snapshots");
+        bool valuesExists    = await TableExistsAsync(context, tableName: "IniValues");
 
         snapshotsExists.ShouldBeTrue();
         valuesExists.ShouldBeTrue();
@@ -43,33 +44,35 @@ public sealed class InstallationDbContextTests : IDisposable
 
         IniSnapshot snapshot = new()
         {
-            Id = snapshotId,
-            Kind = IniSnapshotKind.Original,
-            Trigger = IniSnapshotTrigger.OriginalImport,
-            CapturedUtc = DateTime.UtcNow,
-            StructureBlob = "[user]\n",
+            Id            = snapshotId,
+            Kind          = IniSnapshotKind.Original,
+            Trigger       = IniSnapshotTrigger.OriginalImport,
+            CapturedUtc   = DateTime.UtcNow,
+            StructureBlob = "[user]\n"
         };
 
         context.Snapshots.Add(snapshot);
+
         context.IniValues.Add(new IniValue
         {
             SnapshotId = snapshotId,
-            Section = "user",
-            Key = "ShowToolTips",
-            Value = "1",
-            ValueKind = IniValueKind.Bool,
-            Source = IniValueSource.OriginalImport,
+            Section    = "user",
+            Key        = "ShowToolTips",
+            Value      = "1",
+            ValueKind  = IniValueKind.Bool,
+            Source     = IniValueSource.OriginalImport
         });
+
         await context.SaveChangesAsync();
 
         context.IniValues.Add(new IniValue
         {
             SnapshotId = snapshotId,
-            Section = "USER",
-            Key = "showtooltips",
-            Value = "0",
-            ValueKind = IniValueKind.Bool,
-            Source = IniValueSource.OriginalImport,
+            Section    = "USER",
+            Key        = "showtooltips",
+            Value      = "0",
+            ValueKind  = IniValueKind.Bool,
+            Source     = IniValueSource.OriginalImport
         });
 
         await Should.ThrowAsync<DbUpdateException>(async () => await context.SaveChangesAsync());
@@ -78,23 +81,25 @@ public sealed class InstallationDbContextTests : IDisposable
     private InstallationDbContext BuildContext()
     {
         DbContextOptions<InstallationDbContext> options = new DbContextOptionsBuilder<InstallationDbContext>()
-                                                         .UseSqlite($"Data Source={_databasePath}")
-                                                         .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
-                                                         .Options;
+                                                          .UseSqlite($"Data Source={_databasePath}")
+                                                          .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
+                                                          .Options;
+
         return new InstallationDbContext(options);
     }
 
     private static async Task<bool> TableExistsAsync(InstallationDbContext context, string tableName)
     {
-        await using System.Data.Common.DbConnection connection = context.Database.GetDbConnection();
+        await using DbConnection connection = context.Database.GetDbConnection();
         await connection.OpenAsync();
-        await using System.Data.Common.DbCommand command = connection.CreateCommand();
+        await using DbCommand command = connection.CreateCommand();
         command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=$name";
-        System.Data.Common.DbParameter parameter = command.CreateParameter();
+        DbParameter parameter = command.CreateParameter();
         parameter.ParameterName = "$name";
-        parameter.Value = tableName;
+        parameter.Value         = tableName;
         command.Parameters.Add(parameter);
         object? result = await command.ExecuteScalarAsync();
+
         return result is not null;
     }
 }

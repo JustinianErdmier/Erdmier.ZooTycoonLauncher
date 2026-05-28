@@ -2,7 +2,7 @@ namespace Erdmier.ZooTycoonLauncher.Application.Tests.Unit.Installations;
 
 public sealed class AddInstallationValidatorTests
 {
-    [Fact]
+    [ Fact ]
     public async Task RejectsBlankName()
     {
         IInstallationRepository installations = Substitute.For<IInstallationRepository>();
@@ -15,11 +15,13 @@ public sealed class AddInstallationValidatorTests
         result.Errors.ShouldContain(f => f.PropertyName == "Name");
     }
 
-    [Fact]
+    [ Fact ]
     public async Task RejectsDuplicateName()
     {
         IInstallationRepository installations = Substitute.For<IInstallationRepository>();
-        installations.ExistsByNameAsync("Main", null, Arg.Any<CancellationToken>()).Returns(true);
+
+        installations.ExistsByNameAsync(name: "Main", excludeId: null, Arg.Any<CancellationToken>())
+                     .Returns(returnThis: true);
 
         AddInstallationValidator validator = new(installations);
 
@@ -29,7 +31,7 @@ public sealed class AddInstallationValidatorTests
         result.Errors.ShouldContain(f => f.PropertyName == "Name");
     }
 
-    [Fact]
+    [ Fact ]
     public async Task AcceptsUniqueRow()
     {
         IInstallationRepository installations = Substitute.For<IInstallationRepository>();

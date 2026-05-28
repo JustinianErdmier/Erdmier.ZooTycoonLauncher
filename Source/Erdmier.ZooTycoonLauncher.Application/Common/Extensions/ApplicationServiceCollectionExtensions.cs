@@ -6,17 +6,14 @@ namespace Erdmier.ZooTycoonLauncher.Application.Common.Extensions;
 public static class ApplicationServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers <c>Mediator</c> (source-generated dispatcher), every <see cref="IValidator{T}" /> in the Application
-    /// assembly, and the <see cref="ValidationBehaviour{TMessage,TResponse}" /> pipeline.
+    ///     Registers <c>Mediator</c> (source-generated dispatcher), every <see cref="IValidator{T}" /> in the Application assembly, and the
+    ///     <see cref="ValidationBehaviour{TMessage,TResponse}" /> pipeline.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection, for chaining.</returns>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddMediator(options =>
-        {
-            options.ServiceLifetime = ServiceLifetime.Scoped;
-        });
+        services.AddMediator(options => { options.ServiceLifetime = ServiceLifetime.Scoped; });
 
         services.AddValidatorsFromAssembly(typeof(ApplicationServiceCollectionExtensions).Assembly, includeInternalTypes: true);
 

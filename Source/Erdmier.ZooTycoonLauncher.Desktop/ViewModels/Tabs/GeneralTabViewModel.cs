@@ -1,5 +1,3 @@
-using Erdmier.ZooTycoonLauncher.Domain.Installations;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 
 /// <summary>View model for the General tab inside the ReadyToPlay and CannotPlay states. Skeleton — content lands in the Launch Game and Screen Modes slices.</summary>

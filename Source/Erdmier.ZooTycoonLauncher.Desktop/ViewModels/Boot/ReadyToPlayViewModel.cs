@@ -1,5 +1,3 @@
-using Erdmier.ZooTycoonLauncher.Domain.Installations;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
 /// <summary>View model for the ReadyToPlay state — the active installation is valid and the game can be launched.</summary>

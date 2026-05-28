@@ -12,6 +12,7 @@ global using Mediator;
 
 global using Erdmier.ZooTycoonLauncher.Application.Common.Extensions;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Models;
+global using Erdmier.ZooTycoonLauncher.Domain.Installations;
 global using Erdmier.ZooTycoonLauncher.Desktop.Composition;
 global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels;
 global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;

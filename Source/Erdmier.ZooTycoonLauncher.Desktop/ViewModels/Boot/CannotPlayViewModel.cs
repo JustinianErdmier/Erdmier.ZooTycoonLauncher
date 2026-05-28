@@ -1,5 +1,3 @@
-using Erdmier.ZooTycoonLauncher.Domain.Installations;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
 /// <summary>View model for the CannotPlay state — the active installation is invalid or synchronisation failed.</summary>

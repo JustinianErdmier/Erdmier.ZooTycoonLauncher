@@ -16,6 +16,8 @@ public sealed class NullIniSnapshotService : IIniSnapshotService
 	/// <inheritdoc />
 	public Task<ErrorOr<Success>> CaptureOriginalAsync(GameInstallation installation, CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
+
 		if (installation.HasIni)
 		{
 			_logger.Warning(

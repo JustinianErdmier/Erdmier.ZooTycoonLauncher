@@ -38,6 +38,7 @@ public sealed class InstallationDbContextFactory : IInstallationDbContextFactory
 	/// <inheritdoc />
 	public Task DeleteAsync(Guid installationId, CancellationToken cancellationToken)
 	{
+		// cancellationToken is not observed — SqliteConnection.ClearAllPools() and IFileSystem.File.Delete are synchronous.
 		SqliteConnection.ClearAllPools();
 
 		string databasePath = _locations.InstallationDatabasePath(installationId);

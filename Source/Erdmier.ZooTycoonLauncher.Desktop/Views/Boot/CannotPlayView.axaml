@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.CannotPlayView"
+             x:DataType="vm:CannotPlayViewModel">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top"
+                    Margin="8,8,8,4">
+            <TextBlock Text="{Binding InstallationName}"
+                       FontWeight="Bold" />
+            <TextBlock Text="{Binding InstallationPath}" />
+            <TextBlock Text="This installation is invalid and cannot be launched."
+                       Foreground="Red"
+                       Margin="0,4,0,0" />
+        </StackPanel>
+        <TabControl>
+            <TabItem Header="General">
+                <ContentControl Content="{Binding GeneralTab}" />
+            </TabItem>
+            <TabItem Header="INI Config">
+                <ContentControl Content="{Binding IniConfigTab}" />
+            </TabItem>
+            <TabItem Header="Scenarios">
+                <ContentControl Content="{Binding ScenariosTab}" />
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

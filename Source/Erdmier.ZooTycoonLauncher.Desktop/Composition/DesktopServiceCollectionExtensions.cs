@@ -1,5 +1,3 @@
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.Composition;
 
 /// <summary>Composition-root extensions that register every Desktop view model into a service collection.</summary>

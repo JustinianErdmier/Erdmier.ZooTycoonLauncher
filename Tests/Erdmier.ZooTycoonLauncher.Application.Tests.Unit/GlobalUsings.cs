@@ -15,6 +15,7 @@ global using Erdmier.ZooTycoonLauncher.Application.Installations.SetDefault;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Relocate;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Update;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Verify;
+global using Erdmier.ZooTycoonLauncher.Application.Boot;
 global using Erdmier.ZooTycoonLauncher.Domain.Installations;
 global using Erdmier.ZooTycoonLauncher.Domain.Settings;
 
@@ -22,6 +23,8 @@ global using FluentValidation;
 global using FluentValidation.Results;
 
 global using ErrorOr;
+
+global using Microsoft.Extensions.Time.Testing;
 
 global using NSubstitute;
 

@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.OpenGameInstallationView"
+             x:DataType="vm:OpenGameInstallationViewModel">
+    <StackPanel HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="8"
+                Margin="16">
+        <TextBlock Text="No installation is selected. Use the Installation Manager to add one." />
+        <Button Content="Add / Pick Installation"
+                IsEnabled="False"
+                ToolTip.Tip="Coming in a future update." />
+    </StackPanel>
+</UserControl>

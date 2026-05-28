@@ -26,9 +26,7 @@ public sealed class AddInstallationHandlerTests
         snapshots.CaptureOriginalAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>())
                  .Returns(Result.Success);
 
-        ILogger logger = Substitute.For<ILogger>();
-
-        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, clock, logger);
+        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, clock);
 
         ErrorOr<AddInstallationResult> result = await handler.Handle(command, CancellationToken.None);
 
@@ -55,9 +53,8 @@ public sealed class AddInstallationHandlerTests
 
         IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
         IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
-        ILogger logger = Substitute.For<ILogger>();
 
-        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System, logger);
+        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System);
 
         ErrorOr<AddInstallationResult> result = await handler.Handle(command, CancellationToken.None);
 
@@ -86,9 +83,8 @@ public sealed class AddInstallationHandlerTests
         dbFactory.CreateAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Substitute.For<IInstallationDbContextHandle>());
         IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
         snapshots.CaptureOriginalAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>()).Returns(Result.Success);
-        ILogger logger = Substitute.For<ILogger>();
 
-        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System, logger);
+        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System);
 
         ErrorOr<AddInstallationResult> result = await handler.Handle(command, CancellationToken.None);
 

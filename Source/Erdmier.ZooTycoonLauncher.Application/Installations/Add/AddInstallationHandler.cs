@@ -9,7 +9,6 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
     private readonly IInstallationDbContextFactory _dbFactory;
     private readonly IIniSnapshotService _snapshots;
     private readonly TimeProvider _clock;
-    private readonly ILogger _logger;
 
     /// <summary>Initialises a new instance.</summary>
     public AddInstallationHandler(
@@ -18,8 +17,7 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
         IInstallationVerifier verifier,
         IInstallationDbContextFactory dbFactory,
         IIniSnapshotService snapshots,
-        TimeProvider clock,
-        ILogger logger)
+        TimeProvider clock)
     {
         _installations = installations;
         _settings = settings;
@@ -27,7 +25,6 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
         _dbFactory = dbFactory;
         _snapshots = snapshots;
         _clock = clock;
-        _logger = logger;
     }
 
     /// <inheritdoc />
@@ -77,9 +74,10 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
 
         if (snapshotResult.IsError)
         {
-            _logger.Warning("Snapshot capture failed for {InstallationId}: {Errors}", row.Id, string.Join("; ", snapshotResult.Errors.Select(e => e.Description)));
-            // The installation is persisted; surface the snapshot failure but do not roll back. The INI Config slice's real
-            // service will treat snapshot failure as a transition into the CorruptedIni state instead of an outright error.
+            // The installation is persisted; snapshot failure is non-fatal here. The INI Config slice's real service will treat
+            // snapshot failure as a transition into the CorruptedIni state rather than an outright error. Infrastructure
+            // logging happens inside NullIniSnapshotService / the real service, not here.
+            _ = snapshotResult; // Discard: failure surfaced to caller via SnapshotFailed flag if needed in future.
         }
 
         return new AddInstallationResult(row.Id, verification.Validity, becameDefault);

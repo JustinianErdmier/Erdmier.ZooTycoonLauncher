@@ -7,7 +7,3 @@ namespace Erdmier.ZooTycoonLauncher.Application.Installations.Relocate;
 /// <param name="InstallationId">The installation's identifier.</param>
 /// <param name="NewPath">The new fully qualified directory path.</param>
 public sealed record RelocateInstallationCommand(Guid InstallationId, string NewPath) : ICommand<ErrorOr<RelocateInstallationResult>>;
-
-/// <summary>Outcome of <see cref="RelocateInstallationCommand" />.</summary>
-/// <param name="NewValidity">The validity computed after the move.</param>
-public sealed record RelocateInstallationResult(InstallationValidity NewValidity);

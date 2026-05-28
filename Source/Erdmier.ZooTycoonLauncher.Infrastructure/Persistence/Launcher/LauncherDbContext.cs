@@ -16,7 +16,13 @@ public sealed class LauncherDbContext : DbContext
     public DbSet<LauncherSettings> LauncherSettings => Set<LauncherSettings>();
 
     /// <inheritdoc />
-    protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.ApplyConfigurationsFromAssembly(typeof(LauncherDbContext).Assembly);
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+        => modelBuilder.ApplyConfigurationsFromAssembly(
+               typeof(LauncherDbContext).Assembly,
+               static t => t.Namespace?.StartsWith(
+                               "Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Launcher",
+                               StringComparison.Ordinal)
+                           ?? false);
 
     /// <summary>Adds the <see cref="LauncherDbContext" /> to the service collection wired to a file-backed SQLite database.</summary>
     /// <param name="services">The service collection.</param>

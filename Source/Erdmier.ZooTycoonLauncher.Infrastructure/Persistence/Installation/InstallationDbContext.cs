@@ -18,7 +18,10 @@ public sealed class InstallationDbContext : DbContext
 
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(InstallationDbContext).Assembly);
-    }
+        => modelBuilder.ApplyConfigurationsFromAssembly(
+               typeof(InstallationDbContext).Assembly,
+               static t => t.Namespace?.StartsWith(
+                               "Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Installation",
+                               StringComparison.Ordinal)
+                           ?? false);
 }

@@ -22,8 +22,9 @@ public sealed class OneTypePerFileTests
 
         IEnumerable<Type> publicTypes = assembly.GetTypes()
                                                 .Where(t => t is { IsPublic: true, IsNested: false } && !t.IsCompilerGenerated())
-                                                .Where(t => t.Namespace is null
-                                                            || !t.Namespace.EndsWith(value: ".Migrations", StringComparison.Ordinal)); // EF Core tooling owns Migration filenames.
+                                                .Where(t => t.Namespace is not null
+                                                            && t.Namespace.StartsWith(value: "Erdmier.ZooTycoonLauncher", StringComparison.Ordinal)) // Source-generator artefacts (Mediator, EF) live in foreign namespaces — skip them.
+                                                .Where(t => !t.Namespace!.EndsWith(value: ".Migrations", StringComparison.Ordinal)); // EF Core tooling owns Migration filenames.
 
         List<string> violations =
         [

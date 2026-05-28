@@ -21,8 +21,6 @@ global using Erdmier.ZooTycoonLauncher.Domain.Settings;
 global using FluentValidation;
 global using FluentValidation.Results;
 
-global using Serilog;
-
 global using ErrorOr;
 
 global using NSubstitute;

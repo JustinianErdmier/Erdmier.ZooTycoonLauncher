@@ -3,7 +3,7 @@ namespace Erdmier.ZooTycoonLauncher.Infrastructure.Common.Extensions;
 /// <summary>Composition-root extensions that register every Infrastructure service into a service collection.</summary>
 public static class InfrastructureServiceCollectionExtensions
 {
-    /// <summary>Registers Infrastructure services — file system, storage locations, Serilog, EF Core, repositories.</summary>
+    /// <summary>Registers Infrastructure services — file system, storage locations, Serilog, EF Core, repositories, locator/verifier/registry, INI snapshot placeholder.</summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection, for chaining.</returns>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
@@ -27,6 +27,13 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddScoped<ILauncherSettingsRepository, LauncherSettingsRepository>();
         services.AddScoped<IInstallationRepository, InstallationRepository>();
+
+        services.AddSingleton<IRegistryReader, WindowsRegistryReader>();
+        services.AddSingleton<IInstallationVerifier, InstallationVerifier>();
+        services.AddSingleton<IInstallationLocator, InstallationLocator>();
+
+        services.AddSingleton<IInstallationDbContextFactory, InstallationDbContextFactory>();
+        services.AddScoped<IIniSnapshotService, NullIniSnapshotService>();
 
         return services;
     }

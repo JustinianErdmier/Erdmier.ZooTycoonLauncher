@@ -168,6 +168,60 @@ public sealed class BootHandlerTests
     }
 
     [ Fact ]
+    public async Task Handle_PersistsDriftAndStampsLastOpened_WhenDriftButStillPlayable()
+    {
+        Guid     id      = Guid.CreateVersion7();
+        DateTime fakeNow = new(year: 2026, month: 5, day: 28, hour: 10, minute: 0, second: 0, DateTimeKind.Utc);
+
+        FakeTimeProvider clock = new(fakeNow);
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings { DefaultInstallationId = id });
+
+        GameInstallation row = new()
+        {
+            Id = id, Name = "Main", Path = @"C:\ZT",
+            HasExe = true, HasIni = false,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(row);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
+
+        snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
+                 .Returns(Result.Success);
+
+        BootHandler handler = new(settings, installations, verifier,
+                                  Substitute.For<IInstallationLocator>(), snapshots, clock);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Outcome.ShouldBe(BootOutcome.ReadyToPlay);
+
+        // Exactly two UpdateAsync calls: one for drift correction and one to stamp LastOpenedUtc.
+        // NSubstitute captures argument references — both calls pass the same mutable row, so predicates
+        // are evaluated against the final object state. We verify total count and final state instead.
+        await installations.Received(requiredNumberOfCalls: 2)
+                           .UpdateAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>());
+
+        row.HasIni.ShouldBeTrue();
+        row.ModifiedUtc.ShouldBe(fakeNow);
+        row.LastOpenedUtc.ShouldBe(fakeNow);
+    }
+
+    [ Fact ]
     public async Task Handle_StampsLastOpenedUtc_OnReadyToPlay()
     {
         Guid     id      = Guid.CreateVersion7();
@@ -207,7 +261,7 @@ public sealed class BootHandlerTests
 
         await handler.Handle(new BootCommand(), CancellationToken.None);
 
-        await installations.Received()
+        await installations.Received(requiredNumberOfCalls: 1)
                            .UpdateAsync(Arg.Is<GameInstallation>(i => i.Id == id && i.LastOpenedUtc == fakeNow),
                                         Arg.Any<CancellationToken>());
     }

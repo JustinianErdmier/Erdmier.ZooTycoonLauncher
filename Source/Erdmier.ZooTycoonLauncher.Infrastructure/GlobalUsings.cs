@@ -1,6 +1,7 @@
 global using System.IO.Abstractions;
 
 global using Erdmier.ZooTycoonLauncher.Application.Common.Abstractions;
+global using Erdmier.ZooTycoonLauncher.Application.Common.Models;
 global using Erdmier.ZooTycoonLauncher.Domain.Installations;
 global using Erdmier.ZooTycoonLauncher.Domain.IniSnapshots;
 global using Erdmier.ZooTycoonLauncher.Domain.Settings;

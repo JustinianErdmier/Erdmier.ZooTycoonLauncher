@@ -12,6 +12,7 @@
         <PackageReference Include="Shouldly" />
         <PackageReference Include="NSubstitute" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+        <PackageReference Include="System.IO.Abstractions.TestingHelpers" />
         <PackageReference Include="coverlet.collector" />
     </ItemGroup>
 

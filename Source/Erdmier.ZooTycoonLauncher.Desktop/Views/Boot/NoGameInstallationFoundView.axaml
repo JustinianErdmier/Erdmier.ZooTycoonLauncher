@@ -12,7 +12,7 @@
         <StackPanel IsVisible="{Binding HasLocatedPath}"
                     Spacing="4">
             <TextBlock Text="A candidate was found at:" />
-            <TextBox Text="{Binding LocatedCandidatePath}"
+            <TextBox Text="{Binding LocatedCandidatePath, Mode=OneWay}"
                      IsReadOnly="True" />
         </StackPanel>
         <Button Content="Add Installation"

@@ -6,10 +6,5 @@
         Title="Zoo Tycoon Launcher"
         Width="800"
         Height="600">
-    <Grid>
-        <TextBlock Text="{Binding Banner}"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="20" />
-    </Grid>
+    <ContentControl Content="{Binding ActiveContent}" />
 </Window>

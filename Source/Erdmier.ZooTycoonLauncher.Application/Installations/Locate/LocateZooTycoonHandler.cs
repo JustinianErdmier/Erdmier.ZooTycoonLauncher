@@ -21,7 +21,7 @@ public sealed class LocateZooTycoonHandler : IQueryHandler<LocateZooTycoonQuery,
         // The SDD treats the persisted last-known directory as a future addition to LauncherSettings. Until that field lands,
         // pass null and rely on the Program Files + registry trail. The locator is forward-compatible — any future addition is
         // a one-line change here.
-        _ = await _settings.GetAsync(cancellationToken);
+        _ = await _settings.GetAsync(cancellationToken); // result discarded — LastKnownPath not yet modelled in LauncherSettings
 
         LocatedDirectory located = await _locator.LocateAsync(persistedLastKnownPath: null, cancellationToken);
 

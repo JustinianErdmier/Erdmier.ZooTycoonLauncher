@@ -4,6 +4,7 @@ global using System.Linq;
 global using System.Threading;
 global using System.Threading.Tasks;
 
+global using Erdmier.ZooTycoonLauncher.Application.Boot;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Abstractions;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Models;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Add;

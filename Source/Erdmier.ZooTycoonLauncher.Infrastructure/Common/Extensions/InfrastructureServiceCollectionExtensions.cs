@@ -33,6 +33,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IRegistryReader, WindowsRegistryReader>();
         services.AddSingleton<IInstallationVerifier, InstallationVerifier>();
         services.AddSingleton<IInstallationLocator, InstallationLocator>();
+        services.AddSingleton<IProcessLauncher, WindowsProcessLauncher>();
 
         services.AddSingleton<IInstallationDbContextFactory, InstallationDbContextFactory>();
         services.AddScoped<IIniSnapshotService, NullIniSnapshotService>();

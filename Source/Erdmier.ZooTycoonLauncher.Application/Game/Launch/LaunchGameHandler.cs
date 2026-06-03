@@ -18,19 +18,25 @@ public sealed class LaunchGameHandler : ICommandHandler<LaunchGameCommand, Error
     private readonly IInstallationVerifier _verifier;
 
     /// <summary>Initialises a new instance.</summary>
-    public LaunchGameHandler(IInstallationRepository     installations,
-                             IInstallationVerifier       verifier,
+    /// <param name="clock">Time provider for UTC timestamps.</param>
+    /// <param name="installations">Installation repository for resolving the row, persisting drift, and stamping <c>LastPlayedUtc</c>.</param>
+    /// <param name="logger">Logger for the warn-on-stamp-failure path.</param>
+    /// <param name="processLauncher">Process launcher that spawns <c>zoo.exe</c>.</param>
+    /// <param name="settings">Launcher settings repository; read after launch to capture the current <c>CloseAfterGameLaunch</c> flag.</param>
+    /// <param name="verifier">File-system verifier for just-in-time drift detection.</param>
+    public LaunchGameHandler(TimeProvider                clock,
+                             IInstallationRepository     installations,
+                             ILogger<LaunchGameHandler>  logger,
                              IProcessLauncher            processLauncher,
                              ILauncherSettingsRepository settings,
-                             TimeProvider                clock,
-                             ILogger<LaunchGameHandler>  logger)
+                             IInstallationVerifier       verifier)
     {
+        _clock           = clock;
         _installations   = installations;
-        _verifier        = verifier;
+        _logger          = logger;
         _processLauncher = processLauncher;
         _settings        = settings;
-        _clock           = clock;
-        _logger          = logger;
+        _verifier        = verifier;
     }
 
     /// <inheritdoc />

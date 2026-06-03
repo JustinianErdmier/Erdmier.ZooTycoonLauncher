@@ -36,7 +36,7 @@ public sealed class LaunchGameHandlerTests
         settings.GetAsync(Arg.Any<CancellationToken>())
                 .Returns(new LauncherSettings { CloseAfterGameLaunch = true });
 
-        LaunchGameHandler handler = new(installations, verifier, launcher, settings, clock, NullLogger<LaunchGameHandler>.Instance);
+        LaunchGameHandler handler = new(clock, installations, NullLogger<LaunchGameHandler>.Instance, launcher, settings, verifier);
 
         ErrorOr<LaunchGameResult> result = await handler.Handle(new LaunchGameCommand(id), CancellationToken.None);
 
@@ -45,6 +45,6 @@ public sealed class LaunchGameHandlerTests
         result.Value.CloseAfterGameLaunch.ShouldBeTrue();
         result.Value.FailureMessage.ShouldBeNull();
         row.LastPlayedUtc.ShouldBe(now.UtcDateTime);
-        await installations.Received().UpdateAsync(row, Arg.Any<CancellationToken>());
+        await installations.Received(1).UpdateAsync(row, Arg.Any<CancellationToken>());
     }
 }

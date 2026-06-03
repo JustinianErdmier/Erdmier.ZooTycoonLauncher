@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Game;
 
@@ -26,7 +27,7 @@ public sealed class WindowsProcessLauncher : IProcessLauncher
                                        ? new ProcessLaunchResult(Started: false, ErrorMessage: "The system did not start a process for the game executable.")
                                        : new ProcessLaunchResult(Started: true, ErrorMessage: null));
         }
-        catch (Win32Exception ex)
+        catch (FileNotFoundException ex)
         {
             return Task.FromResult(new ProcessLaunchResult(Started: false, ex.Message));
         }
@@ -34,7 +35,15 @@ public sealed class WindowsProcessLauncher : IProcessLauncher
         {
             return Task.FromResult(new ProcessLaunchResult(Started: false, ex.Message));
         }
-        catch (FileNotFoundException ex)
+        catch (IOException ex)
+        {
+            return Task.FromResult(new ProcessLaunchResult(Started: false, ex.Message));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Task.FromResult(new ProcessLaunchResult(Started: false, ex.Message));
+        }
+        catch (Win32Exception ex)
         {
             return Task.FromResult(new ProcessLaunchResult(Started: false, ex.Message));
         }

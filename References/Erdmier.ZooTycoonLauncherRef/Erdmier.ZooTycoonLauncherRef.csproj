@@ -1,31 +1,19 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+    <!--
+        Read-only inspiration; not part of the active build.
+        CLAUDE.md ¶ "preserved read-only ... for visual inspiration only. **Never copy-paste from the Ref assembly**".
+
+        The Ref project remains visible in the solution for IDE navigation, but the SDK is told
+        to discover no source files, AXAML resources, or package references. The build target
+        succeeds without producing meaningful output. Editing existing source files inside
+        References/Erdmier.ZooTycoonLauncherRef/ does not affect the active build.
+    -->
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ApplicationManifest>app.manifest</ApplicationManifest>
-        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-        <RootNamespace>Erdmier.ZooTycoonLauncher.Launcher</RootNamespace>
+        <EnableDefaultItems>false</EnableDefaultItems>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <EnableDefaultAvaloniaResources>false</EnableDefaultAvaloniaResources>
+        <IsPackable>false</IsPackable>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
-
-    <ItemGroup>
-        <AvaloniaResource Include="Assets\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.3.14" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.3.14" />
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.14" />
-        <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1">
-            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
-            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-        <PackageReference Include="Classic.Avalonia.Theme" Version="11.3.0.3" />
-        <PackageReference Include="Classic.Avalonia.Theme.DataGrid" Version="11.3.0.3" />
-        <PackageReference Include="Classic.Avalonia.Theme.Dock" Version="11.3.0.3" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-        <PackageReference Include="System.IO.Abstractions" Version="21.0.29" />
-    </ItemGroup>
 </Project>

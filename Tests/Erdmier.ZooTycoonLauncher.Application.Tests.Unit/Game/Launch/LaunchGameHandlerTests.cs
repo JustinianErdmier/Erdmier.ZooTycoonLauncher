@@ -91,4 +91,49 @@ public sealed class LaunchGameHandlerTests
         await installations.Received(1).UpdateAsync(row, Arg.Any<CancellationToken>());
         await launcher.DidNotReceive().LaunchAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
+
+    [ Fact ]
+    public async Task Handle_ProcessStartFails_ReturnsStartFailedAndDoesNotStampLastPlayed()
+    {
+        Guid id = Guid.CreateVersion7();
+        DateTime before = new(year: 2026, month: 1, day: 1, hour: 0, minute: 0, second: 0, DateTimeKind.Utc);
+        FakeTimeProvider clock = new(new DateTimeOffset(year: 2026, month: 6, day: 3, hour: 12, minute: 0, second: 0, TimeSpan.Zero));
+
+        GameInstallation row = new()
+        {
+            Id            = id,
+            Name          = "Main",
+            Path          = @"C:\Games\Zoo",
+            HasExe        = true,
+            HasIni        = true,
+            AddedUtc      = DateTime.UtcNow,
+            LastPlayedUtc = before,
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(row);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+        verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IProcessLauncher launcher = Substitute.For<IProcessLauncher>();
+        launcher.LaunchAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(new ProcessLaunchResult(Started: false, ErrorMessage: "Antivirus blocked execution."));
+
+        LaunchGameHandler handler = new(clock,
+                                        installations,
+                                        NullLogger<LaunchGameHandler>.Instance,
+                                        launcher,
+                                        Substitute.For<ILauncherSettingsRepository>(),
+                                        verifier);
+
+        ErrorOr<LaunchGameResult> result = await handler.Handle(new LaunchGameCommand(id), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Outcome.ShouldBe(LaunchGameOutcome.StartFailed);
+        result.Value.FailureMessage.ShouldBe(expected: "Antivirus blocked execution.");
+        result.Value.CloseAfterGameLaunch.ShouldBeFalse();
+        row.LastPlayedUtc.ShouldBe(before);                                   // unchanged
+    }
 }

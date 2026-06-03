@@ -47,4 +47,48 @@ public sealed class LaunchGameHandlerTests
         row.LastPlayedUtc.ShouldBe(now.UtcDateTime);
         await installations.Received(1).UpdateAsync(row, Arg.Any<CancellationToken>());
     }
+
+    [ Fact ]
+    public async Task Handle_DriftDetected_PersistsAndReturnsDrifted()
+    {
+        Guid id = Guid.CreateVersion7();
+        FakeTimeProvider clock = new(new DateTimeOffset(year: 2026, month: 6, day: 3, hour: 12, minute: 0, second: 0, TimeSpan.Zero));
+
+        GameInstallation row = new()
+        {
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\Games\Zoo",
+            HasExe   = true,            // row claims valid
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow,
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(row);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+        verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: false, HasIni: true)); // drift
+
+        IProcessLauncher launcher = Substitute.For<IProcessLauncher>();
+
+        LaunchGameHandler handler = new(clock,
+                                        installations,
+                                        NullLogger<LaunchGameHandler>.Instance,
+                                        launcher,
+                                        Substitute.For<ILauncherSettingsRepository>(),
+                                        verifier);
+
+        ErrorOr<LaunchGameResult> result = await handler.Handle(new LaunchGameCommand(id), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Outcome.ShouldBe(LaunchGameOutcome.Drifted);
+        result.Value.CloseAfterGameLaunch.ShouldBeFalse();
+        result.Value.FailureMessage.ShouldBeNull();
+
+        row.HasExe.ShouldBeFalse();                                   // drift persisted on the row
+        await installations.Received(1).UpdateAsync(row, Arg.Any<CancellationToken>());
+        await launcher.DidNotReceive().LaunchAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
 }

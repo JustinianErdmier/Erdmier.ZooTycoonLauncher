@@ -16,6 +16,7 @@ global using Erdmier.ZooTycoonLauncher.Application.Installations.Relocate;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Update;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Verify;
 global using Erdmier.ZooTycoonLauncher.Application.Boot;
+global using Erdmier.ZooTycoonLauncher.Application.Game.Launch;
 global using Erdmier.ZooTycoonLauncher.Domain.Installations;
 global using Erdmier.ZooTycoonLauncher.Domain.Settings;
 

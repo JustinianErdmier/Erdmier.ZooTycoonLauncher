@@ -9,7 +9,7 @@
                    FontWeight="Bold" />
         <TextBlock Text="{Binding InstallationPath}" />
         <Button Content="Launch Game"
-                IsEnabled="False"
+                Command="{Binding LaunchCommand}"
                 Margin="0,8,0,0" />
         <TextBlock Text="Screen modes — coming soon"
                    Margin="0,8,0,0" />

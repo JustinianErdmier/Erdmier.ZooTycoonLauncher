@@ -1,3 +1,10 @@
+using Microsoft.Extensions.Logging;
+
+using Serilog.Extensions.Logging;
+
+// Local usings — the two MEL namespaces above collide with Serilog's unqualified ILogger in other Infrastructure files
+// (e.g. NullIniSnapshotService), so they must NOT be global. CLAUDE.md "local using only for namespace conflicts" applies.
+
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Common.Extensions;
 
 /// <summary>Composition-root extensions that register every Infrastructure service into a service collection.</summary>
@@ -13,15 +20,24 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IFileSystem, FileSystem>();
         services.AddSingleton<IAppStorageLocations, AppStorageLocations>();
 
-        // Registers Serilog's ILogger singleton AND the Microsoft.Extensions.Logging bridge (ILoggerFactory + open-generic ILogger<T>),
-        // so handlers that take ILogger<TCategory> (e.g. LaunchGameHandler) and infrastructure types that take Serilog.ILogger
-        // (e.g. NullIniSnapshotService) both resolve from the same underlying file sink.
-        services.AddSerilog((provider, loggerConfiguration) =>
+        // Build the underlying Serilog logger once and share it between Serilog.ILogger consumers (e.g. NullIniSnapshotService)
+        // and the Microsoft.Extensions.Logging bridge (e.g. LaunchGameHandler taking ILogger<TCategory>).
+        services.AddSingleton<Serilog.ILogger>(provider =>
         {
             IAppStorageLocations locations = provider.GetRequiredService<IAppStorageLocations>();
 
-            loggerConfiguration.ApplyDefaults(locations);
+            return new LoggerConfiguration().ApplyDefaults(locations)
+                                            .CreateLogger();
         });
+
+        // services.AddSerilog((sp, config) => …) from Serilog.Extensions.Hosting 9.0.0 registers Serilog.ILogger but does NOT
+        // wire up MEL — verified by AddInfrastructureLoggingTests. The explicit pattern below registers ILoggerFactory and
+        // open-generic ILogger<T> via AddLogging, then plugs a SerilogLoggerProvider into the factory so MEL log calls flow
+        // to the shared Serilog logger above.
+        services.AddLogging(builder => builder.ClearProviders());
+
+        services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(provider
+            => new SerilogLoggerProvider(provider.GetRequiredService<Serilog.ILogger>(), dispose: false));
 
         services.AddDbContext<LauncherDbContext>((provider, options) =>
         {

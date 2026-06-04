@@ -25,11 +25,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ActiveContent = result.IsError ? new NoGameInstallationFoundViewModel(locatedCandidatePath: null) : RouteResult(result.Value);
     }
 
-    private static ViewModelBase RouteResult(AppBoot.BootResult result)
+    private ViewModelBase RouteResult(AppBoot.BootResult result)
         => result.Outcome switch
         {
-            AppBoot.BootOutcome.ReadyToPlay             => new ReadyToPlayViewModel(result.ActiveInstallation!),
-            AppBoot.BootOutcome.CannotPlay              => new CannotPlayViewModel(result.ActiveInstallation!),
+            AppBoot.BootOutcome.ReadyToPlay             => new ReadyToPlayViewModel(result.ActiveInstallation!, _mediator),
+            AppBoot.BootOutcome.CannotPlay              => new CannotPlayViewModel(result.ActiveInstallation!, _mediator),
             AppBoot.BootOutcome.NoGameInstallationFound => new NoGameInstallationFoundViewModel(result.LocatedCandidatePath),
             AppBoot.BootOutcome.OpenGameInstallation    => new OpenGameInstallationViewModel(),
             var _                                       => new NoGameInstallationFoundViewModel(locatedCandidatePath: null)

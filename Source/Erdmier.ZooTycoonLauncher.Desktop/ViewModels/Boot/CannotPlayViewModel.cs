@@ -5,12 +5,13 @@ public sealed class CannotPlayViewModel : ViewModelBase
 {
     /// <summary>Initialises a new instance.</summary>
     /// <param name="installation">The resolved active installation (invalid).</param>
-    public CannotPlayViewModel(InstallationSummary installation)
+    /// <param name="mediator">The Mediator dispatcher forwarded to <see cref="GeneralTabViewModel" />.</param>
+    public CannotPlayViewModel(InstallationSummary installation, IMediator mediator)
     {
         InstallationName = installation.Name;
         InstallationPath = installation.Path;
         IsDefault        = installation.IsDefault;
-        GeneralTab       = new GeneralTabViewModel(installation);
+        GeneralTab       = new GeneralTabViewModel(installation, mediator);
         IniConfigTab     = new IniConfigTabViewModel();
         ScenariosTab     = new ScenariosTabViewModel();
     }
@@ -25,7 +26,8 @@ public sealed class CannotPlayViewModel : ViewModelBase
                                        DateTime.UtcNow,
                                        ModifiedUtc: null,
                                        LastPlayedUtc: null,
-                                       LastOpenedUtc: null))
+                                       LastOpenedUtc: null),
+               mediator: null!)
     { }
 
     /// <summary>General tab view model.</summary>

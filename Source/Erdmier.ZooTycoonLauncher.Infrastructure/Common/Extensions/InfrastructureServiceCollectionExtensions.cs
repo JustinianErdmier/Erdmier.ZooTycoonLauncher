@@ -13,12 +13,14 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IFileSystem, FileSystem>();
         services.AddSingleton<IAppStorageLocations, AppStorageLocations>();
 
-        services.AddSingleton<ILogger>(provider =>
+        // Registers Serilog's ILogger singleton AND the Microsoft.Extensions.Logging bridge (ILoggerFactory + open-generic ILogger<T>),
+        // so handlers that take ILogger<TCategory> (e.g. LaunchGameHandler) and infrastructure types that take Serilog.ILogger
+        // (e.g. NullIniSnapshotService) both resolve from the same underlying file sink.
+        services.AddSerilog((provider, loggerConfiguration) =>
         {
             IAppStorageLocations locations = provider.GetRequiredService<IAppStorageLocations>();
 
-            return SerilogConfiguration.Build(locations)
-                                       .CreateLogger();
+            loggerConfiguration.ApplyDefaults(locations);
         });
 
         services.AddDbContext<LauncherDbContext>((provider, options) =>

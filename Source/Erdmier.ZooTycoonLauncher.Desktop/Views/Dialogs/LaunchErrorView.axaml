@@ -11,7 +11,7 @@
     <StackPanel Margin="12"
                 Spacing="12"
                 MinWidth="320">
-        <TextBlock Text="{ Binding Message }"
+        <TextBlock Text="{Binding Message}"
                    TextWrapping="Wrap" />
         <Button Content="OK"
                 HorizontalAlignment="Right"

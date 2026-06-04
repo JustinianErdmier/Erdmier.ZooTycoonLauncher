@@ -5,11 +5,22 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels;
 /// <summary>The main window's view model. Dispatches <c>BootCommand</c> on load and routes the result to the active state view model via <c>ActiveContent</c> (SDD §9.2).</summary>
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
+    private readonly IDialogService _dialogs;
+
+    private readonly IApplicationLifecycle _lifecycle;
+
     private readonly IMediator _mediator;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
-    public MainWindowViewModel(IMediator mediator) => _mediator = mediator;
+    /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
+    /// <param name="dialogs">Chrome service for opening modeless dialogues.</param>
+    public MainWindowViewModel(IMediator mediator, IApplicationLifecycle lifecycle, IDialogService dialogs)
+    {
+        _mediator  = mediator;
+        _lifecycle = lifecycle;
+        _dialogs   = dialogs;
+    }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
     [ ObservableProperty ]
@@ -28,10 +39,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private ViewModelBase RouteResult(AppBoot.BootResult result)
         => result.Outcome switch
         {
-            AppBoot.BootOutcome.ReadyToPlay             => new ReadyToPlayViewModel(result.ActiveInstallation!, _mediator),
+            AppBoot.BootOutcome.ReadyToPlay             => new ReadyToPlayViewModel(result.ActiveInstallation!,
+                                                                                    rebootAsync: BootAsync,
+                                                                                    _lifecycle,
+                                                                                    _dialogs,
+                                                                                    _mediator),
             AppBoot.BootOutcome.CannotPlay              => new CannotPlayViewModel(result.ActiveInstallation!, _mediator),
             AppBoot.BootOutcome.NoGameInstallationFound => new NoGameInstallationFoundViewModel(result.LocatedCandidatePath),
             AppBoot.BootOutcome.OpenGameInstallation    => new OpenGameInstallationViewModel(),
-            var _                                       => new NoGameInstallationFoundViewModel(locatedCandidatePath: null)
+            var _                                       => new NoGameInstallationFoundViewModel(locatedCandidatePath: null),
         };
 }

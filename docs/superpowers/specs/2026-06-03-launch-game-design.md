@@ -61,7 +61,7 @@ Application/Game/Launch/LaunchGameHandler.cs
 public sealed record LaunchGameCommand(Guid InstallationId) : ICommand<ErrorOr<LaunchGameResult>>;
 ```
 
-`LaunchGameResult` and `LaunchGameOutcome` live in the same file — they are a tightly-coupled pair and are never used separately, matching the precedent set by `BootResult` / `BootOutcome`.
+`LaunchGameResult` and `LaunchGameOutcome` live in separate files in `Application/Game/Launch/`, per the one-type-per-file rule that the `OneTypePerFileTests` architecture test enforces (the same rule the existing `BootResult` and `BootOutcome` follow).
 
 ```csharp
 public sealed record LaunchGameResult(
@@ -521,7 +521,7 @@ There is no `Desktop.Tests.Unit` project today; introducing one for this slice i
 
 ## 10. Conventions checklist
 
-- [x] One type per file (`LaunchGameOutcome` co-located with `LaunchGameResult` per the documented `BootOutcome` / `BootResult` precedent).
+- [x] One type per file (`LaunchGameOutcome` and `LaunchGameResult` each in their own `.cs` file in the same folder).
 - [x] No files at any project root.
 - [x] File-scoped namespaces in all new files.
 - [x] British English in prose, identifier wording, and XML doc text.

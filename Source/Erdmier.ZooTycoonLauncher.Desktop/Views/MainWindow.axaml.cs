@@ -1,7 +1,7 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.Views;
 
 /// <summary>The application's main window — chrome only. Hosts the active state view via a <see cref="ContentControl" /> resolved by the <see cref="Composition.ViewLocator" />.</summary>
-public sealed partial class MainWindow : Window
+public sealed partial class MainWindow : ClassicWindow
 {
     /// <summary>Initialises a new instance.</summary>
     public MainWindow() => AvaloniaXamlLoader.Load(this);

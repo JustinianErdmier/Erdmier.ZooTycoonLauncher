@@ -5,6 +5,22 @@
         x:DataType="vm:MainWindowViewModel"
         Title="Zoo Tycoon Launcher"
         Width="800"
-        Height="600">
+        Height="600"
+        CanMaximize="False"
+        CanMinimize="False">
+
+    <!-- The Classic theme's caption-button template doesn't honour CanMinimize / CanMaximize at the property level — only :fullscreen and :dialog:cantresize. -->
+    <!-- The template-part selectors below collapse the minimise and restore buttons explicitly so the title bar renders with only a close button. -->
+    <Window.Styles>
+        <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+        <Style Selector="CaptionButtons /template/ Button#PART_RestoreButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+    </Window.Styles>
+
     <ContentControl Content="{Binding ActiveContent}" />
 </Window>

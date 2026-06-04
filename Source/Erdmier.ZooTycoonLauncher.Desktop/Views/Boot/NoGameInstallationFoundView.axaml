@@ -16,7 +16,6 @@
                      IsReadOnly="True" />
         </StackPanel>
         <Button Content="Add Installation"
-                IsEnabled="False"
-                ToolTip.Tip="Coming in a future update." />
+                Command="{Binding AddInstallationCommand}" />
     </StackPanel>
 </UserControl>

@@ -9,7 +9,6 @@
                 Margin="16">
         <TextBlock Text="No installation is selected. Use the Installation Manager to add one." />
         <Button Content="Add / Pick Installation"
-                IsEnabled="False"
-                ToolTip.Tip="Coming in a future update." />
+                Command="{Binding AddInstallationCommand}" />
     </StackPanel>
 </UserControl>

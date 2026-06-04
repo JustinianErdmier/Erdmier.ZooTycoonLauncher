@@ -33,7 +33,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         ErrorOr<AppBoot.BootResult> result = await _mediator.Send(new AppBoot.BootCommand(), cancellationToken);
 
-        ActiveContent = result.IsError ? new NoGameInstallationFoundViewModel(locatedCandidatePath: null) : RouteResult(result.Value);
+        ActiveContent = result.IsError
+            ? new NoGameInstallationFoundViewModel(locatedCandidatePath: null, _dialogs, rebootAsync: BootAsync)
+            : RouteResult(result.Value);
     }
 
     private ViewModelBase RouteResult(AppBoot.BootResult result)
@@ -45,8 +47,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                                     _dialogs,
                                                                                     _mediator),
             AppBoot.BootOutcome.CannotPlay              => new CannotPlayViewModel(result.ActiveInstallation!, _mediator),
-            AppBoot.BootOutcome.NoGameInstallationFound => new NoGameInstallationFoundViewModel(result.LocatedCandidatePath),
-            AppBoot.BootOutcome.OpenGameInstallation    => new OpenGameInstallationViewModel(),
-            var _                                       => new NoGameInstallationFoundViewModel(locatedCandidatePath: null),
+            AppBoot.BootOutcome.NoGameInstallationFound => new NoGameInstallationFoundViewModel(result.LocatedCandidatePath,
+                                                                                                _dialogs,
+                                                                                                rebootAsync: BootAsync),
+            AppBoot.BootOutcome.OpenGameInstallation    => new OpenGameInstallationViewModel(_dialogs,
+                                                                                             rebootAsync: BootAsync),
+            var _                                       => new NoGameInstallationFoundViewModel(locatedCandidatePath: null,
+                                                                                                _dialogs,
+                                                                                                rebootAsync: BootAsync),
         };
 }

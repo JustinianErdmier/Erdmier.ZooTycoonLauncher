@@ -109,8 +109,15 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            // ShowLaunchError is best-effort; a throw from inside it (e.g. Avalonia visual-tree failure) would escape async void to the synchronisation context — there is no further safety net here.
-            _dialogs.ShowLaunchError($"The launcher could not refresh installation state: {ex.Message}");
+            // Nested guard: ShowLaunchError can itself throw (e.g. Avalonia visual-tree failure); an uncaught throw here would escape async void to the synchronisation context and crash the process. Swallow the secondary failure — the original error is already lost.
+            try
+            {
+                _dialogs.ShowLaunchError($"The launcher could not refresh installation state: {ex.Message}");
+            }
+            catch
+            {
+                // Intentionally empty.
+            }
         }
     }
 }

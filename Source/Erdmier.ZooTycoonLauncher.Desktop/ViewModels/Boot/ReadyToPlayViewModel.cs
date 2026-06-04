@@ -98,6 +98,7 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
                     break;
 
                 case LaunchGameOutcome.Drifted:
+                    // CancellationToken.None: a drift-triggered reboot should always complete; the user already committed by clicking Launch, and there is no UI-level cancellation source here.
                     await _rebootAsync(CancellationToken.None);
                     break;
 
@@ -108,6 +109,7 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
+            // ShowLaunchError is best-effort; a throw from inside it (e.g. Avalonia visual-tree failure) would escape async void to the synchronisation context — there is no further safety net here.
             _dialogs.ShowLaunchError($"The launcher could not refresh installation state: {ex.Message}");
         }
     }

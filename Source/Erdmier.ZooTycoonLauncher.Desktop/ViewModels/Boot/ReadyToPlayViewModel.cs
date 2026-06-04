@@ -130,4 +130,10 @@ file sealed class NoOpApplicationLifecycle : IApplicationLifecycle
 file sealed class NoOpDialogService : IDialogService
 {
     public void ShowLaunchError(string message) { }
+
+    public Task<AddInstallationResult?> ShowAddInstallationAsync(string? prefilledPath)
+        => Task.FromResult<AddInstallationResult?>(null);
+
+    public Task<string?> PickFolderAsync(string? startPath)
+        => Task.FromResult<string?>(null);
 }

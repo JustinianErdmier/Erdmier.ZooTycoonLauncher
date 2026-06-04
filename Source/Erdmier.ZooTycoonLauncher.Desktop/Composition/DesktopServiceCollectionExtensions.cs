@@ -8,6 +8,7 @@ public static class DesktopServiceCollectionExtensions
     /// <returns>The service collection, for chaining.</returns>
     public static IServiceCollection AddDesktop(this IServiceCollection services)
     {
+        services.AddSingleton<IApplicationLifecycle, AvaloniaApplicationLifecycle>();
         services.AddTransient<MainWindowViewModel>();
 
         return services;

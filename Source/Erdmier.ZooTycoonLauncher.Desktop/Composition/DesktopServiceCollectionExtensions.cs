@@ -9,6 +9,7 @@ public static class DesktopServiceCollectionExtensions
     public static IServiceCollection AddDesktop(this IServiceCollection services)
     {
         services.AddSingleton<IApplicationLifecycle, AvaloniaApplicationLifecycle>();
+        services.AddSingleton<IDialogService, AvaloniaDialogService>();
         services.AddTransient<MainWindowViewModel>();
 
         return services;

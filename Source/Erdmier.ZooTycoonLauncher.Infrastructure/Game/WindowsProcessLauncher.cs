@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Game;
 
@@ -18,7 +17,7 @@ public sealed class WindowsProcessLauncher : IProcessLauncher
             {
                 FileName         = exePath,
                 WorkingDirectory = workingDirectory,
-                UseShellExecute  = true,
+                UseShellExecute  = true
             };
 
             Process? process = Process.Start(startInfo);

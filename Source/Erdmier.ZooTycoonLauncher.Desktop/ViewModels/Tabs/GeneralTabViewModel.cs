@@ -35,9 +35,6 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
         CanLaunch        = installation.Validity == InstallationValidity.Valid;
     }
 
-    /// <summary>Raised after the launch command receives a result. <see cref="Boot.ReadyToPlayViewModel" /> subscribes and routes outcomes to chrome capabilities.</summary>
-    public event EventHandler<LaunchGameResult>? LaunchOutcomeRaised;
-
     /// <summary><see langword="true" /> when the installation summary was valid at boot; the just-in-time verification inside the handler catches drift that happens after boot.</summary>
     public bool CanLaunch { get; }
 
@@ -68,8 +65,8 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
                 await _mediator.Send(new LaunchGameCommand(_installationId), cancellationToken);
 
             LaunchGameResult outcome = result.IsError
-                ? new LaunchGameResult(LaunchGameOutcome.StartFailed, CloseAfterGameLaunch: false, result.FirstError.Description)
-                : result.Value;
+                                           ? new LaunchGameResult(LaunchGameOutcome.StartFailed, CloseAfterGameLaunch: false, result.FirstError.Description)
+                                           : result.Value;
 
             LaunchOutcomeRaised?.Invoke(this, outcome);
         }
@@ -80,4 +77,7 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     }
 
     private bool CanExecuteLaunch() => CanLaunch && !IsBusy && _mediator is not null;
+
+    /// <summary>Raised after the launch command receives a result. <see cref="Boot.ReadyToPlayViewModel" /> subscribes and routes outcomes to chrome capabilities.</summary>
+    public event EventHandler<LaunchGameResult>? LaunchOutcomeRaised;
 }

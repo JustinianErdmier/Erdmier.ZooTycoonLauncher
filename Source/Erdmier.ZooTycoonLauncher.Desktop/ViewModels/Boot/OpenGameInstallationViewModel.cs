@@ -1,6 +1,9 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
-/// <summary>The view model for the OpenGameInstallation state — shown when <c>LauncherSettings.StartupPreference</c> is <c>Ask</c>. The picker grid (SDD §9.6) is deferred; this slice surfaces only the Add Installation entry point.</summary>
+/// <summary>
+///     The view model for the OpenGameInstallation state — shown when <c>LauncherSettings.StartupPreference</c> is <c>Ask</c>. The picker grid (SDD §9.6) is deferred; this slice
+///     surfaces only the Add Installation entry point.
+/// </summary>
 public sealed partial class OpenGameInstallationViewModel : ViewModelBase
 {
     private readonly IDialogService? _dialogs;
@@ -18,13 +21,14 @@ public sealed partial class OpenGameInstallationViewModel : ViewModelBase
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public OpenGameInstallationViewModel()
-        : this(dialogs: null!, rebootAsync: null!)
+        : this(null!, null!)
     { }
 
     [ RelayCommand ]
     private async Task AddInstallationAsync(CancellationToken cancellationToken)
     {
-        if (_dialogs is null || _rebootAsync is null)
+        if (_dialogs is null
+            || _rebootAsync is null)
         {
             return;
         }

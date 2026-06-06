@@ -1,69 +1,101 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
-        x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.AddInstallationDialogView"
-        x:DataType="vm:AddInstallationDialogViewModel"
-        Title="Add Installation"
-        Width="420"
-        SizeToContent="Height"
-        CanResize="False"
-        WindowStartupLocation="CenterOwner"
-        ShowInTaskbar="False">
-
-    <!-- Mirror MainWindow's caption-button hiding so the Classic theme renders the title bar with only a close button (Ref: References/Erdmier.ZooTycoonLauncherRef/Views/ConfirmDialogView.axaml). -->
-    <Window.Styles>
-        <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
-            <Setter Property="IsVisible"
-                    Value="False" />
-        </Style>
-        <Style Selector="CaptionButtons /template/ Button#PART_RestoreButton">
-            <Setter Property="IsVisible"
-                    Value="False" />
-        </Style>
-    </Window.Styles>
-
-    <StackPanel Margin="12"
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
+               xmlns:layout="clr-namespace:Erdmier.ZooTycoonLauncher.Desktop.Views.Layout"
+               x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.AddInstallationDialogView"
+               x:DataType="vm:AddInstallationDialogViewModel"
+               Icon="/Assets/Win95Icons/foldercatalog16.ico"
+               Title="Add Installation"
+               Width="420"
+               SizeToContent="Height"
+               CanResize="False"
+               WindowStartupLocation="CenterOwner"
+               ShowInTaskbar="False">
+    <StackPanel Margin="5 1 5 0"
+                Orientation="Vertical"
                 Spacing="10">
-        <TextBlock Text="Register a Zoo Tycoon installation with the launcher."
-                   TextWrapping="Wrap" />
+        <DockPanel HorizontalSpacing="10">
+            <Image DockPanel.Dock="Left"
+                   Height="32"
+                   Source="/Assets/Win95Icons/foldercatalog16.ico"
+                   VerticalAlignment="Top"
+                   Width="32" />
 
-        <StackPanel Spacing="4">
-            <TextBlock Text="Name" />
-            <TextBox Text="{Binding Name, Mode=TwoWay}" />
-        </StackPanel>
+            <StackPanel Margin="5 0 0 0"
+                        Orientation="Vertical"
+                        Spacing="4">
+                <TextBlock FontWeight="Solid"
+                           Text="New Installation" />
 
-        <StackPanel Spacing="4">
-            <TextBlock Text="Folder" />
-            <DockPanel LastChildFill="True">
-                <Button DockPanel.Dock="Right"
-                        Content="Browse…"
-                        Command="{Binding BrowseCommand}"
-                        Margin="6,0,0,0"
-                        MinWidth="80" />
-                <TextBox Text="{Binding Path, Mode=TwoWay}" />
-            </DockPanel>
-        </StackPanel>
+                <TextBlock
+                    Text="Register a Zoo Tycoon installation with the launcher. This does not install the game to your machine; it tells the launcher where an already installed copy of the game exists."
+                    TextWrapping="Wrap" />
 
-        <CheckBox Content="Mark as default installation"
-                  IsChecked="{Binding MakeDefault, Mode=TwoWay}" />
+                <Separator />
 
-        <TextBlock Text="{Binding ErrorMessage}"
-                   Foreground="Red"
-                   TextWrapping="Wrap"
-                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <TextBlock Text="Give this installation a unique name, or use the one suggested. The folder you selected should be the root folder containing the zoo.exe file."
+                           TextWrapping="Wrap" />
 
-        <StackPanel Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Spacing="8"
-                    Margin="0,4,0,0">
-            <Button Content="Save"
-                    Command="{Binding SaveCommand}"
-                    IsDefault="True"
-                    MinWidth="80" />
-            <Button Content="Cancel"
-                    Command="{Binding CancelCommand}"
-                    IsCancel="True"
-                    MinWidth="80" />
-        </StackPanel>
+                <Grid ColumnDefinitions="15*, 85*"
+                      RowDefinitions="*, *, *"
+                      RowSpacing="5">
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="0"
+                               Text="Name:" />
+
+                    <TextBox Grid.Column="1"
+                             Grid.Row="0"
+                             Text="{Binding Name, Mode=TwoWay}" />
+
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="1"
+                               Text="Folder:" />
+
+                    <DockPanel Grid.Column="1"
+                               Grid.Row="1"
+                               HorizontalSpacing="5">
+                        <Button DockPanel.Dock="Right"
+                                Content="Browse…"
+                                Command="{Binding BrowseCommand}"
+                                MinWidth="75" />
+
+                        <TextBox Text="{Binding Path, Mode=TwoWay}" />
+                    </DockPanel>
+
+                    <CheckBox Content="Mark as default installation"
+                              Grid.Column="1"
+                              Grid.Row="2"
+                              IsChecked="{Binding MakeDefault, Mode=TwoWay}" />
+                </Grid>
+
+                <DockPanel HorizontalSpacing="10"
+                           IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <Image DockPanel.Dock="Left"
+                           Height="16"
+                           Source="/Assets/Win95Icons/cancel16.gif"
+                           VerticalAlignment="Center"
+                           Width="16" />
+
+                    <TextBlock Foreground="Red"
+                               Margin="2 0 0 0"
+                               Text="{Binding ErrorMessage}"
+                               TextWrapping="Wrap" />
+                </DockPanel>
+
+
+                <layout:UniformStack HorizontalAlignment="Right"
+                                     Margin="0 5"
+                                     Spacing="8">
+                    <Button Command="{Binding SaveCommand}"
+                            Content="Save"
+                            IsDefault="True"
+                            MinWidth="75" />
+                    <Button Command="{Binding CancelCommand}"
+                            Content="Cancel"
+                            IsCancel="True"
+                            MinWidth="75" />
+                </layout:UniformStack>
+            </StackPanel>
+        </DockPanel>
     </StackPanel>
-</Window>
+</ClassicWindow>

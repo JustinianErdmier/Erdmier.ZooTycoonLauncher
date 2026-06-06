@@ -1,6 +1,9 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
-/// <summary>The view model for the Add Installation modal (SDD §7.2.1, §9.5). Owns Name / Folder / Default inputs and dispatches <see cref="AddInstallationCommand" /> on Save. Raises <see cref="CloseRequested" /> with the dispatched result on success, or <see langword="null" /> when the user cancels.</summary>
+/// <summary>
+///     The view model for the Add Installation modal (SDD §7.2.1, §9.5). Owns Name / Folder / Default inputs and dispatches <see cref="AddInstallationCommand" /> on Save. Raises
+///     <see cref="CloseRequested" /> with the dispatched result on success, or <see langword="null" /> when the user cancels.
+/// </summary>
 public sealed partial class AddInstallationDialogViewModel : ViewModelBase
 {
     private readonly IDialogService _dialogs;
@@ -18,11 +21,23 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public AddInstallationDialogViewModel()
-        : this(mediator: null!, dialogs: null!)
+        : this(null!, null!)
     { }
 
-    /// <summary>Raised when the dialogue should close. Argument is the dispatched <see cref="AddInstallationResult" /> on Save, or <see langword="null" /> on Cancel.</summary>
-    public event EventHandler<AddInstallationResult?>? CloseRequested;
+    // TODO: Should probably be a list so we can display multiple errors at once.
+    /// <summary>The most recent validation or dispatch error description, or <see langword="null" /> when none. Bound to the error TextBlock.</summary>
+    [ ObservableProperty ]
+    public partial string? ErrorMessage { get; set; }
+
+    // TODO: Test if this can be made private or if doing that will mess up the source generators.
+    /// <summary><see langword="true" /> while a dispatch is in flight.</summary>
+    [ ObservableProperty ]
+    [ NotifyCanExecuteChangedFor(nameof(SaveCommand)) ]
+    public partial bool IsBusy { get; set; }
+
+    /// <summary>Marks the new installation as the launcher default. Bound to the Default checkbox.</summary>
+    [ ObservableProperty ]
+    public partial bool MakeDefault { get; set; }
 
     /// <summary>The trimmed user-visible installation name. Bound to the Name TextBox.</summary>
     [ ObservableProperty ]
@@ -33,19 +48,6 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(SaveCommand)) ]
     public partial string Path { get; set; } = string.Empty;
-
-    /// <summary>Marks the new installation as the launcher default. Bound to the Default checkbox.</summary>
-    [ ObservableProperty ]
-    public partial bool MakeDefault { get; set; }
-
-    /// <summary>The most recent validation or dispatch error description, or <see langword="null" /> when none. Bound to the error TextBlock.</summary>
-    [ ObservableProperty ]
-    public partial string? ErrorMessage { get; set; }
-
-    /// <summary><see langword="true" /> while a dispatch is in flight.</summary>
-    [ ObservableProperty ]
-    [ NotifyCanExecuteChangedFor(nameof(SaveCommand)) ]
-    public partial bool IsBusy { get; set; }
 
     /// <summary>Sets the initial folder when the dialogue is being opened with a discovered candidate.</summary>
     /// <param name="prefilledPath">The candidate path to pre-fill, or <see langword="null" />.</param>
@@ -71,6 +73,7 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
     [ RelayCommand(CanExecute = nameof(CanExecuteSave)) ]
     private async Task SaveAsync(CancellationToken cancellationToken)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (_mediator is null)
         {
             return;
@@ -81,12 +84,14 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
 
         try
         {
+            // TODO: Confirm that the handler validates the name being unique and the path being valid.
             ErrorOr<AddInstallationResult> result =
                 await _mediator.Send(new AddInstallationCommand(Name.Trim(), Path.Trim(), MakeDefault), cancellationToken);
 
             if (result.IsError)
             {
                 ErrorMessage = result.FirstError.Description;
+
                 return;
             }
 
@@ -99,11 +104,16 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
     }
 
     [ RelayCommand ]
-    private void Cancel() => CloseRequested?.Invoke(this, null);
+    private void Cancel() => CloseRequested?.Invoke(this, e: null);
 
     private bool CanExecuteSave()
         => !IsBusy
-        && !string.IsNullOrWhiteSpace(Name)
-        && !string.IsNullOrWhiteSpace(Path)
-        && _mediator is not null;
+           && !string.IsNullOrWhiteSpace(Name)
+           && !string.IsNullOrWhiteSpace(Path)
+
+           // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+           && _mediator is not null;
+
+    /// <summary>Raised when the dialogue should close. Argument is the dispatched <see cref="AddInstallationResult" /> on Save, or <see langword="null" /> on Cancel.</summary>
+    public event EventHandler<AddInstallationResult?>? CloseRequested;
 }

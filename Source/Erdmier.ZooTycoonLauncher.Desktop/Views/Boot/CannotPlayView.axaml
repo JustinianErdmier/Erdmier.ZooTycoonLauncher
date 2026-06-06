@@ -20,9 +20,6 @@
             <TabItem Header="INI Config">
                 <ContentControl Content="{Binding IniConfigTab}" />
             </TabItem>
-            <TabItem Header="Scenarios">
-                <ContentControl Content="{Binding ScenariosTab}" />
-            </TabItem>
         </TabControl>
     </DockPanel>
 </UserControl>

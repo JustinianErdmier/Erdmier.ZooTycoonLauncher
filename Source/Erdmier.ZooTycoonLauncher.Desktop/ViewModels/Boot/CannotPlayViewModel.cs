@@ -13,7 +13,6 @@ public sealed class CannotPlayViewModel : ViewModelBase
         IsDefault        = installation.IsDefault;
         GeneralTab       = new GeneralTabViewModel(installation, mediator);
         IniConfigTab     = new IniConfigTabViewModel();
-        ScenariosTab     = new ScenariosTabViewModel();
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
@@ -27,7 +26,7 @@ public sealed class CannotPlayViewModel : ViewModelBase
                                        ModifiedUtc: null,
                                        LastPlayedUtc: null,
                                        LastOpenedUtc: null),
-               mediator: null!)
+               null!)
     { }
 
     /// <summary>General tab view model.</summary>
@@ -44,7 +43,4 @@ public sealed class CannotPlayViewModel : ViewModelBase
 
     /// <summary><see langword="true" /> when this is the default installation.</summary>
     public bool IsDefault { get; }
-
-    /// <summary>Scenarios tab view model.</summary>
-    public ScenariosTabViewModel ScenariosTab { get; }
 }

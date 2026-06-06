@@ -17,10 +17,11 @@ internal sealed class AvaloniaDialogService : IDialogService
     {
         LaunchErrorView view = new()
         {
-            DataContext = new LaunchErrorViewModel(message),
+            DataContext = new LaunchErrorViewModel(message)
         };
 
-        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            && desktop.MainWindow is not null)
         {
             view.Show(desktop.MainWindow);
         }
@@ -45,7 +46,7 @@ internal sealed class AvaloniaDialogService : IDialogService
 
         AddInstallationDialogView view = new()
         {
-            DataContext = vm,
+            DataContext = vm
         };
 
         return await view.ShowDialog<AddInstallationResult?>(owner);
@@ -64,7 +65,7 @@ internal sealed class AvaloniaDialogService : IDialogService
         FolderPickerOpenOptions options = new()
         {
             AllowMultiple = false,
-            Title         = "Select Zoo Tycoon installation folder",
+            Title         = "Select Zoo Tycoon installation folder"
         };
 
         if (!string.IsNullOrWhiteSpace(startPath))
@@ -81,11 +82,14 @@ internal sealed class AvaloniaDialogService : IDialogService
 
         IReadOnlyList<IStorageFolder> chosen = await owner.StorageProvider.OpenFolderPickerAsync(options);
 
-        return chosen.Count == 0 ? null : chosen[0].TryGetLocalPath();
+        return chosen.Count == 0
+                   ? null
+                   : chosen[index: 0]
+                       .TryGetLocalPath();
     }
 
     private static Window? ResolveOwner()
         => Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-            ? desktop.MainWindow
-            : null;
+               ? desktop.MainWindow
+               : null;
 }

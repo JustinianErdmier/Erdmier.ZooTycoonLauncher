@@ -1,6 +1,9 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
-/// <summary>The view model for the ReadyToPlay state — the active installation is valid and the game can be launched. Routes launch outcomes from the General tab to chrome capabilities. SDD §7.10.</summary>
+/// <summary>
+///     The view model for the ReadyToPlay state — the active installation is valid and the game can be launched. Routes launch outcomes from the General tab to chrome
+///     capabilities. SDD §7.10.
+/// </summary>
 public sealed class ReadyToPlayViewModel : ViewModelBase
 {
     private readonly IDialogService _dialogs;
@@ -21,9 +24,9 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
                                 IDialogService                dialogs,
                                 IMediator                     mediator)
     {
-        _rebootAsync     = rebootAsync;
-        _lifecycle       = lifecycle;
-        _dialogs         = dialogs;
+        _rebootAsync = rebootAsync;
+        _lifecycle   = lifecycle;
+        _dialogs     = dialogs;
 
         InstallationName = installation.Name;
         InstallationPath = installation.Path;
@@ -31,7 +34,6 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
 
         GeneralTab   = new GeneralTabViewModel(installation, mediator);
         IniConfigTab = new IniConfigTabViewModel();
-        ScenariosTab = new ScenariosTabViewModel();
 
         GeneralTab.LaunchOutcomeRaised += OnLaunchOutcomeRaised;
     }
@@ -51,9 +53,9 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
 
     private ReadyToPlayViewModel(InstallationSummary installation)
     {
-        _rebootAsync     = static _ => Task.CompletedTask;
-        _lifecycle       = new NoOpApplicationLifecycle();
-        _dialogs         = new NoOpDialogService();
+        _rebootAsync = static _ => Task.CompletedTask;
+        _lifecycle   = new NoOpApplicationLifecycle();
+        _dialogs     = new NoOpDialogService();
 
         InstallationName = installation.Name;
         InstallationPath = installation.Path;
@@ -61,7 +63,6 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
 
         GeneralTab   = new GeneralTabViewModel();
         IniConfigTab = new IniConfigTabViewModel();
-        ScenariosTab = new ScenariosTabViewModel();
 
         GeneralTab.LaunchOutcomeRaised += OnLaunchOutcomeRaised;
     }
@@ -81,9 +82,6 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
     /// <summary><see langword="true" /> when this is the default installation.</summary>
     public bool IsDefault { get; }
 
-    /// <summary>Scenarios tab view model.</summary>
-    public ScenariosTabViewModel ScenariosTab { get; }
-
     private async void OnLaunchOutcomeRaised(object? sender, LaunchGameResult result)
     {
         try
@@ -92,24 +90,29 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
             {
                 case LaunchGameOutcome.Started when result.CloseAfterGameLaunch:
                     _lifecycle.RequestShutdown();
+
                     break;
 
                 case LaunchGameOutcome.Started:
                     break;
 
                 case LaunchGameOutcome.Drifted:
-                    // CancellationToken.None: a drift-triggered reboot should always complete; the user already committed by clicking Launch, and there is no UI-level cancellation source here.
+                    // CancellationToken.None: a drift-triggered reboot should always complete; the user already committed by clicking Launch, and there is no UI-level cancellation
+                    // source here.
                     await _rebootAsync(CancellationToken.None);
+
                     break;
 
                 case LaunchGameOutcome.StartFailed:
                     _dialogs.ShowLaunchError(result.FailureMessage ?? "Zoo Tycoon could not be launched.");
+
                     break;
             }
         }
         catch (Exception ex)
         {
-            // Nested guard: ShowLaunchError can itself throw (e.g. Avalonia visual-tree failure); an uncaught throw here would escape async void to the synchronisation context and crash the process. Swallow the secondary failure — the original error is already lost.
+            // Nested guard: ShowLaunchError can itself throw (e.g. Avalonia visual-tree failure); an uncaught throw here would escape async void to the synchronisation context and
+            // crash the process. Swallow the secondary failure — the original error is already lost.
             try
             {
                 _dialogs.ShowLaunchError($"The launcher could not refresh installation state: {ex.Message}");
@@ -124,16 +127,16 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
 
 file sealed class NoOpApplicationLifecycle : IApplicationLifecycle
 {
-    public void RequestShutdown() { }
+    public void RequestShutdown()
+    { }
 }
 
 file sealed class NoOpDialogService : IDialogService
 {
-    public void ShowLaunchError(string message) { }
+    public void ShowLaunchError(string message)
+    { }
 
-    public Task<AddInstallationResult?> ShowAddInstallationAsync(string? prefilledPath)
-        => Task.FromResult<AddInstallationResult?>(null);
+    public Task<AddInstallationResult?> ShowAddInstallationAsync(string? prefilledPath) => Task.FromResult<AddInstallationResult?>(result: null);
 
-    public Task<string?> PickFolderAsync(string? startPath)
-        => Task.FromResult<string?>(null);
+    public Task<string?> PickFolderAsync(string? startPath) => Task.FromResult<string?>(result: null);
 }

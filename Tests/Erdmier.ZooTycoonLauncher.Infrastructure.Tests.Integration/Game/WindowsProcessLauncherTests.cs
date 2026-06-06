@@ -6,9 +6,9 @@ public sealed class WindowsProcessLauncherTests
     public async Task LaunchAsync_KnownGoodExe_ReturnsStarted()
     {
         WindowsProcessLauncher launcher = new();
-        string cmdPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), path2: "cmd.exe");
+        string                 cmdPath  = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), path2: "cmd.exe");
 
-        ProcessLaunchResult result = await launcher.LaunchAsync(cmdPath, workingDirectory: Environment.SystemDirectory, CancellationToken.None);
+        ProcessLaunchResult result = await launcher.LaunchAsync(cmdPath, Environment.SystemDirectory, CancellationToken.None);
 
         result.Started.ShouldBeTrue();
         result.ErrorMessage.ShouldBeNull();
@@ -18,7 +18,11 @@ public sealed class WindowsProcessLauncherTests
     public async Task LaunchAsync_NonExistentPath_ReturnsStartFailedWithMessage()
     {
         WindowsProcessLauncher launcher = new();
-        string missingPath = @"C:\definitely-not-real-" + Guid.NewGuid().ToString(format: "N") + ".exe";
+
+        string missingPath = @"C:\definitely-not-real-"
+                             + Guid.NewGuid()
+                                   .ToString(format: "N")
+                             + ".exe";
 
         ProcessLaunchResult result = await launcher.LaunchAsync(missingPath, workingDirectory: @"C:\", CancellationToken.None);
 

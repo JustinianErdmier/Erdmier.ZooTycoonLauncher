@@ -3,23 +3,12 @@
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.ReadyToPlayView"
              x:DataType="vm:ReadyToPlayViewModel">
-    <DockPanel>
-        <StackPanel DockPanel.Dock="Top"
-                    Margin="8,8,8,4">
-            <TextBlock Text="{Binding InstallationName}"
-                       FontWeight="Bold" />
-            <TextBlock Text="{Binding InstallationPath}" />
-        </StackPanel>
-        <TabControl>
-            <TabItem Header="General">
-                <ContentControl Content="{Binding GeneralTab}" />
-            </TabItem>
-            <TabItem Header="INI Config">
-                <ContentControl Content="{Binding IniConfigTab}" />
-            </TabItem>
-            <TabItem Header="Scenarios">
-                <ContentControl Content="{Binding ScenariosTab}" />
-            </TabItem>
-        </TabControl>
-    </DockPanel>
+    <TabControl>
+        <TabItem Header="General">
+            <ContentControl Content="{Binding GeneralTab}" />
+        </TabItem>
+        <TabItem Header="INI Config">
+            <ContentControl Content="{Binding IniConfigTab}" />
+        </TabItem>
+    </TabControl>
 </UserControl>

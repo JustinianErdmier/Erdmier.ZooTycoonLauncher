@@ -21,8 +21,8 @@ public sealed partial class NoGameInstallationFoundViewModel : ViewModelBase
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public NoGameInstallationFoundViewModel()
         : this(locatedCandidatePath: @"C:\Program Files (x86)\Microsoft Games\Zoo Tycoon",
-               dialogs: null!,
-               rebootAsync: null!)
+               null!,
+               null!)
     { }
 
     /// <summary><see langword="true" /> when a candidate path was discovered.</summary>
@@ -34,7 +34,8 @@ public sealed partial class NoGameInstallationFoundViewModel : ViewModelBase
     [ RelayCommand ]
     private async Task AddInstallationAsync(CancellationToken cancellationToken)
     {
-        if (_dialogs is null || _rebootAsync is null)
+        if (_dialogs is null
+            || _rebootAsync is null)
         {
             return;
         }

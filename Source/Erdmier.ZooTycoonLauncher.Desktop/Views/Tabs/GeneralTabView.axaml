@@ -11,8 +11,5 @@
         <Button Content="Launch Game"
                 Command="{Binding LaunchCommand}"
                 Margin="0,8,0,0" />
-        <TextBlock Text="Screen modes — coming soon"
-                   Margin="0,8,0,0" />
-        <TextBlock Text="Last played — coming soon" />
     </StackPanel>
 </UserControl>

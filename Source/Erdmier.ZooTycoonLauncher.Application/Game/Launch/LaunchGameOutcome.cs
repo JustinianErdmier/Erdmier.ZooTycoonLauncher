@@ -10,5 +10,5 @@ public enum LaunchGameOutcome
     Drifted,
 
     /// <summary>The OS rejected the start request (AV block, ACL deny, file in use). See <see cref="LaunchGameResult.FailureMessage" />.</summary>
-    StartFailed,
+    StartFailed
 }

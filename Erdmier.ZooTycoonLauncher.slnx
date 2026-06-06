@@ -19,6 +19,9 @@
         <File Path="docs/superpowers/plans/2026-06-03-launch-game.md" />
         <File Path="docs/superpowers/plans/2026-06-04-installation-flow-ui.md" />
     </Folder>
+    <Folder Name="/SolutionItems/docs/test-plans/">
+        <File Path="docs/test-plans/manual-end-to-end-tests.md" />
+    </Folder>
     <Folder Name="/SolutionItems/docs/user-interface-design/">
         <File Path="docs/user-interface-design/conventions.md" />
         <File Path="docs/user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif" />

@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 
 using Serilog.Extensions.Logging;
 
+using ILogger = Serilog.ILogger;
+
 // Local usings — the two MEL namespaces above collide with Serilog's unqualified ILogger in other Infrastructure files
 // (e.g. NullIniSnapshotService), so they must NOT be global. CLAUDE.md "local using only for namespace conflicts" applies.
 
@@ -22,7 +24,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         // Build the underlying Serilog logger once and share it between Serilog.ILogger consumers (e.g. NullIniSnapshotService)
         // and the Microsoft.Extensions.Logging bridge (e.g. LaunchGameHandler taking ILogger<TCategory>).
-        services.AddSingleton<Serilog.ILogger>(provider =>
+        services.AddSingleton<ILogger>(provider =>
         {
             IAppStorageLocations locations = provider.GetRequiredService<IAppStorageLocations>();
 
@@ -36,12 +38,13 @@ public static class InfrastructureServiceCollectionExtensions
         // to the shared Serilog logger above.
         services.AddLogging(builder => builder.ClearProviders());
 
-        services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(provider
-            => new SerilogLoggerProvider(provider.GetRequiredService<Serilog.ILogger>(), dispose: false));
+        services.AddSingleton<ILoggerProvider>(provider
+                                                   => new SerilogLoggerProvider(provider.GetRequiredService<ILogger>(), dispose: false));
 
         services.AddDbContext<LauncherDbContext>((provider, options) =>
         {
             IAppStorageLocations locations = provider.GetRequiredService<IAppStorageLocations>();
+
             options.UseSqlite($"Data Source={locations.LauncherDatabasePath}");
         });
 

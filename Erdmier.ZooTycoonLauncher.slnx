@@ -51,6 +51,7 @@
     </Folder>
     <Folder Name="/SolutionItems/docs/user-interface-design/ImplementationScreenshots/">
         <File Path="docs/user-interface-design/ImplementationScreenshots/LookingForZooTycoonState.png" />
+        <File Path="docs/user-interface-design/ImplementationScreenshots/OpenGameInstallationState.png" />
     </Folder>
     <Folder Name="/Source/">
         <Project Path="Source/Erdmier.ZooTycoonLauncher.Domain/Erdmier.ZooTycoonLauncher.Domain.csproj" />

@@ -11,14 +11,13 @@ Design as closely as possible.
 
 ### Testing Strategy
 
-> Set up any scenario that triggers a real boot (the happy path is fine), then artificially extend how long `BootCommand` takes to return so the transitional view stays on screen
-> long enough to inspect. The slowdown can come from anywhere in the pipeline — a pause inside the handler, a probe that takes its time, or a debugger break between
-> `MainWindowViewModel.BootAsync` assigning the `LookingForZooTycoonViewModel` to `ActiveContent` and the mediator dispatch returning. Confirm the looking view renders immediately
-> on launch and remains visible until the terminal state replaces it.
+I set up a few different scenarios that triggered a real boot (e.g. the happy path), then artificially extended how long `BootCommand` takes to return so the transitional view
+stays on screen long enough to inspect. I placed the slowdown in `MainWindowViewModel.BootAsync` as a `Task.Delay()`. Then I confirmed the looking view renders immediately
+on launch and remained visible until the terminal state replaced it.
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 The INI Config tab should be disabled. In the General tab, a single group box labelled "Status" should display the "Looking for Zoo Tycoon" message, intermediate progress bar, and
 cycle through a list of status messages. Unless this process is artificially extended, the view should almost never actually display — modern computers are so fast that the boot
@@ -39,22 +38,20 @@ delayed the boot command by 30 seconds. This delay is only used for testing and 
 
 I made two major changes, one starting with this view and carrying over into the following views. Firstly, I eliminated unnecessary whitespace by dynamically setting the window
 size based on the view. For this view, the window is rather small. However, I've explicitly programmed it to open front and centre, so the user does not have to search for it.
-Secondly, and to further emphasise the purpose of this view and how it lies outside the normal states, I removed all other markup from this view. There is no title menu, no tabs,
-no group box, and no status bar. This view is purely informational and serves as a placeholder until a deterministic state can be landed on.
+Secondly, and to further emphasise the purpose of this view and how it lies outside the normal states, I stripped most of the surrounding markup from this view. There is no title
+menu, no tabs, and no group box. The only chrome kept is a slimmed status bar — a single message panel plus the version, rather than the full complement of panels — so the view can
+still surface progress without pulling the rest of the application shell back in. This view is purely informational and serves as a placeholder until a deterministic state can be
+landed on.
 
 ### UI/UX
 
 #### Hi-Fi Mockup
 
-> Add a screenshot of the particular view in question from the hi-fi mockup in Claude Design.
+One thing worth noting is that the substantial whitespace at the bottom, under the status bar, is not intentional and is cropped out in the following high-fidelity screenshots.
 
 ![](../user-interface-design/HiFiMockupScreenshots/LookingForZooTycoonState.png)
 
-One thing worth noting is that the substantial whitespace at the bottom, under the status bar, is not intentional.
-
 #### Actual Implementation
-
-> Add a screenshot of the actual implementation.
 
 ![](../user-interface-design/ImplementationScreenshots/LookingForZooTycoonState.png)
 
@@ -62,49 +59,73 @@ One thing worth noting is that the substantial whitespace at the bottom, under t
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
-No. Because the mockup kept unnecessary markup and whitespace which added no value to this view.
+No — and the mismatch is intentional. The mockup renders this transitional state inside the full application chrome: the File / Help menu, the General / INI Config tab strip, and a "Status" group box wrapping the magnifier icon, the "Looking for Zoo Tycoon…" heading, the progress bar, and the registry-probe status line — all sat above a large block of empty space that the mockup's own caption flags as unintentional. The implementation instead treats this state as the pure, short-lived placeholder it is. It drops the menu, the tabs, and the group box; promotes the icon, heading, progress bar, and probe line to sit directly on the window; and dynamically sizes the window to the content so the mockup's dead space disappears entirely. The window is also explicitly opened front and centre so the user is not left hunting for a small, briefly displayed dialogue. The only chrome retained is a slimmed status bar at the foot of the window — a single message panel plus the version, rather than the mockup's two message panels, version panel, and "For Help, press F1" line.
 
 ## Open Game Installation: `pref = NoInstallation`
 
 ### Testing Strategy
 
-> Set the launcher's stored startup preference to `NoInstallation`, then launch the app. The installation registry can be either empty or populated — neither should matter — but
-> it's worth running the test in both states to confirm the branch short-circuits regardless.
+I set the launcher's stored startup preference to `NoInstallation`, then launched the app. I tested both with the installation registry empty and populated — neither should
+matter — but it was worth running a test in both states to confirm the branch short-circuited regardless.
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
+
+The main window should have the INI Config tab disabled, and the General tab should display a status group box conveying the current state. Underneath the status group box should
+be a data grid showing the user's registered installations for them to open as well as an option to add a new one.
 
 ### Actual Outcome
 
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
+A simplified view similar to the boot state; the tab controls were removed. The title menu was made visible again, just for the sake of making additional methods of doing the same
+actions displayed in the view possible as well as making the settings dialogue accessible. There is no data grid because this control has not been implemented yet and cannot be
+because it relies on undeveloped infrastructure. However, having a working data grid does not impact the purpose of this test.
+
+When designing the data grid that will eventually be shown here, I decided that each host (e.g. the Open Installation view or the Installation Manager dialogue) should be
+responsible for defining the buttons around the grid. Because of this, the actual implementation includes the buttons, but none of them are currently functional.
+
 ### Changes
 
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+Like the boot state, I removed the tab control. It doesn't make sense to have the tabs for a state where no installation is open. Additionally, I promoted the status group box
+contents to be top-level. Even though the buttons are not currently functional, I did hard-wire some basic states. Once the data grid is implemented, several buttons (e.g. `Open`
+and `Info`) will require a selection in the grid, so assuming no default selection is made or if there are no installations, the buttons should be disabled by default. Also, I
+removed the `Add` button from the original mockup. Whilst displaying the data grid in this state is nice for the user to quickly select and open an installation, I do not want this
+view to functionally do the same things as the Installation Manager dialogue. And since the `Info` button is disabled by default, I switched it with the `Manage` button, so the
+order is more visually appealing. I didn't like having a disabled, enabled, and then disabled button order.
 
 ### UI/UX
 
 #### Hi-Fi Mockup
 
-> Add a screenshot of the particular view in question from the hi-fi mockup in Claude Design.
+![](../user-interface-design/HiFiMockupScreenshots/OpenGameInstallationState.png)
 
 #### Actual Implementation
 
-> Add a screenshot of the actual implementation.
+![](../user-interface-design/ImplementationScreenshots/OpenGameInstallationState.png)
 
 #### Alignment
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
+No — and, as with the boot state, the divergences are deliberate rather than accidental. The mockup wraps the informational content in a "Status" group box and nests it inside the full tabbed shell (General / INI Config). The implementation drops the tab control entirely — tabs make no sense in a state where no installation is open — and promotes the status content to be top-level, so the folder icon, heading, and message sit directly on the window instead of inside a labelled frame. The title menu and status bar are retained, which matches the mockup, keeping the same actions (and the settings dialogue) reachable from more than one place.
+
+The data grid is the largest visible difference. The mockup shows a populated Name / Path / Status grid, whereas the implementation shows an "Installation Management Grid coming soon…" placeholder, because that control depends on infrastructure that has not been built yet. This gap does not undermine the test — the execution path itself is exercised start to finish regardless of whether a real grid is present.
+
+The buttons around the grid also differ by design. I removed the mockup's `Add` button so this view does not duplicate the Installation Manager dialogue's responsibilities, and I swapped `Info` and `Manage` so the enabled/disabled ordering reads better — the mockup's Add / Info / Manage arrangement left me with a disabled, enabled, disabled sequence I found visually jarring. The remaining buttons are hard-wired to the states they will eventually resolve to: `Open` and `Info` require a grid selection, so with no selection made — or with no installations at all — they default to disabled.
+
+One smaller copy difference follows from the same decision: the mockup's message ends with "…or add a new one", whereas the implementation ends with "…or add a new one in the manager". Because the inline `Add` button was dropped, adding an installation is no longer something this view does; the reworded message therefore points the user at the Installation Manager dialogue instead, keeping the instruction honest about where that action now lives.
+
 ### Shortcomings
 
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
-### Notes/Thoughts
-
-> Self-explanatory
+The installation data grid and action buttons are not yet implemented/functional. These features require infrastructure not yet implemented. However, for this test plan, these
+features are not necessarily needed. The execution path in the startup flow has still been tested from start to finish.
 
 ## Auto Locate: `pref = DefaultInstallation`, and `DefaultId = null`, and no rows exist
 
@@ -116,7 +137,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -160,7 +181,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -203,7 +224,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -245,7 +266,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -288,7 +309,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -330,7 +351,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -372,7 +393,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -414,7 +435,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -456,7 +477,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -498,7 +519,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -540,7 +561,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -582,7 +603,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -626,7 +647,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -668,7 +689,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -710,7 +731,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -752,7 +773,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -795,7 +816,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -840,7 +861,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -883,7 +904,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 
@@ -927,7 +948,7 @@ No. Because the mockup kept unnecessary markup and whitespace which added no val
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process was.
+> Explain what the expected outcome for this stage in the process should be.
 
 ### Actual Outcome
 

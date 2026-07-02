@@ -57,7 +57,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         StatusMessagePrimaryText   = "Discovering installations…";
         StatusMessageSecondaryText = "Please wait…";
 
-        await Task.Delay(TimeSpan.FromSeconds(seconds: 5), cancellationToken);
+        // await Task.Delay(TimeSpan.FromSeconds(seconds: 2), cancellationToken);
 
         ErrorOr<AppBoot.BootResult> result = await _mediator.Send(new AppBoot.BootCommand(), cancellationToken);
 

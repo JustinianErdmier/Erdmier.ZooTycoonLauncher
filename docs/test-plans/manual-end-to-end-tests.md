@@ -20,14 +20,27 @@ Design as closely as possible.
 
 > Explain what the expected outcome for this stage in the process was.
 
+The INI Config tab should be disabled. In the General tab, a single group box labelled "Status" should display the "Looking for Zoo Tycoon" message, intermediate progress bar, and
+cycle through a list of status messages. Unless this process is artificially extended, the view should almost never actually display — modern computers are so fast that the boot
+command completes before the view is even rendered.
+
 ### Actual Outcome
 
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
+The main window renders immediately on the main desktop, horizontally centred, and further up vertically. Whilst in this state, the window is smaller and simply displays
+the "Looking for Zoo Tycoon" message, intermediate progress bar, and cycling through a list of status messages. To ensure this view displayed long enough to test, I artificially
+delayed the boot command by 30 seconds. This delay is only used for testing and will not be a part of the final product.
+
 ### Changes
 
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+I made two major changes, one starting with this view and carrying over into the following views. Firstly, I eliminated unnecessary whitespace by dynamically setting the window
+size based on the view. For this view, the window is rather small. However, I've explicitly programmed it to open front and centre, so the user does not have to search for it.
+Secondly, and to further emphasise the purpose of this view and how it lies outside the normal states, I removed all other markup from this view. There is no title menu, no tabs,
+no group box, and no status bar. This view is purely informational and serves as a placeholder until a deterministic state can be landed on.
 
 ### UI/UX
 
@@ -35,21 +48,21 @@ Design as closely as possible.
 
 > Add a screenshot of the particular view in question from the hi-fi mockup in Claude Design.
 
+![](../user-interface-design/HiFiMockupScreenshots/LookingForZooTycoonState.png)
+
+One thing worth noting is that the substantial whitespace at the bottom, under the status bar, is not intentional.
+
 #### Actual Implementation
 
 > Add a screenshot of the actual implementation.
+
+![](../user-interface-design/ImplementationScreenshots/LookingForZooTycoonState.png)
 
 #### Alignment
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
-### Shortcomings
-
-> Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
-
-### Notes/Thoughts
-
-> Self-explanatory
+No. Because the mockup kept unnecessary markup and whitespace which added no value to this view.
 
 ## Open Game Installation: `pref = NoInstallation`
 
@@ -141,7 +154,8 @@ Design as closely as possible.
 ### Testing Strategy
 
 > Same setup as the previous section — no installation rows, null `DefaultInstallationId`, `DefaultInstallation` preference — but ensure no Zoo Tycoon installation exists in any
-> of the locator's probe locations. Either remove them from disk or temporarily point the probes at empty directories. Launch the app and confirm no candidate path is shown on the
+> of the locator's probe locations. Either remove them from the disk or temporarily point the probes at empty directories. Launch the app and confirm no candidate path is shown on
+> the
 > resulting screen.
 
 ### Expected Outcome
@@ -353,7 +367,7 @@ Design as closely as possible.
 
 ### Testing Strategy
 
-> Set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present and parseable), and set the stored `DefaultInstallationId` to
+> Set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present, and parseable), and set the stored `DefaultInstallationId` to
 > that row's id. Ensure the startup preference is `DefaultInstallation`. Launch the app and confirm the right installation surfaces on `ReadyToPlay`.
 
 ### Expected Outcome
@@ -475,7 +489,7 @@ Design as closely as possible.
 
 > Self-explanatory
 
-## Last Played → Ready: `pref = LastPlayedInstallation`, candidate exists, verifies and synchronises
+## Last Played → Ready: `pref = LastPlayedInstallation`, a candidate exists, verifies, and synchronises
 
 ### Testing Strategy
 
@@ -517,7 +531,7 @@ Design as closely as possible.
 
 > Self-explanatory
 
-## Last Played → Cannot Play (`HasExe = false`): `pref = LastPlayedInstallation`, candidate exists, fails verification
+## Last Played → Cannot Play (`HasExe = false`): `pref = LastPlayedInstallation`, a candidate exists, fails verification
 
 ### Testing Strategy
 
@@ -559,7 +573,7 @@ Design as closely as possible.
 
 > Self-explanatory
 
-## Last Played → Cannot Play (sync failure): `pref = LastPlayedInstallation`, candidate exists, fails INI synchronisation
+## Last Played → Cannot Play (sync failure): `pref = LastPlayedInstallation`, a candidate exists, fails INI synchronisation
 
 ### Testing Strategy
 
@@ -645,7 +659,7 @@ Design as closely as possible.
 
 > Self-explanatory
 
-## Last Opened → Ready: `pref = LastOpenedInstallation`, candidate exists, verifies and synchronises
+## Last Opened → Ready: `pref = LastOpenedInstallation`, a candidate exists, verifies, and synchronises
 
 ### Testing Strategy
 
@@ -687,7 +701,7 @@ Design as closely as possible.
 
 > Self-explanatory
 
-## Last Opened → Cannot Play (`HasExe = false`): `pref = LastOpenedInstallation`, candidate exists, fails verification
+## Last Opened → Cannot Play (`HasExe = false`): `pref = LastOpenedInstallation`, a candidate exists, fails verification
 
 ### Testing Strategy
 
@@ -729,7 +743,7 @@ Design as closely as possible.
 
 > Self-explanatory
 
-## Last Opened → Cannot Play (sync failure): `pref = LastOpenedInstallation`, candidate exists, fails INI synchronisation
+## Last Opened → Cannot Play (sync failure): `pref = LastOpenedInstallation`, a candidate exists, fails INI synchronisation
 
 ### Testing Strategy
 
@@ -819,7 +833,7 @@ Design as closely as possible.
 ### Testing Strategy
 
 > Set up an installation row whose stored `HasExe` and `HasIni` reflect a previous state — for example, both flags true. Then change reality before launching so the values
-> diverge: remove zoo.exe so the actual `HasExe` should be false, or restore a previously-missing zoo.ini so the actual `HasIni` should now be true. Note the stored flags before
+> diverge: remove zoo.exe so the actual `HasExe` should be false, or restore a previously missing zoo.ini so the actual `HasIni` should now be true. Note the stored flags before
 > boot for comparison. Run any scenario that drives the handler through a `Verify(row)` for this installation (the happy path or a `LastPlayed`/`LastOpened` candidate all work).
 > After boot completes, inspect the row again to confirm the stored `HasExe` / `HasIni` (and `ModifiedUtc`) now match disk reality. The downstream UI outcome — `CannotPlay` or
 > `ReadyToPlay` — depends on the new flag values; both are acceptable here, the point is that the row was updated.
@@ -907,7 +921,7 @@ Design as closely as possible.
 ### Testing Strategy
 
 > Force `BootCommand` to return a non-success `ErrorOr` so the Desktop-layer fallback engages. Break the handler's environment in a way that surfaces as an error rather than a
-> crash — for example, corrupt the launcher database file, hold an exclusive lock on it, point the storage path at a directory that cannot be created, or substitute an
+> crash. For example, corrupt the launcher database file, hold an exclusive lock on it, point the storage path at a directory that cannot be created, or substitute an
 > infrastructure dependency that returns a typed error on its first call. Launch the app and confirm `NoGameInstallationFound` renders with no candidate path and the app stays
 > responsive rather than crashing.
 
@@ -951,11 +965,11 @@ Design as closely as possible.
 
 # Notes & Future Tasks/Goals
 
-1. Abstract shared string literals used in the UI into a single constants/helper class so that everything can be easily updated in one single place and also eliminate duplication
-   (e.g. the version number in the title bar and the two status bar versions are hardcoded and duplicated when it could be read from a single source of truth. Similar thing for the
-   status messages; they're not duplicated, but you as of right now, every view model is responsible for defining the appropriate strings. If all the strings were in one class, the
-   view models could still be responsible for setting/passing along the info. However, the source text would be in one, central location, meaning that the devs don't have to hunt
-   down string literals just to update or add).
+1. Abstract shared string literals used in the UI into a single constants/helper class so that everything can be easily updated in one single place and also eliminate duplication.
+   For example, the version number in the title bar and the two status bar versions are hardcoded and duplicated when it could be read from a single source of truth. Similar thing
+   for the status messages; they're not duplicated, but you as of right now, every view model is responsible for defining the appropriate strings. If all the strings were in one
+   class, the view models could still be responsible for setting/passing along the info. However, the source text would be in one, central location, meaning that the devs don't
+   have to hunt down string literals just to update or add.
 2. The "Auto-locate trail" group box on the "No Installation Found" screen needs to be dynamically populated. It's currently hardcoded.
 3. The "Name" field in the "Add Installation" dialogue needs to be set as well as the default checkbox if application.
 4. The auto-locate pipeline needs to actually return a potential candidate if found. It's currently being hardcoded in the view model.

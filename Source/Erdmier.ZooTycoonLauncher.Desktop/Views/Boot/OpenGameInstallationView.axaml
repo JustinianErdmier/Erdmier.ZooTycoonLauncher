@@ -3,12 +3,49 @@
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.OpenGameInstallationView"
              x:DataType="vm:OpenGameInstallationViewModel">
-    <StackPanel HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Spacing="8"
-                Margin="16">
-        <TextBlock Text="No installation is selected. Use the Installation Manager to add one." />
-        <Button Content="Add / Pick Installation"
-                Command="{Binding AddInstallationCommand}" />
+    <StackPanel Orientation="Vertical"
+                Spacing="10">
+        <DockPanel HorizontalSpacing="10">
+            <Image DockPanel.Dock="Left"
+                   Height="32"
+                   Source="/Assets/Win95Icons/foldercatalog16.ico"
+                   VerticalAlignment="Center"
+                   Width="32" />
+
+            <StackPanel Margin="5 0 0 0"
+                        Orientation="Vertical"
+                        Spacing="4">
+                <TextBlock FontWeight="Solid"
+                           Text="Open Game Installation" />
+
+                <!--TODO: The "No Installation" needs to be monospaced, and "Open" needs to be bold.-->
+                <TextBlock TextWrapping="Wrap">Your startup preference is set to No Installation. Please choose an installation below and click Open, or add a new one in the manager.</TextBlock>
+            </StackPanel>
+        </DockPanel>
+
+        <!--TODO: The grid for managing game installations needs to be its own control that can be used both here and in the game installation management dialogue.-->
+        <TextBox Height="50"
+                 IsReadOnly="True"
+                 Padding="10">
+            Installation Management Grid coming soon...
+        </TextBox>
+
+        <DockPanel HorizontalSpacing="8"
+                   LastChildFill="False">
+            <Button Content="Open"
+                    DockPanel.Dock="Right"
+                    IsDefault="True"
+                    IsEnabled="False"
+                    Padding="25 0" />
+
+            <Button Content="Manage"
+                    DockPanel.Dock="Left"
+                    Padding="10 0" />
+
+            <Button Content="Info"
+                    DockPanel.Dock="Left"
+                    IsEnabled="False"
+                    Padding="10 0" />
+        </DockPanel>
     </StackPanel>
 </UserControl>

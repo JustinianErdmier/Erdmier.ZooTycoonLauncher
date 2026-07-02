@@ -95,7 +95,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "PowerShell(git diff docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md > $env:TEMP/sdd-diff.txt; \\(Get-Content $env:TEMP/sdd-diff.txt | Measure-Object -Line\\).Lines)",
-      "Bash(dotnet restore *)"
+      "Bash(dotnet restore *)",
+      "mcp__rider__list_directory_tree"
     ]
   },
   "outputStyle": "Explanatory",

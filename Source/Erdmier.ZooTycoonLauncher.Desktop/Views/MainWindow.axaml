@@ -28,6 +28,7 @@
 
     <DockPanel>
         <Menu DockPanel.Dock="Top"
+              IsVisible="{Binding !IsBooting}"
               Margin="5 1 5 2">
             <MenuItem Header="File">
                 <MenuItem Header="Open Installation…" />

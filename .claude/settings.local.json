@@ -94,7 +94,8 @@
       "PowerShell(gh auth status 2>&1)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "PowerShell(git diff docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md > $env:TEMP/sdd-diff.txt; \\(Get-Content $env:TEMP/sdd-diff.txt | Measure-Object -Line\\).Lines)"
+      "PowerShell(git diff docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md > $env:TEMP/sdd-diff.txt; \\(Get-Content $env:TEMP/sdd-diff.txt | Measure-Object -Line\\).Lines)",
+      "Bash(dotnet restore *)"
     ]
   },
   "outputStyle": "Explanatory",

@@ -1,5 +1,6 @@
 <Solution>
     <Folder Name="/SolutionItems/">
+        <File Path=".claudeignore" />
         <File Path=".gitignore" />
         <File Path="CLAUDE.md" />
         <File Path="Directory.Build.props" />

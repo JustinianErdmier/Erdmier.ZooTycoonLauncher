@@ -59,7 +59,13 @@ One thing worth noting is that the substantial whitespace at the bottom, under t
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
-No — and the mismatch is intentional. The mockup renders this transitional state inside the full application chrome: the File / Help menu, the General / INI Config tab strip, and a "Status" group box wrapping the magnifier icon, the "Looking for Zoo Tycoon…" heading, the progress bar, and the registry-probe status line — all sat above a large block of empty space that the mockup's own caption flags as unintentional. The implementation instead treats this state as the pure, short-lived placeholder it is. It drops the menu, the tabs, and the group box; promotes the icon, heading, progress bar, and probe line to sit directly on the window; and dynamically sizes the window to the content so the mockup's dead space disappears entirely. The window is also explicitly opened front and centre so the user is not left hunting for a small, briefly displayed dialogue. The only chrome retained is a slimmed status bar at the foot of the window — a single message panel plus the version, rather than the mockup's two message panels, version panel, and "For Help, press F1" line.
+No — and the mismatch is intentional. The mockup renders this transitional state inside the full application chrome: the File / Help menu, the General / INI Config tab strip, and
+a "Status" group box wrapping the magnifier icon, the "Looking for Zoo Tycoon…" heading, the progress bar, and the registry-probe status line — all sat above a large block of empty
+space that the mockup's own caption flags as unintentional. The implementation instead treats this state as the pure, short-lived placeholder it is. It drops the menu, the tabs,
+and the group box; promotes the icon, heading, progress bar, and probe line to sit directly on the window; and dynamically sizes the window to the content so the mockup's dead
+space disappears entirely. The window is also explicitly opened front and centre so the user is not left hunting for a small, briefly displayed dialogue. The only chrome retained
+is a slimmed status bar at the foot of the window — a single message panel plus the version, rather than the mockup's two message panels, version panel, and "For Help, press F1"
+line.
 
 ## Open Game Installation: `pref = NoInstallation`
 
@@ -112,13 +118,23 @@ order is more visually appealing. I didn't like having a disabled, enabled, and 
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
-No — and, as with the boot state, the divergences are deliberate rather than accidental. The mockup wraps the informational content in a "Status" group box and nests it inside the full tabbed shell (General / INI Config). The implementation drops the tab control entirely — tabs make no sense in a state where no installation is open — and promotes the status content to be top-level, so the folder icon, heading, and message sit directly on the window instead of inside a labelled frame. The title menu and status bar are retained, which matches the mockup, keeping the same actions (and the settings dialogue) reachable from more than one place.
+No — and, as with the boot state, the divergences are deliberate rather than accidental. The mockup wraps the informational content in a "Status" group box and nests it inside the
+full tabbed shell (General / INI Config). The implementation drops the tab control entirely — tabs make no sense in a state where no installation is open — and promotes the status
+content to be top-level, so the folder icon, heading, and message sit directly on the window instead of inside a labelled frame. The title menu and status bar are retained, which
+matches the mockup, keeping the same actions (and the settings dialogue) reachable from more than one place.
 
-The data grid is the largest visible difference. The mockup shows a populated Name / Path / Status grid, whereas the implementation shows an "Installation Management Grid coming soon…" placeholder, because that control depends on infrastructure that has not been built yet. This gap does not undermine the test — the execution path itself is exercised start to finish regardless of whether a real grid is present.
+The data grid is the largest visible difference. The mockup shows a populated Name / Path / Status grid, whereas the implementation shows an "Installation Management Grid coming
+soon…" placeholder, because that control depends on infrastructure that has not been built yet. This gap does not undermine the test — the execution path itself is exercised start
+to finish regardless of whether a real grid is present.
 
-The buttons around the grid also differ by design. I removed the mockup's `Add` button so this view does not duplicate the Installation Manager dialogue's responsibilities, and I swapped `Info` and `Manage` so the enabled/disabled ordering reads better — the mockup's Add / Info / Manage arrangement left me with a disabled, enabled, disabled sequence I found visually jarring. The remaining buttons are hard-wired to the states they will eventually resolve to: `Open` and `Info` require a grid selection, so with no selection made — or with no installations at all — they default to disabled.
+The buttons around the grid also differ by design. I removed the mockup's `Add` button so this view does not duplicate the Installation Manager dialogue's responsibilities, and I
+swapped `Info` and `Manage` so the enabled/disabled ordering reads better — the mockup's Add / Info / Manage arrangement left me with a disabled, enabled, disabled sequence I found
+visually jarring. The remaining buttons are hard-wired to the states they will eventually resolve to: `Open` and `Info` require a grid selection, so with no selection made — or
+with no installations at all — they default to disabled.
 
-One smaller copy difference follows from the same decision: the mockup's message ends with "…or add a new one", whereas the implementation ends with "…or add a new one in the manager". Because the inline `Add` button was dropped, adding an installation is no longer something this view does; the reworded message therefore points the user at the Installation Manager dialogue instead, keeping the instruction honest about where that action now lives.
+One smaller copy difference follows from the same decision: the mockup's message ends with "…or add a new one", whereas the implementation ends with "…or add a new one in the
+manager". Because the inline `Add` button was dropped, adding an installation is no longer something this view does; the reworded message therefore points the user at the
+Installation Manager dialogue instead, keeping the instruction honest about where that action now lives.
 
 ### Shortcomings
 
@@ -131,44 +147,82 @@ features are not necessarily needed. The execution path in the startup flow has 
 
 ### Testing Strategy
 
-> Reset the installation registry so that no rows exist and the stored `DefaultInstallationId` is null. Ensure the startup preference is `DefaultInstallation`. Provide a real Zoo
-> Tycoon installation on disk in a location one of the locator's probes can discover (registry entry, Steam library, GOG library, or wherever the probes are pointed). Launch the
-> app and confirm the located path is surfaced on the resulting screen.
+I reset the installation registry so that no rows exist and the stored `DefaultInstallationId` is null. Then I set the startup preference to `DefaultInstallation`. With a real Zoo
+Tycoon installation on disk in a location which one of the locator's probes can discover (registry entry, Steam library, GOG library, or wherever the probes are pointed), I
+launched the app. I confirmed the located path is surfaced on the resulting screen.
 
 ### Expected Outcome
 
 > Explain what the expected outcome for this stage in the process should be.
+
+Because no installation rows exist and the stored `DefaultInstallationId` is null, the handler should fall through to the auto-locator and probe each of its known locations. Since
+a
+real installation was deliberately placed where one of those probes can reach it, the locator should return a candidate, and the resulting `NoGameInstallationFound` screen should
+surface that discovered path so the user can register it in a single step. The INI Config tab should be disabled — no installation is open — and the General tab should present a
+status group box carrying the error state (a "No Game Installation Found" heading, an explanatory message, and an `Add Installation` action) above an "Auto-locate trail" group box
+that lists every probe that was attempted and why each did or did not yield the game.
 
 ### Actual Outcome
 
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
+As with the earlier states, the view is the simplified, chrome-light variant: the tab control is gone and the status content is promoted to the top level, though the title menu and
+status bar remain. The red error icon, "No Game Installation Found" heading, explanatory message, and `Add Installation` button all render as intended. Crucially for this path, the
+located candidate is surfaced — a "A potential candidate has been located at the following path:" field appears beneath the message, populated with the discovered
+`C:\Program Files (x86)\Microsoft Games\Zoo Tycoon` path. Below it, the "Auto-locate trail" group box lists each probe (the registry key, the two Program Files directories, and the
+last-known path) with a × marker and a short outcome — "no value", "directory missing", or "empty". The `Add Installation` button opens a working Add Installation dialogue. The
+trail rows and the candidate path are currently hard-wired rather than produced by a live locate, but that is out of scope here (see Shortcomings) and does not affect the path
+under
+test.
+
 ### Changes
 
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+Consistent with the two previous states, I removed the tab control — there is still no open installation, so the INI Config tab has nothing to bind to — and promoted the status
+group box contents to be top-level. The title menu stays visible, matching the Open Game Installation view, so the settings dialogue and the menu-driven equivalents of the
+on-screen
+actions remain reachable. I kept the "Auto-locate trail" as a genuine group box, since unlike the redundant "Status" frame it is a real informational grouping. The main addition
+over the mockup is the candidate field: because this path is specifically the "locator found something" case, I added the "A potential candidate has been located at the following
+path:" label and read-only path field so the discovered installation is surfaced the moment the screen appears. Finally, I wired the `Add Installation` button to open the Add
+Installation dialogue.
 
 ### UI/UX
 
 #### Hi-Fi Mockup
 
-> Add a screenshot of the particular view in question from the hi-fi mockup in Claude Design.
+![](../user-interface-design/HiFiMockupScreenshots/NoGameInstallationFoundState.png)
 
 #### Actual Implementation
 
-> Add a screenshot of the actual implementation.
+![](../user-interface-design/ImplementationScreenshots/NoGameInstallationFoundState.png)
 
 #### Alignment
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
+Partially, and the differences follow the now-familiar pattern. The mockup nests everything inside the tabbed shell and a "Status" group box; the implementation drops both,
+promoting the error icon, heading, message, and `Add Installation` button to sit directly on the window, sizing the window down to its content, and keeping only the title menu and
+a
+slimmed status bar. The "Auto-locate trail" group box is retained on both, since it is a meaningful grouping rather than redundant chrome.
+
+The most significant divergence is deliberate and specific to this path: the mockup depicts the _no-candidate_ variant of this screen — it shows no located path — whereas this test
+exercises the _candidate-found_ variant, so the implementation adds the "A potential candidate has been located…" field the mockup does not contain. That is less a regression
+against the mockup than the mockup only illustrating one of the two branches this screen serves; the companion "Auto Locate (no candidate)" section covers the branch the mockup
+actually depicts. The remaining differences are minor wording tweaks — the implementation's message spells out "a zoo.exe file" and adds a "(if applicable)" qualifier to the
+previously known directory — and are otherwise faithful.
+
 ### Shortcomings
 
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
-### Notes/Thoughts
+Two pieces remain unfinished; both sit outside the scope of this test and neither changes its outcome:
 
-> Self-explanatory
+- The `Add Installation` button opens a fully functional Add Installation dialogue, but the dialogue's rules for auto-filling the name input and auto-ticking the "set as default"
+  checkbox are not yet working. The dialogue can still be completed manually, so the execution path is unaffected.
+- The "Auto-locate trail" group box does not display dynamic data — its rows are hard-wired and do not change between runs. The trail is purely informational at this stage, so a
+  static placeholder does not affect whether the located candidate is surfaced or whether the path can be exercised end to end.
 
 ## Auto Locate (no candidate): `pref = DefaultInstallation`, and `DefaultId = null`, and no rows exist, and the locator returns nothing
 

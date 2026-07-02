@@ -9,6 +9,7 @@
         <Deterministic>true</Deterministic>
         <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     </PropertyGroup>
+
     <ItemGroup>
         <!--
             Suppress NuGet audit advisories against the transitive native SQLite build

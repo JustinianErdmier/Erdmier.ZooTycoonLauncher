@@ -284,44 +284,98 @@ The same two pieces noted in the previous section remain unfinished; both sit ou
 
 ### Testing Strategy
 
-I'll set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present, and parseable) and clear the stored `DefaultInstallationId` so
-the handler is forced to promote. With the startup preference set to `DefaultInstallation`, I'll launch the app, then afterwards confirm both that `ReadyToPlay` rendered and that
-the settings row now holds the promoted installation's id.
+I set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present, and parseable) and cleared the stored `DefaultInstallationId` so
+the handler was forced to promote. With the startup preference set to `DefaultInstallation`, I launched the app, then afterwards confirmed both that `ReadyToPlay` rendered and that
+the settings row now held the promoted installation's id.
 
 ### Expected Outcome
 
 > Explain what the expected outcome for this stage in the process should be.
+
+Because installation rows exist but no `DefaultInstallationId` is stored, the handler should fall through to the promotion branch: pick a row, persist its id into the settings row as
+the new default, verify it (zoo.exe and zoo.ini both present), synchronise its INI, and — since the promoted row is valid — resolve to `ReadyToPlay`. This is the first genuinely
+_terminal, successful_ state in the flow, and the first in which an installation is actually open, so unlike the earlier chrome-light placeholder states the full application shell
+should return: the General / INI Config tab strip should be present and, crucially, the INI Config tab should now be _enabled_ rather than disabled. The General tab should show the
+installation profile name, a "Status" group box carrying the success state — a green tick, a "Ready to Play" heading, "EXE: Found" and "INI: Found" rows, the installation path, and
+an enabled `Launch Game` button — followed by a "Display" group summarising the current screen mode, a "Your System" group summarising the host, and a "Last played" stamp in the
+bottom-right corner. After boot, the settings row should hold the promoted installation's id, proving the promotion was persisted rather than merely applied in memory for the one
+render.
 
 ### Actual Outcome
 
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
+The test passed and everything worked as expected. For the first time in the flow the full tabbed shell returned — both the General and INI Config tabs are present, and the INI
+Config tab is now enabled rather than greyed out, because an installation is finally open. The General tab shows Installation Profile "Main"; the "Status" group renders the green
+tick, the "Ready to Play" heading, "EXE: Found" and "INI: Found" in green, the installation path, and an enabled `Launch Game` button. The "Display" and "Your System" group boxes
+render beneath, and a muted "Last played" line sits in the bottom-right — now bound to the row's real `LastPlayedUtc`, reading "Never" here only because the freshly promoted row has
+never been launched through the launcher. After boot, I inspected the settings row and confirmed it now held the promoted installation's id, so the default promotion was persisted
+as intended. Several of the values on screen are still hard-wired or only partially wired (see Shortcomings), but none of them affects the path under test — the promote → verify → synchronise → `ReadyToPlay` sequence, and the persistence of the promoted id, were all exercised end to end.
+
 ### Changes
 
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+No structural changes were required to make this path pass; the notable point is a design decision that is visible here for the first time. This is the state where the tab control
+returns — the earlier states stripped it because no installation was open, whereas here one is, so the General / INI Config tabs are finally meaningful. Because the `ReadyToPlay`
+and `CannotPlay` outcomes share an identical layout, they are served by a single `PlayView` / `PlayViewModel` pair rather than one view apiece; the earlier `ReadyToPlayViewModel`
+and `CannotPlayViewModel` were consolidated into `PlayViewModel`. A single `CanPlay` flag is threaded down into the tab view models, and that one flag toggles the difference between
+the two outcomes — the tick versus the warning icon, the "Ready to Play" versus "Cannot Play" heading, and the status-row colours — so the `CannotPlay` sibling test (section 6)
+exercises the same view from the opposite side of that flag.
 
 ### UI/UX
 
 #### Hi-Fi Mockup
 
-> Add a screenshot of the particular view in question from the hi-fi mockup in Claude Design.
+![](../user-interface-design/HiFiMockupScreenshots/ReadyToPlayStateWithGameOptimisation.png)
 
 #### Actual Implementation
 
-> Add a screenshot of the actual implementation.
+![](../user-interface-design/ImplementationScreenshots/ReadyToPlayState.png)
 
 #### Alignment
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
+Yes — and this is the first state whose implementation closely tracks the mockup, precisely because it is a real terminal state with an open installation rather than the chrome-light
+placeholder the earlier states deliberately became. Both the mockup and the implementation keep the full tabbed shell (General / INI Config), the title menu, the "Status", "Display",
+and "Your System" group boxes, and the status bar; structurally they line up. The remaining differences are cosmetic or data-level rather than structural, and all trace back to
+features that are not yet implemented:
+
+- The "Display" and "Your System" groups display hard-coded values in the implementation. The screen-mode enumeration and host/system detection that would populate them are not yet
+  built, so the figures shown (resolution, adapter, screen-mode counts, OS, processor, graphics, memory) are placeholders that happen to mirror the mockup's.
+- The "Last played" stamp is now bound to the row's real `LastPlayedUtc`, but it reads "Last played: Never" in the implementation versus the mockup's real "18 May 2026 20:55" because
+  the freshly promoted row has never been launched through the launcher, so its `LastPlayedUtc` is null and falls back to "Never". When a value _is_ present it is converted to local
+  time before display, matching the style of the mockup's timestamp.
+- The second status-bar cell is empty in the implementation, whereas the mockup shows "Display: 1920×1080". This cell is meant to surface the current display resolution, so it stays
+  blank until the display feature lands.
+- Minor cosmetics: the "Possible ZT1 modes" count is plain text rather than the mockup's blue link, and the differing profile name ("Main" vs "Complete Collection") is simply the
+  test data I happened to register.
+
+None of these change the alignment verdict — the structural intent of the mockup is faithfully reproduced.
+
 ### Shortcomings
 
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
+Four pieces on this screen are placeholders; all sit outside the scope of this test, and none affects whether the promotion-then-`ReadyToPlay` path is exercised end to end:
+
+- The "Display" group is hard-coded. Populating it needs the screen-mode enumeration feature (via `IScreenModeEnumerator`) to be implemented and bound to the view model.
+- The "Your System" group is hard-coded. Populating it needs host/system detection (OS, processor, graphics, memory) to be implemented and bound.
+- The "Last played" stamp is wired to the row's `LastPlayedUtc` and converted to local time (`ToLocalTime()`) at the UI boundary before display. One gap remains: the binding is
+  one-shot — `InstallationLastPlayed` is a plain property with no change notification, so the stamp does not refresh in real time after the game is launched from the GUI; it would
+  only pick up a new value on the next boot.
+- The second status-bar cell is empty rather than showing the current display resolution; it depends on the same display feature as the "Display" group.
+
 ### Notes/Thoughts
 
 > Self-explanatory
+
+Worth recording for later: because one `PlayView` serves both the `ReadyToPlay` and `CannotPlay` outcomes, the General tab's XAML still carries a couple of `TODO`s tied to the
+`CannotPlay` side of the `CanPlay` flag — muting the "Display"/"Your System" text when the installation cannot play, and only showing the EXE/INI remediation lines under the exact
+failing flag rather than on any `!CanPlay`. Neither is exercised by this happy-path test, but they will matter for section 6. There is also a standing `TODO` to drive the status
+colours from the installation-validity enum's own colour tokens instead of hard-coding `Green`/`DarkRed` in the view.
 
 ## 6. Default Promotion → Cannot Play (`HasExe = false`): `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row fails verification
 

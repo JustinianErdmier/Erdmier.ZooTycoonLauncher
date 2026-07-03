@@ -1,15 +1,237 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs"
+             xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Tabs.GeneralTabView"
              x:DataType="vm:GeneralTabViewModel">
     <StackPanel Margin="8"
-                Spacing="4">
-        <TextBlock Text="{Binding InstallationName}"
-                   FontWeight="Bold" />
-        <TextBlock Text="{Binding InstallationPath}" />
-        <Button Content="Launch Game"
-                Command="{Binding LaunchCommand}"
-                Margin="0,8,0,0" />
+                Spacing="10">
+        <StackPanel Orientation="Horizontal"
+                    Spacing="8">
+            <TextBlock Text="Installation Profile:" />
+
+            <TextBlock Text="{Binding InstallationName}"
+                       FontWeight="Bold" />
+        </StackPanel>
+
+        <controls:GroupBox Header="Status"
+                           Padding="10 15">
+            <DockPanel HorizontalSpacing="10">
+                <Image DockPanel.Dock="Left"
+                       Height="32"
+                       IsVisible="{Binding CanPlay}"
+                       Source="/Assets/Win95Icons/ok32.gif"
+                       VerticalAlignment="Top"
+                       Width="32" />
+
+                <Image DockPanel.Dock="Left"
+                       Height="32"
+                       IsVisible="{Binding !CanPlay}"
+                       Source="/Assets/Win95Icons/warning32.gif"
+                       VerticalAlignment="Top"
+                       Width="32" />
+
+                <Button Command="{Binding LaunchCommand}"
+                        DockPanel.Dock="Right"
+                        IsDefault="True"
+                        IsEnabled="{Binding CanPlay}"
+                        VerticalAlignment="Center">
+                    Launch Game
+                </Button>
+
+                <StackPanel Margin="5 0 0 0"
+                            Orientation="Vertical"
+                            Spacing="4">
+                    <TextBlock FontWeight="Solid"
+                               IsVisible="{Binding CanPlay}"
+                               Text="Ready to Play" />
+
+                    <TextBlock FontWeight="Solid"
+                               Foreground="DarkRed"
+                               IsVisible="{Binding !CanPlay}"
+                               Text="Cannot Play" />
+
+                    <!--TODO: The installation validity enum actually defines the colour tokens, so the foreground doesn't need to be hard-coded.-->
+                    <Grid ColumnDefinitions="Auto,*"
+                          ColumnSpacing="8"
+                          Margin="0 2 0 0"
+                          RowDefinitions="Auto,Auto,Auto"
+                          RowSpacing="2">
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="0"
+                                   Text="EXE:" />
+
+                        <TextBlock Foreground="Green"
+                                   Grid.Column="1"
+                                   Grid.Row="0"
+                                   IsVisible="{Binding HasExe}"
+                                   Text="Found" />
+
+                        <TextBlock Foreground="DarkRed"
+                                   Grid.Column="1"
+                                   Grid.Row="0"
+                                   IsVisible="{Binding !HasExe}"
+                                   Text="Not found" />
+
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="1"
+                                   Text="INI:" />
+
+                        <TextBlock Foreground="Green"
+                                   Grid.Column="1"
+                                   Grid.Row="1"
+                                   IsVisible="{Binding HasIni}"
+                                   Text="Found" />
+
+                        <TextBlock Foreground="DarkRed"
+                                   Grid.Column="1"
+                                   Grid.Row="1"
+                                   IsVisible="{Binding !HasIni}"
+                                   Text="Not found" />
+
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="2"
+                                   Text="Path:" />
+
+                        <TextBlock Grid.Column="1"
+                                   Grid.Row="2"
+                                   Text="{Binding InstallationPath}"
+                                   TextWrapping="Wrap" />
+                    </Grid>
+                </StackPanel>
+            </DockPanel>
+        </controls:GroupBox>
+
+        <!--TODO: All text needs to be muted when CanPlay is false.-->
+        <controls:GroupBox Header="Display"
+                           Padding="10 15">
+            <DockPanel HorizontalSpacing="10">
+                <Image DockPanel.Dock="Left"
+                       Height="32"
+                       Source="/Assets/Win95Icons/mystify16.ico"
+                       VerticalAlignment="Top"
+                       Width="32" />
+
+                <Grid ColumnDefinitions="Auto,*"
+                      ColumnSpacing="20"
+                      RowDefinitions="Auto,Auto, Auto, Auto"
+                      RowSpacing="2">
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="0"
+                               Text="Current resolution:" />
+
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="0"
+                               Text="1920 x 1080 · 32-bit · 60 Hz" />
+
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="1"
+                               Text="Adapter:" />
+
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="1"
+                               Text="\\.\DISPLAY1 - Primary" />
+
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="2"
+                               Text="Available screen modes:" />
+
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="2"
+                               Text="756 reported by Windows" />
+
+                    <TextBlock Grid.Column="0"
+                               Grid.Row="3"
+                               Text="Possible ZT1 modes:" />
+
+                    <TextBlock Grid.Column="1"
+                               Grid.Row="3"
+                               Text="14 compatible (16-bit ≤ 1600 x 1200)" />
+                </Grid>
+
+                <!--TODO: Shouls only be visible when both CanPlay and HasExe are false. -->
+                <TextBlock IsVisible="{Binding !CanPlay}"
+                           Text="Display detection succeeded, but the game cannot launch until the EXE is restored." />
+
+                <!--TODO: Shouls only be visible when both CanPlay and HasIni are false. -->
+                <TextBlock IsVisible="{Binding !CanPlay}"
+                           Text="Display detection succeeded, but the game cannot launch until the INI is restored." />
+            </DockPanel>
+        </controls:GroupBox>
+
+        <controls:GroupBox Header="Your System"
+                           Padding="10 15">
+            <DockPanel HorizontalSpacing="10">
+                <Image DockPanel.Dock="Left"
+                       Height="32"
+                       Source="/Assets/Win95Icons/mycomputer16.ico"
+                       VerticalAlignment="Top"
+                       Width="32" />
+
+                <StackPanel Orientation="Vertical"
+                            Spacing="6">
+                    <Grid ColumnDefinitions="Auto,*"
+                          ColumnSpacing="20"
+                          RowDefinitions="Auto,Auto, Auto, Auto"
+                          RowSpacing="2">
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="0"
+                                   Text="Operating system:" />
+
+                        <TextBlock Grid.Column="1"
+                                   Grid.Row="0"
+                                   Text="Windows 11 Pro · Version 24H2 · Build 26100" />
+
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="1"
+                                   Text="Processor:" />
+
+                        <TextBlock Grid.Column="1"
+                                   Grid.Row="1"
+                                   Text="Intel Core i7-12700K · 12C/20T · 3.60 GHz" />
+
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="2"
+                                   Text="Graphics:" />
+
+                        <TextBlock Grid.Column="1"
+                                   Grid.Row="2"
+                                   Text="NVIDIA GeForce RTX 3080 · 10 GB GDDR6X" />
+
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="3"
+                                   Text="Memory:" />
+
+                        <TextBlock Grid.Column="1"
+                                   Grid.Row="3"
+                                   Text="32 GB DDR5 · 28.4 GB available" />
+                    </Grid>
+
+                    <Separator />
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="6">
+                        <Image DockPanel.Dock="Left"
+                               Height="16"
+                               Source="/Assets/Win95Icons/ok16.gif"
+                               VerticalAlignment="Top"
+                               Width="16" />
+
+                        <TextBlock FontWeight="Bold"
+                                   Foreground="Green"
+                                   Text="zoo.exe is configured correctly." />
+
+                        <TextBlock Foreground="Gray"
+                                   Text="Windows XP compatability, 16-bit colour, and fullscreen optimisations are all set." />
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </controls:GroupBox>
+
+        <TextBlock Foreground="Gray"
+                   HorizontalAlignment="Right">
+            <Run Text="Last played: " />
+            <Run Text="{Binding InstallationLastPlayed}" />
+        </TextBlock>
     </StackPanel>
 </UserControl>

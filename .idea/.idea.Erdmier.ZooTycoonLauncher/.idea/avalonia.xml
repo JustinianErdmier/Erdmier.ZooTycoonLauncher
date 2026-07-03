@@ -8,6 +8,7 @@
         <entry key="Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Boot/LookingForZooTycoonView.axaml" value="Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj" />
         <entry key="Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Boot/NoGameInstallationFoundView.axaml" value="Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj" />
         <entry key="Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Boot/OpenGameInstallationView.axaml" value="Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj" />
+        <entry key="Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Boot/PlayView.axaml" value="Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj" />
         <entry key="Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Boot/ReadyToPlayView.axaml" value="Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj" />
         <entry key="Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Dialogs/AddInstallationDialogView.axaml" value="Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj" />
         <entry key="Source/Erdmier.ZooTycoonLauncher.Desktop/Views/MainWindow.axaml" value="Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj" />

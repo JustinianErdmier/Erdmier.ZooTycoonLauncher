@@ -1207,17 +1207,16 @@ needs:
 ```text  
 Desktop/Views/States/  
 ├── LookingForZooTycoonView.axaml          (+ .axaml.cs, paired with LookingForZooTycoonViewModel)  
-├── ReadyToPlayView.axaml                  (hosts the TabControl in §9.1)  
-├── CannotPlayView.axaml                   (hosts the TabControl in §9.1, Launch Game disabled)  
+├── PlayView.axaml                         (hosts the TabControl in §9.1 for both the ReadyToPlay and CannotPlay outcomes)  
 ├── NoGameInstallationFoundView.axaml  
 └── OpenGameInstallationView.axaml  
 ```  
 
-`ReadyToPlayView` and `CannotPlayView` both host the tab strip; the two share a base view model (`PlayableStateViewModelBase`) that owns the tab collection. The difference
-between  
-them is which tabs are enabled and what banner / button state they expose.
+A single `PlayView` hosts the tab strip for both the `ReadyToPlay` and `CannotPlay` outcomes. The two are identical in layout — the mockups (§9.12) differ only inside the General
+tab's Status group box — so there is one view and one `PlayViewModel`. A `CanPlay` flag on `PlayViewModel`, set from the boot outcome, is carried down into the tab view models,
+which render the difference (status icon, headline, EXE/INI status lines, and whether Launch Game is enabled). There is no host-level banner.
 
-**Layer 2 — tabs.** Each tab is a `UserControl` whose `DataContext` is its own `*TabViewModel`. The tab strip in `ReadyToPlayView` and `CannotPlayView` binds  
+**Layer 2 — tabs.** Each tab is a `UserControl` whose `DataContext` is its own `*TabViewModel`. The tab strip in `PlayView` binds  
 `TabControl.ItemsSource` to an `ObservableCollection<ITabViewModel>` and `TabControl.ContentTemplate` to a `DataTemplate` that uses `ViewLocator` to materialise the right  
 `*TabView`:
 

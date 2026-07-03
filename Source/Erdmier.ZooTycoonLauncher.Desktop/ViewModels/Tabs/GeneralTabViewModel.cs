@@ -9,9 +9,10 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="installation">The installation whose general information is displayed.</param>
+    /// <param name="canPlay"><see langword="true" /> when the owning <see cref="Boot.PlayViewModel" /> is in the ReadyToPlay state; drives <see cref="CanPlay" />.</param>
     /// <param name="mediator">The Mediator dispatcher.</param>
-    public GeneralTabViewModel(InstallationSummary installation, IMediator mediator)
-        : this(installation)
+    public GeneralTabViewModel(InstallationSummary installation, bool canPlay, IMediator mediator)
+        : this(installation, canPlay)
         => _mediator = mediator;
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
@@ -24,19 +25,40 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
                                        DateTime.UtcNow,
                                        ModifiedUtc: null,
                                        LastPlayedUtc: null,
-                                       LastOpenedUtc: null))
+                                       LastOpenedUtc: null),
+               canPlay: true)
     { }
 
-    private GeneralTabViewModel(InstallationSummary installation)
+    private GeneralTabViewModel(InstallationSummary installation, bool canPlay)
     {
         _installationId  = installation.Id;
         InstallationName = installation.Name;
         InstallationPath = installation.Path;
-        CanLaunch        = installation.Validity == InstallationValidity.Valid;
+
+        InstallationLastPlayed = installation.LastPlayedUtc?.ToLocalTime()
+                                             .ToString(format: "dd MMMM yyyy HH:mm")
+                                 ?? "Never";
+
+        CanPlay = canPlay;
+
+        HasExe = installation.Validity == InstallationValidity.Valid || installation.Validity == InstallationValidity.InvalidNoIni;
+        HasIni = installation.Validity == InstallationValidity.Valid || installation.Validity == InstallationValidity.InvalidNoExe;
     }
 
-    /// <summary><see langword="true" /> when the installation summary was valid at boot; the just-in-time verification inside the handler catches drift that happens after boot.</summary>
-    public bool CanLaunch { get; }
+    /// <summary>
+    ///     <see langword="true" /> when the owning <see cref="Boot.PlayViewModel" /> resolved to the ReadyToPlay state at boot; the just-in-time verification inside the handler
+    ///     catches drift that happens after boot.
+    /// </summary>
+    public bool CanPlay { get; }
+
+    /// <summary><see langword="true" /> when <c>zoo.exe</c> is present in the installation's directory; drives the EXE status row.</summary>
+    public bool HasExe { get; }
+
+    /// <summary><see langword="true" /> when <c>zoo.ini</c> is present in the installation's directory; drives the INI status row.</summary>
+    public bool HasIni { get; }
+
+    /// <summary>The installation's last played date.</summary>
+    public string InstallationLastPlayed { get; set; }
 
     /// <summary>The installation's user-visible name.</summary>
     public string InstallationName { get; }
@@ -76,7 +98,7 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
         }
     }
 
-    private bool CanExecuteLaunch() => CanLaunch && !IsBusy && _mediator is not null;
+    private bool CanExecuteLaunch() => CanPlay && !IsBusy && _mediator is not null;
 
     /// <summary>Raised after the launch command receives a result. <see cref="Boot.ReadyToPlayViewModel" /> subscribes and routes outcomes to chrome capabilities.</summary>
     public event EventHandler<LaunchGameResult>? LaunchOutcomeRaised;

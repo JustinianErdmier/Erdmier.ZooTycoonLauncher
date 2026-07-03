@@ -1,10 +1,12 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
 /// <summary>
-///     The view model for the ReadyToPlay state — the active installation is valid and the game can be launched. Routes launch outcomes from the General tab to chrome
-///     capabilities. SDD §7.10.
+///     The view model for the playable states — the active installation is open and its tabs are shown. A single <see cref="CanPlay" /> flag distinguishes the
+///     <c>ReadyToPlay</c> outcome (the game can be launched) from the <c>CannotPlay</c> outcome (the installation is invalid or synchronisation failed); the two share an
+///     identical layout, so there is one view and one view model. The flag is carried down into the tab view models, which render the difference. Routes launch outcomes from
+///     the General tab to chrome capabilities. SDD §7.10, §9.2.
 /// </summary>
-public sealed class ReadyToPlayViewModel : ViewModelBase
+public sealed class PlayViewModel : ViewModelBase
 {
     private readonly IDialogService _dialogs;
 
@@ -14,52 +16,38 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="installation">The resolved active installation.</param>
+    /// <param name="canPlay"><see langword="true" /> for the ReadyToPlay outcome; <see langword="false" /> for CannotPlay. Carried down into the tab view models.</param>
     /// <param name="rebootAsync">Delegate that re-issues the boot pipeline (typically <c>MainWindowViewModel.BootAsync</c>).</param>
     /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
     /// <param name="dialogs">Chrome service for opening modeless dialogues.</param>
     /// <param name="mediator">The Mediator dispatcher (passed to the General tab).</param>
-    public ReadyToPlayViewModel(InstallationSummary           installation,
-                                Func<CancellationToken, Task> rebootAsync,
-                                IApplicationLifecycle         lifecycle,
-                                IDialogService                dialogs,
-                                IMediator                     mediator)
+    public PlayViewModel(InstallationSummary           installation,
+                         bool                          canPlay,
+                         Func<CancellationToken, Task> rebootAsync,
+                         IApplicationLifecycle         lifecycle,
+                         IDialogService                dialogs,
+                         IMediator                     mediator)
     {
         _rebootAsync = rebootAsync;
         _lifecycle   = lifecycle;
         _dialogs     = dialogs;
 
-        InstallationName = installation.Name;
-        InstallationPath = installation.Path;
-        IsDefault        = installation.IsDefault;
+        CanPlay = canPlay;
 
-        GeneralTab   = new GeneralTabViewModel(installation, mediator);
+        GeneralTab   = new GeneralTabViewModel(installation, canPlay, mediator);
         IniConfigTab = new IniConfigTabViewModel();
 
         GeneralTab.LaunchOutcomeRaised += OnLaunchOutcomeRaised;
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
-    public ReadyToPlayViewModel()
-        : this(new InstallationSummary(Guid.Empty,
-                                       Name: "Designer Installation",
-                                       Path: @"C:\Program Files (x86)\Microsoft Games\Zoo Tycoon",
-                                       InstallationValidity.Valid,
-                                       IsDefault: true,
-                                       DateTime.UtcNow,
-                                       ModifiedUtc: null,
-                                       LastPlayedUtc: null,
-                                       LastOpenedUtc: null))
-    { }
-
-    private ReadyToPlayViewModel(InstallationSummary installation)
+    public PlayViewModel()
     {
         _rebootAsync = static _ => Task.CompletedTask;
         _lifecycle   = new NoOpApplicationLifecycle();
         _dialogs     = new NoOpDialogService();
 
-        InstallationName = installation.Name;
-        InstallationPath = installation.Path;
-        IsDefault        = installation.IsDefault;
+        CanPlay = true;
 
         GeneralTab   = new GeneralTabViewModel();
         IniConfigTab = new IniConfigTabViewModel();
@@ -73,14 +61,8 @@ public sealed class ReadyToPlayViewModel : ViewModelBase
     /// <summary>INI Config tab view model.</summary>
     public IniConfigTabViewModel IniConfigTab { get; }
 
-    /// <summary>The installation's user-visible name.</summary>
-    public string InstallationName { get; }
-
-    /// <summary>The installation's directory path.</summary>
-    public string InstallationPath { get; }
-
-    /// <summary><see langword="true" /> when this is the default installation.</summary>
-    public bool IsDefault { get; }
+    /// <summary><see langword="true" /> when the active installation can be launched (the ReadyToPlay outcome); <see langword="false" /> for CannotPlay.</summary>
+    public bool CanPlay { get; }
 
     private async void OnLaunchOutcomeRaised(object? sender, LaunchGameResult result)
     {

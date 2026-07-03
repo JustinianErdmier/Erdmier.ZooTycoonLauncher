@@ -223,9 +223,9 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Same setup as the previous section — no installation rows, null `DefaultInstallationId`, `DefaultInstallation` preference — but ensure no Zoo Tycoon installation exists in any
-> of the locator's probe locations. Either remove them from the disk or temporarily point the probes at empty directories. Launch the app and confirm no candidate path is shown on
-> the resulting screen.
+I'll use the same setup as the previous section — no installation rows, a null `DefaultInstallationId`, and the `DefaultInstallation` preference — but ensure no Zoo Tycoon
+installation exists in any of the locator's probe locations. I'll either remove them from disk or temporarily point the probes at empty directories, then launch the app and confirm
+no candidate path is shown on the resulting screen.
 
 ### Expected Outcome
 
@@ -266,9 +266,9 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present and parseable). Clear the stored `DefaultInstallationId` so the
-> handler is forced to promote. Ensure the startup preference is `DefaultInstallation`. Launch the app, then afterwards confirm both that `ReadyToPlay` rendered and that the
-> settings row now holds the promoted installation's id.
+I'll set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present and parseable) and clear the stored `DefaultInstallationId` so
+the handler is forced to promote. With the startup preference set to `DefaultInstallation`, I'll launch the app, then afterwards confirm both that `ReadyToPlay` rendered and that the
+settings row now holds the promoted installation's id.
 
 ### Expected Outcome
 
@@ -309,8 +309,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set up at least one installation row whose path no longer contains a zoo.exe — the file can be deleted, renamed, or the row can simply point at a directory that has never had
-> one. Clear the stored `DefaultInstallationId`. Ensure the startup preference is `DefaultInstallation`. Launch the app.
+I'll set up at least one installation row whose path no longer contains a zoo.exe — the file can be deleted, renamed, or the row can simply point at a directory that has never had
+one. I'll clear the stored `DefaultInstallationId`, ensure the startup preference is `DefaultInstallation`, and launch the app.
 
 ### Expected Outcome
 
@@ -351,9 +351,9 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set up at least one installation row whose path has a valid zoo.exe but whose zoo.ini cannot be synchronised — for example, a malformed file the parser rejects, a
-> permissions-locked file, or a file held open exclusively by another process. Clear the stored `DefaultInstallationId`. Ensure the startup preference is `DefaultInstallation`.
-> Launch the app.
+I'll set up at least one installation row whose path has a valid zoo.exe but whose zoo.ini cannot be synchronised — for example, a malformed file the parser rejects, a
+permissions-locked file, or a file held open exclusively by another process. I'll clear the stored `DefaultInstallationId`, ensure the startup preference is `DefaultInstallation`,
+and launch the app.
 
 ### Expected Outcome
 
@@ -394,8 +394,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Make the stored `DefaultInstallationId` point at a Guid that is not present in the installation registry. Either delete the row that originally owned it (leaving the settings
-> id behind) or just write an arbitrary fresh Guid into the settings row. Ensure the startup preference is `DefaultInstallation`. Launch the app.
+I'll make the stored `DefaultInstallationId` point at a Guid that is not present in the installation registry — either by deleting the row that originally owned it (leaving the
+settings id behind) or by writing an arbitrary fresh Guid into the settings row. I'll ensure the startup preference is `DefaultInstallation`, then launch the app.
 
 ### Expected Outcome
 
@@ -436,8 +436,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present, and parseable), and set the stored `DefaultInstallationId` to
-> that row's id. Ensure the startup preference is `DefaultInstallation`. Launch the app and confirm the right installation surfaces on `ReadyToPlay`.
+I'll set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present, and parseable), and set the stored `DefaultInstallationId` to
+that row's id. With the startup preference set to `DefaultInstallation`, I'll launch the app and confirm the right installation surfaces on `ReadyToPlay`.
 
 ### Expected Outcome
 
@@ -478,8 +478,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set up an installation row and set the stored `DefaultInstallationId` to match. Then remove or rename zoo.exe at the row's path so verification fails. Ensure the startup
-> preference is `DefaultInstallation`. Launch the app.
+I'll set up an installation row and set the stored `DefaultInstallationId` to match, then remove or rename zoo.exe at the row's path so verification fails. I'll ensure the startup
+preference is `DefaultInstallation`, then launch the app.
 
 ### Expected Outcome
 
@@ -520,8 +520,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set up an installation row whose path has a valid zoo.exe but a zoo.ini the synchroniser cannot process (malformed, locked, or otherwise unreadable). Set the stored
-> `DefaultInstallationId` to match. Ensure the startup preference is `DefaultInstallation`. Launch the app.
+I'll set up an installation row whose path has a valid zoo.exe but a zoo.ini the synchroniser cannot process (malformed, locked, or otherwise unreadable), and set the stored
+`DefaultInstallationId` to match. I'll ensure the startup preference is `DefaultInstallation`, then launch the app.
 
 ### Expected Outcome
 
@@ -562,8 +562,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set up at least two installation rows with distinct `LastPlayedUtc` values, both pointing at valid on-disk installations. Set the startup preference to `LastPlayedInstallation`.
-> Launch the app and confirm the row with the newer `LastPlayedUtc` is the one that surfaces — not the other valid row.
+I'll set up at least two installation rows with distinct `LastPlayedUtc` values, both pointing at valid on-disk installations, and set the startup preference to
+`LastPlayedInstallation`. I'll launch the app and confirm the row with the newer `LastPlayedUtc` is the one that surfaces — not the other valid row.
 
 ### Expected Outcome
 
@@ -604,8 +604,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Same setup as the previous section — multiple rows with distinct `LastPlayedUtc` values, `LastPlayedInstallation` preference — but the row with the newer `LastPlayedUtc` has no
-> zoo.exe at its path. Launch the app and confirm `CannotPlay` surfaces for that row; the handler should not silently fall back to another row.
+I'll use the same setup as the previous section — multiple rows with distinct `LastPlayedUtc` values and the `LastPlayedInstallation` preference — but with the row holding the newer
+`LastPlayedUtc` having no zoo.exe at its path. I'll launch the app and confirm `CannotPlay` surfaces for that row; the handler should not silently fall back to another row.
 
 ### Expected Outcome
 
@@ -646,8 +646,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Same setup as the previous two sections, but the row that would be selected by `LastPlayedUtc` has a valid zoo.exe and a zoo.ini the synchroniser cannot process. Launch the
-> app.
+I'll use the same setup as the previous two sections, but with the row that would be selected by `LastPlayedUtc` having a valid zoo.exe and a zoo.ini the synchroniser cannot process.
+Then I'll launch the app.
 
 ### Expected Outcome
 
@@ -688,10 +688,10 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set the startup preference to `LastPlayedInstallation` and ensure every installation row has a null `LastPlayedUtc` (i.e., the game has never been launched through the launcher
-> for any of these rows). Then arrange the rest of state to exercise whichever `DefaultInstallation` sub-path you want to see kick in after the fallback — for example, no rows
-> plus no locator candidate to land on `NoGameInstallationFound`, or one valid row with a null stored `DefaultInstallationId` to drive the promotion-then-`ReadyToPlay` flow.
-> Launch the app.
+I'll set the startup preference to `LastPlayedInstallation` and ensure every installation row has a null `LastPlayedUtc` (i.e. the game has never been launched through the launcher
+for any of these rows). Then I'll arrange the rest of the state to exercise whichever `DefaultInstallation` sub-path I want to see kick in after the fallback — for example, no rows
+plus no locator candidate to land on `NoGameInstallationFound`, or one valid row with a null stored `DefaultInstallationId` to drive the promotion-then-`ReadyToPlay` flow — and
+launch the app.
 
 ### Expected Outcome
 
@@ -732,8 +732,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set up at least two installation rows with distinct `LastOpenedUtc` values, both pointing at valid on-disk installations. Set the startup preference to `LastOpenedInstallation`.
-> Launch the app and confirm the row with the newer `LastOpenedUtc` is the one that surfaces.
+I'll set up at least two installation rows with distinct `LastOpenedUtc` values, both pointing at valid on-disk installations, and set the startup preference to
+`LastOpenedInstallation`. I'll launch the app and confirm the row with the newer `LastOpenedUtc` is the one that surfaces.
 
 ### Expected Outcome
 
@@ -774,8 +774,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Same setup as the previous section, but the row with the newer `LastOpenedUtc` has no zoo.exe at its path. Launch the app and confirm `CannotPlay` surfaces for that row; the
-> handler should not silently fall back to another row.
+I'll use the same setup as the previous section, but with the row holding the newer `LastOpenedUtc` having no zoo.exe at its path. I'll launch the app and confirm `CannotPlay`
+surfaces for that row; the handler should not silently fall back to another row.
 
 ### Expected Outcome
 
@@ -816,8 +816,8 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Same setup as the previous two sections, but the row that would be selected by `LastOpenedUtc` has a valid zoo.exe and a zoo.ini the synchroniser cannot process. Launch the
-> app.
+I'll use the same setup as the previous two sections, but with the row that would be selected by `LastOpenedUtc` having a valid zoo.exe and a zoo.ini the synchroniser cannot process.
+Then I'll launch the app.
 
 ### Expected Outcome
 
@@ -858,9 +858,9 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set the startup preference to `LastOpenedInstallation` and ensure every installation row has a null `LastOpenedUtc` (i.e., the launcher has never opened any of these rows on
-> the handler's behalf). Then arrange the rest of state to exercise whichever `DefaultInstallation` sub-path you want to see kick in after the fallback — same options as the
-> `LastPlayedInstallation` fallback case. Launch the app.
+I'll set the startup preference to `LastOpenedInstallation` and ensure every installation row has a null `LastOpenedUtc` (i.e. the launcher has never opened any of these rows on the
+handler's behalf). Then I'll arrange the rest of the state to exercise whichever `DefaultInstallation` sub-path I want to see kick in after the fallback — the same options as the
+`LastPlayedInstallation` fallback case — and launch the app.
 
 ### Expected Outcome
 
@@ -901,11 +901,11 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Set up an installation row whose stored `HasExe` and `HasIni` reflect a previous state — for example, both flags true. Then change reality before launching so the values
-> diverge: remove zoo.exe so the actual `HasExe` should be false, or restore a previously missing zoo.ini so the actual `HasIni` should now be true. Note the stored flags before
-> boot for comparison. Run any scenario that drives the handler through a `Verify(row)` for this installation (the happy path or a `LastPlayed`/`LastOpened` candidate all work).
-> After boot completes, inspect the row again to confirm the stored `HasExe` / `HasIni` (and `ModifiedUtc`) now match disk reality. The downstream UI outcome — `CannotPlay` or
-> `ReadyToPlay` — depends on the new flag values; both are acceptable here, the point is that the row was updated.
+I'll set up an installation row whose stored `HasExe` and `HasIni` reflect a previous state — for example, both flags true. Then I'll change reality before launching so the values
+diverge: removing zoo.exe so the actual `HasExe` should be false, or restoring a previously missing zoo.ini so the actual `HasIni` should now be true. I'll note the stored flags
+before boot for comparison, then run any scenario that drives the handler through a `Verify(row)` for this installation (the happy path or a `LastPlayed`/`LastOpened` candidate all
+work). After boot completes, I'll inspect the row again to confirm the stored `HasExe` / `HasIni` (and `ModifiedUtc`) now match disk reality. The downstream UI outcome — `CannotPlay`
+or `ReadyToPlay` — depends on the new flag values; both are acceptable here, as the point is that the row was updated.
 
 ### Expected Outcome
 
@@ -946,9 +946,9 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Note the row's current `LastOpenedUtc` before boot, or null it out beforehand so the change is unmistakable. Run any scenario that lands on `ReadyToPlay` (the happy path is
-> easiest). After boot completes, inspect the row and confirm `LastOpenedUtc` has been updated to a value close to "now" (within whatever drift the handler's `TimeProvider`
-> allows).
+I'll note the row's current `LastOpenedUtc` before boot, or null it out beforehand so the change is unmistakable. I'll run any scenario that lands on `ReadyToPlay` (the happy path is
+easiest), then after boot completes, inspect the row and confirm `LastOpenedUtc` has been updated to a value close to "now" (within whatever drift the handler's `TimeProvider`
+allows).
 
 ### Expected Outcome
 
@@ -989,10 +989,10 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-> Force `BootCommand` to return a non-success `ErrorOr` so the Desktop-layer fallback engages. Break the handler's environment in a way that surfaces as an error rather than a
-> crash. For example, corrupt the launcher database file, hold an exclusive lock on it, point the storage path at a directory that cannot be created, or substitute an
-> infrastructure dependency that returns a typed error on its first call. Launch the app and confirm `NoGameInstallationFound` renders with no candidate path and the app stays
-> responsive rather than crashing.
+I'll force `BootCommand` to return a non-success `ErrorOr` so the Desktop-layer fallback engages, breaking the handler's environment in a way that surfaces as an error rather than a
+crash. For example, I could corrupt the launcher database file, hold an exclusive lock on it, point the storage path at a directory that cannot be created, or substitute an
+infrastructure dependency that returns a typed error on its first call. Then I'll launch the app and confirm `NoGameInstallationFound` renders with no candidate path and the app
+stays responsive rather than crashing.
 
 ### Expected Outcome
 

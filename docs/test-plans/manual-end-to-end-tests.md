@@ -1113,7 +1113,14 @@ stays responsive rather than crashing.
    class, the view models could still be responsible for setting/passing along the info. However, the source text would be in one, central location, meaning that the devs don't
    have to hunt down string literals just to update or add.
 2. The "Auto-locate trail" group box on the "No Installation Found" screen needs to be dynamically populated. It's currently hardcoded.
-3. The "Name" field in the "Add Installation" dialogue needs to be set as well as the default checkbox if application.
-4. The auto-locate pipeline needs to actually return a potential candidate if found. It's currently being hardcoded in the view model.
-5. Ensure spacing, padding, and margins are consistent across all views.
-6. Create reusable controls for commonly configured stack and dock panels.
+    1. The boot command result currently only takes the path for a located candidate. However, it could be given the `LocatedDirectory` record itself, which not only has the path,
+       but also the list of all the checked locations and status.
+3. The "Name" field in the "Add Installation" dialogue needs to be set as well as the default checkbox based on the business rules described in the SDD.
+4. When landing on the ready to play state, the second status cell is not displaying the display resolution, even though it is hard-coded in
+   `MainWindowViewModel.UpdateStatusMessages()`. Even though the feature for detecting the display resolution is not yet implemented, the second status cell should still display a
+   placeholder value, such as "Display: 1920 × 1080".
+5. The "Your System" group box on the "Ready to Play" screen needs to be dynamically populated. It's currently hardcoded. Not only is this feature not yet implemented, it was added
+   to the mockup after the SDD was written. As such, this feature is not even planned, and there are no specs for it. I've gone ahead and added a hard-coded placeholder for it to
+   match the mockup, but as part of writing the spec, it needs to be researched if this feature can even be developed in the first place.
+6. Ensure spacing, padding, and margins are consistent across all views.
+7. Create reusable controls for commonly configured stack and dock panels.

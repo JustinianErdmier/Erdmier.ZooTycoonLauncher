@@ -7,41 +7,40 @@ Design as closely as possible.
 > the sections — I will go through and modify them as needed. Each execution path should be unique and represent a point in the process that is either terminal, transitional, or
 > progressive. Leave the Notes & Future Tasks/Goals section alone, it's there for me and not needed for this task.
 
-## Initial Render: `LookingForZooTycoon` shown while `BootCommand` is in flight
+## 1. Initial Render: `LookingForZooTycoon` shown while `BootCommand` is in flight
 
 ### Testing Strategy
 
-I set up a few different scenarios that triggered a real boot (e.g. the happy path), then artificially extended how long `BootCommand` takes to return so the transitional view
-stays on screen long enough to inspect. I placed the slowdown in `MainWindowViewModel.BootAsync` as a `Task.Delay()`. Then I confirmed the looking view renders immediately
-on launch and remained visible until the terminal state replaced it.
+I set up a few scenarios that triggered a real boot (e.g. the happy path), then artificially extended how long `BootCommand` takes to return so the transitional view stayed on
+screen long enough to inspect. I placed the slowdown in `MainWindowViewModel.BootAsync` as a `Task.Delay()`, then confirmed the looking view rendered immediately on launch, and
+remained visible until the terminal state replaced it.
 
 ### Expected Outcome
 
 > Explain what the expected outcome for this stage in the process should be.
 
-The INI Config tab should be disabled. In the General tab, a single group box labelled "Status" should display the "Looking for Zoo Tycoon" message, intermediate progress bar, and
-cycle through a list of status messages. Unless this process is artificially extended, the view should almost never actually display — modern computers are so fast that the boot
-command completes before the view is even rendered.
+The INI Config tab should be disabled. In the General tab, a single group box labelled "Status" should display the "Looking for Zoo Tycoon" message and an intermediate progress
+bar, and cycle through a list of status messages. Unless the process is artificially extended, the view should almost never actually display — modern computers are so fast that the
+boot command completes before the view is even rendered.
 
 ### Actual Outcome
 
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
-The main window renders immediately on the main desktop, horizontally centred, and further up vertically. Whilst in this state, the window is smaller and simply displays
-the "Looking for Zoo Tycoon" message, intermediate progress bar, and cycling through a list of status messages. To ensure this view displayed long enough to test, I artificially
-delayed the boot command by 30 seconds. This delay is only used for testing and will not be a part of the final product.
+The main window renders immediately, horizontally centred and sitting a little above the vertical centre of the desktop. Whilst in this state the window is smaller, displaying only
+the "Looking for Zoo Tycoon" message and an intermediate progress bar, and cycling through a list of status messages. To keep the view on screen long enough to test, I artificially
+delayed the boot command by 30 seconds; this delay is for testing only and will not ship in the final product.
 
 ### Changes
 
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
 
-I made two major changes, one starting with this view and carrying over into the following views. Firstly, I eliminated unnecessary whitespace by dynamically setting the window
-size based on the view. For this view, the window is rather small. However, I've explicitly programmed it to open front and centre, so the user does not have to search for it.
-Secondly, and to further emphasise the purpose of this view and how it lies outside the normal states, I stripped most of the surrounding markup from this view. There is no title
-menu, no tabs, and no group box. The only chrome kept is a slimmed status bar — a single message panel plus the version, rather than the full complement of panels — so the view can
-still surface progress without pulling the rest of the application shell back in. This view is purely informational and serves as a placeholder until a deterministic state can be
-landed on.
+I made two major changes here, the first of which carries over into the following views. Firstly, I eliminated unnecessary whitespace by sizing the window dynamically to its view;
+for this state the window is rather small, so I explicitly programmed it to open front and centre and spare the user from having to hunt for it. Secondly, to emphasise that this
+view lies outside the normal states, I stripped most of the surrounding markup — there is no title menu, no tabs, and no group box. The only chrome kept is a slimmed status bar (a
+single message panel plus the version, rather than the full complement of panels). This lets the view still surface progress without pulling the rest of the application shell back
+in. This view is purely informational, a placeholder until a deterministic state can be landed on.
 
 ### UI/UX
 
@@ -67,7 +66,7 @@ space disappears entirely. The window is also explicitly opened front and centre
 is a slimmed status bar at the foot of the window — a single message panel plus the version, rather than the mockup's two message panels, version panel, and "For Help, press F1"
 line.
 
-## Open Game Installation: `pref = NoInstallation`
+## 2. Open Game Installation: `pref = NoInstallation`
 
 ### Testing Strategy
 
@@ -86,9 +85,9 @@ be a data grid showing the user's registered installations for them to open as w
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
-A simplified view similar to the boot state; the tab controls were removed. The title menu was made visible again, just for the sake of making additional methods of doing the same
-actions displayed in the view possible as well as making the settings dialogue accessible. There is no data grid because this control has not been implemented yet and cannot be
-because it relies on undeveloped infrastructure. However, having a working data grid does not impact the purpose of this test.
+A simplified view similar to the boot state, with the tab control removed. The title menu was made visible again, both to expose alternative ways of triggering the same on-screen
+actions and to keep the settings dialogue reachable. There is no data grid: that control has not been implemented yet and cannot be, since it relies on infrastructure that is still
+undeveloped. A working data grid does not, however, affect the purpose of this test.
 
 When designing the data grid that will eventually be shown here, I decided that each host (e.g. the Open Installation view or the Installation Manager dialogue) should be
 responsible for defining the buttons around the grid. Because of this, the actual implementation includes the buttons, but none of them are currently functional.
@@ -128,9 +127,9 @@ soon…" placeholder, because that control depends on infrastructure that has no
 to finish regardless of whether a real grid is present.
 
 The buttons around the grid also differ by design. I removed the mockup's `Add` button so this view does not duplicate the Installation Manager dialogue's responsibilities, and I
-swapped `Info` and `Manage` so the enabled/disabled ordering reads better — the mockup's Add / Info / Manage arrangement left me with a disabled, enabled, disabled sequence I found
+swapped `Info` and `Manage` so the enabled/disabled ordering reads better. The mockup's Add / Info / Manage arrangement left me with a disabled, enabled, disabled sequence I found
 visually jarring. The remaining buttons are hard-wired to the states they will eventually resolve to: `Open` and `Info` require a grid selection, so with no selection made — or
-with no installations at all — they default to disabled.
+with no installations at all — they default to being disabled.
 
 One smaller copy difference follows from the same decision: the mockup's message ends with "…or add a new one", whereas the implementation ends with "…or add a new one in the
 manager". Because the inline `Add` button was dropped, adding an installation is no longer something this view does; the reworded message therefore points the user at the
@@ -143,7 +142,7 @@ Installation Manager dialogue instead, keeping the instruction honest about wher
 The installation data grid and action buttons are not yet implemented/functional. These features require infrastructure not yet implemented. However, for this test plan, these
 features are not necessarily needed. The execution path in the startup flow has still been tested from start to finish.
 
-## Auto Locate: `pref = DefaultInstallation`, and `DefaultId = null`, and no rows exist
+## 3. Auto Locate: `pref = DefaultInstallation`, and `DefaultId = null`, and no rows exist
 
 ### Testing Strategy
 
@@ -156,8 +155,7 @@ launched the app. I confirmed the located path is surfaced on the resulting scre
 > Explain what the expected outcome for this stage in the process should be.
 
 Because no installation rows exist and the stored `DefaultInstallationId` is null, the handler should fall through to the auto-locator and probe each of its known locations. Since
-a
-real installation was deliberately placed where one of those probes can reach it, the locator should return a candidate, and the resulting `NoGameInstallationFound` screen should
+a real installation was deliberately placed where one of those probes can reach it, the locator should return a candidate, and the resulting `NoGameInstallationFound` screen should
 surface that discovered path so the user can register it in a single step. The INI Config tab should be disabled — no installation is open — and the General tab should present a
 status group box carrying the error state (a "No Game Installation Found" heading, an explanatory message, and an `Add Installation` action) above an "Auto-locate trail" group box
 that lists every probe that was attempted and why each did or did not yield the game.
@@ -169,12 +167,11 @@ that lists every probe that was attempted and why each did or did not yield the 
 
 As with the earlier states, the view is the simplified, chrome-light variant: the tab control is gone and the status content is promoted to the top level, though the title menu and
 status bar remain. The red error icon, "No Game Installation Found" heading, explanatory message, and `Add Installation` button all render as intended. Crucially for this path, the
-located candidate is surfaced — a "A potential candidate has been located at the following path:" field appears beneath the message, populated with the discovered
+located candidate is surfaced — a field labelled "A potential candidate has been located at the following path:" appears beneath the message, populated with the discovered
 `C:\Program Files (x86)\Microsoft Games\Zoo Tycoon` path. Below it, the "Auto-locate trail" group box lists each probe (the registry key, the two Program Files directories, and the
 last-known path) with a × marker and a short outcome — "no value", "directory missing", or "empty". The `Add Installation` button opens a working Add Installation dialogue. The
 trail rows and the candidate path are currently hard-wired rather than produced by a live locate, but that is out of scope here (see Shortcomings) and does not affect the path
-under
-test.
+under test.
 
 ### Changes
 
@@ -182,11 +179,10 @@ test.
 
 Consistent with the two previous states, I removed the tab control — there is still no open installation, so the INI Config tab has nothing to bind to — and promoted the status
 group box contents to be top-level. The title menu stays visible, matching the Open Game Installation view, so the settings dialogue and the menu-driven equivalents of the
-on-screen
-actions remain reachable. I kept the "Auto-locate trail" as a genuine group box, since unlike the redundant "Status" frame it is a real informational grouping. The main addition
-over the mockup is the candidate field: because this path is specifically the "locator found something" case, I added the "A potential candidate has been located at the following
-path:" label and read-only path field so the discovered installation is surfaced the moment the screen appears. Finally, I wired the `Add Installation` button to open the Add
-Installation dialogue.
+on-screen actions remain reachable. I kept the "Auto-locate trail" as a genuine group box, since unlike the redundant "Status" frame, it is a real informational grouping. The main
+addition over the mockup is the candidate field: because this path is specifically the "locator found something" case, I added the "A potential candidate has been located at the
+following path" label and read-only path field so the discovered installation is surfaced the moment the screen appears. Finally, I wired the `Add Installation` button to open the
+Add Installation dialogue.
 
 ### UI/UX
 
@@ -204,8 +200,7 @@ Installation dialogue.
 
 Partially, and the differences follow the now-familiar pattern. The mockup nests everything inside the tabbed shell and a "Status" group box; the implementation drops both,
 promoting the error icon, heading, message, and `Add Installation` button to sit directly on the window, sizing the window down to its content, and keeping only the title menu and
-a
-slimmed status bar. The "Auto-locate trail" group box is retained on both, since it is a meaningful grouping rather than redundant chrome.
+a slimmed status bar. The "Auto-locate trail" group box is retained on both, since it is a meaningful grouping rather than redundant chrome.
 
 The most significant divergence is deliberate and specific to this path: the mockup depicts the _no-candidate_ variant of this screen — it shows no located path — whereas this test
 exercises the _candidate-found_ variant, so the implementation adds the "A potential candidate has been located…" field the mockup does not contain. That is less a regression
@@ -219,19 +214,18 @@ previously known directory — and are otherwise faithful.
 
 Two pieces remain unfinished; both sit outside the scope of this test and neither changes its outcome:
 
-- The `Add Installation` button opens a fully functional Add Installation dialogue, but the dialogue's rules for auto-filling the name input and auto-ticking the "set as default"
+- The `Add Installation` button opens a fully functional Add Installation dialogue, but the dialogue's rules for autofilling the name input and auto-ticking the "set as default"
   checkbox are not yet working. The dialogue can still be completed manually, so the execution path is unaffected.
 - The "Auto-locate trail" group box does not display dynamic data — its rows are hard-wired and do not change between runs. The trail is purely informational at this stage, so a
   static placeholder does not affect whether the located candidate is surfaced or whether the path can be exercised end to end.
 
-## Auto Locate (no candidate): `pref = DefaultInstallation`, and `DefaultId = null`, and no rows exist, and the locator returns nothing
+## 4. Auto Locate (no candidate): `pref = DefaultInstallation`, and `DefaultId = null`, and no rows exist, and the locator returns nothing
 
 ### Testing Strategy
 
 > Same setup as the previous section — no installation rows, null `DefaultInstallationId`, `DefaultInstallation` preference — but ensure no Zoo Tycoon installation exists in any
 > of the locator's probe locations. Either remove them from the disk or temporarily point the probes at empty directories. Launch the app and confirm no candidate path is shown on
-> the
-> resulting screen.
+> the resulting screen.
 
 ### Expected Outcome
 
@@ -268,7 +262,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Default Promotion → Ready: `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row verifies and synchronises
+## 5. Default Promotion → Ready: `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row verifies and synchronises
 
 ### Testing Strategy
 
@@ -311,7 +305,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Default Promotion → Cannot Play (`HasExe = false`): `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row fails verification
+## 6. Default Promotion → Cannot Play (`HasExe = false`): `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row fails verification
 
 ### Testing Strategy
 
@@ -353,7 +347,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Default Promotion → Cannot Play (sync failure): `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row fails INI synchronisation
+## 7. Default Promotion → Cannot Play (sync failure): `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row fails INI synchronisation
 
 ### Testing Strategy
 
@@ -396,7 +390,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Stale `DefaultId`: `pref = DefaultInstallation`, `DefaultId` is set, but `GetByIdAsync` returns null
+## 8. Stale `DefaultId`: `pref = DefaultInstallation`, `DefaultId` is set, but `GetByIdAsync` returns null
 
 ### Testing Strategy
 
@@ -438,7 +432,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Happy Path: `pref = DefaultInstallation`, `DefaultId` is set, row verifies and synchronises
+## 9. Happy Path: `pref = DefaultInstallation`, `DefaultId` is set, row verifies and synchronises
 
 ### Testing Strategy
 
@@ -480,7 +474,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Cannot Play (`HasExe = false`): `pref = DefaultInstallation`, `DefaultId` is set, row fails verification
+## 10. Cannot Play (`HasExe = false`): `pref = DefaultInstallation`, `DefaultId` is set, row fails verification
 
 ### Testing Strategy
 
@@ -522,7 +516,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Cannot Play (sync failure): `pref = DefaultInstallation`, `DefaultId` is set, row fails INI synchronisation
+## 11. Cannot Play (sync failure): `pref = DefaultInstallation`, `DefaultId` is set, row fails INI synchronisation
 
 ### Testing Strategy
 
@@ -564,7 +558,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Last Played → Ready: `pref = LastPlayedInstallation`, a candidate exists, verifies, and synchronises
+## 12. Last Played → Ready: `pref = LastPlayedInstallation`, a candidate exists, verifies, and synchronises
 
 ### Testing Strategy
 
@@ -606,7 +600,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Last Played → Cannot Play (`HasExe = false`): `pref = LastPlayedInstallation`, a candidate exists, fails verification
+## 13. Last Played → Cannot Play (`HasExe = false`): `pref = LastPlayedInstallation`, a candidate exists, fails verification
 
 ### Testing Strategy
 
@@ -648,7 +642,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Last Played → Cannot Play (sync failure): `pref = LastPlayedInstallation`, a candidate exists, fails INI synchronisation
+## 14. Last Played → Cannot Play (sync failure): `pref = LastPlayedInstallation`, a candidate exists, fails INI synchronisation
 
 ### Testing Strategy
 
@@ -690,7 +684,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Last Played Fallback: `pref = LastPlayedInstallation`, no row has `LastPlayedUtc`, falls back to `DefaultInstallation` resolution
+## 15. Last Played Fallback: `pref = LastPlayedInstallation`, no row has `LastPlayedUtc`, falls back to `DefaultInstallation` resolution
 
 ### Testing Strategy
 
@@ -734,7 +728,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Last Opened → Ready: `pref = LastOpenedInstallation`, a candidate exists, verifies, and synchronises
+## 16. Last Opened → Ready: `pref = LastOpenedInstallation`, a candidate exists, verifies, and synchronises
 
 ### Testing Strategy
 
@@ -776,7 +770,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Last Opened → Cannot Play (`HasExe = false`): `pref = LastOpenedInstallation`, a candidate exists, fails verification
+## 17. Last Opened → Cannot Play (`HasExe = false`): `pref = LastOpenedInstallation`, a candidate exists, fails verification
 
 ### Testing Strategy
 
@@ -818,7 +812,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Last Opened → Cannot Play (sync failure): `pref = LastOpenedInstallation`, a candidate exists, fails INI synchronisation
+## 18. Last Opened → Cannot Play (sync failure): `pref = LastOpenedInstallation`, a candidate exists, fails INI synchronisation
 
 ### Testing Strategy
 
@@ -860,7 +854,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Last Opened Fallback: `pref = LastOpenedInstallation`, no row has `LastOpenedUtc`, falls back to `DefaultInstallation` resolution
+## 19. Last Opened Fallback: `pref = LastOpenedInstallation`, no row has `LastOpenedUtc`, falls back to `DefaultInstallation` resolution
 
 ### Testing Strategy
 
@@ -903,7 +897,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Verification Drift Persisted (progressive): `HasExe` and/or `HasIni` change during `Verify`, handler writes the new flags to the row before continuing
+## 20. Verification Drift Persisted (progressive): `HasExe` and/or `HasIni` change during `Verify`, handler writes the new flags to the row before continuing
 
 ### Testing Strategy
 
@@ -948,7 +942,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## `LastOpenedUtc` Stamp (progressive): handler stamps `LastOpenedUtc` on the row before returning `ReadyToPlay`
+## 21. `LastOpenedUtc` Stamp (progressive): handler stamps `LastOpenedUtc` on the row before returning `ReadyToPlay`
 
 ### Testing Strategy
 
@@ -991,7 +985,7 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 > Self-explanatory
 
-## Unexpected Handler Failure: `BootCommand` returns a non-success `ErrorOr`, `MainWindowViewModel` falls back to `NoGameInstallationFoundViewModel(null)`
+## 22. Unexpected Handler Failure: `BootCommand` returns a non-success `ErrorOr`, `MainWindowViewModel` falls back to `NoGameInstallationFoundViewModel(null)`
 
 ### Testing Strategy
 

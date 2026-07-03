@@ -369,15 +369,6 @@ Four pieces on this screen are placeholders; all sit outside the scope of this t
   only pick up a new value on the next boot.
 - The second status-bar cell is empty rather than showing the current display resolution; it depends on the same display feature as the "Display" group.
 
-### Notes/Thoughts
-
-> Self-explanatory
-
-Worth recording for later: because one `PlayView` serves both the `ReadyToPlay` and `CannotPlay` outcomes, the General tab's XAML still carries a couple of `TODO`s tied to the
-`CannotPlay` side of the `CanPlay` flag — muting the "Display"/"Your System" text when the installation cannot play, and only showing the EXE/INI remediation lines under the exact
-failing flag rather than on any `!CanPlay`. Neither is exercised by this happy-path test, but they will matter for section 6. There is also a standing `TODO` to drive the status
-colours from the installation-validity enum's own colour tokens instead of hard-coding `Green`/`DarkRed` in the view.
-
 ## 6. Default Promotion → Cannot Play (`HasExe = false`): `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row fails verification
 
 ### Testing Strategy

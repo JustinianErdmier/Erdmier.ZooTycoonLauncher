@@ -223,52 +223,70 @@ Two pieces remain unfinished; both sit outside the scope of this test and neithe
 
 ### Testing Strategy
 
-I'll use the same setup as the previous section — no installation rows, a null `DefaultInstallationId`, and the `DefaultInstallation` preference — but ensure no Zoo Tycoon
-installation exists in any of the locator's probe locations. I'll either remove them from disk or temporarily point the probes at empty directories, then launch the app and confirm
-no candidate path is shown on the resulting screen.
+I used the same setup as the previous section — no installation rows, a null `DefaultInstallationId`, and the `DefaultInstallation` preference — but ensured no Zoo Tycoon
+installation existed in any of the locator's probe locations. I removed them from the disk, then launched the app, and confirmed that no candidate path is shown on the resulting
+screen.
 
 ### Expected Outcome
 
-> Explain what the expected outcome for this stage in the process should be.
+Because no installation rows exist and the stored `DefaultInstallationId` is null, the handler should fall through to the auto-locator and probe each of its known locations exactly
+as in the previous section. This time, however, none of those probes reaches a real installation, so the locator should return no candidate. The resulting `NoGameInstallationFound`
+screen should therefore present the same error state as the candidate-found variant — a "No Game Installation Found" heading, an explanatory message, and an `Add Installation`
+action, above the "Auto-locate trail" group box that lists every probe attempted and why each yielded nothing — but crucially it should _not_ surface a candidate field, because
+there is no discovered path to show. The INI Config tab should be disabled (no installation is open) and the General tab should carry the status content.
 
 ### Actual Outcome
 
-> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
-> "Actual Outcome" sections) and then go into more detail in the next section.
+As with the candidate-found variant, the view is the simplified, chrome-light form: the tab control is gone and the status content is promoted to the top level, whilst the title
+menu and status bar remain. The red error icon, "No Game Installation Found" heading, explanatory message, and `Add Installation` button all render as intended. The defining trait
+of this path is confirmed by absence — no "A potential candidate has been located…" field appears beneath the message, because the locator returned nothing. Below the message, the
+"Auto-locate trail" group box lists each probe (the registry key, the two Program Files directories, and the last-known path) with a × marker and a short outcome — "no value",
+"directory missing", and "empty". The `Add Installation` button opens a working Add Installation dialogue. As before, the trail rows are currently hard-wired rather than produced
+by a live locate, but that is out of scope here (see Shortcomings) and does not affect the path under test.
 
 ### Changes
 
-> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+No new changes were required for this path beyond those already made for the candidate-found variant. Both branches are served by the same `NoGameInstallationFound` view; the only
+difference between them is whether the candidate field is present, and that field is conditional — with no located path to bind, it simply does not appear. Consequently the
+structural work already described in the previous section (removing the tab control, promoting the status group box contents to the top level, retaining the title menu, keeping the
+"Auto-locate trail" as a genuine group box, and wiring the `Add Installation` button to the dialogue) all carries over unchanged, and there was nothing path-specific left to add.
 
 ### UI/UX
 
 #### Hi-Fi Mockup
 
-> Add a screenshot of the particular view in question from the hi-fi mockup in Claude Design.
+![](../user-interface-design/HiFiMockupScreenshots/NoGameInstallationFoundState.png)
 
 #### Actual Implementation
 
-> Add a screenshot of the actual implementation.
+![](../user-interface-design/ImplementationScreenshots/NoGameInstallationFoundStateWithNoCandidateFound.png)
 
 #### Alignment
 
-> Does the implemented UI/UX align with that of the mockup? If not, explain why.
+Yes — and notably, this variant aligns with the mockup _more_ closely than the candidate-found variant did, because the mockup actually depicts this branch: it shows the error
+state and the "Auto-locate trail" with no located path. The candidate field that was the previous section's most significant divergence is simply absent here, on both the mockup
+and the implementation, so that gap disappears entirely. What remains are the same deliberate, structural differences catalogued throughout the earlier states — the mockup nests
+everything inside the tabbed shell and a "Status" group box, whereas the implementation drops both, promotes the error icon, heading, message, and `Add Installation` button to sit
+directly on the window, sizes the window down to its content, and keeps only the title menu and a slimmed status bar. The "Auto-locate trail" group box is retained on both, since
+it is a meaningful grouping rather than redundant chrome. The only other differences are the same minor wording tweaks noted before — the implementation spells out "a zoo.exe file"
+and adds a "(if applicable)" qualifier to the previously known directory — and are otherwise faithful.
 
 ### Shortcomings
 
-> Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
+The same two pieces noted in the previous section remain unfinished; both sit outside the scope of this test and neither changes its outcome:
 
-### Notes/Thoughts
-
-> Self-explanatory
+- The `Add Installation` button opens a fully functional Add Installation dialogue, but the dialogue's rules for autofilling the name input and auto-ticking the "set as default"
+  checkbox are not yet working. The dialogue can still be completed manually, so the execution path is unaffected.
+- The "Auto-locate trail" group box does not display dynamic data — its rows are hard-wired and do not change between runs. The trail is purely informational at this stage, so a
+  static placeholder does not affect whether the no-candidate branch is exercised end to end.
 
 ## 5. Default Promotion → Ready: `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row verifies and synchronises
 
 ### Testing Strategy
 
-I'll set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present and parseable) and clear the stored `DefaultInstallationId` so
-the handler is forced to promote. With the startup preference set to `DefaultInstallation`, I'll launch the app, then afterwards confirm both that `ReadyToPlay` rendered and that the
-settings row now holds the promoted installation's id.
+I'll set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present, and parseable) and clear the stored `DefaultInstallationId` so
+the handler is forced to promote. With the startup preference set to `DefaultInstallation`, I'll launch the app, then afterwards confirm both that `ReadyToPlay` rendered and that
+the settings row now holds the promoted installation's id.
 
 ### Expected Outcome
 
@@ -604,8 +622,8 @@ I'll set up at least two installation rows with distinct `LastPlayedUtc` values,
 
 ### Testing Strategy
 
-I'll use the same setup as the previous section — multiple rows with distinct `LastPlayedUtc` values and the `LastPlayedInstallation` preference — but with the row holding the newer
-`LastPlayedUtc` having no zoo.exe at its path. I'll launch the app and confirm `CannotPlay` surfaces for that row; the handler should not silently fall back to another row.
+I'll use the same setup as the previous section — multiple rows with distinct `LastPlayedUtc` values and the `LastPlayedInstallation` preference — but with the row holding the
+newer `LastPlayedUtc` having no zoo.exe at its path. I'll launch the app and confirm `CannotPlay` surfaces for that row; the handler should not silently fall back to another row.
 
 ### Expected Outcome
 
@@ -646,8 +664,8 @@ I'll use the same setup as the previous section — multiple rows with distinct 
 
 ### Testing Strategy
 
-I'll use the same setup as the previous two sections, but with the row that would be selected by `LastPlayedUtc` having a valid zoo.exe and a zoo.ini the synchroniser cannot process.
-Then I'll launch the app.
+I'll use the same setup as the previous two sections, but with the row that would be selected by `LastPlayedUtc` having a valid zoo.exe and a zoo.ini the synchroniser cannot
+process. Then I'll launch the app.
 
 ### Expected Outcome
 
@@ -816,8 +834,8 @@ surfaces for that row; the handler should not silently fall back to another row.
 
 ### Testing Strategy
 
-I'll use the same setup as the previous two sections, but with the row that would be selected by `LastOpenedUtc` having a valid zoo.exe and a zoo.ini the synchroniser cannot process.
-Then I'll launch the app.
+I'll use the same setup as the previous two sections, but with the row that would be selected by `LastOpenedUtc` having a valid zoo.exe and a zoo.ini the synchroniser cannot
+process. Then I'll launch the app.
 
 ### Expected Outcome
 
@@ -858,9 +876,9 @@ Then I'll launch the app.
 
 ### Testing Strategy
 
-I'll set the startup preference to `LastOpenedInstallation` and ensure every installation row has a null `LastOpenedUtc` (i.e. the launcher has never opened any of these rows on the
-handler's behalf). Then I'll arrange the rest of the state to exercise whichever `DefaultInstallation` sub-path I want to see kick in after the fallback — the same options as the
-`LastPlayedInstallation` fallback case — and launch the app.
+I'll set the startup preference to `LastOpenedInstallation` and ensure every installation row has a null `LastOpenedUtc` (i.e. the launcher has never opened any of these rows on
+the handler's behalf). Then I'll arrange the rest of the state to exercise whichever `DefaultInstallation` sub-path I want to see kick in after the fallback — the same options as
+the `LastPlayedInstallation` fallback case — and launch the app.
 
 ### Expected Outcome
 
@@ -904,8 +922,8 @@ handler's behalf). Then I'll arrange the rest of the state to exercise whichever
 I'll set up an installation row whose stored `HasExe` and `HasIni` reflect a previous state — for example, both flags true. Then I'll change reality before launching so the values
 diverge: removing zoo.exe so the actual `HasExe` should be false, or restoring a previously missing zoo.ini so the actual `HasIni` should now be true. I'll note the stored flags
 before boot for comparison, then run any scenario that drives the handler through a `Verify(row)` for this installation (the happy path or a `LastPlayed`/`LastOpened` candidate all
-work). After boot completes, I'll inspect the row again to confirm the stored `HasExe` / `HasIni` (and `ModifiedUtc`) now match disk reality. The downstream UI outcome — `CannotPlay`
-or `ReadyToPlay` — depends on the new flag values; both are acceptable here, as the point is that the row was updated.
+work). After boot completes, I'll inspect the row again to confirm the stored `HasExe` / `HasIni` (and `ModifiedUtc`) now match disk reality. The downstream UI outcome —
+`CannotPlay` or `ReadyToPlay` — depends on the new flag values; both are acceptable here, as the point is that the row was updated.
 
 ### Expected Outcome
 
@@ -946,8 +964,8 @@ or `ReadyToPlay` — depends on the new flag values; both are acceptable here, a
 
 ### Testing Strategy
 
-I'll note the row's current `LastOpenedUtc` before boot, or null it out beforehand so the change is unmistakable. I'll run any scenario that lands on `ReadyToPlay` (the happy path is
-easiest), then after boot completes, inspect the row and confirm `LastOpenedUtc` has been updated to a value close to "now" (within whatever drift the handler's `TimeProvider`
+I'll note the row's current `LastOpenedUtc` before boot, or null it out beforehand so the change is unmistakable. I'll run any scenario that lands on `ReadyToPlay` (the happy path
+is easiest), then after boot completes, inspect the row and confirm `LastOpenedUtc` has been updated to a value close to "now" (within whatever drift the handler's `TimeProvider`
 allows).
 
 ### Expected Outcome
@@ -989,8 +1007,8 @@ allows).
 
 ### Testing Strategy
 
-I'll force `BootCommand` to return a non-success `ErrorOr` so the Desktop-layer fallback engages, breaking the handler's environment in a way that surfaces as an error rather than a
-crash. For example, I could corrupt the launcher database file, hold an exclusive lock on it, point the storage path at a directory that cannot be created, or substitute an
+I'll force `BootCommand` to return a non-success `ErrorOr` so the Desktop-layer fallback engages, breaking the handler's environment in a way that surfaces as an error rather than
+a crash. For example, I could corrupt the launcher database file, hold an exclusive lock on it, point the storage path at a directory that cannot be created, or substitute an
 infrastructure dependency that returns a typed error on its first call. Then I'll launch the app and confirm `NoGameInstallationFound` renders with no candidate path and the app
 stays responsive rather than crashing.
 

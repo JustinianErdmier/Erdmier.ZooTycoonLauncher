@@ -99,7 +99,9 @@
       "mcp__rider__list_directory_tree",
       "PowerShell(Get-Process -Id 32404, 348 -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, @{N='StartTime';E={$_.StartTime}}, Path | Format-List)",
       "PowerShell(Get-CimInstance Win32_Process -Filter \"ProcessId=32404 OR ProcessId=348\" | Select-Object ProcessId, @{N='Cmd';E={$_.CommandLine}} | Format-List)",
-      "PowerShell(Stop-Process -Id 32404, 348 -Force -ErrorAction SilentlyContinue)"
+      "PowerShell(Stop-Process -Id 32404, 348 -Force -ErrorAction SilentlyContinue)",
+      "Bash(ls ~/.nuget/packages/ | grep -i classic)",
+      "PowerShell($base = \"D:\\\\Packages\\\\NuGet\\\\Cache\\\\classic.avalonia.theme\\\\11.3.0.3\"; Get-ChildItem $base -Recurse -File | Select-Object -First 60 | ForEach-Object { $_.FullName.Replace\\($base, \"\"\\) })"
     ]
   },
   "outputStyle": "Explanatory",

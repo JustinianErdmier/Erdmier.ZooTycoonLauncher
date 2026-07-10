@@ -474,7 +474,6 @@ whether the `CannotPlay` path is exercised end to end:
 
 > **Skipped for now.** This path hinges on driving the promoted row to *fail INI synchronisation*, which in turn depends on the INI parsing / synchronisation feature being fully
 > implemented — and it is not yet. Until that feature lands, there is no genuine way to force a real sync failure, so this section is deferred rather than tested against a stub.
-> The same caveat applies to the other sync-failure sections (11, 14, 18), which share this dependency.
 
 ### Testing Strategy
 
@@ -686,6 +685,9 @@ preference is `DefaultInstallation`, then launch the app.
 
 ## 11. Cannot Play (sync failure): `pref = DefaultInstallation`, `DefaultId` is set, row fails INI synchronisation
 
+> **Skipped for now.** This path hinges on driving the promoted row to *fail INI synchronisation*, which in turn depends on the INI parsing / synchronisation feature being fully
+> implemented — and it is not yet. Until that feature lands, there is no genuine way to force a real sync failure, so this section is deferred rather than tested against a stub.
+
 ### Testing Strategy
 
 I'll set up an installation row whose path has a valid zoo.exe but a zoo.ini the synchroniser cannot process (malformed, locked, or otherwise unreadable), and set the stored
@@ -811,6 +813,9 @@ newer `LastPlayedUtc` having no zoo.exe at its path. I'll launch the app and con
 > Self-explanatory
 
 ## 14. Last Played → Cannot Play (sync failure): `pref = LastPlayedInstallation`, a candidate exists, fails INI synchronisation
+
+> **Skipped for now.** This path hinges on driving the promoted row to *fail INI synchronisation*, which in turn depends on the INI parsing / synchronisation feature being fully
+> implemented — and it is not yet. Until that feature lands, there is no genuine way to force a real sync failure, so this section is deferred rather than tested against a stub.
 
 ### Testing Strategy
 
@@ -981,6 +986,9 @@ surfaces for that row; the handler should not silently fall back to another row.
 > Self-explanatory
 
 ## 18. Last Opened → Cannot Play (sync failure): `pref = LastOpenedInstallation`, a candidate exists, fails INI synchronisation
+
+> **Skipped for now.** This path hinges on driving the promoted row to *fail INI synchronisation*, which in turn depends on the INI parsing / synchronisation feature being fully
+> implemented — and it is not yet. Until that feature lands, there is no genuine way to force a real sync failure, so this section is deferred rather than tested against a stub.
 
 ### Testing Strategy
 

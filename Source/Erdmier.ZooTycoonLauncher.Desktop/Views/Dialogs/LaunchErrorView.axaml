@@ -4,7 +4,8 @@
         x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.LaunchErrorView"
         x:DataType="vm:LaunchErrorViewModel"
         Title="Cannot Launch Zoo Tycoon"
-        SizeToContent="WidthAndHeight"
+        Width="500"
+        SizeToContent="Height"
         CanResize="False"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False">
@@ -21,14 +22,24 @@
         </Style>
     </Window.Styles>
 
-    <StackPanel Margin="12"
-                Spacing="12"
-                MinWidth="320">
-        <TextBlock Text="{Binding Message}"
-                   TextWrapping="Wrap" />
-        <Button Content="OK"
-                HorizontalAlignment="Right"
-                MinWidth="80"
-                Click="OnOkClick" />
+    <StackPanel Margin="8"
+                Orientation="Vertical"
+                Spacing="10">
+        <DockPanel HorizontalSpacing="10">
+            <Image DockPanel.Dock="Left"
+                   Height="32"
+                   Source="/Assets/Win95Icons/cancel32.gif"
+                   VerticalAlignment="Center"
+                   Width="32" />
+
+            <TextBlock Text="{Binding Message}"
+                       TextWrapping="Wrap" />
+        </DockPanel>
+
+        <Button Click="OnOkClick"
+                Content="OK"
+                HorizontalAlignment="Center"
+                IsDefault="True"
+                MinWidth="80" />
     </StackPanel>
 </Window>

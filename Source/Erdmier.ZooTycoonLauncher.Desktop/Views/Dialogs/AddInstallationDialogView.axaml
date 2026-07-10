@@ -11,7 +11,7 @@
                CanResize="False"
                WindowStartupLocation="CenterOwner"
                ShowInTaskbar="False">
-    <StackPanel Margin="5 1 5 0"
+    <StackPanel Margin="8"
                 Orientation="Vertical"
                 Spacing="10">
         <DockPanel HorizontalSpacing="10">

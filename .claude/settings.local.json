@@ -101,7 +101,14 @@
       "PowerShell(Get-CimInstance Win32_Process -Filter \"ProcessId=32404 OR ProcessId=348\" | Select-Object ProcessId, @{N='Cmd';E={$_.CommandLine}} | Format-List)",
       "PowerShell(Stop-Process -Id 32404, 348 -Force -ErrorAction SilentlyContinue)",
       "Bash(ls ~/.nuget/packages/ | grep -i classic)",
-      "PowerShell($base = \"D:\\\\Packages\\\\NuGet\\\\Cache\\\\classic.avalonia.theme\\\\11.3.0.3\"; Get-ChildItem $base -Recurse -File | Select-Object -First 60 | ForEach-Object { $_.FullName.Replace\\($base, \"\"\\) })"
+      "PowerShell($base = \"D:\\\\Packages\\\\NuGet\\\\Cache\\\\classic.avalonia.theme\\\\11.3.0.3\"; Get-ChildItem $base -Recurse -File | Select-Object -First 60 | ForEach-Object { $_.FullName.Replace\\($base, \"\"\\) })",
+      "Bash(awk 'length > 180 {print FILENAME\":\"NR\": \"length\" chars\"}' \"D:/Source/Personal/Erdmier.ZooTycoonLauncher/docs/test-plans/manual-end-to-end-tests.md\")",
+      "Bash(python -c ' *)",
+      "Bash(py -c ' *)",
+      "PowerShell($p = \"D:/Source/Personal/Erdmier.ZooTycoonLauncher/docs/test-plans/manual-end-to-end-tests.md\"; $i=0; foreach \\($line in [System.IO.File]::ReadAllLines\\($p\\)\\) { $i++; if \\($line.Length -gt 180\\) { \"$i : $\\($line.Length\\)\" } })",
+      "PowerShell($p = \"D:/Source/Personal/Erdmier.ZooTycoonLauncher/docs/test-plans/manual-end-to-end-tests.md\"; $i=0; $over=@\\(\\); foreach \\($line in [System.IO.File]::ReadAllLines\\($p\\)\\) { $i++; if \\($line.Length -gt 180 -and -not $line.StartsWith\\('#'\\)\\) { $over += \"$i : $\\($line.Length\\)\" } }; if \\($over\\) { $over } else { \"All prose lines <= 180 chars\" })",
+      "PowerShell($p = \"D:/Source/Personal/Erdmier.ZooTycoonLauncher/docs/test-plans/manual-end-to-end-tests.md\"; $i=0; $over=@\\(\\); foreach \\($line in [System.IO.File]::ReadAllLines\\($p\\)\\) { $i++; if \\($line.Length -gt 180 -and -not $line.StartsWith\\('#'\\)\\) { $over += \"$i : $\\($line.Length\\)\" } }; if \\($over\\) { $over } else { \"All non-heading lines <= 180 chars\" })",
+      "PowerShell($p = \"D:/Source/Personal/Erdmier.ZooTycoonLauncher/CLAUDE.md\"; $i=0; $over=@\\(\\); foreach \\($line in [System.IO.File]::ReadAllLines\\($p\\)\\) { $i++; if \\($line.Length -gt 180 -and -not $line.StartsWith\\('#'\\) -and -not $line.StartsWith\\('`'\\)\\) { $over += \"$i : $\\($line.Length\\)\" } }; if \\($over\\) { $over } else { \"All prose lines <= 180 chars\" })"
     ]
   },
   "outputStyle": "Explanatory",

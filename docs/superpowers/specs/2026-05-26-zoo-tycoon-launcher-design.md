@@ -25,6 +25,7 @@
 | 1.0     | 26 May 2026 | Justinian | Baselined for implementation; status changed from Draft to Draft for implementation pending Phase 0 research spikes (§7.8, §7.9).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | 1.1     | 26 May 2026 | Justinian | Added view-composition convention: each main-window state, each tab, and each INI section is its own UserControl + ViewModel pair (§9.2). Architecture test in §11.4 enforces the every-VM-has-a-View rule.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | 1.2     | 27 May 2026 | Justinian | Hi-fi prototype consumed and merged into §9 — File/Help menus only, no min/max chrome, 720 px main window, button-label cleanup (no ellipses on buttons); Installation Manager rename; new INI Config tab layout (sectioned list on the left, scrolling form on the right, hover + status help affordance, no dedicated help groupbox); Add/Edit Installation dialogue gains a folder input with `Browse…` (no picker-first flow); Restore Previous INI dialogue gains an inline diff (key · current · snapshot) and drops the Note column; Cannot Play Display section matches Ready's layout (muted, with a one-liner); Last played surfaced even in Cannot Play; [ai] section carries a stock-limit blurb; INI Config tab disabled in Looking / NoInstall / OpenPicker states; Settings dialogue picks up a `Theme` choice (System / Light / Dark) and a corresponding entity field. Old `docs/wireframes/` JPGs removed; replaced by a single screen-recording GIF at `docs/user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif`. The live hi-fi prototype in Claude Design remains the authoritative visual reference; the GIF is a quick in-repo glance. |
+| 1.4     | 10 July 2026 | Justinian | Startup default-resolution hardened (§7.1.1, §7.1.2): a *stale* `DefaultInstallationId` (set but with no matching `GameInstallation` row) now falls through the same Promote Default → Auto Locate path as a null id instead of dead-ending on `NoGameInstallationFound`; when nothing can be promoted the stale pointer is cleared back to null so it no longer dangles (complements the defensive delete cascade in §7.2.4). `InstallationValidity` gains `HasExe` / `HasIni` flags so the presentation reads the `(HasExe, HasIni)` pair off the smart enum rather than re-deriving it. Cannot Play General tab reworked (§9.1, §9.2.1): per-sub-state Status messaging (missing EXE / INI / both), the `Launch Game` slot swaps to an `Open Installation Manager…` button (no separate disabled button or duplicated Fix control), and the Display and new Your System group boxes stay un-muted with a state-specific footnote each. |
 | 1.3     | 5 June 2026 | Justinian | Startup state machine overhauled (§7.1.1): `AutoLocate` now always settles to `NoGameInstallationFound` (carrying the discovered candidate as a suggestion) rather than skipping straight to the Add dialogue; `NoGameInstallationFound → AddInstallationDialogue → ParseIni` is the new add-from-boot path. `HasIni = false` resolves to **Cannot Play** (not Ready to Play) — no INI, no launch. `§9` made leaner: dialogue/panel pixel widths, column percentages, opacity values, and other dev-time style decisions stripped in favour of brief layout sketches that defer to the live hi-fi prototype. Application services formalised: `IDialogService` covers `ShowAddInstallationAsync(prefilledPath)` / `PickFolderAsync(startPath)` / `ShowLaunchError(message)`; new `IApplicationLifecycle` carries `CloseAfterGameLaunch` shutdown intent. `LaunchGameResult` returns one of three `LaunchGameOutcome` branches: `Started`, `Drifted` (re-verify failed; re-enter boot), `StartFailed` (OS rejected the start). Main window width is 480 px while booting and 720 px once booted; `ScenariosTabViewModel` removed (Scenarios is a section of the INI Config tab, never a sibling tab). |
 
   
@@ -453,16 +454,18 @@ public sealed class IniValueKind : SmartEnum<IniValueKind>
   
 public sealed class InstallationValidity : SmartEnum<InstallationValidity>  
 {  
-    public static readonly InstallationValidity Valid                   = new("Valid",                   1, "Valid",                   "Green");  
-    public static readonly InstallationValidity InvalidNoExe            = new("InvalidNoExe",            2, "Invalid — No EXE",        "Red");  
-    public static readonly InstallationValidity InvalidNoIni            = new("InvalidNoIni",            3, "Invalid — No INI",        "Red");  
-    public static readonly InstallationValidity InvalidNoExeOrIni       = new("InvalidNoExeOrIni",       4, "Invalid — No EXE or INI", "Red");  
+    public static readonly InstallationValidity Valid                   = new("Valid",                   1, "Valid",                   "Green", hasExe: true,  hasIni: true);  
+    public static readonly InstallationValidity InvalidNoExe            = new("InvalidNoExe",            2, "Invalid — No EXE",        "Red",   hasExe: false, hasIni: true);  
+    public static readonly InstallationValidity InvalidNoIni            = new("InvalidNoIni",            3, "Invalid — No INI",        "Red",   hasExe: true,  hasIni: false);  
+    public static readonly InstallationValidity InvalidNoExeOrIni       = new("InvalidNoExeOrIni",       4, "Invalid — No EXE or INI", "Red",   hasExe: false, hasIni: false);  
   
     public string DisplayName { get; }  
     public string ColourToken { get; }  
+    public bool   HasExe      { get; }  
+    public bool   HasIni      { get; }  
   
-    private InstallationValidity(string name, int id, string displayName, string colourToken)  
-        : base(name, id) { DisplayName = displayName; ColourToken = colourToken; }  
+    private InstallationValidity(string name, int id, string displayName, string colourToken, bool hasExe, bool hasIni)  
+        : base(name, id) { DisplayName = displayName; ColourToken = colourToken; HasExe = hasExe; HasIni = hasIni; }  
   
     public static InstallationValidity From(bool hasExe, bool hasIni) =>  
         (hasExe, hasIni) switch  
@@ -665,6 +668,8 @@ stateDiagram
   rp --> vlp:pref = LastPlayedInstallation and a row has LastPlayedUtc
   rp --> vlo:pref = LastOpenedInstallation and a row has LastOpenedUtc
   pd --> vd:alphabetically-first row promoted, settings updated
+  vd --> pd:DefaultId set but no matching row, rows exist (fall back to Promote Default)
+  vd --> al:DefaultId set but no matching row and no rows exist (stale DefaultId cleared)
   al --> ngif:suggest potential candidate if one was found
   ngif --> aid
   aid --> aid:user tries to register an invalid installation, installation not persisted
@@ -699,9 +704,13 @@ stateDiagram
 
 #### 7.1.2 Resolution rules
 
-- **`DefaultInstallation` + null `DefaultInstallationId`.**:
-    - Count `GameInstallations` and if zero, fall to `AutoLocate`. If at least one, promote the alphabetically first row to default (case-insensitive on `Name`), write back to
-      `LauncherSettings`, then `VerifyDefault`.
+- **`DefaultInstallation` + null or stale `DefaultInstallationId`.**:
+    - Applies both when `DefaultInstallationId` is null and when it is set but no `GameInstallation` row matches it — a *stale* pointer. A stale pointer is normally prevented by the
+      delete cascade in §7.2.4, but the boot pipeline handles it defensively in case the row was removed out-of-band (e.g. a manual database edit or a partially-applied write).
+    - Count `GameInstallations` and if zero, fall to `AutoLocate`. If at least one, promote the alphabetically first row to default (case-insensitive on `Name`), write the new id
+      back to `LauncherSettings`, then `VerifyDefault`.
+    - When the pointer was *stale* (set but unmatched) and nothing could be promoted, clear `DefaultInstallationId` back to null in `LauncherSettings` before auto-locating so it no
+      longer dangles. When the id was already null there is nothing to clear and settings are left untouched.
 - **`LastPlayedInstallation` / `LastOpenedInstallation`** with no candidate:
     - Fall back to `DefaultInstallation` resolution.
     - In this scope, "candidate" refers to a Game Installation row that has one of the respective fields set.
@@ -1178,11 +1187,13 @@ The five states reflect the startup state machine (§7.1). The hi-fi prototype (
 - **Looking for Zoo Tycoon** — a search icon next to a bold "Looking for Zoo Tycoon…" line, a marquee progress bar, and a muted sub-line that cycles through the boot phases
   (registry probe, file-system probe, INI parse, etc.) via a `DispatcherTimer` owned by `LookingForZooTycoonViewModel`. The exact phrase list is implementation-managed; the SDD
   does not enumerate it.
-- **Ready to Play** — installation name banner above a Status group box (validity, paths, prominent `Launch Game` default button) and a Display group box (current resolution,
-  adapter, screen-mode counts per §7.9). A footer line shows `Last played: <localised UTC>` or `Never`.
-- **Cannot Play** — same overall shape as Ready to Play, with the Status group box headlining the failure, adding `Fix` / `Manage Installations` buttons, and disabling Launch
-  Game. The Display group box is rendered muted with a one-line note that detection succeeded but the game cannot launch until the INI is restored. The `Last played` footer
-  line is still shown.
+- **Ready to Play** — installation name banner above a Status group box (validity, EXE / INI / path lines, prominent `Launch Game` default button), a Display group box (current
+  resolution, adapter, screen-mode counts per §7.9), and a Your System group box (OS, processor, graphics, memory) footed by a green "zoo.exe is configured correctly"
+  confirmation. A footer line shows `Last played: <localised UTC>` or `Never`.
+- **Cannot Play** — same overall shape as Ready to Play. The Status group box headlines the failure with a per-sub-state message keyed off `(HasExe, HasIni)` — missing EXE,
+  missing INI, or missing both — and swaps the `Launch Game` slot for an `Open Installation Manager…` default button (there is no longer a separate disabled Launch Game button
+  or duplicated Fix control). The Display and Your System group boxes stay **un-muted** — detection still ran — each carrying a state-specific footnote (e.g. "Display detection
+  succeeded, but the game cannot launch until the EXE is restored"). The `Last played` footer line is still shown.
 - **No Game Installation Found** — a heading explaining the auto-locate scan came up empty, an `Add Installation` default button, and an `Auto-locate trail` group box listing
   the probed locations and the reason each failed. When the locator did surface a candidate path (the search succeeded but the user has never registered the directory), it is
   pre-filled into the Add Installation dialogue when the user clicks the button.
@@ -1212,9 +1223,10 @@ Desktop/Views/States/
 └── OpenGameInstallationView.axaml  
 ```  
 
-A single `PlayView` hosts the tab strip for both the `ReadyToPlay` and `CannotPlay` outcomes. The two are identical in layout — the mockups (§9.12) differ only inside the General
-tab's Status group box — so there is one view and one `PlayViewModel`. A `CanPlay` flag on `PlayViewModel`, set from the boot outcome, is carried down into the tab view models,
-which render the difference (status icon, headline, EXE/INI status lines, and whether Launch Game is enabled). There is no host-level banner.
+A single `PlayView` hosts the tab strip for both the `ReadyToPlay` and `CannotPlay` outcomes. The two are identical in layout — the mockups (§9.12) differ only in the General tab's
+per-state messaging (Status headline, and footnotes on the Display and Your System boxes) — so there is one view and one `PlayViewModel`. A `CanPlay` flag on `PlayViewModel`, set
+from the boot outcome, is carried down into the tab view models, which render the difference (status icon, headline, EXE / INI status lines, per-sub-state message, and whether the
+launch slot shows `Launch Game` or `Open Installation Manager…`). There is no host-level banner.
 
 **Layer 2 — tabs.** Each tab is a `UserControl` whose `DataContext` is its own `*TabViewModel`. The tab strip in `PlayView` binds  
 `TabControl.ItemsSource` to an `ObservableCollection<ITabViewModel>` and `TabControl.ContentTemplate` to a `DataTemplate` that uses `ViewLocator` to materialise the right  

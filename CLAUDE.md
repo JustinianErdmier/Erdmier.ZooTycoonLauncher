@@ -19,10 +19,21 @@ The repository is in the middle of a **fresh-start rewrite**. The new layered ar
 > **Always run shell commands via PowerShell — never Bash.**
 
 - **Build:** prefer `mcp__rider__build_solution`. Fallback: `dotnet build Erdmier.ZooTycoonLauncher.slnx`.
+- **Build a single project** (narrow build to sidestep file locks — see *Build file-lock errors*): `dotnet build Source/<Project>/<Project>.csproj`, e.g. `dotnet build Source/Erdmier.ZooTycoonLauncher.Domain/Erdmier.ZooTycoonLauncher.Domain.csproj`.
 - **Validate task completion:** clean, then build. `dotnet clean Erdmier.ZooTycoonLauncher.slnx; dotnet build Erdmier.ZooTycoonLauncher.slnx`.
 - **Run all tests:** `dotnet test Erdmier.ZooTycoonLauncher.slnx`.
 - **Run the launcher:** `dotnet run --project Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj`.
 - **Add an EF Core migration:** `dotnet ef migrations add <Name> --project Source/Erdmier.ZooTycoonLauncher.Infrastructure --context <ContextName> --output-dir Persistence/<scope>/Migrations`.
+
+## Build file-lock errors
+
+Builds may fail with a **file lock error** (an output assembly or DLL that cannot be written because it is "in use"). Almost 10 times out of 10 this is **not** because the user has the launcher running — it is an artefact of the **Avalonia Preview plugin in Rider** holding a handle on the built output. Do the following, in order:
+
+1. **Build only what is relevant.** If a change touched a single project, build just that project and run only its corresponding test project — e.g. a Domain-only change needs only the Domain project built and `Erdmier.ZooTycoonLauncher.Domain.Tests.Unit` run. A narrow build usually sidesteps the locked Desktop output entirely.
+2. **Only escalate to a full build when genuinely needed.** If a true build of the whole solution (or the Desktop project specifically) really is required, first confirm the lock is a genuine problem and not just the preview-plugin artefact.
+3. **When unsure, stop and ask the user.** If you cannot safely determine whether the lock can be ignored, ask — the user can resolve or clarify it quickly.
+
+**Never** get sidetracked troubleshooting the lock, running excessive diagnostic commands, or looping on retries. This is a known, benign artefact; a single question to the user is always cheaper than an investigation.
 
 ## Git commits
 

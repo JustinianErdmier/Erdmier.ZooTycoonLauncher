@@ -472,6 +472,10 @@ whether the `CannotPlay` path is exercised end to end:
 
 ## 7. Default Promotion → Cannot Play (sync failure): `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row fails INI synchronisation
 
+> **Skipped for now.** This path hinges on driving the promoted row to *fail INI synchronisation*, which in turn depends on the INI parsing / synchronisation feature being fully
+> implemented — and it is not yet. Until that feature lands there is no genuine way to force a real sync failure, so this section is deferred rather than tested against a stub. The
+> same caveat applies to the other sync-failure sections (11, 14, 18), which share this dependency.
+
 ### Testing Strategy
 
 I'll set up at least one installation row whose path has a valid zoo.exe but whose zoo.ini cannot be synchronised — for example, a malformed file the parser rejects, a
@@ -517,43 +521,89 @@ and launch the app.
 
 ### Testing Strategy
 
-I'll make the stored `DefaultInstallationId` point at a Guid that is not present in the installation registry — either by deleting the row that originally owned it (leaving the
-settings id behind) or by writing an arbitrary fresh Guid into the settings row. I'll ensure the startup preference is `DefaultInstallation`, then launch the app.
+I made the stored `DefaultInstallationId` point at a Guid that is not present in the installation registry — writing an arbitrary fresh Guid into the settings row so the pointer
+was guaranteed to be dangling — and set the startup preference to `DefaultInstallation`. Because a stale pointer simply re-enters the ordinary `DefaultInstallation` resolution
+cascade
+(promote a row, else auto-locate), rather than landing on any state of its own, I exercised all three arrangements that cascade can resolve to, launching the app once per
+arrangement:
+
+1. **Promotion candidate present.** At least one installation row existed alongside the dangling pointer, so the handler could promote a row as the new default.
+2. **No promotion candidate, but a locator candidate present.** No installation rows existed, but a real Zoo Tycoon installation sat on disk where one of the locator's probes could
+   reach it.
+3. **Neither present.** No installation rows existed and no installation sat in any of the locator's probe locations.
+
+After each run I inspected the settings row to confirm the dangling pointer had not survived boot — either replaced by a valid promoted id, or cleared to null.
 
 ### Expected Outcome
 
 > Explain what the expected outcome for this stage in the process should be.
+
+Because the startup preference is `DefaultInstallation` and a `DefaultInstallationId` is stored, the handler should read that id and call `GetByIdAsync`. As the id is stale, the
+lookup returns null, so the handler must not treat the pointer as resolved: it should fall straight through the `row is not null` gate into exactly the same promote → auto-locate
+cascade it uses when no default was ever set. The stale pointer must never survive the boot. Concretely, the three arrangements should resolve as follows:
+
+1. **Promotion candidate present** — the handler promotes a row, overwrites the stale pointer with the *promoted* row's id, persists it, and verifies the promoted row, resolving to
+   `ReadyToPlay` or `CannotPlay` exactly as sections 5 and 6 describe.
+2. **No promotion candidate, but a locator candidate present** — with no row to promote the handler clears the stale pointer to null, persists that, and falls to the auto-locator,
+   which returns the discovered path. The screen is the candidate-found `NoGameInstallationFound` variant from section 3.
+3. **Neither present** — the handler again clears the stale pointer to null and auto-locates, but the locator returns nothing, so the screen is the no-candidate
+   `NoGameInstallationFound` variant from section 4.
+
+In all three the defining, path-specific assertion is behavioural rather than visual: the stale `DefaultInstallationId` is gone by the time boot completes, replaced (variant 1) or
+nulled (variants 2 and 3). This path introduces no new or unique on-screen state — every screen it can produce is one already covered by sections 3–6.
 
 ### Actual Outcome
 
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
+All three arrangements passed and behaved exactly as expected. In variant 1 the handler promoted the surviving row, and the post-boot settings row held the *promoted* row's id
+rather than the dangling Guid I had written; the screen resolved through the section 5 / 6 machinery. In variant 2 the handler found nothing to promote, cleared the stale pointer
+to
+null, and surfaced the discovered `C:\Program Files (x86)\Microsoft Games\Zoo Tycoon` path on the candidate-found `NoGameInstallationFound` screen. In variant 3 the pointer was
+likewise cleared to null and the no-candidate `NoGameInstallationFound` screen rendered with no path surfaced. In every case the stale pointer was gone once boot completed — the
+central guarantee of this path. No screenshots were captured, because the path produces no new or unique UI/UX; it is entirely behind the scenes and exercises the logical flow
+alone, so each arrangement simply reuses a screen already documented in sections 3–6.
+
 ### Changes
 
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
 
+The change this path drove is the stale-default handling in `BootHandler.ResolveDefaultAsync`. The stored id is read behind an `is not null` guard and looked up, but a stale id
+makes that lookup return null, so the row-found gate is skipped and the handler continues into the shared promotion branch (`FindDefaultPromotionCandidateAsync`) rather than
+stopping. Two write behaviours were added around that continuation so the dangling pointer can never persist: when a promotion candidate is found the pointer is *overwritten* with
+the promoted row's id; when none is found the pointer is explicitly *cleared* to null before auto-locating (a write that is skipped when the id was already null, i.e. when no
+default was ever set). Both are persisted via `UpdateAsync` before the outcome is returned. No UI work was needed — the states this path resolves to were all already built for
+sections 3–6.
+
 ### UI/UX
-
-#### Hi-Fi Mockup
-
-> Add a screenshot of the particular view in question from the hi-fi mockup in Claude Design.
-
-#### Actual Implementation
-
-> Add a screenshot of the actual implementation.
 
 #### Alignment
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
+Not applicable in any new sense. This path renders no screen of its own — it only re-enters the `DefaultInstallation` cascade and lands on one of the states already documented in
+sections 3 (candidate-found `NoGameInstallationFound`), 4 (no-candidate `NoGameInstallationFound`), and 5 / 6 (`ReadyToPlay` / `CannotPlay`). Each of those sections already records
+its own mockup alignment, and nothing about arriving there via a stale pointer changes the pixels. For that reason no Hi-Fi Mockup or Actual Implementation screenshots are included
+here: the path is purely behind-the-scenes control flow, and capturing the same screens a third or fourth time would add nothing over the sections that already own them.
+
 ### Shortcomings
 
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
+None specific to this path. The stale-pointer resolution — promote-and-overwrite, or clear-and-auto-locate — is fully implemented and behaves as intended for all three
+arrangements.
+The only outstanding gaps are the ones already inherited from the destination screens: the hard-wired "Auto-locate trail" and the not-yet-functional Add Installation autofill rules
+on `NoGameInstallationFound` (sections 3 and 4), and the placeholder "Display" / "Your System" groups on `ReadyToPlay` / `CannotPlay` (sections 5 and 6). None of them affects
+whether the stale pointer is cleared or overwritten, which is the whole of what this path tests.
+
 ### Notes/Thoughts
 
 > Self-explanatory
+
+Worth restating why this section has three variants but no screenshots: the stale-`DefaultId` case is not a state, it is a *guard failure that re-enters an existing branch*. The
+value of testing it is entirely in the invariant — a dangling default pointer must never outlive a boot — and that invariant is verified by inspecting the settings row afterwards,
+not by looking at the window. The three variants exist only to prove the invariant holds down every leg of the cascade the stale id can fall into.
 
 ## 9. Happy Path: `pref = DefaultInstallation`, `DefaultId` is set, row verifies and synchronises
 

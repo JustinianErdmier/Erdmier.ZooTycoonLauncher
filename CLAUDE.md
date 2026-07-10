@@ -77,6 +77,9 @@ Presentation: Avalonia 11 + Classic.Avalonia (Windows 95/98 chrome) + CommunityT
 - **`GlobalUsings.cs`** per assembly consolidates `using` directives. Keep a local `using` only when truly necessary (namespace conflict, alias).
 - **File-scoped namespaces** everywhere.
 - **British English everywhere** — code comments, XML doc text, identifier wording where there's a choice (`Minimise`, `Initialise`, `Behaviour`, `Colour`), commit messages, Markdown docs. Don't switch a US spelling already established by an external API surface (`System.IO`, `Color`, etc.).
+- **Markdown hard-wrap at 180 characters.** When writing *or* editing any Markdown file, manually wrap prose at a maximum of 180 characters per line. The user's
+  IDE hard-wraps at 180 but does not auto-repair the stray paragraph breaks that unwrapped edits leave behind, so emitting pre-wrapped Markdown saves a manual
+  clean-up every time. Wrap prose and bullet text; leave fenced code blocks, tables, headings, and bare URLs intact on their own lines (never break a URL).
 - **XML doc comments on every public member and type** (`///`-prefixed `<summary>`, `<param>`, `<returns>`, `<remarks>`, `<exception>` as appropriate). Plain `//` comments are for inline implementation notes only.
 - **`<c>…</c>` tags carry no inside whitespace.** Write `<c>zoo.ini</c>`, never `<c> zoo.ini </c>`. Same applies to `<code>…</code>`.
 - **Spaced bracket style:** `[ STAThread ]`, `[ UsedImplicitly ]`. Match the established style.

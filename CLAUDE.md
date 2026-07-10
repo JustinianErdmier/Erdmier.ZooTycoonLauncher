@@ -101,7 +101,9 @@ React / Angular use components: per main-window state, per tab, per INI section.
   Markdown docs. Don't switch a US spelling already established by an external API surface (`System.IO`, `Color`, etc.).
 - **Markdown hard-wrap at 180 characters.** When writing *or* editing any Markdown file, manually wrap prose at a maximum of 180 characters per line. The user's
   IDE hard-wraps at 180 but does not auto-repair the stray paragraph breaks that unwrapped edits leave behind, so emitting pre-wrapped Markdown saves a manual
-  clean-up every time. Wrap prose and bullet text; leave fenced code blocks, tables, headings, and bare URLs intact on their own lines (never break a URL).
+  clean-up every time. Wrap prose and bullet text; leave fenced code blocks, tables, headings, and bare URLs intact on their own lines (never break a URL). To *verify* the wrap,
+  measure line length with PowerShell (`[string].Length`) — not `awk length` or `wc -c`, which count bytes, so this repo's `—`, `×`, `…` (multi-byte UTF-8) inflate the count and
+  raise false over-limit hits.
 - **XML doc comments on every public member and type** (`///`-prefixed `<summary>`, `<param>`, `<returns>`, `<remarks>`, `<exception>` as appropriate). Plain `//` comments are for
   inline implementation notes only.
 - **`<c>…</c>` tags carry no inside whitespace.** Write `<c>zoo.ini</c>`, never `<c> zoo.ini </c>`. Same applies to `<code>…</code>`.

@@ -54,6 +54,7 @@ public sealed class LaunchGameHandlerTests
         result.Value.Outcome.ShouldBe(LaunchGameOutcome.Started);
         result.Value.CloseAfterGameLaunch.ShouldBeTrue();
         result.Value.FailureMessage.ShouldBeNull();
+        result.Value.LastPlayedUtc.ShouldBe(now.UtcDateTime);
         row.LastPlayedUtc.ShouldBe(now.UtcDateTime);
 
         await installations.Received(requiredNumberOfCalls: 1)
@@ -276,6 +277,7 @@ public sealed class LaunchGameHandlerTests
 
         result.IsError.ShouldBeFalse();
         result.Value.Outcome.ShouldBe(LaunchGameOutcome.Started);
+        result.Value.LastPlayedUtc.ShouldBeNull(); // persist failed, so no timestamp is reported back for the UI
     }
 
     [ Fact ]

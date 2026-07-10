@@ -79,18 +79,24 @@ public sealed class LaunchGameHandler : ICommandHandler<LaunchGameCommand, Error
 
         LauncherSettings launcherSettings = await _settings.GetAsync(cancellationToken);
 
+        DateTime? lastPlayedUtc = null;
+
         try
         {
-            row.LastPlayedUtc = _clock.GetUtcNow()
-                                      .UtcDateTime;
+            DateTime stampedUtc = _clock.GetUtcNow()
+                                        .UtcDateTime;
+
+            row.LastPlayedUtc = stampedUtc;
 
             await _installations.UpdateAsync(row, cancellationToken);
+
+            lastPlayedUtc = stampedUtc;
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, message: "Process started but LastPlayedUtc update failed for {InstallationId}", row.Id);
         }
 
-        return new LaunchGameResult(LaunchGameOutcome.Started, launcherSettings.CloseAfterGameLaunch, FailureMessage: null);
+        return new LaunchGameResult(LaunchGameOutcome.Started, launcherSettings.CloseAfterGameLaunch, FailureMessage: null, lastPlayedUtc);
     }
 }

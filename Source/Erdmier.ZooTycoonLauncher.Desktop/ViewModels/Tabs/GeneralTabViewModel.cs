@@ -35,9 +35,7 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
         InstallationName = installation.Name;
         InstallationPath = installation.Path;
 
-        InstallationLastPlayed = installation.LastPlayedUtc?.ToLocalTime()
-                                             .ToString(format: "dd MMMM yyyy HH:mm")
-                                 ?? "Never";
+        InstallationLastPlayed = FormatLastPlayed(installation.LastPlayedUtc);
 
         CanPlay = canPlay;
 
@@ -57,8 +55,9 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     /// <summary><see langword="true" /> when <c>zoo.ini</c> is present in the installation's directory; drives the INI status row.</summary>
     public bool HasIni { get; }
 
-    /// <summary>The installation's last played date.</summary>
-    public string InstallationLastPlayed { get; set; }
+    /// <summary>The installation's last played date, formatted for display; refreshed in place after a successful launch stamps a new value.</summary>
+    [ ObservableProperty ]
+    public partial string InstallationLastPlayed { get; set; }
 
     /// <summary>The installation's user-visible name.</summary>
     public string InstallationName { get; }
@@ -108,6 +107,11 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
                                            ? new LaunchGameResult(LaunchGameOutcome.StartFailed, CloseAfterGameLaunch: false, result.FirstError.Description)
                                            : result.Value;
 
+            if (outcome is { Outcome: LaunchGameOutcome.Started, LastPlayedUtc: { } lastPlayedUtc })
+            {
+                InstallationLastPlayed = FormatLastPlayed(lastPlayedUtc);
+            }
+
             LaunchOutcomeRaised?.Invoke(this, outcome);
         }
         finally
@@ -117,6 +121,14 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     }
 
     private bool CanExecuteLaunch() => CanPlay && !IsBusy && _mediator is not null;
+
+    /// <summary>Formats a nullable UTC last-played timestamp for display, localising to the user's timezone or rendering "Never" when unset.</summary>
+    /// <param name="lastPlayedUtc">The UTC timestamp to format, or <see langword="null" /> when the installation has never been played.</param>
+    /// <returns>The localised <c>dd MMMM yyyy HH:mm</c> string, or <c>"Never"</c> when <paramref name="lastPlayedUtc" /> is <see langword="null" />.</returns>
+    private static string FormatLastPlayed(DateTime? lastPlayedUtc)
+        => lastPlayedUtc?.ToLocalTime()
+                         .ToString(format: "dd MMMM yyyy HH:mm")
+           ?? "Never";
 
     /// <summary>Raised after the launch command receives a result. <see cref="Boot.ReadyToPlayViewModel" /> subscribes and routes outcomes to chrome capabilities.</summary>
     public event EventHandler<LaunchGameResult>? LaunchOutcomeRaised;

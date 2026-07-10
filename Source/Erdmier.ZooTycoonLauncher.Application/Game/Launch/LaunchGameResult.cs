@@ -10,4 +10,9 @@ namespace Erdmier.ZooTycoonLauncher.Application.Game.Launch;
 ///     Non-<see langword="null" /> only when <paramref name="Outcome" /> is <see cref="LaunchGameOutcome.StartFailed" />; the message displayed verbatim to
 ///     the user.
 /// </param>
-public sealed record LaunchGameResult(LaunchGameOutcome Outcome, bool CloseAfterGameLaunch, string? FailureMessage);
+/// <param name="LastPlayedUtc">
+///     The UTC timestamp stamped onto the row after a successful start; non-<see langword="null" /> only when <paramref name="Outcome" /> is
+///     <see cref="LaunchGameOutcome.Started" /> and the persist succeeded. The Desktop layer uses it to refresh the "Last played" display without re-reading the
+///     database.
+/// </param>
+public sealed record LaunchGameResult(LaunchGameOutcome Outcome, bool CloseAfterGameLaunch, string? FailureMessage, DateTime? LastPlayedUtc = null);

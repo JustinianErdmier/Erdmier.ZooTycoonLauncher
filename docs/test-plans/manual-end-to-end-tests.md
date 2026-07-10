@@ -514,7 +514,6 @@ and launch the app.
 
 ### Notes/Thoughts
 
-
 ## 8. Stale `DefaultId`: `pref = DefaultInstallation`, `DefaultId` is set, but `GetByIdAsync` returns null
 
 ### Testing Strategy
@@ -602,42 +601,77 @@ not by looking at the window. The three variants exist only to prove the invaria
 
 ### Testing Strategy
 
-I'll set up at least one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present, and parseable), and set the stored `DefaultInstallationId` to
-that row's id. With the startup preference set to `DefaultInstallation`, I'll launch the app and confirm the right installation surfaces on `ReadyToPlay`.
+I set up one installation row pointing to a valid on-disk installation (zoo.exe present, zoo.ini present) and set the stored `DefaultInstallationId` to that row's id. With the
+startup preference set to `DefaultInstallation`, I launched the app and confirmed the right installation surfaced on `ReadyToPlay`.
 
 ### Expected Outcome
 
 > Explain what the expected outcome for this stage in the process should be.
+
+This is the steady-state happy path — the boot the launcher performs on almost every ordinary run once a default has been chosen. Because the startup preference is
+`DefaultInstallation` and a `DefaultInstallationId` is stored *and* still resolves to a real row, the handler should read that id, call `GetByIdAsync`, get the row back, and pass
+straight through the `row is not null` gate to verify it — with no promotion step, since the pointer is already valid. Verification finds zoo.exe and zoo.ini both present, the INI
+synchronises, and the flow resolves to `ReadyToPlay`. The resulting screen is the same terminal, successful state documented in section 5: the full tabbed shell returns, the INI
+Config tab is enabled, and the General tab shows the installation profile, a "Status" group with a green tick, "EXE: Found" and "INI: Found" rows, the installation path, and an
+enabled `Launch Game` button, followed by the "Display" and "Your System" groups and a "Last played" stamp. The only thing distinguishing this path from section 5 is the *route*
+in — the default resolves directly rather than being promoted — so the settings row should still hold the same id afterwards that it held before boot (nothing is re-persisted,
+because nothing changed).
 
 ### Actual Outcome
 
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
+The test passed, and everything worked exactly as expected, and exactly as already exercised in section 5 — nothing changed. The stored `DefaultInstallationId` resolved directly to
+its row, the row verified and synchronised, and the flow landed on `ReadyToPlay` with the correct installation surfaced. The screen is identical to the one section 5 arrives at, so
+the same screenshots are reused below rather than captured afresh. The `ReadyToPlay` outcome is served by the same `PlayView` / `PlayViewModel` pair regardless of whether the row
+was reached by direct resolution (this path) or by promotion (section 5), so there was nothing new to observe on screen.
+
 ### Changes
 
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+None. This path required no changes: it lands on the already-built `ReadyToPlay` state, and the only difference from section 5 — resolving the default directly instead of promoting
+one — is a branch that already existed in `BootHandler.ResolveDefaultAsync` (the `row is not null` gate) and needed no new work.
 
 ### UI/UX
 
 #### Hi-Fi Mockup
 
-> Add a screenshot of the particular view in question from the hi-fi mockup in Claude Design.
+![](../user-interface-design/HiFiMockupScreenshots/ReadyToPlayStateWithGameOptimisation.png)
 
 #### Actual Implementation
 
-> Add a screenshot of the actual implementation.
+![](../user-interface-design/ImplementationScreenshots/ReadyToPlayState.png)
 
 #### Alignment
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
+Yes — identically to section 5, because this path renders the very same `ReadyToPlay` screen. The full tabbed shell, title menu, "Status" / "Display" / "Your System" group boxes,
+and status bar all line up structurally with the mockup; the remaining differences are the same cosmetic, data-level ones catalogued in section 5 (hard-coded "Display" and "Your
+System" values, the "Last played" stamp, the empty second status-bar cell, and the plain-text "Possible ZT1 modes" count), all tracing back to features not yet built. Nothing about
+reaching this screen via a directly resolved default rather than a promoted one changes the pixels, so the section 5 alignment verdict carries over unchanged.
+
 ### Shortcomings
 
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
+The same placeholders noted for `ReadyToPlay` in section 5 apply here unchanged, since both paths serve the identical screen; none affects whether this happy path is exercised end
+to end:
+
+- The "Display" group is hard-coded, pending the screen-mode enumeration feature (via `IScreenModeEnumerator`).
+- The "Your System" group is hard-coded, pending host/system detection (OS, processor, graphics, memory).
+- The "Last played" stamp is bound to the row's `LastPlayedUtc` and converted to local time at the UI boundary, but the binding is one-shot — it will not refresh live.
+- The second status-bar cell is empty rather than showing the current display resolution; it depends on the same display feature as the "Display" group.
+
 ### Notes/Thoughts
 
+This is the single most common real-world boot — the one the launcher performs whenever a valid default is already on file — yet it is also the *least* eventful to test, precisely
+because section 5 already proved everything it touches. The only meaningful distinction between them is the entry route: section 5 reaches `ReadyToPlay` by promoting a row and
+persisting a new default, whereas this path finds the default already valid and resolves it directly, re-persisting nothing. Both converge on the same screen through the same
+`VerifyAsync` machinery, so a pass here is really a confirmation that the direct-resolution leg of `ResolveDefaultAsync` behaves the same as the promotion leg once a row is in
+hand.
 
 ## 10. Cannot Play (`HasExe = false`): `pref = DefaultInstallation`, `DefaultId` is set, row fails verification
 
@@ -678,7 +712,6 @@ preference is `DefaultInstallation`, then launch the app.
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
 ### Notes/Thoughts
-
 
 ## 11. Cannot Play (sync failure): `pref = DefaultInstallation`, `DefaultId` is set, row fails INI synchronisation
 
@@ -723,7 +756,6 @@ I'll set up an installation row whose path has a valid zoo.exe but a zoo.ini the
 
 ### Notes/Thoughts
 
-
 ## 12. Last Played → Ready: `pref = LastPlayedInstallation`, a candidate exists, verifies, and synchronises
 
 ### Testing Strategy
@@ -764,7 +796,6 @@ I'll set up at least two installation rows with distinct `LastPlayedUtc` values,
 
 ### Notes/Thoughts
 
-
 ## 13. Last Played → Cannot Play (`HasExe = false`): `pref = LastPlayedInstallation`, a candidate exists, fails verification
 
 ### Testing Strategy
@@ -804,7 +835,6 @@ newer `LastPlayedUtc` having no zoo.exe at its path. I'll launch the app and con
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
 ### Notes/Thoughts
-
 
 ## 14. Last Played → Cannot Play (sync failure): `pref = LastPlayedInstallation`, a candidate exists, fails INI synchronisation
 
@@ -849,7 +879,6 @@ process. Then I'll launch the app.
 
 ### Notes/Thoughts
 
-
 ## 15. Last Played Fallback: `pref = LastPlayedInstallation`, no row has `LastPlayedUtc`, falls back to `DefaultInstallation` resolution
 
 ### Testing Strategy
@@ -892,7 +921,6 @@ launch the app.
 
 ### Notes/Thoughts
 
-
 ## 16. Last Opened → Ready: `pref = LastOpenedInstallation`, a candidate exists, verifies, and synchronises
 
 ### Testing Strategy
@@ -933,7 +961,6 @@ I'll set up at least two installation rows with distinct `LastOpenedUtc` values,
 
 ### Notes/Thoughts
 
-
 ## 17. Last Opened → Cannot Play (`HasExe = false`): `pref = LastOpenedInstallation`, a candidate exists, fails verification
 
 ### Testing Strategy
@@ -973,7 +1000,6 @@ surfaces for that row; the handler should not silently fall back to another row.
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
 ### Notes/Thoughts
-
 
 ## 18. Last Opened → Cannot Play (sync failure): `pref = LastOpenedInstallation`, a candidate exists, fails INI synchronisation
 
@@ -1018,7 +1044,6 @@ process. Then I'll launch the app.
 
 ### Notes/Thoughts
 
-
 ## 19. Last Opened Fallback: `pref = LastOpenedInstallation`, no row has `LastOpenedUtc`, falls back to `DefaultInstallation` resolution
 
 ### Testing Strategy
@@ -1059,7 +1084,6 @@ the `LastPlayedInstallation` fallback case — and launch the app.
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
 ### Notes/Thoughts
-
 
 ## 20. Verification Drift Persisted (progressive): `HasExe` and/or `HasIni` change during `Verify`, handler writes the new flags to the row before continuing
 
@@ -1103,7 +1127,6 @@ work). After boot completes, I'll inspect the row again to confirm the stored `H
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
 ### Notes/Thoughts
-
 
 ## 21. `LastOpenedUtc` Stamp (progressive): handler stamps `LastOpenedUtc` on the row before returning `ReadyToPlay`
 
@@ -1187,8 +1210,6 @@ stays responsive rather than crashing.
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
 ### Notes/Thoughts
-
-
 
 ---
 

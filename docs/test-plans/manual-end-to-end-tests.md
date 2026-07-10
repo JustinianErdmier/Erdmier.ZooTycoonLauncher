@@ -677,41 +677,84 @@ hand.
 
 ### Testing Strategy
 
-I'll set up an installation row and set the stored `DefaultInstallationId` to match, then remove or rename zoo.exe at the row's path so verification fails. I'll ensure the startup
-preference is `DefaultInstallation`, then launch the app.
+I set up one installation row, set the stored `DefaultInstallationId` to match, then renamed its zoo.exe so the file was gone from the path the launcher probes — verification
+would therefore find the executable missing whilst zoo.ini remained present. With the startup preference set to `DefaultInstallation`, I launched the app and confirmed the screen
+resolved to the `HasExe = false` variant of `CannotPlay`.
 
 ### Expected Outcome
 
 > Explain what the expected outcome for this stage in the process should be.
+
+This is the direct-resolution counterpart to section 6, standing to it exactly as section 9 stands to section 5. Because the startup preference is `DefaultInstallation` and a
+`DefaultInstallationId` is stored *and* still resolves to a real row, the handler should read that id, call `GetByIdAsync`, get the row back, and pass straight through the
+`row is not null` gate to verify it — with no promotion step, since the pointer is already valid. This time verification finds zoo.exe missing (`HasExe = false`) whilst zoo.ini is
+present, so the row is invalid and the flow should resolve to `CannotPlay` rather than `ReadyToPlay`. The screen is the same failure state documented in section 6: the full
+tabbed shell returns with the INI Config tab enabled, and the General tab shows a warning icon, a red "Cannot Play" heading, an "EXE: Not found" row (red) above an "INI: Found" row
+(green), the installation path, a muted line naming the missing zoo.exe, and — in the slot the launch button occupies on `ReadyToPlay` — an enabled "Open Installation Manager…"
+button, followed by the "Display" and "Your System" groups with their state-specific footnotes and a "Last played" stamp. The status bar should surface a "Fix required" cue. The
+only thing distinguishing this path from section 6 is the *route* in — the default resolves directly rather than being promoted — so the settings row should still hold the same id
+afterwards that it held before boot.
 
 ### Actual Outcome
 
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
+The test passed, and everything worked exactly as expected, and exactly as already exercised in section 6 — nothing changed. The stored `DefaultInstallationId` resolved directly to
+its row, verification failed on the missing zoo.exe, and the flow landed on the missing-executable variant of `CannotPlay` rather than promoting a different row or crashing. The
+screen is identical to section 6's, so the same screenshots are reused below rather than captured afresh. The `CannotPlay` outcome is served by the same `PlayView` /
+`PlayViewModel` pair regardless of whether the row was reached by direct resolution (this path) or by promotion (section 6), with the single `CanPlay` flag driving the difference
+between the two outcomes, so there was nothing new to observe on screen.
+
 ### Changes
 
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+None. This path required no changes: it lands on the already-built `CannotPlay` state — including the three deliberate UI decisions catalogued in section 6 (the repurposed "Open
+Installation Manager…" button, the unmuted "Display" group with a footnote, and the unmuted "Your System" group with a "nothing to configure" footnote) — and the only difference
+from section 6, resolving the default directly instead of promoting one, is a branch that existed in `BootHandler.ResolveDefaultAsync` (the `row is not null` gate) and needed
+no new work.
 
 ### UI/UX
 
 #### Hi-Fi Mockup
 
-> Add a screenshot of the particular view in question from the hi-fi mockup in Claude Design.
+![](../user-interface-design/HiFiMockupScreenshots/CannotPlayState.png)
 
 #### Actual Implementation
 
-> Add a screenshot of the actual implementation.
+![](../user-interface-design/ImplementationScreenshots/CannotPlayStateNoExe.png)
 
 #### Alignment
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
+Partially, and identically to section 6 — because this path renders the same `HasExe = false` variant of `CannotPlay`. Every divergence is one of the three deliberate decisions
+carried over from section 6 rather than an accident: the single "Open Installation Manager…" button in place of the mockup's disabled "Launch Game" plus in-panel "Fix" button, the
+unmuted "Display" group with only a footnote added, and the unmuted "Your System" group with a "nothing to configure" footnote in place of the mockup's "configured correctly" tick.
+The mockup also depicts the zoo.ini-missing substate, whereas this test exercises the zoo.exe-missing one, but the styling for either missing file is identical, so structurally the
+two screens are the same. Nothing about reaching this screen via a directly resolved rather than promoted default changes the pixels, so the section 6 alignment verdict carries
+over unchanged.
+
 ### Shortcomings
 
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
+The same placeholders noted for `CannotPlay` in section 6 apply here unchanged, since both paths serve the identical screen; none affects whether this path is exercised end to end:
+
+- The "Display" group is hard-coded, pending the screen-mode enumeration feature (via `IScreenModeEnumerator`).
+- The "Your System" group is hard-coded, pending host/system detection (OS, processor, graphics, memory).
+- The "Last played" stamp is bound to the row's `LastPlayedUtc` and converted to local time at the UI boundary, but the binding is one-shot — it will not refresh live.
+- The second status-bar cell is empty rather than showing the current display resolution; it depends on the same display feature as the "Display" group.
+- The "Open Installation Manager…" button renders and is enabled, but it is not yet wired to a command — the Installation Manager dialogue it should open has not been built, so the
+  button is presently inert. This sits outside the scope of this test, which covers the boot-time resolution to `CannotPlay`, not the downstream fix workflow.
+
 ### Notes/Thoughts
+
+This path is to section 6 what section 9 is to section 5: the same terminal screen reached by the direct-resolution leg of `ResolveDefaultAsync` rather than the promotion leg. A
+valid default pointer resolves straight to its row via `GetByIdAsync`, and only then does verification fail on the missing zoo.exe and drive the flow to `CannotPlay`. The value of
+testing it is confirming that a directly resolved default fails verification and surfaces `CannotPlay` in exactly the same way a promoted one does — the entry route differs, the
+outcome machinery does not.
 
 ## 11. Cannot Play (sync failure): `pref = DefaultInstallation`, `DefaultId` is set, row fails INI synchronisation
 

@@ -11,6 +11,7 @@
         <File Path="docs/superpowers/specs/2026-05-28-startup-flow-design.md" />
         <File Path="docs/superpowers/specs/2026-06-03-launch-game-design.md" />
         <File Path="docs/superpowers/specs/2026-07-02-installation-grid-control-design.md" />
+        <File Path="docs/superpowers/specs/2026-07-03-shared-boot-view-controls-design.md" />
     </Folder>
     <Folder Name="/SolutionItems/docs/" />
     <Folder Name="/SolutionItems/docs/superpowers/" />

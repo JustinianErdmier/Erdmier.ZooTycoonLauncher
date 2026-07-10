@@ -373,43 +373,102 @@ Four pieces on this screen are placeholders; all sit outside the scope of this t
 
 ### Testing Strategy
 
-I'll set up at least one installation row whose path no longer contains a zoo.exe — the file can be deleted, renamed, or the row can simply point at a directory that has never had
-one. I'll clear the stored `DefaultInstallationId`, ensure the startup preference is `DefaultInstallation`, and launch the app.
+I set up an installation row pointing at an otherwise-valid on-disk installation, then renamed its `zoo.exe` so the file no longer existed at the path the launcher probes —
+verification would therefore find the executable missing whilst `zoo.ini` remained present and parseable. I cleared the stored `DefaultInstallationId` so the handler was forced to
+promote a row, set the startup preference to `DefaultInstallation`, and launched the app. Afterwards I confirmed both that the promotion had still been persisted (the settings row
+held the promoted id) and that the resulting screen resolved to the `HasExe = false` variant of `CannotPlay` rather than silently falling back to another row or crashing.
 
 ### Expected Outcome
 
 > Explain what the expected outcome for this stage in the process should be.
+
+Because installation rows exist but no `DefaultInstallationId` is stored, the handler should fall through to the promotion branch exactly as in section 5: pick a row, persist its
+id into the settings row as the new default, and verify it. This time verification finds `zoo.exe` missing (`HasExe = false`) whilst `zoo.ini` is present, so the row is invalid and
+the flow should resolve to `CannotPlay` rather than `ReadyToPlay`. Crucially, the promotion should still be persisted — a failed verification does not undo the fact that a default
+was chosen — so the settings row should hold the promoted id afterwards.
+
+Because an installation is now open, the full application shell should return just as it does for `ReadyToPlay`, rather than the chrome-light placeholder of the earlier
+no-installation states: the General / INI Config tab strip should be present and the INI Config tab enabled. The General tab should carry the failure state — a warning icon, a red
+"Cannot Play" heading, an "EXE: Not found" row (red) above an "INI: Found" row (green), the installation path, and a muted explanatory line naming the missing `zoo.exe` — followed
+by the "Display" and "Your System" groups and a "Last played" stamp in the bottom-right corner. The status bar should surface a "Fix required" cue.
 
 ### Actual Outcome
 
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
+The test passed and the correct state was reached. Renaming `zoo.exe` drove the promoted row to fail verification on `HasExe`, and the flow resolved to the missing-executable
+variant of `CannotPlay` rather than promoting a different row. After boot, I inspected the settings row and confirmed it held the promoted installation's id, so — as expected — the
+failed verification did not roll back the promotion itself.
+
+The full tabbed shell returned, matching `ReadyToPlay`: both the General and INI Config tabs are present and the INI Config tab is enabled, because an installation is open. On the
+General tab the profile reads "Main"; the "Status" group renders the yellow warning icon, the red "Cannot Play" heading, "EXE: Not found" in red and "INI: Found" in green, the
+installation path, and the muted line "zoo.exe is missing from this installation's directory. The game cannot be started because it technically doesn't exist. Open the installation
+manager to try fixing the problem." In the top-right of the status group, in the slot the launch button occupies on `ReadyToPlay`, sits an enabled "Open Installation Manager…"
+button instead. The "Display" and "Your System" groups render beneath with their (still hard-coded) values, each carrying a state-specific footnote described below, and the muted
+"Last played" line reads "03 July 2026 01:56". As in section 5 several of these values are placeholders (see Shortcomings), but none affects the promote → verify → `CannotPlay`
+path under test.
+
 ### Changes
 
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+I made three deliberate UI decisions here that diverge from the mockup; each is a design choice rather than an accident of unfinished work.
+
+First, the launch affordance. The mockup handles the invalid state by disabling the "Launch Game" button in the top-right and adding a separate "Fix" button (alongside "Manage
+Installations") inside the status group — effectively duplicating in the main window the fix action that already lives in the Installation Manager dialogue. I did neither. Instead,
+I repurposed the launch button itself: when `CanPlay` is false the same top-right slot renders an enabled "Open Installation Manager…" button that takes the user to the
+Installation Manager to fix the installation there. This keeps a single, always-meaningful primary action in one place rather than a dead button plus a duplicated fix control.
+
+Second, the "Display" group. The mockup mutes that group's text when the game cannot play. I chose not to — an invalid _game_ installation says nothing about the validity of the
+machine's physical _display_ configuration, which the launcher detected successfully regardless. The values therefore stay in normal text; the only concession to the failure state
+is a muted, italic footnote beneath them ("Display detection succeeded, but the game cannot launch until the EXE is restored"), which is enough to explain why the otherwise-valid
+display information cannot yet be acted on.
+
+Third, the "Your System" group, for the same reason. Those host details (OS, processor, graphics, memory) remain true whether the game installation is valid, so I left their
+text unmuted as well. But because that group is specifically about the _game's_ optimisation, I added a footnote flagging that there is nothing to optimise: a red error icon with
+"zoo.exe is missing" followed by the muted "There's no game to configure" — the failure-state counterpart to the mockup's green "zoo.exe is configured correctly" tick.
 
 ### UI/UX
 
 #### Hi-Fi Mockup
 
-> Add a screenshot of the particular view in question from the hi-fi mockup in Claude Design.
+![](../user-interface-design/HiFiMockupScreenshots/CannotPlayState.png)
 
 #### Actual Implementation
 
-> Add a screenshot of the actual implementation.
+![](../user-interface-design/ImplementationScreenshots/CannotPlayStateNoExe.png)
 
 #### Alignment
 
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
+Partially, and every divergence is one of the three deliberate decisions above rather than an accident.
+
+The most conspicuous surface difference is _which_ file is missing. The mockup depicts the `zoo.ini`-missing substate (EXE found, INI not found), whereas this test exercises the
+`zoo.exe`-missing substate (EXE not found, INI found). That is not a mismatch against intent: the styling for either missing file is identical, so the mockup only ever needed to
+illustrate one of the two substates. The implementation drives the same layout from the opposite flag — the "EXE" and "INI" rows swap which is red and which is green, and the muted
+status line, the display footnote, and the system footnote all switch to their EXE-missing wording. Structurally, the two screens are the same.
+
+The remaining differences are the intentional changes catalogued above: the single "Open Installation Manager…" button in place of the mockup's disabled "Launch Game" plus in-panel
+"Fix" button; the unmuted "Display" group with only a footnote added; and the unmuted "Your System" group with a "nothing to configure" footnote in place of the mockup's
+"configured correctly" tick. Elsewhere, the two-line up — the full tabbed shell, the title menu, the "Status" / "Display" / "Your System" group boxes, the warning icon and red
+"Cannot Play" heading, and the "Fix required" status-bar cue are all present on both. The profile name ("Main" vs "Modded · A-Pack") is simply the test data I registered, and the
+"Last played" stamp shows a real local-time value here ("03 July 2026 01:56") because this row has been launched before, rather than the mockup's "Never".
+
 ### Shortcomings
 
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
-### Notes/Thoughts
+The placeholders are largely the same ones noted for `ReadyToPlay` in section 5, since both outcomes are served by the single `PlayView` / `PlayViewModel` pair; none affects
+whether the `CannotPlay` path is exercised end to end:
 
-> Self-explanatory
+- The "Display" group is hard-coded, pending the screen-mode enumeration feature (via `IScreenModeEnumerator`).
+- The "Your System" group is hard-coded, pending host/system detection (OS, processor, graphics, memory).
+- The "Last played" stamp is bound to the row's `LastPlayedUtc` and converted to local time at the UI boundary, but the binding is one-shot — it will not refresh live.
+- The second status-bar cell is empty rather than showing the current display resolution; it depends on the same display feature as the "Display" group.
+- The "Open Installation Manager…" button renders and is enabled, but it is not yet wired to a command — the Installation Manager dialogue it should open has not been built, so the
+  button is presently inert. This sits outside the scope of this test, which covers the boot-time resolution to `CannotPlay`, not the downstream fix workflow.
 
 ## 7. Default Promotion → Cannot Play (sync failure): `pref = DefaultInstallation`, `DefaultId = null`, rows ≥ 1, promoted row fails INI synchronisation
 

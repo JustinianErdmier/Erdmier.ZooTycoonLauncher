@@ -41,8 +41,8 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
 
         CanPlay = canPlay;
 
-        HasExe = installation.Validity == InstallationValidity.Valid || installation.Validity == InstallationValidity.InvalidNoIni;
-        HasIni = installation.Validity == InstallationValidity.Valid || installation.Validity == InstallationValidity.InvalidNoExe;
+        HasExe = installation.Validity.HasExe;
+        HasIni = installation.Validity.HasIni;
     }
 
     /// <summary>
@@ -70,6 +70,24 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(LaunchCommand)) ]
     public partial bool IsBusy { get; set; }
+
+    /// <summary>
+    ///     <see langword="true" /> when the installation cannot be played because both <c>zoo.exe</c> and <c>zoo.ini</c> are missing; drives the "missing both files" CannotPlay
+    ///     message. Maps to <see cref="InstallationValidity.InvalidNoExeOrIni" />.
+    /// </summary>
+    public bool IsMissingBothExeAndIni => !HasExe && !HasIni;
+
+    /// <summary>
+    ///     <see langword="true" /> when the installation cannot be played because <c>zoo.exe</c> is missing while <c>zoo.ini</c> is present; drives the "missing executable"
+    ///     CannotPlay message. Maps to <see cref="InstallationValidity.InvalidNoExe" />.
+    /// </summary>
+    public bool IsMissingOnlyExe => !HasExe && HasIni;
+
+    /// <summary>
+    ///     <see langword="true" /> when the installation cannot be played because <c>zoo.ini</c> is missing while <c>zoo.exe</c> is present; drives the "missing configuration"
+    ///     CannotPlay message. Maps to <see cref="InstallationValidity.InvalidNoIni" />.
+    /// </summary>
+    public bool IsMissingOnlyIni => HasExe && !HasIni;
 
     [ RelayCommand(CanExecute = nameof(CanExecuteLaunch)) ]
     private async Task LaunchAsync(CancellationToken cancellationToken)

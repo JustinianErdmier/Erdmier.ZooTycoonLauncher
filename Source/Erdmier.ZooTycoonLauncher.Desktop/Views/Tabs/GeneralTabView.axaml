@@ -34,9 +34,16 @@
                 <Button Command="{Binding LaunchCommand}"
                         DockPanel.Dock="Right"
                         IsDefault="True"
-                        IsEnabled="{Binding CanPlay}"
+                        IsVisible="{Binding CanPlay}"
                         VerticalAlignment="Center">
                     Launch Game
+                </Button>
+
+                <Button DockPanel.Dock="Right"
+                        IsDefault="True"
+                        IsVisible="{Binding !CanPlay}"
+                        VerticalAlignment="Top">
+                    Open Installation Manager…
                 </Button>
 
                 <StackPanel Margin="5 0 0 0"
@@ -47,7 +54,7 @@
                                Text="Ready to Play" />
 
                     <TextBlock FontWeight="Solid"
-                               Foreground="DarkRed"
+                               Foreground="Red"
                                IsVisible="{Binding !CanPlay}"
                                Text="Cannot Play" />
 
@@ -67,7 +74,7 @@
                                    IsVisible="{Binding HasExe}"
                                    Text="Found" />
 
-                        <TextBlock Foreground="DarkRed"
+                        <TextBlock Foreground="Red"
                                    Grid.Column="1"
                                    Grid.Row="0"
                                    IsVisible="{Binding !HasExe}"
@@ -83,7 +90,7 @@
                                    IsVisible="{Binding HasIni}"
                                    Text="Found" />
 
-                        <TextBlock Foreground="DarkRed"
+                        <TextBlock Foreground="Red"
                                    Grid.Column="1"
                                    Grid.Row="1"
                                    IsVisible="{Binding !HasIni}"
@@ -98,11 +105,25 @@
                                    Text="{Binding InstallationPath}"
                                    TextWrapping="Wrap" />
                     </Grid>
+
+                    <TextBlock Foreground="Gray"
+                               IsVisible="{Binding IsMissingOnlyExe}"
+                               Text="zoo.exe is missing from this installation's directory. The game cannot be started because it technically doesn't exist. Open the installation manager to try fixing the problem."
+                               TextWrapping="Wrap" />
+
+                    <TextBlock Foreground="Gray"
+                               IsVisible="{Binding IsMissingOnlyIni}"
+                               Text="zoo.ini is missing from this installation's directory. The game will not start without it. Use Fix to locate or recreate the file. Open the installation manager to try fixing the problem."
+                               TextWrapping="Wrap" />
+
+                    <TextBlock Foreground="Gray"
+                               IsVisible="{Binding IsMissingBothExeAndIni}"
+                               Text="zoo.exe and zoo.ini are missing from this installation's directory. The game cannot be started without them. Use Fix to locate or recreate the files. Open the installation manager to try fixing the problem."
+                               TextWrapping="Wrap" />
                 </StackPanel>
             </DockPanel>
         </controls:GroupBox>
 
-        <!--TODO: All text needs to be muted when CanPlay is false.-->
         <controls:GroupBox Header="Display"
                            Padding="10 15">
             <DockPanel HorizontalSpacing="10">
@@ -112,50 +133,60 @@
                        VerticalAlignment="Top"
                        Width="32" />
 
-                <Grid ColumnDefinitions="Auto,*"
-                      ColumnSpacing="20"
-                      RowDefinitions="Auto,Auto, Auto, Auto"
-                      RowSpacing="2">
-                    <TextBlock Grid.Column="0"
-                               Grid.Row="0"
-                               Text="Current resolution:" />
+                <StackPanel Orientation="Vertical"
+                            Spacing="6">
+                    <Grid ColumnDefinitions="Auto,*"
+                          ColumnSpacing="20"
+                          RowDefinitions="Auto,Auto, Auto, Auto"
+                          RowSpacing="2">
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="0"
+                                   Text="Current resolution:" />
 
-                    <TextBlock Grid.Column="1"
-                               Grid.Row="0"
-                               Text="1920 x 1080 · 32-bit · 60 Hz" />
+                        <TextBlock Grid.Column="1"
+                                   Grid.Row="0"
+                                   Text="1920 x 1080 · 32-bit · 60 Hz" />
 
-                    <TextBlock Grid.Column="0"
-                               Grid.Row="1"
-                               Text="Adapter:" />
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="1"
+                                   Text="Adapter:" />
 
-                    <TextBlock Grid.Column="1"
-                               Grid.Row="1"
-                               Text="\\.\DISPLAY1 - Primary" />
+                        <TextBlock Grid.Column="1"
+                                   Grid.Row="1"
+                                   Text="\\.\DISPLAY1 - Primary" />
 
-                    <TextBlock Grid.Column="0"
-                               Grid.Row="2"
-                               Text="Available screen modes:" />
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="2"
+                                   Text="Available screen modes:" />
 
-                    <TextBlock Grid.Column="1"
-                               Grid.Row="2"
-                               Text="756 reported by Windows" />
+                        <TextBlock Grid.Column="1"
+                                   Grid.Row="2"
+                                   Text="756 reported by Windows" />
 
-                    <TextBlock Grid.Column="0"
-                               Grid.Row="3"
-                               Text="Possible ZT1 modes:" />
+                        <TextBlock Grid.Column="0"
+                                   Grid.Row="3"
+                                   Text="Possible ZT1 modes:" />
 
-                    <TextBlock Grid.Column="1"
-                               Grid.Row="3"
-                               Text="14 compatible (16-bit ≤ 1600 x 1200)" />
-                </Grid>
+                        <TextBlock Grid.Column="1"
+                                   Grid.Row="3"
+                                   Text="14 compatible (16-bit ≤ 1600 x 1200)" />
+                    </Grid>
 
-                <!--TODO: Shouls only be visible when both CanPlay and HasExe are false. -->
-                <TextBlock IsVisible="{Binding !CanPlay}"
-                           Text="Display detection succeeded, but the game cannot launch until the EXE is restored." />
+                    <TextBlock Foreground="Gray"
+                               IsVisible="{Binding IsMissingOnlyExe}">
+                        <Italic>Display detection succeeded, but the game cannot launch until the EXE is restored.</Italic>
+                    </TextBlock>
 
-                <!--TODO: Shouls only be visible when both CanPlay and HasIni are false. -->
-                <TextBlock IsVisible="{Binding !CanPlay}"
-                           Text="Display detection succeeded, but the game cannot launch until the INI is restored." />
+                    <TextBlock Foreground="Gray"
+                               IsVisible="{Binding IsMissingOnlyIni}">
+                        <Italic>Display detection succeeded, but the game cannot launch until the INI is restored.</Italic>
+                    </TextBlock>
+
+                    <TextBlock Foreground="Gray"
+                               IsVisible="{Binding IsMissingBothExeAndIni}">
+                        <Italic>Display detection succeeded, but the game cannot launch until the EXE and INI are restored.</Italic>
+                    </TextBlock>
+                </StackPanel>
             </DockPanel>
         </controls:GroupBox>
 
@@ -209,7 +240,8 @@
 
                     <Separator />
 
-                    <StackPanel Orientation="Horizontal"
+                    <StackPanel IsVisible="{Binding CanPlay}"
+                                Orientation="Horizontal"
                                 Spacing="6">
                         <Image DockPanel.Dock="Left"
                                Height="16"
@@ -222,7 +254,24 @@
                                    Text="zoo.exe is configured correctly." />
 
                         <TextBlock Foreground="Gray"
-                                   Text="Windows XP compatability, 16-bit colour, and fullscreen optimisations are all set." />
+                                   Text="Windows XP compatibility, 16-bit colour, and fullscreen optimisations are all set." />
+                    </StackPanel>
+
+                    <StackPanel IsVisible="{Binding !HasExe}"
+                                Orientation="Horizontal"
+                                Spacing="6">
+                        <Image DockPanel.Dock="Left"
+                               Height="16"
+                               Source="/Assets/Win95Icons/error32.gif"
+                               VerticalAlignment="Top"
+                               Width="16" />
+
+                        <TextBlock FontWeight="Bold"
+                                   Foreground="Red"
+                                   Text="zoo.exe is missing." />
+
+                        <TextBlock Foreground="Gray"
+                                   Text="There's no game to configure." />
                     </StackPanel>
                 </StackPanel>
             </DockPanel>

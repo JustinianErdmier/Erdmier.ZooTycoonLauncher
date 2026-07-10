@@ -14,6 +14,19 @@ public sealed class InstallationValidityTests
         result.Name.ShouldBe(expectedName);
     }
 
+    [ Theory ]
+    [ InlineData(true, true) ]
+    [ InlineData(false, true) ]
+    [ InlineData(true, false) ]
+    [ InlineData(false, false) ]
+    public void HasExeAndHasIni_RoundTripThroughFrom(bool hasExe, bool hasIni)
+    {
+        InstallationValidity result = InstallationValidity.From(hasExe, hasIni);
+
+        result.HasExe.ShouldBe(hasExe);
+        result.HasIni.ShouldBe(hasIni);
+    }
+
     [ Fact ]
     public void Valid_DisplayNameIsValid()
     {

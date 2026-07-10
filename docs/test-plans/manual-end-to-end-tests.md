@@ -514,7 +514,6 @@ and launch the app.
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 8. Stale `DefaultId`: `pref = DefaultInstallation`, `DefaultId` is set, but `GetByIdAsync` returns null
 
@@ -639,7 +638,6 @@ that row's id. With the startup preference set to `DefaultInstallation`, I'll la
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 10. Cannot Play (`HasExe = false`): `pref = DefaultInstallation`, `DefaultId` is set, row fails verification
 
@@ -681,7 +679,6 @@ preference is `DefaultInstallation`, then launch the app.
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 11. Cannot Play (sync failure): `pref = DefaultInstallation`, `DefaultId` is set, row fails INI synchronisation
 
@@ -726,7 +723,6 @@ I'll set up an installation row whose path has a valid zoo.exe but a zoo.ini the
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 12. Last Played → Ready: `pref = LastPlayedInstallation`, a candidate exists, verifies, and synchronises
 
@@ -768,7 +764,6 @@ I'll set up at least two installation rows with distinct `LastPlayedUtc` values,
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 13. Last Played → Cannot Play (`HasExe = false`): `pref = LastPlayedInstallation`, a candidate exists, fails verification
 
@@ -810,7 +805,6 @@ newer `LastPlayedUtc` having no zoo.exe at its path. I'll launch the app and con
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 14. Last Played → Cannot Play (sync failure): `pref = LastPlayedInstallation`, a candidate exists, fails INI synchronisation
 
@@ -855,7 +849,6 @@ process. Then I'll launch the app.
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 15. Last Played Fallback: `pref = LastPlayedInstallation`, no row has `LastPlayedUtc`, falls back to `DefaultInstallation` resolution
 
@@ -899,7 +892,6 @@ launch the app.
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 16. Last Opened → Ready: `pref = LastOpenedInstallation`, a candidate exists, verifies, and synchronises
 
@@ -941,7 +933,6 @@ I'll set up at least two installation rows with distinct `LastOpenedUtc` values,
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 17. Last Opened → Cannot Play (`HasExe = false`): `pref = LastOpenedInstallation`, a candidate exists, fails verification
 
@@ -983,7 +974,6 @@ surfaces for that row; the handler should not silently fall back to another row.
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 18. Last Opened → Cannot Play (sync failure): `pref = LastOpenedInstallation`, a candidate exists, fails INI synchronisation
 
@@ -1028,7 +1018,6 @@ process. Then I'll launch the app.
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 19. Last Opened Fallback: `pref = LastOpenedInstallation`, no row has `LastOpenedUtc`, falls back to `DefaultInstallation` resolution
 
@@ -1071,7 +1060,6 @@ the `LastPlayedInstallation` fallback case — and launch the app.
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 20. Verification Drift Persisted (progressive): `HasExe` and/or `HasIni` change during `Verify`, handler writes the new flags to the row before continuing
 
@@ -1116,7 +1104,6 @@ work). After boot completes, I'll inspect the row again to confirm the stored `H
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 ## 21. `LastOpenedUtc` Stamp (progressive): handler stamps `LastOpenedUtc` on the row before returning `ReadyToPlay`
 
@@ -1158,8 +1145,6 @@ allows).
 > Explain any shortcomings not yet implemented, what information/steps are needed to implement them, etc.
 
 ### Notes/Thoughts
-
-> Self-explanatory
 
 ## 22. Unexpected Handler Failure: `BootCommand` returns a non-success `ErrorOr`, `MainWindowViewModel` falls back to `NoGameInstallationFoundViewModel(null)`
 
@@ -1203,7 +1188,6 @@ stays responsive rather than crashing.
 
 ### Notes/Thoughts
 
-> Self-explanatory
 
 
 ---

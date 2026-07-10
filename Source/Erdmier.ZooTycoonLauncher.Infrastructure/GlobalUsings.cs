@@ -7,6 +7,7 @@ global using Erdmier.ZooTycoonLauncher.Domain.IniSnapshots;
 global using Erdmier.ZooTycoonLauncher.Domain.Settings;
 global using Erdmier.ZooTycoonLauncher.Infrastructure.Common.Storage;
 global using Erdmier.ZooTycoonLauncher.Infrastructure.Discovery;
+global using Erdmier.ZooTycoonLauncher.Infrastructure.Game;
 global using Erdmier.ZooTycoonLauncher.Infrastructure.IniSnapshots;
 global using Erdmier.ZooTycoonLauncher.Infrastructure.Logging;
 global using Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Installation;

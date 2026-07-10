@@ -17,6 +17,7 @@ public sealed class App : Avalonia.Application
     public override void OnFrameworkInitializationCompleted()
     {
         ServiceProvider provider = AppStartup.BuildAndInitialise();
+
         Services = provider;
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

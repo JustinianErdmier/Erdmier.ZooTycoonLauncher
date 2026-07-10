@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.PlayView"
+             x:DataType="vm:PlayViewModel">
+    <TabControl>
+        <TabItem Header="General">
+            <ContentControl Content="{Binding GeneralTab}" />
+        </TabItem>
+        <TabItem Header="INI Config">
+            <ContentControl Content="{Binding IniConfigTab}" />
+        </TabItem>
+    </TabControl>
+</UserControl>

@@ -380,6 +380,110 @@ public sealed class BootHandlerTests
     }
 
     [ Fact ]
+    public async Task Handle_PromotesDefault_WhenDefaultIdStaleAndRowsExist()
+    {
+        Guid staleId    = Guid.CreateVersion7();
+        Guid promotedId = Guid.CreateVersion7();
+
+        GameInstallation promoted = new()
+        {
+            Id       = promotedId,
+            Name     = "Alpha",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        LauncherSettings settingsRow = new()
+        {
+            DefaultInstallationId = staleId
+        };
+
+        ILauncherSettingsRepository settings      = Substitute.For<ILauncherSettingsRepository>();
+        IInstallationRepository     installations = Substitute.For<IInstallationRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(settingsRow);
+
+        installations.GetByIdAsync(staleId, Arg.Any<CancellationToken>())
+                     .Returns((GameInstallation?)null);
+
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+                     .Returns(promoted);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(promoted.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
+
+        snapshots.SynchroniseAsync(promoted, Arg.Any<CancellationToken>())
+                 .Returns(Result.Success);
+
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  TimeProvider.System);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Outcome.ShouldBe(BootOutcome.ReadyToPlay);
+        result.Value.ActiveInstallation!.Id.ShouldBe(promotedId);
+
+        await settings.Received(requiredNumberOfCalls: 1)
+                      .UpdateAsync(Arg.Is<LauncherSettings>(s => s.DefaultInstallationId == promotedId),
+                                   Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Handle_AutoLocates_WhenDefaultIdStaleAndNoRows()
+    {
+        Guid staleId = Guid.CreateVersion7();
+
+        ILauncherSettingsRepository settings      = Substitute.For<ILauncherSettingsRepository>();
+        IInstallationRepository     installations = Substitute.For<IInstallationRepository>();
+        IInstallationLocator        locator       = Substitute.For<IInstallationLocator>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = staleId
+                });
+
+        installations.GetByIdAsync(staleId, Arg.Any<CancellationToken>())
+                     .Returns((GameInstallation?)null);
+
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+                     .Returns((GameInstallation?)null);
+
+        locator.LocateAsync(persistedLastKnownPath: null, Arg.Any<CancellationToken>())
+               .Returns(new LocatedDirectory(Path: @"C:\Games\ZT", Array.Empty<LocationProbeAttempt>()));
+
+        BootHandler handler = new(settings,
+                                  installations,
+                                  Substitute.For<IInstallationVerifier>(),
+                                  locator,
+                                  Substitute.For<IIniSnapshotService>(),
+                                  TimeProvider.System);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Outcome.ShouldBe(BootOutcome.NoGameInstallationFound);
+        result.Value.LocatedCandidatePath.ShouldBe(expected: @"C:\Games\ZT");
+
+        // The stale pointer cannot be promoted away, so it must be cleared rather than left dangling.
+        await settings.Received(requiredNumberOfCalls: 1)
+                      .UpdateAsync(Arg.Is<LauncherSettings>(s => s.DefaultInstallationId == null),
+                                   Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
     public async Task Handle_AutoLocates_CandidateFound_ReturnsNoGameInstallationFoundWithPath()
     {
         ILauncherSettingsRepository settings      = Substitute.For<ILauncherSettingsRepository>();
@@ -437,6 +541,10 @@ public sealed class BootHandlerTests
         result.IsError.ShouldBeFalse();
         result.Value.Outcome.ShouldBe(BootOutcome.NoGameInstallationFound);
         result.Value.LocatedCandidatePath.ShouldBeNull();
+
+        // No default was ever set, so there is nothing to clear — settings must be left untouched.
+        await settings.DidNotReceive()
+                      .UpdateAsync(Arg.Any<LauncherSettings>(), Arg.Any<CancellationToken>());
     }
 
     [ Fact ]

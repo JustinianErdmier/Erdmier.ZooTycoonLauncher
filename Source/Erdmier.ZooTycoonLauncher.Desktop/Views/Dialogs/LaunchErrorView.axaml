@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
+        x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.LaunchErrorView"
+        x:DataType="vm:LaunchErrorViewModel"
+        Title="Cannot Launch Zoo Tycoon"
+        Width="500"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+
+    <!-- Mirror MainWindow's caption-button hiding so the Classic theme renders the title bar with only a close button (Ref: References/Erdmier.ZooTycoonLauncherRef/Views/ConfirmDialogView.axaml). -->
+    <Window.Styles>
+        <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+        <Style Selector="CaptionButtons /template/ Button#PART_RestoreButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+    </Window.Styles>
+
+    <StackPanel Margin="8"
+                Orientation="Vertical"
+                Spacing="10">
+        <DockPanel HorizontalSpacing="10">
+            <Image DockPanel.Dock="Left"
+                   Height="32"
+                   Source="/Assets/Win95Icons/cancel32.gif"
+                   VerticalAlignment="Center"
+                   Width="32" />
+
+            <TextBlock Text="{Binding Message}"
+                       TextWrapping="Wrap" />
+        </DockPanel>
+
+        <Button Click="OnOkClick"
+                Content="OK"
+                HorizontalAlignment="Center"
+                IsDefault="True"
+                MinWidth="80" />
+    </StackPanel>
+</Window>

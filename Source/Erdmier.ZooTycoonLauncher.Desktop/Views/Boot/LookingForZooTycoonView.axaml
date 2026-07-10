@@ -3,8 +3,23 @@
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.LookingForZooTycoonView"
              x:DataType="vm:LookingForZooTycoonViewModel">
-    <TextBlock Text="Looking for Zoo Tycoon…"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               FontSize="14" />
+    <DockPanel HorizontalSpacing="10">
+        <Image Height="32"
+               Source="/Assets/Win95Icons/searchcomputer16.ico"
+               VerticalAlignment="Top"
+               Width="32" />
+
+        <StackPanel Margin="5 0 0 0"
+                    Orientation="Vertical"
+                    Spacing="4">
+            <TextBlock FontWeight="Solid"
+                       Text="Looking for Zoo Tycoon…" />
+
+            <ProgressBar HorizontalAlignment="Stretch"
+                         IsIndeterminate="True" />
+
+            <TextBlock Foreground="Gray"
+                       Text="{Binding CurrentPhrase}" />
+        </StackPanel>
+    </DockPanel>
 </UserControl>

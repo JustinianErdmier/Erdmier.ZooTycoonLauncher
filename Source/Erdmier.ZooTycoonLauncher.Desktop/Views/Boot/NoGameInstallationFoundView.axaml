@@ -3,20 +3,99 @@
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.NoGameInstallationFoundView"
              x:DataType="vm:NoGameInstallationFoundViewModel">
-    <StackPanel HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Spacing="8"
-                Margin="16">
-        <TextBlock Text="No Zoo Tycoon installation was found."
-                   FontWeight="Bold" />
+    <StackPanel Orientation="Vertical"
+                Spacing="10">
+        <DockPanel HorizontalSpacing="10">
+            <Image DockPanel.Dock="Left"
+                   Height="32"
+                   Source="/Assets/Win95Icons/error32.gif"
+                   VerticalAlignment="Center"
+                   Width="32" />
+
+            <Button Command="{Binding AddInstallationCommand}"
+                    DockPanel.Dock="Right"
+                    IsDefault="True"
+                    VerticalAlignment="Center">
+                Add Installation
+            </Button>
+
+            <StackPanel Margin="5 0 0 0"
+                        Orientation="Vertical"
+                        Spacing="4">
+                <TextBlock FontWeight="Solid"
+                           Text="No Game Installation Found" />
+
+                <TextBlock TextWrapping="Wrap">The auto-locate searched the Windows registry, Program Files, and the previously known directory (if applicable), but did not find a zoo.exe file. Add an installation by pointing the launcher at a folder containing the game.</TextBlock>
+            </StackPanel>
+        </DockPanel>
+
         <StackPanel IsVisible="{Binding HasLocatedPath}"
-                    Spacing="4">
-            <TextBlock Text="A candidate was found at:" />
-            <TextBox Text="{Binding LocatedCandidatePath, Mode=OneWay}"
-                     IsReadOnly="True" />
+                    Orientation="Vertical"
+                    Spacing="2">
+            <TextBlock TextWrapping="Wrap">A potential candidate has been located at the following path:</TextBlock>
+
+            <TextBox IsReadOnly="True"
+                     Text="{Binding LocatedCandidatePath}" />
         </StackPanel>
-        <Button Content="Add Installation"
-                IsEnabled="False"
-                ToolTip.Tip="Coming in a future update." />
+
+        <!-- TODO: Build grid dynamically and display actual values  -->
+        <HeaderedContentControl Header="Auto-locate trail"
+                                Padding="11 15 15 12">
+            <Grid ColumnDefinitions="25, 75*, 25*"
+                  RowDefinitions="*, *, *, *"
+                  RowSpacing="4">
+                <TextBlock Grid.Column="0"
+                           Grid.Row="0"
+                           Text="×" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="0"
+                           Text="HKLM\SOFTWARE\Microsoft Games\Zoo Tycoon\1.0" />
+
+                <TextBlock Foreground="Gray"
+                           Grid.Column="2"
+                           Grid.Row="0"
+                           Text="no value" />
+
+                <TextBlock Grid.Column="0"
+                           Grid.Row="1"
+                           Text="×" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="1"
+                           Text="C:\Program Files (x86)\Microsoft Games\Zoo Tycoon\" />
+
+                <TextBlock Foreground="Gray"
+                           Grid.Column="2"
+                           Grid.Row="1"
+                           Text="directory missing" />
+
+                <TextBlock Grid.Column="0"
+                           Grid.Row="2"
+                           Text="×" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="2"
+                           Text="C:\Program Files\Microsoft Games\Zoo Tycoon\" />
+
+                <TextBlock Foreground="Gray"
+                           Grid.Column="2"
+                           Grid.Row="2"
+                           Text="directory missing" />
+
+                <TextBlock Grid.Column="0"
+                           Grid.Row="3"
+                           Text="×" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="3"
+                           Text="Last-known path…" />
+
+                <TextBlock Foreground="Gray"
+                           Grid.Column="2"
+                           Grid.Row="3"
+                           Text="empty" />
+            </Grid>
+        </HeaderedContentControl>
     </StackPanel>
 </UserControl>

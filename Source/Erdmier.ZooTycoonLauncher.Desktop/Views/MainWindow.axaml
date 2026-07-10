@@ -1,10 +1,93 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels"
-        x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.MainWindow"
-        x:DataType="vm:MainWindowViewModel"
-        Title="Zoo Tycoon Launcher"
-        Width="800"
-        Height="600">
-    <ContentControl Content="{Binding ActiveContent}" />
-</Window>
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels"
+               xmlns:commonControls="clr-namespace:Classic.CommonControls;assembly=Classic.CommonControls.Avalonia"
+               x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.MainWindow"
+               x:DataType="vm:MainWindowViewModel"
+               Icon="/Assets/BrandIcons/ZTL_Title-Icon.png"
+               Title="  Zoo Tycoon Launcher  V1.0.0"
+               Width="{Binding WindowWidth}"
+               WindowStartupLocation="Manual"
+               SizeToContent="Height"
+               CanMaximize="False"
+               CanMinimize="False"
+               CanResize="False">
+
+    <!--The Classic theme's caption-button template doesn't honour CanMinimize / CanMaximize at the property level — only :fullscreen and :dialog:cantresize.-->
+    <!--The template partial selectors below collapse the Minimise and Restore buttons explicitly, so the title bar renders with only a close button.-->
+    <ClassicWindow.Styles>
+        <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+        <Style Selector="CaptionButtons /template/ Button#PART_RestoreButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+    </ClassicWindow.Styles>
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top"
+              IsVisible="{Binding !IsBooting}"
+              Margin="5 1 5 2">
+            <MenuItem Header="File">
+                <MenuItem Header="Open Installation…" />
+
+                <MenuItem Header="Installation Manager…" />
+
+                <MenuItem Header="Close Installation" />
+
+                <Separator />
+
+                <MenuItem Header="Settings…" />
+
+                <Separator />
+
+                <MenuItem Header="Exit" />
+            </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="Contents" />
+
+                <Separator />
+
+                <MenuItem Header="About" />
+            </MenuItem>
+        </Menu>
+
+        <!-- <Separator DockPanel.Dock="Top" /> -->
+
+        <ContentControl Content="{Binding ActiveContent}"
+                        DockPanel.Dock="Top"
+                        Margin="5 6 5 8" />
+        <!--Two cells whilst booting: primary message and version number.-->
+        <commonControls:StatusBar IsVisible="{Binding IsBooting}"
+                                  DockPanel.Dock="Top"
+                                  Margin="0 2 0 0">
+            <commonControls:StatusBarItem commonControls:StatusBar.Size="90*">
+                <TextBlock Text="{Binding StatusMessagePrimaryText}" />
+            </commonControls:StatusBarItem>
+
+            <commonControls:StatusBarItem commonControls:StatusBar.Size="10*">
+                <TextBlock>V1.0.0</TextBlock>
+            </commonControls:StatusBarItem>
+        </commonControls:StatusBar>
+
+        <!--Three cells after booting: primary message, secondary message, and version number.-->
+        <commonControls:StatusBar IsVisible="{Binding !IsBooting}"
+                                  DockPanel.Dock="Top"
+                                  Margin="0 2 0 0">
+            <commonControls:StatusBarItem commonControls:StatusBar.Size="70*">
+                <TextBlock Text="{Binding StatusMessagePrimaryText}" />
+            </commonControls:StatusBarItem>
+
+            <commonControls:StatusBarItem commonControls:StatusBar.Size="20*">
+                <TextBlock Foreground="{Binding StatusMessageSecondaryColour}"
+                           Text="{Binding StatusMessageSecondaryText}" />
+            </commonControls:StatusBarItem>
+
+            <commonControls:StatusBarItem commonControls:StatusBar.Size="10*">
+                <TextBlock>V1.0.0</TextBlock>
+            </commonControls:StatusBarItem>
+        </commonControls:StatusBar>
+    </DockPanel>
+</ClassicWindow>

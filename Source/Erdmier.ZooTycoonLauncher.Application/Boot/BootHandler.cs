@@ -71,30 +71,41 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
 
     private async ValueTask<ErrorOr<BootResult>> ResolveDefaultAsync(LauncherSettings settings, CancellationToken cancellationToken)
     {
-        if (settings.DefaultInstallationId is null)
+        if (settings.DefaultInstallationId is not null)
         {
-            GameInstallation? promoted = await _installations.FindDefaultPromotionCandidateAsync(cancellationToken);
+            GameInstallation? row = await _installations.GetByIdAsync(settings.DefaultInstallationId.Value, cancellationToken);
 
-            if (promoted is null)
+            if (row is not null)
             {
-                return await AutoLocateAsync(cancellationToken);
+                return await VerifyAsync(row, settings, cancellationToken);
+            }
+        }
+
+        // Either no default was ever set, or the persisted default no longer resolves to a stored installation
+        // (e.g. the row was deleted out from under a stale settings pointer). In both cases attempt to promote
+        // another installation as default, falling back to auto-location when none exists.
+        GameInstallation? promoted = await _installations.FindDefaultPromotionCandidateAsync(cancellationToken);
+
+        if (promoted is null)
+        {
+            // A stale default cannot be promoted away, so clear the dangling pointer rather than leave it
+            // referencing a row that no longer exists. When no default was ever set this value is already null,
+            // so the write is skipped. The stale value is still present here because it is only ever read above.
+            if (settings.DefaultInstallationId is not null)
+            {
+                settings.DefaultInstallationId = null;
+
+                await _settings.UpdateAsync(settings, cancellationToken);
             }
 
-            settings.DefaultInstallationId = promoted.Id;
-
-            await _settings.UpdateAsync(settings, cancellationToken);
-
-            return await VerifyAsync(promoted, settings, cancellationToken);
+            return await AutoLocateAsync(cancellationToken);
         }
 
-        GameInstallation? row = await _installations.GetByIdAsync(settings.DefaultInstallationId.Value, cancellationToken);
+        settings.DefaultInstallationId = promoted.Id;
 
-        if (row is null)
-        {
-            return new BootResult(BootOutcome.NoGameInstallationFound, ActiveInstallation: null, LocatedCandidatePath: null);
-        }
+        await _settings.UpdateAsync(settings, cancellationToken);
 
-        return await VerifyAsync(row, settings, cancellationToken);
+        return await VerifyAsync(promoted, settings, cancellationToken);
     }
 
     private async ValueTask<BootResult> AutoLocateAsync(CancellationToken cancellationToken)

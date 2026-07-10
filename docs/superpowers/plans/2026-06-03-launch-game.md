@@ -21,7 +21,8 @@
 | `Source/Erdmier.ZooTycoonLauncher.Application/Common/Abstractions/IProcessLauncher.cs` | Interface for OS process start, swappable in tests. |
 | `Source/Erdmier.ZooTycoonLauncher.Application/Common/Models/ProcessLaunchResult.cs` | `(Started, ErrorMessage)` record returned by `IProcessLauncher`. |
 | `Source/Erdmier.ZooTycoonLauncher.Application/Game/Launch/LaunchGameCommand.cs` | The `ICommand<ErrorOr<LaunchGameResult>>` request. |
-| `Source/Erdmier.ZooTycoonLauncher.Application/Game/Launch/LaunchGameResult.cs` | Result record + `LaunchGameOutcome` enum (co-located per `BootResult` precedent). |
+| `Source/Erdmier.ZooTycoonLauncher.Application/Game/Launch/LaunchGameResult.cs` | Result record. |
+| `Source/Erdmier.ZooTycoonLauncher.Application/Game/Launch/LaunchGameOutcome.cs` | Discriminated outcome enum for `LaunchGameResult.Outcome`. |
 | `Source/Erdmier.ZooTycoonLauncher.Application/Game/Launch/LaunchGameHandler.cs` | The handler — verify, persist drift, launch, stamp, return. |
 | `Source/Erdmier.ZooTycoonLauncher.Infrastructure/Game/WindowsProcessLauncher.cs` | `Process.Start` with `UseShellExecute=true`, exception mapping. |
 | `Source/Erdmier.ZooTycoonLauncher.Desktop/Composition/IApplicationLifecycle.cs` | One-method abstraction over `IClassicDesktopStyleApplicationLifetime.Shutdown()`. |
@@ -1557,6 +1558,6 @@ If no fixes were needed, this task closes without a commit. If fixes were needed
 - **No `[ UsedImplicitly ]` attributes are added in this plan.** Per user feedback, ReSharper warnings are addressed after-the-fact by the author, not pre-emptively.
 - **Designer constructors** stay marked plain (no `[ UsedImplicitly ]`); the existing convention in the codebase has them naked.
 - **British English** in any comments or new prose you author.
-- **One type per file.** The two intentional exceptions in this plan (`LaunchGameResult` + `LaunchGameOutcome`, file-scoped `NoOp*` in `ReadyToPlayViewModel`) are both documented and follow precedents already present in the codebase.
+- **One type per file.** Note that the original plan called for `LaunchGameOutcome` to be co-located with `LaunchGameResult` based on a false reading of the `BootResult`/`BootOutcome` precedent; the executed code instead splits them into separate files to satisfy `OneTypePerFileTests`. The file-scoped `NoOp*` types in `ReadyToPlayViewModel`'s designer-only path remain a documented exception (`file`-scoped types are exempt from the rule).
 - **If a test fails or build breaks unexpectedly**, do not push past it. Diagnose first; the plan is wrong before your environment is.
 - **Tasks 12 and 13 share a commit.** The build is intentionally broken between them; do not commit Task 12 alone.

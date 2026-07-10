@@ -17,7 +17,7 @@ public sealed class ValidationBehaviour<TMessage, TResponse> : IPipelineBehavior
     public ValidationBehaviour(IEnumerable<IValidator<TMessage>> validators) => _validators = validators;
 
     /// <inheritdoc />
-    public async ValueTask<TResponse> Handle(TMessage message, CancellationToken cancellationToken, MessageHandlerDelegate<TMessage, TResponse> next)
+    public async ValueTask<TResponse> Handle(TMessage message, MessageHandlerDelegate<TMessage, TResponse> next, CancellationToken cancellationToken)
     {
         if (!_validators.Any())
         {

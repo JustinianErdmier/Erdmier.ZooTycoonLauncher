@@ -2,7 +2,8 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 
 /// <summary>
 ///     The INI Config tab (SDD §9.3.1). Hosts either the editor or a placeholder (loading / no INI / unreadable). Each activation reloads from disk unless edits are pending, so the
-///     editor reflects anything the game wrote while the launcher stayed open; a failed load is retried on the next activation.
+///     editor reflects anything the game wrote while the launcher stayed open; a failed load is retried on the next activation. When a reload fails while the editor already
+///     holds pending edits, the editor stays on screen (never dropping unsaved work) and the failure is shown as an error dialogue instead.
 /// </summary>
 public sealed partial class IniConfigTabViewModel : ViewModelBase
 {
@@ -93,7 +94,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
 
             if (result.IsError)
             {
-                Content = IniPlaceholderViewModel.Unreadable(result.FirstError.Description);
+                await ReportUnreadableAsync(placeholderMessage: result.FirstError.Description, dialogDescription: result.FirstError.Description);
 
                 return;
             }
@@ -114,8 +115,24 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            Content = IniPlaceholderViewModel.Unreadable(ex.Message);
+            await ReportUnreadableAsync(placeholderMessage: ex.Message, dialogDescription: $"zoo.ini could not be reloaded: {ex.Message}");
         }
+    }
+
+    // A reload can fail while the editor already holds pending edits (the user started typing while the reload was in flight); dropping the editor for the placeholder would
+    // silently discard that work, so the editor stays on screen and the failure is surfaced as a dialogue instead.
+    private async Task ReportUnreadableAsync(string placeholderMessage, string dialogDescription)
+    {
+        if (_editor is { HasPendingChanges: true })
+        {
+            Content = _editor;
+
+            await _dialogs.ShowErrorAsync(title: "Cannot Reload zoo.ini", dialogDescription);
+
+            return;
+        }
+
+        Content = IniPlaceholderViewModel.Unreadable(placeholderMessage);
     }
 
     private void OnEditorPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)

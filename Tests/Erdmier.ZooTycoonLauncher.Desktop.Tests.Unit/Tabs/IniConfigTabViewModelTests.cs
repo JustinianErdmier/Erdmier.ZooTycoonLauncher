@@ -124,4 +124,62 @@ public sealed class IniConfigTabViewModelTests
     public async Task SaveAsync_WithoutAnEditor_HasNothingToSave()
         => (await new IniConfigTabViewModel(IniEditorTestData.Installation(hasIni: false), iniErrorMessage: null, _mediator, _dialogs).SaveAsync(CancellationToken.None))
            .ShouldBeTrue();
+
+    [ Fact ]
+    public async Task ReloadFailsWhileDirty_KeepsTheEditorAndReportsTheError()
+    {
+        IniConfigTabViewModel tab = new(IniEditorTestData.Installation(), iniErrorMessage: null, _mediator, _dialogs);
+
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        await tab.ActivateAsync(CancellationToken.None);
+
+        TaskCompletionSource<ErrorOr<IniConfigResult>> pending = new();
+
+        _mediator.Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniConfigResult>>(pending.Task));
+
+        Task reload = tab.ActivateAsync(CancellationToken.None);
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>((IniEditorViewModel)tab.Content, section: "user", key: "screenwidth").Value = 1024m;
+
+        pending.SetResult(Error.Unexpected(code: "Ini.StoreFailed", description: "The installation's settings history could not be opened: x"));
+
+        await reload;
+
+        tab.Content.ShouldBeOfType<IniEditorViewModel>();
+        tab.HasPendingChanges.ShouldBeTrue();
+
+        await _dialogs.Received(requiredNumberOfCalls: 1)
+                      .ShowErrorAsync(title: "Cannot Reload zoo.ini", message: "The installation's settings history could not be opened: x");
+    }
+
+    [ Fact ]
+    public async Task ReloadThrowsWhileDirty_KeepsTheEditorAndReportsTheError()
+    {
+        IniConfigTabViewModel tab = new(IniEditorTestData.Installation(), iniErrorMessage: null, _mediator, _dialogs);
+
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        await tab.ActivateAsync(CancellationToken.None);
+
+        TaskCompletionSource<ErrorOr<IniConfigResult>> pending = new();
+
+        _mediator.Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniConfigResult>>(pending.Task));
+
+        Task reload = tab.ActivateAsync(CancellationToken.None);
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>((IniEditorViewModel)tab.Content, section: "user", key: "screenwidth").Value = 1024m;
+
+        pending.SetException(new InvalidOperationException(message: "database is locked"));
+
+        await reload;
+
+        tab.Content.ShouldBeOfType<IniEditorViewModel>();
+        tab.HasPendingChanges.ShouldBeTrue();
+
+        await _dialogs.Received(requiredNumberOfCalls: 1)
+                      .ShowErrorAsync(title: "Cannot Reload zoo.ini", message: "zoo.ini could not be reloaded: database is locked");
+    }
 }

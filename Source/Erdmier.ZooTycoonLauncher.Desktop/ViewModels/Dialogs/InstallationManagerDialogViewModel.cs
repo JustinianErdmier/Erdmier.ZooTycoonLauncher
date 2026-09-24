@@ -2,7 +2,7 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
 /// <summary>
 ///     View model for the Installation Manager modal (SDD §7.2.2, §9.4). Hosts <see cref="InstallationGridViewModel" /> and exposes the five management
-///     commands. <c>Delete</c> and <c>Fix</c> are scaffolded stubs — each will be completed when its corresponding dialogue is implemented.
+///     commands. <c>Fix</c> is a scaffolded stub — it will be completed when its corresponding dialogue is implemented.
 /// </summary>
 public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, IDisposable
 {
@@ -89,8 +89,19 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
     }
 
     [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
-    private Task DeleteAsync(CancellationToken cancellationToken)
-        => Task.CompletedTask; // TODO: SDD §7.2.5 — Delete Installation confirmation not yet implemented.
+    private async Task DeleteAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        if (await _dialogs.ShowDeleteInstallationAsync(Grid.SelectedRow.Id))
+        {
+            HasChanges = true;
+        }
+    }
 
     [ RelayCommand(CanExecute = nameof(CanExecuteFixCommand)) ]
     private Task FixAsync(CancellationToken cancellationToken)

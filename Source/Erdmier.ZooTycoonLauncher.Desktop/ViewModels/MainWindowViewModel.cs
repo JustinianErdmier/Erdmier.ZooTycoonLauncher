@@ -86,11 +86,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // Pointed boot (SDD §7.2.7 — the picker's Open button): boots the given installation directly, bypassing the startup preference and default resolution.
     private Task OpenInstallationAsync(Guid installationId, CancellationToken cancellationToken) => RunBootAsync(installationId, cancellationToken);
 
-    // File → "Installation Manager…" (SDD §9.10): opens the modal manager, then refreshes whichever state is active — but only when the manager reports a change — so
-    // installations added there are reflected immediately without an unnecessary locator rescan when the user opened the manager and changed nothing. Re-runs the normal
-    // boot when NoGameInstallationFoundViewModel is active (mirroring that state's own post-Add reboot), so a first installation added via the manager is picked up without
-    // requiring a restart. The picker needs nothing here: its grid refreshes itself from the change messages. Play and CannotPlay need no refresh — neither displays the
-    // installation list, and the Manager's own Info/Edit/Delete/Fix commands are still stubs.
+    // File → "Installation Manager…" (SDD §9.10): opens the modal manager, then refreshes whichever state is active — but only when the manager reports a change (D6).
+    // Three cases follow: a Play state (Ready to Play or Cannot Play) re-verifies the open installation with a pointed boot, so a rename shows, Cannot Play becomes
+    // Ready after a fix, and a deleted installation falls back to the normal resolution; NoGameInstallationFoundViewModel re-runs the normal boot, mirroring that
+    // state's own post-Add reboot, so a first installation added via the manager is picked up without requiring a restart; and the picker needs nothing, since its
+    // grid refreshes itself from the change messages.
     [ RelayCommand ]
     private async Task ManageInstallationsAsync(CancellationToken cancellationToken)
     {
@@ -101,10 +101,22 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        // The picker needs nothing here: its grid refreshes itself from the change messages.
-        if (ActiveContent is NoGameInstallationFoundViewModel)
+        switch (ActiveContent)
         {
-            await RunBootAsync(installationId: null, cancellationToken);
+            // Re-verify the open installation: a rename shows, Cannot Play becomes Ready after a fix, and a deleted installation falls back to the normal resolution
+            // (SDD §7.2.4).
+            case PlayViewModel play:
+                await RunBootAsync(play.InstallationId, cancellationToken);
+
+                break;
+
+            // Mirrors that state's own post-Add reboot, so a first installation added via the manager is picked up.
+            case NoGameInstallationFoundViewModel:
+                await RunBootAsync(installationId: null, cancellationToken);
+
+                break;
+
+            // The picker needs nothing: its grid refreshes itself from the change messages.
         }
     }
 
@@ -282,12 +294,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             AppBoot.BootOutcome.ReadyToPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                  canPlay: true,
                                                                  ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
+                                                                 ManageInstallationsAsync,
                                                                  _lifecycle,
                                                                  _dialogs,
                                                                  _mediator),
             AppBoot.BootOutcome.CannotPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                 canPlay: false,
                                                                 ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
+                                                                ManageInstallationsAsync,
                                                                 _lifecycle,
                                                                 _dialogs,
                                                                 _mediator),

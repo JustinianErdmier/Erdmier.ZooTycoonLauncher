@@ -7,13 +7,19 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
 
     private readonly IMediator? _mediator;
 
+    private readonly Func<CancellationToken, Task>? _openInstallationManagerAsync;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="installation">The installation whose general information is displayed.</param>
     /// <param name="canPlay"><see langword="true" /> when the owning <see cref="Boot.PlayViewModel" /> is in the ReadyToPlay state; drives <see cref="CanPlay" />.</param>
     /// <param name="mediator">The Mediator dispatcher.</param>
-    public GeneralTabViewModel(InstallationSummary installation, bool canPlay, IMediator mediator)
+    /// <param name="openInstallationManagerAsync">Opens the Installation Manager through the main window, which refreshes the open installation afterwards.</param>
+    public GeneralTabViewModel(InstallationSummary installation, bool canPlay, IMediator mediator, Func<CancellationToken, Task> openInstallationManagerAsync)
         : this(installation, canPlay)
-        => _mediator = mediator;
+    {
+        _mediator                     = mediator;
+        _openInstallationManagerAsync = openInstallationManagerAsync;
+    }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public GeneralTabViewModel()
@@ -121,6 +127,11 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     }
 
     private bool CanExecuteLaunch() => CanPlay && !IsBusy && _mediator is not null;
+
+    // Cannot Play's "Open Installation Manager…" button — the natural route into Fix (SDD §9.1).
+    [ RelayCommand ]
+    private Task OpenInstallationManagerAsync(CancellationToken cancellationToken)
+        => _openInstallationManagerAsync?.Invoke(cancellationToken) ?? Task.CompletedTask;
 
     /// <summary>Formats a nullable UTC last-played timestamp for display, localising to the user's timezone or rendering "Never" when unset.</summary>
     /// <param name="lastPlayedUtc">The UTC timestamp to format, or <see langword="null" /> when the installation has never been played.</param>

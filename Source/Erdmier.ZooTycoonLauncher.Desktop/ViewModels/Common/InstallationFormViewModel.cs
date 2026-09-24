@@ -17,6 +17,17 @@ public sealed partial class InstallationFormViewModel : ViewModelBase
         : this(null!)
     { }
 
+    /// <summary>
+    ///     <see langword="true" /> when the form's inputs accept user interaction. Edit clears this once the installation being edited no longer exists, so the
+    ///     fields go inert alongside the disabled Save button.
+    /// </summary>
+    [ ObservableProperty ]
+    [ NotifyPropertyChangedFor(nameof(CanChangeDefault)) ]
+    public partial bool AreInputsEnabled { get; set; } = true;
+
+    /// <summary><see langword="true" /> when Mark as default can be changed — the inputs are enabled and the flag is not locked (Ruling R11).</summary>
+    public bool CanChangeDefault => AreInputsEnabled && !IsDefaultLocked;
+
     // TODO: Should probably be a list so we can display multiple errors at once.
     /// <summary>The most recent validation or dispatch error, or <see langword="null" /> when none. Shown under the inputs.</summary>
     [ ObservableProperty ]
@@ -31,7 +42,8 @@ public sealed partial class InstallationFormViewModel : ViewModelBase
     ///     (SDD §7.2.3). Set through <see cref="LockDefault" />.
     /// </summary>
     [ ObservableProperty ]
-    public partial bool IsDefaultLocked { get; set; }
+    [ NotifyPropertyChangedFor(nameof(CanChangeDefault)) ]
+    public partial bool IsDefaultLocked { get; private set; }
 
     /// <summary><see langword="true" /> when the Folder input is read-only (Edit — relocation happens through Fix).</summary>
     [ ObservableProperty ]

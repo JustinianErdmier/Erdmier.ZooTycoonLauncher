@@ -14,6 +14,7 @@
 
             <TextBox Grid.Column="1"
                      Grid.Row="0"
+                     IsEnabled="{Binding AreInputsEnabled}"
                      Text="{Binding Name, Mode=TwoWay}" />
 
             <TextBlock Grid.Column="0"
@@ -37,7 +38,7 @@
                       Grid.Column="1"
                       Grid.Row="2"
                       IsChecked="{Binding MakeDefault, Mode=TwoWay}"
-                      IsEnabled="{Binding !IsDefaultLocked}" />
+                      IsEnabled="{Binding CanChangeDefault}" />
         </Grid>
 
         <DockPanel HorizontalSpacing="10"

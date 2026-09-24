@@ -120,6 +120,12 @@ public sealed partial class FixInstallationDialogViewModel : ViewModelBase
     [ RelayCommand(CanExecute = nameof(CanExecuteLocate)) ]
     private async Task LocateAsync(CancellationToken cancellationToken)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_mediator is null)
+        {
+            return;
+        }
+
         if (_dialogs is null)
         {
             return;

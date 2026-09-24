@@ -35,6 +35,7 @@
 
                 <Grid ColumnDefinitions="Auto, *"
                       ColumnSpacing="16"
+                      IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNullOrEmpty}}"
                       RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
                       RowSpacing="6">
                     <TextBlock Grid.Column="0"

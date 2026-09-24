@@ -77,6 +77,9 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
 
         if (result.IsError)
         {
+            _logger.LogWarning("Failed to load the installation list: {Errors}",
+                               string.Join("; ", result.Errors.Select(error => $"{error.Code}: {error.Description}")));
+
             return;
         }
 
@@ -129,7 +132,8 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
         });
 
     // Runs only on the UI thread (see ScheduleReload), so the two flags need no locking. A message that arrives whilst a reload is in flight marks one follow-up reload
-    // instead of starting a second, overlapping one. A failed reload is logged and leaves the previous rows in place.
+    // instead of starting a second, overlapping one. The catch sits inside the loop so a failed attempt is logged, leaves the previous rows in place, and still honours
+    // a follow-up reload requested whilst it was running.
     private async Task ReloadCoalescedAsync()
     {
         if (_isReloading)
@@ -147,13 +151,16 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
             {
                 _reloadPending = false;
 
-                await LoadAsync();
+                try
+                {
+                    await LoadAsync();
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogError(ex, "Failed to reload the installation list.");
+                }
             }
             while (_reloadPending && !_disposed);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            _logger.LogError(ex, "Failed to reload the installation list.");
         }
         finally
         {

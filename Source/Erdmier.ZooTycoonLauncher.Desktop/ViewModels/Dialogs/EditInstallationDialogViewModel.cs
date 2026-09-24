@@ -68,7 +68,8 @@ public sealed partial class EditInstallationDialogViewModel : ViewModelBase
 
             if (result.IsError)
             {
-                Form.ErrorMessage = InstallationDialogMessages.InstallationMissing;
+                Form.ErrorMessage     = InstallationDialogMessages.InstallationMissing;
+                Form.AreInputsEnabled = false;
 
                 return;
             }
@@ -87,13 +88,20 @@ public sealed partial class EditInstallationDialogViewModel : ViewModelBase
         {
             _logger.LogError(ex, "Failed to load installation {InstallationId} for editing.", installationId);
 
-            Form.ErrorMessage = InstallationDialogMessages.UnexpectedFailure;
+            Form.ErrorMessage     = InstallationDialogMessages.UnexpectedFailure;
+            Form.AreInputsEnabled = false;
         }
     }
 
     [ RelayCommand(CanExecute = nameof(CanExecuteSave)) ]
     private async Task SaveAsync(CancellationToken cancellationToken)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_mediator is null)
+        {
+            return;
+        }
+
         IsBusy            = true;
         Form.ErrorMessage = null;
 
@@ -106,8 +114,9 @@ public sealed partial class EditInstallationDialogViewModel : ViewModelBase
             {
                 if (result.FirstError.Type == ErrorType.NotFound)
                 {
-                    Form.ErrorMessage = InstallationDialogMessages.InstallationMissing;
-                    IsLoaded          = false;
+                    Form.ErrorMessage     = InstallationDialogMessages.InstallationMissing;
+                    Form.AreInputsEnabled = false;
+                    IsLoaded              = false;
 
                     return;
                 }

@@ -100,6 +100,12 @@ public sealed partial class DeleteInstallationDialogViewModel : ViewModelBase
     [ RelayCommand(CanExecute = nameof(CanExecuteDelete)) ]
     private async Task DeleteAsync(CancellationToken cancellationToken)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_mediator is null)
+        {
+            return;
+        }
+
         IsBusy       = true;
         ErrorMessage = null;
 
@@ -111,8 +117,10 @@ public sealed partial class DeleteInstallationDialogViewModel : ViewModelBase
             {
                 if (result.FirstError.Type == ErrorType.NotFound)
                 {
-                    ErrorMessage = InstallationDialogMessages.InstallationMissing;
-                    IsLoaded     = false;
+                    ErrorMessage        = InstallationDialogMessages.InstallationMissing;
+                    HasPromotion        = false;
+                    IsLastInstallation  = false;
+                    IsLoaded            = false;
 
                     return;
                 }

@@ -88,6 +88,12 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
     [ RelayCommand(CanExecute = nameof(CanExecuteSave)) ]
     private async Task SaveAsync(CancellationToken cancellationToken)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_mediator is null)
+        {
+            return;
+        }
+
         IsBusy            = true;
         Form.ErrorMessage = null;
 

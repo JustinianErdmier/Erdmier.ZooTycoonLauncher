@@ -66,6 +66,7 @@
     <Folder Name="/Tests/">
         <Project Path="Tests/Erdmier.ZooTycoonLauncher.Domain.Tests.Unit/Erdmier.ZooTycoonLauncher.Domain.Tests.Unit.csproj" />
         <Project Path="Tests/Erdmier.ZooTycoonLauncher.Application.Tests.Unit/Erdmier.ZooTycoonLauncher.Application.Tests.Unit.csproj" />
+        <Project Path="Tests/Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit/Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.csproj" />
         <Project Path="Tests/Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration/Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration.csproj" />
         <Project Path="Tests/Erdmier.ZooTycoonLauncher.Tests.Architecture/Erdmier.ZooTycoonLauncher.Tests.Architecture.csproj" />
     </Folder>

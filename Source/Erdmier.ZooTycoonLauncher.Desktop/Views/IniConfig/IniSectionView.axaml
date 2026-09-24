@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig"
+             xmlns:fields="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig.Fields"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.IniSectionView"
+             x:DataType="vm:IniSectionViewModel">
+    <StackPanel Spacing="6">
+        <StackPanel Orientation="Horizontal"
+                    Spacing="6">
+            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
+                       FontWeight="Bold"
+                       Text="{Binding Header}" />
+
+            <TextBlock Foreground="Gray"
+                       Text="section of zoo.ini" />
+        </StackPanel>
+
+        <Border Background="Silver"
+                Height="1" />
+
+        <ItemsControl ItemsSource="{Binding Groups}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:IniFieldGroup">
+                    <StackPanel Margin="0 4 0 0"
+                                Spacing="6">
+                        <TextBlock FontFamily="Lucida Console, Courier New, monospace"
+                                   FontWeight="Bold"
+                                   Foreground="#404040"
+                                   IsVisible="{Binding HasSubHeader}"
+                                   Text="{Binding SubHeader}" />
+
+                        <ItemsControl ItemsSource="{Binding Fields}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="fields:IniFieldViewModel">
+                                    <Grid Background="Transparent"
+                                          ColumnDefinitions="190,*"
+                                          GotFocus="OnRowGotFocus"
+                                          LostFocus="OnRowLostFocus"
+                                          Margin="0 2"
+                                          PointerEntered="OnRowPointerEntered"
+                                          PointerExited="OnRowPointerExited"
+                                          ToolTip.Tip="{Binding Help}">
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
+                                                       Text="{Binding Label}" />
+
+                                            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
+                                                       Foreground="Gray"
+                                                       IsVisible="{Binding HasHint}"
+                                                       Text="{Binding Hint}" />
+                                        </StackPanel>
+
+                                        <ContentControl Content="{Binding}"
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Left"
+                                                        MinWidth="0"
+                                                        VerticalAlignment="Top" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBlock Foreground="Gray"
+                   IsVisible="{Binding HasFootnote}"
+                   Margin="0 6 0 0"
+                   Text="{Binding Footnote}"
+                   TextWrapping="Wrap" />
+    </StackPanel>
+</UserControl>

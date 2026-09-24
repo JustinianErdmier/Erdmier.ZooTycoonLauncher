@@ -801,6 +801,10 @@ public sealed class BootHandlerTests
         result.IsError.ShouldBeFalse();
         result.Value.Outcome.ShouldBe(BootOutcome.CannotPlay);
         result.Value.ActiveInstallation!.Id.ShouldBe(requestedId);
+
+        // A failed pointed boot must never write settings — mirrors the ReadyToPlay pointed test's guarantee.
+        await settings.DidNotReceive()
+                      .UpdateAsync(Arg.Any<LauncherSettings>(), Arg.Any<CancellationToken>());
     }
 
     [ Fact ]
@@ -832,6 +836,10 @@ public sealed class BootHandlerTests
 
         result.IsError.ShouldBeFalse();
         result.Value.Outcome.ShouldBe(BootOutcome.OpenGameInstallation);
+
+        // Proves the pointed path actually ran and fell through, rather than the outcome coincidentally matching a normal boot.
+        await installations.Received(requiredNumberOfCalls: 1)
+                           .GetByIdAsync(requestedId, Arg.Any<CancellationToken>());
     }
 
     [ Fact ]

@@ -54,8 +54,7 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
                 return await VerifyAsync(requested, settings, cancellationToken);
             }
 
-            // The picker's snapshot is stale (the row was deleted since it loaded) — fall through to the
-            // ordinary preference-driven resolution below rather than pointing at a row that no longer exists.
+            // The requested installation no longer exists (for example, it was deleted after the caller read it); fall back to the normal resolution below.
         }
 
         if (settings.LauncherStartupPreference == LauncherStartupPreference.NoInstallation)

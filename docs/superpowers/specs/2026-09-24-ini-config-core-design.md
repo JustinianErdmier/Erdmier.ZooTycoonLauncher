@@ -95,7 +95,7 @@ Source/Erdmier.ZooTycoonLauncher.Domain/
 │   ├── IniComment.cs
 │   └── IniBlank.cs
 └── IniDrift/
-    ├── IniDrift.cs
+    ├── IniDriftResult.cs
     ├── IniDriftKind.cs
     └── IniDriftDetector.cs
 ```
@@ -219,7 +219,7 @@ public sealed class IniDocument
     public static IniDocument Parse(string text);
     public string Render();
     public bool TryGetValue(IniKeyId id, out string? value);   // trimmed value of the first matching key line
-    public void SetValue(IniKeyId id, string? value);          // null writes an empty value: "key="
+    public void SetValue(IniKeyId id, string value);           // an empty value writes "key="
 }
 
 public abstract record IniLine(string RawText, string LineEnding);   // LineEnding is "\r\n", "\n", "\r", or "" (last line without a terminator)
@@ -248,11 +248,11 @@ Rules:
 
 ```csharp
 public sealed class IniDriftKind : SmartEnum<IniDriftKind>   // None | GameManagedOnly | UserSettings
-public sealed record IniDrift(IniDriftKind Kind, IReadOnlyList<IniKeyId> ChangedKeys);
+public sealed record IniDriftResult(IniDriftKind Kind, IReadOnlyList<IniKeyId> ChangedKeys);
 
 public static class IniDriftDetector
 {
-    public static IniDrift Detect(IReadOnlyDictionary<IniKeyId, string?> currentValues, IReadOnlyDictionary<IniKeyId, string?> diskValues);
+    public static IniDriftResult Detect(IReadOnlyDictionary<IniKeyId, string?> currentValues, IReadOnlyDictionary<IniKeyId, string?> diskValues);
 }
 ```
 
@@ -309,7 +309,7 @@ every other row keeps its prior source.
 Task<ErrorOr<IniConfigResult>> LoadAsync(GameInstallation installation, CancellationToken cancellationToken);   // synchronise, then return the reconciled values
 ```
 
-### 5.2 `IniReconciler` (`IniConfig/Common/`, internal)
+### 5.2 `IniReconciler` (`IniConfig/Common/`)
 
 Brings `Current` in line with the on-disk text inside a caller-owned transaction:
 
@@ -357,7 +357,7 @@ actually on disk — including after a game session while the launcher stayed op
 ### 5.5 `IniConfig/Save/` — `SaveIniCommand`
 
 ```csharp
-public sealed record SaveIniCommand(Guid InstallationId, IReadOnlyDictionary<IniKeyId, string?> Edits) : ICommand<ErrorOr<IniConfigResult>>;
+public sealed record SaveIniCommand(Guid InstallationId, IReadOnlyDictionary<IniKeyId, string> Edits) : ICommand<ErrorOr<IniConfigResult>>;   // clearing a value sends ""
 ```
 
 **`SaveIniValidator`:** `InstallationId` not empty; `Edits` not empty; every key is in the registry with role `UserSetting`; every value satisfies `spec.IsValid`; string values
@@ -425,7 +425,8 @@ Descriptions are user-readable British English sentences, because the Desktop la
 - **`LaunchGameHandler`**: re-verification with `!HasIni` → `Drifted` (drift is still persisted first, as today).
 - **`AddInstallationHandler`**: behaviour unchanged (capture failure stays non-fatal — the next synchronise retries the first import); the stale "CorruptedIni" comment is
   corrected.
-- **`AddApplication`** registers `IIniSnapshotService → IniSnapshotService` (scoped) and `IniReconciler`; `AddInfrastructure` stops registering `NullIniSnapshotService`.
+- **`AddApplication`** registers `IIniSnapshotService → IniSnapshotService` (scoped) and `IniReconciler` (singleton, public so it is unit-testable); `AddInfrastructure` stops
+  registering `NullIniSnapshotService`.
 
 ---
 
@@ -492,11 +493,12 @@ Source/Erdmier.ZooTycoonLauncher.Desktop/
 │   │   ├── IniEditorViewModel.cs
 │   │   ├── IniPlaceholderViewModel.cs
 │   │   ├── IniSectionViewModel.cs
-│   │   ├── IniFieldGroupViewModel.cs
-│   │   └── Fields/IniFieldViewModel.cs (abstract), IniToggleFieldViewModel.cs, IniNumberFieldViewModel.cs,
+│   │   ├── IniFieldGroup.cs           plain model (not a view model) — rendered inline by IniSectionView
+│   │   ├── IniFieldFactory.cs         builds the section view models from the catalogue
+│   │   └── Fields/IniFieldViewModel.cs (abstract), IniKeyedFieldViewModel.cs (abstract), IniToggleFieldViewModel.cs, IniNumberFieldViewModel.cs,
 │   │             IniTextFieldViewModel.cs, IniChoiceFieldViewModel.cs, IniLanguageFieldViewModel.cs
 │   └── Tabs/IniConfigTabViewModel.cs  (existing skeleton, filled in)
-├── Views/        mirrors ViewModels/ one-to-one: every new *ViewModel has a *View.axaml (+ .axaml.cs); IniFieldViewModel is abstract and has none
+├── Views/        mirrors ViewModels/ one-to-one: every new concrete *ViewModel has a *View.axaml (+ .axaml.cs); the two abstract field bases have none
 └── Composition/  IDialogService (+2 methods), AvaloniaDialogService, SaveChangesChoice.cs
 ```
 
@@ -591,7 +593,7 @@ Per kind:
 
 ### 7.6 Change tracking and the footer
 
-Dirty state rolls up field → group → section → editor (`HasPendingChanges`) → tab. `PlayViewModel` forwards the tab's value to `GeneralTabViewModel.HasPendingIniChanges`, which
+Dirty state rolls up field → section → editor (`HasPendingChanges`) → tab. `PlayViewModel` forwards the tab's value to `GeneralTabViewModel.HasPendingIniChanges`, which
 joins `CanExecuteLaunch` and shows a muted line under the launch button: *"Save or revert your INI changes to launch."*
 
 Footer label, highest priority first:
@@ -681,7 +683,8 @@ Every file-scoped `NoOpDialogService` in the Desktop project implements the two 
 
 - `IniDocument` — round-trip byte identity for CRLF, LF, mixed endings, no trailing newline, empty text, BOM preamble, malformed lines, duplicate keys and sections, keys before
   any section, varied casing and whitespace around `=`; `TryGetValue` case-insensitivity and first-occurrence-wins; `SetValue` on an existing key (only the value span changes),
-  a missing key (inserted after the section's last key), a missing section (appended), a document without a trailing newline, and `null` (writes `key=`).
+  a missing key (inserted after the section's last key), a missing section (appended), a document without a trailing newline, a section whose header casing differs
+  (`[ui]`), and an empty value (writes `key=`).
 - `IniKeySpec` — `IsValid`, `AreEquivalent`, `EffectiveValue` for every kind, including bounds, `true` / `1`, leading zeros, empty-versus-absent.
 - `ZooIniDefaults` — 56 keys, unique ids, 46 user settings, section order, every default valid under its own spec, `Min ≤ Max`, `ExtractValues` returns only present recognised
   keys.

@@ -3,15 +3,19 @@ namespace Erdmier.ZooTycoonLauncher.Application.Installations.SetDefault;
 /// <summary>Handler for <see cref="SetDefaultInstallationCommand" />.</summary>
 public sealed class SetDefaultInstallationHandler : ICommandHandler<SetDefaultInstallationCommand, ErrorOr<Success>>
 {
+    private readonly IApplicationEventPublisher _events;
+
     private readonly IInstallationRepository _installations;
 
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
-    public SetDefaultInstallationHandler(IInstallationRepository installations, ILauncherSettingsRepository settings)
+    /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
+    public SetDefaultInstallationHandler(IInstallationRepository installations, ILauncherSettingsRepository settings, IApplicationEventPublisher events)
     {
         _installations = installations;
         _settings      = settings;
+        _events        = events;
     }
 
     /// <inheritdoc />
@@ -33,6 +37,8 @@ public sealed class SetDefaultInstallationHandler : ICommandHandler<SetDefaultIn
 
         settings.DefaultInstallationId = row.Id;
         await _settings.UpdateAsync(settings, cancellationToken);
+
+        _events.Publish(new DefaultInstallationChangedMessage(row.Id));
 
         return Result.Success;
     }

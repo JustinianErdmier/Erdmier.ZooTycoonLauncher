@@ -33,7 +33,7 @@ public sealed class AddInstallationHandlerTests
         snapshots.CaptureOriginalAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>())
                  .Returns(Result.Success);
 
-        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, clock);
+        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, clock, Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<AddInstallationResult> result = await handler.Handle(command, CancellationToken.None);
 
@@ -67,7 +67,7 @@ public sealed class AddInstallationHandlerTests
         IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
         IIniSnapshotService           snapshots = Substitute.For<IIniSnapshotService>();
 
-        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System);
+        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System, Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<AddInstallationResult> result = await handler.Handle(command, CancellationToken.None);
 
@@ -117,7 +117,7 @@ public sealed class AddInstallationHandlerTests
         snapshots.CaptureOriginalAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>())
                  .Returns(Result.Success);
 
-        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System);
+        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System, Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<AddInstallationResult> result = await handler.Handle(command, CancellationToken.None);
 
@@ -126,5 +126,104 @@ public sealed class AddInstallationHandlerTests
 
         await settings.DidNotReceive()
                       .UpdateAsync(Arg.Any<LauncherSettings>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Handle_PublishesAddedAndDefaultChanged_WhenFirstInstallation()
+    {
+        AddInstallationCommand command = new(Name: "Main", Path: @"C:\Games\Main", MakeDefault: false);
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetAllAsync(Arg.Any<CancellationToken>())
+                     .Returns(Array.Empty<GameInstallation>());
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings());
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(command.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
+
+        dbFactory.CreateAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                 .Returns(Substitute.For<IInstallationDbContextHandle>());
+
+        IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
+
+        snapshots.CaptureOriginalAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>())
+                 .Returns(Result.Success);
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System, events);
+
+        ErrorOr<AddInstallationResult> result = await handler.Handle(command, CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationAddedMessage(result.Value.InstallationId));
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new DefaultInstallationChangedMessage(result.Value.InstallationId));
+    }
+
+    [ Fact ]
+    public async Task Handle_PublishesOnlyAdded_WhenNotDefault()
+    {
+        AddInstallationCommand command = new(Name: "Second", Path: @"C:\Games\Second", MakeDefault: false);
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetAllAsync(Arg.Any<CancellationToken>())
+                     .Returns([
+                         new GameInstallation
+                         {
+                             Id       = Guid.CreateVersion7(),
+                             Name     = "Main",
+                             Path     = @"C:\Games\Main",
+                             AddedUtc = DateTime.UtcNow
+                         }
+                     ]);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(command.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
+
+        dbFactory.CreateAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                 .Returns(Substitute.For<IInstallationDbContextHandle>());
+
+        IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
+
+        snapshots.CaptureOriginalAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>())
+                 .Returns(Result.Success);
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        AddInstallationHandler handler = new(installations,
+                                             Substitute.For<ILauncherSettingsRepository>(),
+                                             verifier,
+                                             dbFactory,
+                                             snapshots,
+                                             TimeProvider.System,
+                                             events);
+
+        ErrorOr<AddInstallationResult> result = await handler.Handle(command, CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationAddedMessage(result.Value.InstallationId));
+
+        events.DidNotReceive()
+              .Publish(Arg.Any<DefaultInstallationChangedMessage>());
     }
 }

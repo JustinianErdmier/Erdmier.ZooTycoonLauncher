@@ -29,7 +29,7 @@ public sealed class RelocateInstallationHandlerTests
 
         DateTime fakeNow = new(year: 2026, month: 5, day: 27, hour: 12, minute: 0, second: 0, DateTimeKind.Utc);
 
-        RelocateInstallationHandler handler = new(installations, verifier, new FakeTimeProvider(fakeNow));
+        RelocateInstallationHandler handler = new(installations, verifier, new FakeTimeProvider(fakeNow), Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<RelocateInstallationResult> result = await handler.Handle(new RelocateInstallationCommand(id, NewPath: @"C:\Games\New"), CancellationToken.None);
 
@@ -52,7 +52,10 @@ public sealed class RelocateInstallationHandlerTests
         installations.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
-        RelocateInstallationHandler handler = new(installations, Substitute.For<IInstallationVerifier>(), TimeProvider.System);
+        RelocateInstallationHandler handler = new(installations,
+                                                  Substitute.For<IInstallationVerifier>(),
+                                                  TimeProvider.System,
+                                                  Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<RelocateInstallationResult> result = await handler.Handle(new RelocateInstallationCommand(Guid.CreateVersion7(), NewPath: @"C:\Games\New"), CancellationToken.None);
 
@@ -83,7 +86,7 @@ public sealed class RelocateInstallationHandlerTests
         verifier.VerifyAsync(path: @"C:\Missing", Arg.Any<CancellationToken>())
                 .Returns(new VerificationResult(DirectoryExists: false, HasExe: false, HasIni: false));
 
-        RelocateInstallationHandler handler = new(installations, verifier, TimeProvider.System);
+        RelocateInstallationHandler handler = new(installations, verifier, TimeProvider.System, Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<RelocateInstallationResult> result = await handler.Handle(new RelocateInstallationCommand(id, NewPath: @"C:\Missing"), CancellationToken.None);
 
@@ -92,5 +95,38 @@ public sealed class RelocateInstallationHandlerTests
 
         await installations.DidNotReceive()
                            .DeleteAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Handle_PublishesChanged_WhenRelocated()
+    {
+        Guid id = Guid.CreateVersion7();
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = id,
+                         Name     = "Main",
+                         Path     = @"C:\Games\Old",
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(path: @"C:\Games\New", Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        RelocateInstallationHandler handler = new(installations, verifier, TimeProvider.System, events);
+
+        ErrorOr<RelocateInstallationResult> result = await handler.Handle(new RelocateInstallationCommand(id, NewPath: @"C:\Games\New"), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationChangedMessage(id));
     }
 }

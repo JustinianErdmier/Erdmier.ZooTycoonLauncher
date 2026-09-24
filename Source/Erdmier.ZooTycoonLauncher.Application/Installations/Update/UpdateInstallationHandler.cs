@@ -5,16 +5,20 @@ public sealed class UpdateInstallationHandler : ICommandHandler<UpdateInstallati
 {
     private readonly TimeProvider _clock;
 
+    private readonly IApplicationEventPublisher _events;
+
     private readonly IInstallationRepository _installations;
 
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
-    public UpdateInstallationHandler(IInstallationRepository installations, ILauncherSettingsRepository settings, TimeProvider clock)
+    /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
+    public UpdateInstallationHandler(IInstallationRepository installations, ILauncherSettingsRepository settings, TimeProvider clock, IApplicationEventPublisher events)
     {
         _installations = installations;
         _settings      = settings;
         _clock         = clock;
+        _events        = events;
     }
 
     /// <inheritdoc />
@@ -34,6 +38,8 @@ public sealed class UpdateInstallationHandler : ICommandHandler<UpdateInstallati
 
         await _installations.UpdateAsync(row, cancellationToken);
 
+        _events.Publish(new InstallationChangedMessage(row.Id));
+
         if (command.MakeDefault)
         {
             LauncherSettings settings = await _settings.GetAsync(cancellationToken);
@@ -43,6 +49,8 @@ public sealed class UpdateInstallationHandler : ICommandHandler<UpdateInstallati
                 settings.DefaultInstallationId = row.Id;
 
                 await _settings.UpdateAsync(settings, cancellationToken);
+
+                _events.Publish(new DefaultInstallationChangedMessage(row.Id));
             }
         }
 

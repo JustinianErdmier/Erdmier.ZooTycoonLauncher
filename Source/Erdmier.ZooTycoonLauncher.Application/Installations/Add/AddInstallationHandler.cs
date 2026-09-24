@@ -7,6 +7,8 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
 
     private readonly IInstallationDbContextFactory _dbFactory;
 
+    private readonly IApplicationEventPublisher _events;
+
     private readonly IInstallationRepository _installations;
 
     private readonly ILauncherSettingsRepository _settings;
@@ -16,12 +18,14 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
     private readonly IInstallationVerifier _verifier;
 
     /// <summary>Initialises a new instance.</summary>
+    /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
     public AddInstallationHandler(IInstallationRepository       installations,
                                   ILauncherSettingsRepository   settings,
                                   IInstallationVerifier         verifier,
                                   IInstallationDbContextFactory dbFactory,
                                   IIniSnapshotService           snapshots,
-                                  TimeProvider                  clock)
+                                  TimeProvider                  clock,
+                                  IApplicationEventPublisher    events)
     {
         _installations = installations;
         _settings      = settings;
@@ -29,6 +33,7 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
         _dbFactory     = dbFactory;
         _snapshots     = snapshots;
         _clock         = clock;
+        _events        = events;
     }
 
     /// <inheritdoc />
@@ -83,6 +88,13 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
             // snapshot failure as a transition into the CorruptedIni state rather than an outright error. Infrastructure
             // logging happens inside NullIniSnapshotService / the real service, not here.
             _ = snapshotResult; // Discard: failure surfaced to caller via SnapshotFailed flag if needed in future.
+        }
+
+        _events.Publish(new InstallationAddedMessage(row.Id));
+
+        if (becameDefault)
+        {
+            _events.Publish(new DefaultInstallationChangedMessage(row.Id));
         }
 
         return new AddInstallationResult(row.Id, verification.Validity, becameDefault);

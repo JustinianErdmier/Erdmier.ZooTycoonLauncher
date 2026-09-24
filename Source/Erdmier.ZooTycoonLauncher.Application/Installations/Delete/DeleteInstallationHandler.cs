@@ -5,16 +5,23 @@ public sealed class DeleteInstallationHandler : ICommandHandler<DeleteInstallati
 {
     private readonly IInstallationDbContextFactory _dbFactory;
 
+    private readonly IApplicationEventPublisher _events;
+
     private readonly IInstallationRepository _installations;
 
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
-    public DeleteInstallationHandler(IInstallationRepository installations, ILauncherSettingsRepository settings, IInstallationDbContextFactory dbFactory)
+    /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
+    public DeleteInstallationHandler(IInstallationRepository       installations,
+                                     ILauncherSettingsRepository   settings,
+                                     IInstallationDbContextFactory dbFactory,
+                                     IApplicationEventPublisher    events)
     {
         _installations = installations;
         _settings      = settings;
         _dbFactory     = dbFactory;
+        _events        = events;
     }
 
     /// <inheritdoc />
@@ -44,6 +51,13 @@ public sealed class DeleteInstallationHandler : ICommandHandler<DeleteInstallati
         }
 
         await _dbFactory.DeleteAsync(row.Id, cancellationToken);
+
+        _events.Publish(new InstallationDeletedMessage(row.Id));
+
+        if (removedWasDefault)
+        {
+            _events.Publish(new DefaultInstallationChangedMessage(newDefaultId));
+        }
 
         return new DeleteInstallationResult(removedWasDefault, newDefaultId);
     }

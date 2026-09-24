@@ -18,6 +18,7 @@ global using ErrorOr;
 
 global using Mediator;
 
+global using Erdmier.ZooTycoonLauncher.Application.Common.Abstractions;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Extensions;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Messaging;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Models;

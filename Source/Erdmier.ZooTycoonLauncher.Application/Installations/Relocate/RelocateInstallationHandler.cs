@@ -5,16 +5,20 @@ public sealed class RelocateInstallationHandler : ICommandHandler<RelocateInstal
 {
     private readonly TimeProvider _clock;
 
+    private readonly IApplicationEventPublisher _events;
+
     private readonly IInstallationRepository _installations;
 
     private readonly IInstallationVerifier _verifier;
 
     /// <summary>Initialises a new instance.</summary>
-    public RelocateInstallationHandler(IInstallationRepository installations, IInstallationVerifier verifier, TimeProvider clock)
+    /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
+    public RelocateInstallationHandler(IInstallationRepository installations, IInstallationVerifier verifier, TimeProvider clock, IApplicationEventPublisher events)
     {
         _installations = installations;
         _verifier      = verifier;
         _clock         = clock;
+        _events        = events;
     }
 
     /// <inheritdoc />
@@ -51,6 +55,8 @@ public sealed class RelocateInstallationHandler : ICommandHandler<RelocateInstal
 
         await _installations.DeleteAsync(row.Id, cancellationToken);
         await _installations.AddAsync(relocated, cancellationToken);
+
+        _events.Publish(new InstallationChangedMessage(row.Id));
 
         return new RelocateInstallationResult(verification.Validity);
     }

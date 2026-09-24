@@ -32,7 +32,7 @@ public sealed class DeleteInstallationHandlerTests
 
         IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
 
-        DeleteInstallationHandler handler = new(installations, settings, dbFactory);
+        DeleteInstallationHandler handler = new(installations, settings, dbFactory, Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(id), CancellationToken.None);
 
@@ -92,7 +92,7 @@ public sealed class DeleteInstallationHandlerTests
 
         IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
 
-        DeleteInstallationHandler handler = new(installations, settingsRepo, dbFactory);
+        DeleteInstallationHandler handler = new(installations, settingsRepo, dbFactory, Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(removedId), CancellationToken.None);
 
@@ -138,12 +138,145 @@ public sealed class DeleteInstallationHandlerTests
         settingsRepo.GetAsync(Arg.Any<CancellationToken>())
                     .Returns(settings);
 
-        DeleteInstallationHandler handler = new(installations, settingsRepo, Substitute.For<IInstallationDbContextFactory>());
+        DeleteInstallationHandler handler = new(installations,
+                                                settingsRepo,
+                                                Substitute.For<IInstallationDbContextFactory>(),
+                                                Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(removedId), CancellationToken.None);
 
         result.Value.RemovedWasDefault.ShouldBeTrue();
         result.Value.NewDefaultInstallationId.ShouldBeNull();
         settings.DefaultInstallationId.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public async Task Handle_PublishesDeletedAndDefaultChanged_WhenDefaultRemoved()
+    {
+        Guid removedId  = Guid.CreateVersion7();
+        Guid promotedId = Guid.CreateVersion7();
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(removedId, Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = removedId,
+                         Name     = "Removed",
+                         Path     = @"C:\Games\Removed",
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = promotedId,
+                         Name     = "Promoted",
+                         Path     = @"C:\Games\Promoted",
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = removedId
+                });
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        DeleteInstallationHandler handler = new(installations, settings, Substitute.For<IInstallationDbContextFactory>(), events);
+
+        ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(removedId), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationDeletedMessage(removedId));
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new DefaultInstallationChangedMessage(promotedId));
+    }
+
+    [ Fact ]
+    public async Task Handle_PublishesDefaultChangedWithNull_WhenLastInstallationRemoved()
+    {
+        Guid removedId = Guid.CreateVersion7();
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(removedId, Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = removedId,
+                         Name     = "Last",
+                         Path     = @"C:\Games\Last",
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+                     .Returns((GameInstallation?)null);
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = removedId
+                });
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        DeleteInstallationHandler handler = new(installations, settings, Substitute.For<IInstallationDbContextFactory>(), events);
+
+        ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(removedId), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationDeletedMessage(removedId));
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new DefaultInstallationChangedMessage(NewDefaultInstallationId: null));
+    }
+
+    [ Fact ]
+    public async Task Handle_PublishesOnlyDeleted_WhenNonDefaultRemoved()
+    {
+        Guid removedId = Guid.CreateVersion7();
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(removedId, Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = removedId,
+                         Name     = "Spare",
+                         Path     = @"C:\Games\Spare",
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = Guid.CreateVersion7()
+                });
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        DeleteInstallationHandler handler = new(installations, settings, Substitute.For<IInstallationDbContextFactory>(), events);
+
+        ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(removedId), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationDeletedMessage(removedId));
+
+        events.DidNotReceive()
+              .Publish(Arg.Any<DefaultInstallationChangedMessage>());
     }
 }

@@ -5,6 +5,7 @@ global using System.Threading;
 global using System.Threading.Tasks;
 
 global using Erdmier.ZooTycoonLauncher.Application.Common.Abstractions;
+global using Erdmier.ZooTycoonLauncher.Application.Common.Messaging;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Models;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Add;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Delete;

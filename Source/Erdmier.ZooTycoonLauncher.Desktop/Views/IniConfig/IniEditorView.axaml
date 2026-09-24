@@ -22,7 +22,8 @@
                  Grid.Row="1"
                  IsEnabled="{Binding !IsBusy}"
                  ItemsSource="{Binding Sections}"
-                 SelectedItem="{Binding SelectedSection}">
+                 SelectedItem="{Binding SelectedSection}"
+                 SelectionMode="AlwaysSelected">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:IniSectionViewModel">
                     <TextBlock FontFamily="Lucida Console, Courier New, monospace"

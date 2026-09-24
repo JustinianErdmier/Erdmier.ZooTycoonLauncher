@@ -48,6 +48,23 @@ public sealed class IniEditorViewModelTests
     }
 
     [ Fact ]
+    public void ChangingSection_ClearsTheHoveredHelp()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+
+        width.IsHelpActive = true;
+
+        editor.IsFooterHelp.ShouldBeTrue();
+
+        editor.SelectedSection = editor.Sections[1];
+
+        editor.IsFooterHelp.ShouldBeFalse();
+        editor.IsFooterSaved.ShouldBeTrue();
+        editor.FooterText.ShouldStartWith(expected: "All changes saved · Last write: ");
+    }
+
+    [ Fact ]
     public async Task Save_Success_SendsOnlyTheEditsAndResetsTheBaseline()
     {
         IniEditorViewModel editor = CreateEditor();

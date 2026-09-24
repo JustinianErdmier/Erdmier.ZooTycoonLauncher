@@ -177,6 +177,14 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
     partial void OnActiveHelpChanged(string? value) => RaiseFooterChanged();
 
+    // A keyboard section switch can move the visual tree's focus away from the hovered/focused row without it ever raising PointerExited (or losing focus in the way
+    // OnFieldPropertyChanged expects), leaving the footer's help line stuck over "● Unsaved changes"; clearing it here whenever the section changes closes that gap.
+    partial void OnSelectedSectionChanged(IniSectionViewModel value)
+    {
+        _helpField = null;
+        ActiveHelp = null;
+    }
+
     partial void OnFileLastWriteUtcChanged(DateTime value) => RaiseFooterChanged();
 
     [ RelayCommand(CanExecute = nameof(CanSaveOrRevert)) ]

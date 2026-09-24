@@ -1,8 +1,10 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig.Fields;
 
 /// <summary>A <c>ComboBox</c> of labelled raw values (<c>fullscreen</c>, <c>level</c>, <c>helpType</c>).</summary>
-public sealed partial class IniChoiceFieldViewModel : IniKeyedFieldViewModel
+public sealed class IniChoiceFieldViewModel : IniKeyedFieldViewModel
 {
+    private IniChoiceOption? _selectedOption;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="descriptor">The row's presentation, including its options.</param>
     public IniChoiceFieldViewModel(IniFieldDescriptor descriptor)
@@ -21,15 +23,35 @@ public sealed partial class IniChoiceFieldViewModel : IniKeyedFieldViewModel
     /// <summary>The entries offered.</summary>
     public IReadOnlyList<IniChoiceOption> Options { get; }
 
-    /// <summary>The chosen entry; <see langword="null" /> only when no entry matches.</summary>
-    [ ObservableProperty ]
-    public partial IniChoiceOption? SelectedOption { get; set; }
+    /// <summary>
+    ///     The chosen entry; <see langword="null" /> only when no entry matches. Setting <see langword="null" /> is ignored — a combo box detaching from the visual tree can write
+    ///     it back — mirroring <see cref="IniLanguageFieldViewModel.SelectedOption" />; <see cref="ApplyValue" /> still writes <see langword="null" /> through directly.
+    /// </summary>
+    public IniChoiceOption? SelectedOption
+    {
+        get => _selectedOption;
+        set
+        {
+            if (value is null)
+            {
+                return;
+            }
+
+            SetSelectedOption(value);
+        }
+    }
 
     /// <inheritdoc />
     protected override string? CurrentRaw => SelectedOption?.Raw;
 
     /// <inheritdoc />
-    protected override void ApplyValue(string? effectiveValue) => SelectedOption = Options.FirstOrDefault(option => Spec.AreEquivalent(option.Raw, effectiveValue));
+    protected override void ApplyValue(string? effectiveValue) => SetSelectedOption(Options.FirstOrDefault(option => Spec.AreEquivalent(option.Raw, effectiveValue)));
 
-    partial void OnSelectedOptionChanged(IniChoiceOption? value) => NotifyValueChanged();
+    private void SetSelectedOption(IniChoiceOption? option)
+    {
+        if (SetProperty(ref _selectedOption, option, nameof(SelectedOption)))
+        {
+            NotifyValueChanged();
+        }
+    }
 }

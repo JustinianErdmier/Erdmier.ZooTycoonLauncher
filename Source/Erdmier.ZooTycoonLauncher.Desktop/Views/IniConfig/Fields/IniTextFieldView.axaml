@@ -4,5 +4,6 @@
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.Fields.IniTextFieldView"
              x:DataType="vm:IniTextFieldViewModel">
     <TextBox MaxWidth="300"
+             MinWidth="160"
              Text="{Binding Value}" />
 </UserControl>

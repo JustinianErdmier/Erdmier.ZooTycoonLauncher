@@ -137,6 +137,21 @@ public sealed class IniFieldViewModelTests
     }
 
     [ Fact ]
+    public void Choice_SettingSelectedOptionToNull_IsIgnored()
+    {
+        IniChoiceFieldViewModel field = new(Descriptor(section: "user", key: "fullscreen"));
+
+        field.Load(raw: "true");
+
+        IniChoiceOption selected = field.SelectedOption!;
+
+        field.SelectedOption = null;
+
+        field.SelectedOption.ShouldBeSameAs(selected);
+        field.IsDirty.ShouldBeFalse();
+    }
+
+    [ Fact ]
     public void Reset_RestoresTheBaseline()
     {
         IniNumberFieldViewModel field = new(Descriptor(section: "Map", key: "mapX"));

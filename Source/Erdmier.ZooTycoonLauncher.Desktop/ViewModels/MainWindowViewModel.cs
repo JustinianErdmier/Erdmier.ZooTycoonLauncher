@@ -22,7 +22,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
-    /// <param name="dialogs">Chrome service for opening modeless dialogues.</param>
+    /// <param name="dialogs">Chrome service for opening modeless and modal dialogues.</param>
     /// <param name="messenger">The CommunityToolkit messenger — passed to freshly-built picker grids so they can subscribe to installation-change notifications.</param>
     public MainWindowViewModel(IMediator mediator, IApplicationLifecycle lifecycle, IDialogService dialogs, IMessenger messenger)
     {
@@ -36,7 +36,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial object? ActiveContent { get; set; }
 
-    // Disposes the outgoing state view model when it holds disposable resources (currently only OpenGameInstallationViewModel's grid), so it unregisters from the messenger as soon as the main window navigates away from it.
+    // Disposes the outgoing state view model when it holds disposable resources (currently only OpenGameInstallationViewModel's grid), so it unregisters from the
+    // messenger as soon as the main window navigates away from it.
     partial void OnActiveContentChanged(object? oldValue, object? newValue)
     {
         if (oldValue is IDisposable disposable)
@@ -71,7 +72,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // File → "Installation Manager…" (SDD §9.10): opens the modal manager, then refreshes whichever state is active so installations added or removed there are reflected
     // immediately — reloads the picker grid when OpenGameInstallationViewModel is active, or re-runs the normal boot when NoGameInstallationFoundViewModel is active
     // (mirroring that state's own post-Add reboot), so a first installation added via the manager is picked up without requiring a restart. Play and CannotPlay need no
-    // refresh (their Edit/Delete/Fix commands are still stubs).
+    // refresh — neither displays the installation list, and the Manager's own Info/Edit/Delete/Fix commands are still stubs.
     [ RelayCommand ]
     private async Task ManageInstallationsAsync(CancellationToken cancellationToken)
     {
@@ -100,9 +101,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         IsBooting = false;
 
-        ActiveContent = result.IsError
-                            ? new NoGameInstallationFoundViewModel(locatedCandidatePath: null, _dialogs, BootAsync)
-                            : RouteResult(result.Value);
+        ViewModelBase content = result.IsError
+                                    ? new NoGameInstallationFoundViewModel(locatedCandidatePath: null, _dialogs, BootAsync)
+                                    : RouteResult(result.Value);
+
+        if (content is OpenGameInstallationViewModel picker)
+        {
+            await picker.InitialiseAsync(cancellationToken);
+        }
+
+        ActiveContent = content;
 
         UpdateStatusMessages(result);
     }
@@ -158,13 +166,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             AppBoot.BootOutcome.ReadyToPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                  canPlay: true,
-                                                                 BootAsync,
+                                                                 ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
                                                                  _lifecycle,
                                                                  _dialogs,
                                                                  _mediator),
             AppBoot.BootOutcome.CannotPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                 canPlay: false,
-                                                                BootAsync,
+                                                                ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
                                                                 _lifecycle,
                                                                 _dialogs,
                                                                 _mediator),

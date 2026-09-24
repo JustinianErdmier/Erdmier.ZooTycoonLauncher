@@ -3,7 +3,7 @@ using System.ComponentModel;
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 
 /// <summary>
-///     View model for the <c>OpenGameInstallation</c> state — shown when <c>LauncherSettings.StartupPreference</c> is <c>NoInstallation</c> (SDD §9.6). Hosts an
+///     View model for the <c>OpenGameInstallation</c> state — shown when <c>LauncherSettings.LauncherStartupPreference</c> is <c>NoInstallation</c> (SDD §9.6). Hosts an
 ///     <see cref="InstallationGridViewModel" /> and exposes the picker action commands (<c>Open</c>, <c>Add</c>, <c>Info</c>, <c>Manage</c>).
 /// </summary>
 public sealed partial class OpenGameInstallationViewModel : ViewModelBase, IDisposable
@@ -13,8 +13,8 @@ public sealed partial class OpenGameInstallationViewModel : ViewModelBase, IDisp
     private readonly Func<Guid, CancellationToken, Task>? _openInstallationAsync;
 
     /// <summary>Initialises a new instance.</summary>
-    /// <param name="grid">The shared installation grid view model.</param>
-    /// <param name="dialogs">The dialogue service used to open the Add Installation modal.</param>
+    /// <param name="grid">The installation grid view model. The picker takes ownership of it and disposes it alongside itself.</param>
+    /// <param name="dialogs">The dialogue service used to open the Add Installation modal and the Installation Manager.</param>
     /// <param name="openInstallationAsync">Callback that issues a pointed boot at the chosen installation (SDD §7.2.7), bypassing the startup preference.</param>
     public OpenGameInstallationViewModel(InstallationGridViewModel grid, IDialogService dialogs, Func<Guid, CancellationToken, Task> openInstallationAsync)
     {
@@ -23,8 +23,6 @@ public sealed partial class OpenGameInstallationViewModel : ViewModelBase, IDisp
         _openInstallationAsync = openInstallationAsync;
 
         Grid.PropertyChanged += OnGridPropertyChanged;
-
-        _ = Grid.LoadAsync();
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
@@ -32,8 +30,12 @@ public sealed partial class OpenGameInstallationViewModel : ViewModelBase, IDisp
         : this(new InstallationGridViewModel(), null!, null!)
     { }
 
-    /// <summary>The shared installation grid view model. Bound to <c>InstallationGridView.DataContext</c>.</summary>
+    /// <summary>The installation grid view model. Bound to <c>InstallationGridView.DataContext</c>.</summary>
     public InstallationGridViewModel Grid { get; }
+
+    /// <summary>Loads the picker's installation list. Must be awaited by <c>MainWindowViewModel</c> before the picker is shown as <c>ActiveContent</c>.</summary>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    public Task InitialiseAsync(CancellationToken cancellationToken = default) => Grid.LoadAsync(cancellationToken);
 
     /// <inheritdoc />
     public void Dispose()

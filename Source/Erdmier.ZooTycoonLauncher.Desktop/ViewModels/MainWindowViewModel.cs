@@ -117,6 +117,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
             if (result.IsError)
             {
+                _logger.LogWarning("Boot failed for installation {InstallationId}: {Errors}",
+                                    installationId,
+                                    string.Join("; ", result.Errors.Select(error => $"{error.Code}: {error.Description}")));
+
                 ShowBootFailure(builtContent: null);
 
                 return;
@@ -139,6 +143,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            // Disposes content built but never handed to ActiveContent (e.g. the picker's grid already registered with the messenger before cancellation was
+            // observed). IsBooting is left as-is: nothing cancels a boot today, so there is no caller left to observe a reverted flag.
+            (content as IDisposable)?.Dispose();
+
             throw;
         }
         catch (Exception ex)

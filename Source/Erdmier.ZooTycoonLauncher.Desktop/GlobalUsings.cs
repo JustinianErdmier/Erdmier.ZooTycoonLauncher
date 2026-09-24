@@ -8,19 +8,24 @@ global using Classic.Avalonia.Theme;
 
 global using CommunityToolkit.Mvvm.ComponentModel;
 global using CommunityToolkit.Mvvm.Input;
+global using CommunityToolkit.Mvvm.Messaging;
 
 global using ErrorOr;
 
 global using Mediator;
 
 global using Erdmier.ZooTycoonLauncher.Application.Common.Extensions;
+global using Erdmier.ZooTycoonLauncher.Application.Common.Messaging;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Models;
 global using Erdmier.ZooTycoonLauncher.Application.Game.Launch;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Add;
+global using Erdmier.ZooTycoonLauncher.Application.Installations.GetAll;
 global using Erdmier.ZooTycoonLauncher.Domain.Installations;
 global using Erdmier.ZooTycoonLauncher.Desktop.Composition;
+global using Erdmier.ZooTycoonLauncher.Desktop.Models;
 global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels;
 global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
+global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Common;
 global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 global using Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs;

@@ -13,6 +13,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IDialogService _dialogs;
 
+    private readonly ILogger<InstallationGridViewModel> _gridLogger;
+
     private readonly IApplicationLifecycle _lifecycle;
 
     private readonly ILogger<MainWindowViewModel> _logger;
@@ -27,17 +29,20 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="dialogs">Chrome service for opening modeless and modal dialogues.</param>
     /// <param name="messenger">The CommunityToolkit messenger — passed to freshly-built picker grids so they can subscribe to installation-change notifications.</param>
     /// <param name="logger">Logger for unexpected boot-dispatch and picker-initialisation failures.</param>
-    public MainWindowViewModel(IMediator                    mediator,
-                               IApplicationLifecycle        lifecycle,
-                               IDialogService               dialogs,
-                               IMessenger                   messenger,
-                               ILogger<MainWindowViewModel> logger)
+    /// <param name="gridLogger">Logger passed to freshly-built picker grids so their message-driven reload failures are recorded.</param>
+    public MainWindowViewModel(IMediator                          mediator,
+                               IApplicationLifecycle              lifecycle,
+                               IDialogService                     dialogs,
+                               IMessenger                         messenger,
+                               ILogger<MainWindowViewModel>       logger,
+                               ILogger<InstallationGridViewModel> gridLogger)
     {
-        _mediator  = mediator;
-        _lifecycle = lifecycle;
-        _dialogs   = dialogs;
-        _messenger = messenger;
-        _logger    = logger;
+        _mediator   = mediator;
+        _lifecycle  = lifecycle;
+        _dialogs    = dialogs;
+        _messenger  = messenger;
+        _logger     = logger;
+        _gridLogger = gridLogger;
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
@@ -106,11 +111,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // Pointed boot (SDD §7.2.7 — the picker's Open button): boots the given installation directly, bypassing the startup preference and default resolution.
     private Task OpenInstallationAsync(Guid installationId, CancellationToken cancellationToken) => RunBootAsync(installationId, cancellationToken);
 
-    // File → "Installation Manager…" (SDD §9.10): opens the modal manager, then refreshes whichever state is active — but only when the manager reports a change — so
-    // installations added there are reflected immediately without an unnecessary reload or locator rescan when the user opened the manager and changed nothing. Reloads
-    // the picker grid when OpenGameInstallationViewModel is active, or re-runs the normal boot when NoGameInstallationFoundViewModel is active (mirroring that state's own
-    // post-Add reboot), so a first installation added via the manager is picked up without requiring a restart. Play and CannotPlay need no refresh — neither displays the
-    // installation list, and the Manager's own Info/Edit/Delete/Fix commands are still stubs.
+    // Two of the manager's entry points route here: the File menu's "Installation Manager…" item, and Cannot Play's "Open Installation Manager…" button (the picker's
+    // own Manage button opens the manager directly, since the picker needs no follow-up — see its ManageAsync). Acts only when the manager reports a change. Three
+    // cases: a Play state (Ready to Play or Cannot Play) re-verifies the open installation with a pointed boot — a rename shows, Cannot Play becomes Ready after a fix,
+    // and a deleted installation falls back to the normal resolution (SDD §7.2.4); No Game Installation Found re-runs the normal boot, so a first installation added
+    // via the manager is picked up without requiring a restart; the picker needs nothing, since its grid refreshes itself from the change messages.
     [ RelayCommand ]
     private async Task ManageInstallationsAsync(CancellationToken cancellationToken)
     {
@@ -121,13 +126,25 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        if (ActiveContent is OpenGameInstallationViewModel picker)
+        switch (ActiveContent)
         {
-            await picker.Grid.LoadAsync(cancellationToken);
-        }
-        else if (ActiveContent is NoGameInstallationFoundViewModel)
-        {
-            await RunBootAsync(installationId: null, cancellationToken);
+            // Pointed boot of the open installation. The boot rebuilds the Play view, so unsaved INI edits are confirmed first (SDD §7.3.2); declining keeps the edits and
+            // the view as it is.
+            case PlayViewModel play:
+                if (!await play.ConfirmLeaveAsync(cancellationToken))
+                {
+                    break;
+                }
+
+                await RunBootAsync(play.InstallationId, cancellationToken);
+
+                break;
+
+            // Normal boot.
+            case NoGameInstallationFoundViewModel:
+                await RunBootAsync(installationId: null, cancellationToken);
+
+                break;
         }
     }
 
@@ -327,7 +344,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // Single construction point for the picker so boot routing and the File menu build it identically: a fresh grid per picker (the picker owns and disposes it) and the
     // pointed-boot callback for its Open command.
     private OpenGameInstallationViewModel CreatePicker()
-        => new(new InstallationGridViewModel(_mediator, _messenger), _dialogs, OpenInstallationAsync);
+        => new(new InstallationGridViewModel(_mediator, _messenger, _gridLogger), _dialogs, OpenInstallationAsync);
 
     private ViewModelBase RouteResult(AppBoot.BootResult result)
         => result.Outcome switch
@@ -335,6 +352,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             AppBoot.BootOutcome.ReadyToPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                  canPlay: true,
                                                                  ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
+                                                                 ManageInstallationsAsync,
                                                                  _lifecycle,
                                                                  _dialogs,
                                                                  _mediator,
@@ -342,6 +360,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             AppBoot.BootOutcome.CannotPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                 canPlay: false,
                                                                 ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
+                                                                ManageInstallationsAsync,
                                                                 _lifecycle,
                                                                 _dialogs,
                                                                 _mediator,

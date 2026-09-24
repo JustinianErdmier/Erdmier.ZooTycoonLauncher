@@ -43,9 +43,13 @@ public interface IInstallationRepository
     Task<bool> ExistsByPathAsync(string path, Guid? excludeId, CancellationToken cancellationToken);
 
     /// <summary>
-    ///     Picks the row that should be promoted to default — the alphabetically-first remaining row (case-insensitive on <see cref="GameInstallation.Name" />) — or
-    ///     <see langword="null" /> when no rows remain.
+    ///     Picks the row that should be promoted to default — the alphabetically-first row (case-insensitive on <see cref="GameInstallation.Name" />) — or
+    ///     <see langword="null" /> when no rows remain — or, when <paramref name="excludeId" /> is supplied, when no other rows remain.
     /// </summary>
+    /// <param name="excludeId">
+    ///     When supplied, the row with this id is ignored — used to preview the promotion before that row is deleted. Pass <see langword="null" /> after a
+    ///     delete has already happened.
+    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task<GameInstallation?> FindDefaultPromotionCandidateAsync(CancellationToken cancellationToken);
+    Task<GameInstallation?> FindDefaultPromotionCandidateAsync(Guid? excludeId, CancellationToken cancellationToken);
 }

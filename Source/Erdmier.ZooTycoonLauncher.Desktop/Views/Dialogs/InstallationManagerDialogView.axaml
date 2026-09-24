@@ -5,7 +5,7 @@
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.InstallationManagerDialogView"
                x:DataType="vm:InstallationManagerDialogViewModel"
                Icon="/Assets/Win95Icons/installationoncomputer16.ico"
-               Title="Installation Manager"
+               Title="  Installation Manager"
                Width="560"
                SizeToContent="Height"
                CanResize="False"

@@ -53,7 +53,7 @@ This is the **core loop** of the SDD §13.2 "INI Config tab" bullet. The remaini
    File → Close Installation, and File → Open Installation….
 8. **Desktop unit-test project** — `Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit`, new in this slice, covering the field view models, the editor, the tab host, the guard, and a
    catalogue-integrity check.
-9. **Documentation** — SDD revision 1.6 amendments (§10), `conventions.md` §3.3 / §6 update, manual end-to-end test additions.
+9. **Documentation** — SDD revision 1.7 amendments (§10), `conventions.md` §3.3 / §6 update, manual end-to-end test additions.
 
 ### 3.2 Out of scope
 
@@ -627,6 +627,8 @@ public interface IPendingChangesGuard
 `MainWindowViewModel`:
 
 - `CloseInstallationAsync` and `OpenInstallationPickerAsync` await the guard (when `ActiveContent is IPendingChangesGuard`) before showing the picker.
+- `ManageInstallationsAsync` awaits the guard when the Installation Manager reports a change and the Play view is active, before its pointed boot rebuilds that view;
+  declining keeps the edits and the view as it is. Opening the manager alone never prompts.
 - `Exit` becomes async: guard first, then `IsCloseConfirmed = true` and `_lifecycle.RequestShutdown()`.
 - `HasPendingChanges` and `ConfirmCloseAsync()` for the window.
 
@@ -749,11 +751,11 @@ Existing rules cover the slice (one type per file, no files at project roots, `A
 
 ---
 
-## 10. SDD amendments (revision 1.6)
+## 10. SDD amendments (revision 1.7)
 
 | SDD section              | Amendment                                                                                                                                         |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Revision history         | Add 1.6 summarising the amendments below.                                                                                                        |
+| Revision history         | Add 1.7 summarising the amendments below.                                                                                                        |
 | §2.2, §15 (Drift)        | Drift is tiered: game-managed and unrecognised changes are adopted silently; only user-setting changes archive.                                  |
 | §4.2                     | Interface list: `IIniFileStore`, `IIniSnapshotRepository` (+ transaction) replace `IIniReader` / `IIniWriter`.                                    |
 | §5.1, §5.3               | The registry (`IniKeyId`, `IniKeyRole`, `IniKeySpec`, `ZooIniDefaults`) replaces the typed `ZooIniModel` / submodels / `IniRanges`; raw values with display-time fallback. |

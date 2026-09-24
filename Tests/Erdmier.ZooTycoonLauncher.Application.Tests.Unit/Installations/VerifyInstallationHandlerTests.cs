@@ -28,7 +28,7 @@ public sealed class VerifyInstallationHandlerTests
         verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
                 .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
 
-        VerifyInstallationHandler handler = new(installations, verifier, clock);
+        VerifyInstallationHandler handler = new(installations, verifier, clock, Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<VerificationResult> result = await handler.Handle(new VerifyInstallationQuery(row.Id), CancellationToken.None);
 
@@ -64,12 +64,82 @@ public sealed class VerifyInstallationHandlerTests
         verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
                 .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
 
-        VerifyInstallationHandler handler = new(installations, verifier, TimeProvider.System);
+        VerifyInstallationHandler handler = new(installations, verifier, TimeProvider.System, Substitute.For<IApplicationEventPublisher>());
 
         await handler.Handle(new VerifyInstallationQuery(row.Id), CancellationToken.None);
 
         await installations.DidNotReceive()
                            .UpdateAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Handle_PublishesChanged_WhenFlagsDrift()
+    {
+        Guid id = Guid.CreateVersion7();
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = id,
+                         Name     = "Main",
+                         Path     = @"C:\Games\Main",
+                         HasExe   = true,
+                         HasIni   = true,
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(path: @"C:\Games\Main", Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: false, HasIni: true));
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        VerifyInstallationHandler handler = new(installations, verifier, TimeProvider.System, events);
+
+        ErrorOr<VerificationResult> result = await handler.Handle(new VerifyInstallationQuery(id), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationChangedMessage(id));
+    }
+
+    [ Fact ]
+    public async Task Handle_DoesNotPublish_WhenFlagsUnchanged()
+    {
+        Guid id = Guid.CreateVersion7();
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = id,
+                         Name     = "Main",
+                         Path     = @"C:\Games\Main",
+                         HasExe   = true,
+                         HasIni   = true,
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(path: @"C:\Games\Main", Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        VerifyInstallationHandler handler = new(installations, verifier, TimeProvider.System, events);
+
+        ErrorOr<VerificationResult> result = await handler.Handle(new VerifyInstallationQuery(id), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.ReceivedCalls()
+              .ShouldBeEmpty();
     }
 }
 

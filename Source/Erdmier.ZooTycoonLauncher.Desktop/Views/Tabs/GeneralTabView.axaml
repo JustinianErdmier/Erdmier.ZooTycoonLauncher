@@ -39,7 +39,8 @@
                     Launch Game
                 </Button>
 
-                <Button DockPanel.Dock="Right"
+                <Button Command="{Binding OpenInstallationManagerCommand}"
+                        DockPanel.Dock="Right"
                         IsDefault="True"
                         IsVisible="{Binding !CanPlay}"
                         VerticalAlignment="Top">
@@ -291,8 +292,7 @@
 
         <TextBlock Foreground="Gray"
                    HorizontalAlignment="Right">
-            <Run Text="Last played: " />
-            <Run Text="{Binding InstallationLastPlayed}" />
+            <Run Text="Last played: " /><Run Text="{Binding InstallationLastPlayed}" />
         </TextBlock>
     </StackPanel>
 </UserControl>

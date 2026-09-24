@@ -92,18 +92,7 @@ public sealed class PlayViewModelTests
     }
 
     private PlayViewModel Create(bool canPlay = true, string? iniErrorMessage = null)
-        => new(IniEditorTestData.Installation(), canPlay, _ => Task.CompletedTask, Substitute.For<IApplicationLifecycle>(), _dialogs, _mediator, iniErrorMessage);
+        => PlayTestData.Create(_mediator, _dialogs, Substitute.For<IApplicationLifecycle>(), canPlay, iniErrorMessage);
 
-    private async Task<PlayViewModel> CreateWithPendingEditAsync()
-    {
-        PlayViewModel play = Create();
-
-        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
-
-        await play.IniConfigTab.ActivateAsync(CancellationToken.None);
-
-        IniEditorTestData.Field<IniNumberFieldViewModel>((IniEditorViewModel)play.IniConfigTab.Content, section: "user", key: "screenwidth").Value = 1024m;
-
-        return play;
-    }
+    private Task<PlayViewModel> CreateWithPendingEditAsync() => PlayTestData.CreateWithPendingEditAsync(_mediator, _dialogs, Substitute.For<IApplicationLifecycle>());
 }

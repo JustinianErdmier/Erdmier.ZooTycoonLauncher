@@ -1,7 +1,3 @@
-using Microsoft.Extensions.Logging.Abstractions;
-
-using NSubstitute.ExceptionExtensions;
-
 namespace Erdmier.ZooTycoonLauncher.Application.Tests.Unit.IniConfig;
 
 public sealed class SaveIniHandlerTests

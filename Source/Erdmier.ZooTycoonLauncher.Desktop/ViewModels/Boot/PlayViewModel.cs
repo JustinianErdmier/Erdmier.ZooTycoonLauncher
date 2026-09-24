@@ -20,6 +20,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
     /// <param name="installation">The resolved active installation.</param>
     /// <param name="canPlay"><see langword="true" /> for the ReadyToPlay outcome; <see langword="false" /> for CannotPlay. Carried down into the tab view models.</param>
     /// <param name="rebootAsync">Delegate that re-issues the boot pipeline as a pointed boot at this installation (SDD §7.2.7), re-verifying it in place.</param>
+    /// <param name="openInstallationManagerAsync">Opens the Installation Manager through the main window (Cannot Play's button).</param>
     /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
     /// <param name="dialogs">Chrome service for opening modeless dialogues.</param>
     /// <param name="mediator">The Mediator dispatcher (passed to the General tab).</param>
@@ -27,6 +28,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
     public PlayViewModel(InstallationSummary           installation,
                          bool                          canPlay,
                          Func<CancellationToken, Task> rebootAsync,
+                         Func<CancellationToken, Task> openInstallationManagerAsync,
                          IApplicationLifecycle         lifecycle,
                          IDialogService                dialogs,
                          IMediator                     mediator,
@@ -36,9 +38,10 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
         _lifecycle   = lifecycle;
         _dialogs     = dialogs;
 
-        CanPlay = canPlay;
+        CanPlay        = canPlay;
+        InstallationId = installation.Id;
 
-        GeneralTab   = new GeneralTabViewModel(installation, canPlay, mediator, iniErrorMessage);
+        GeneralTab   = new GeneralTabViewModel(installation, canPlay, mediator, openInstallationManagerAsync, iniErrorMessage);
         IniConfigTab = new IniConfigTabViewModel(installation, iniErrorMessage, mediator, dialogs);
 
         GeneralTab.LaunchOutcomeRaised += OnLaunchOutcomeRaised;
@@ -72,6 +75,9 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
 
     /// <summary><see langword="true" /> when the active installation can be launched (the ReadyToPlay outcome); <see langword="false" /> for CannotPlay.</summary>
     public bool CanPlay { get; }
+
+    /// <summary>The identifier of the open installation — used by the main window to re-verify it after the Installation Manager reports a change.</summary>
+    public Guid InstallationId { get; }
 
     /// <summary>The selected tab (0 = General, 1 = INI Config). Selecting the INI Config tab (re)loads it from disk.</summary>
     [ ObservableProperty ]
@@ -192,6 +198,14 @@ file sealed class NoOpDialogService : IDialogService
     public Task<AddInstallationResult?> ShowAddInstallationAsync(string? prefilledPath) => Task.FromResult<AddInstallationResult?>(result: null);
 
     public Task<bool> ShowInstallationManagerAsync() => Task.FromResult(false);
+
+    public Task<bool> ShowEditInstallationAsync(Guid installationId) => Task.FromResult(false);
+
+    public Task ShowInstallationInfoAsync(Guid installationId) => Task.CompletedTask;
+
+    public Task<bool> ShowDeleteInstallationAsync(Guid installationId) => Task.FromResult(false);
+
+    public Task<bool> ShowFixInstallationAsync(Guid installationId) => Task.FromResult(false);
 
     public Task<string?> PickFolderAsync(string? startPath) => Task.FromResult<string?>(result: null);
 

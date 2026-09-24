@@ -15,6 +15,25 @@ public interface IDialogService
     /// <returns><see langword="true" /> when the user changed anything whilst the dialogue was open (for example, added an installation); otherwise <see langword="false" />.</returns>
     Task<bool> ShowInstallationManagerAsync();
 
+    /// <summary>Opens the modal Edit Installation dialogue (SDD §7.2.3, §9.5) for the given installation.</summary>
+    /// <param name="installationId">The installation to edit.</param>
+    /// <returns><see langword="true" /> when the edit was saved; otherwise <see langword="false" />.</returns>
+    Task<bool> ShowEditInstallationAsync(Guid installationId);
+
+    /// <summary>Opens the read-only Installation Info dialogue (SDD §7.2.6, §9.5) for the given installation.</summary>
+    /// <param name="installationId">The installation to describe.</param>
+    Task ShowInstallationInfoAsync(Guid installationId);
+
+    /// <summary>Opens the Delete Installation confirmation (SDD §7.2.4, §9.5) for the given installation.</summary>
+    /// <param name="installationId">The installation to delete.</param>
+    /// <returns><see langword="true" /> when the installation was deleted; otherwise <see langword="false" />.</returns>
+    Task<bool> ShowDeleteInstallationAsync(Guid installationId);
+
+    /// <summary>Opens the Fix Installation dialogue (SDD §7.2.5, §9.5) for the given installation.</summary>
+    /// <param name="installationId">The installation to fix.</param>
+    /// <returns><see langword="true" /> when anything was persisted (a relocation, or drift found by the re-probe); otherwise <see langword="false" />.</returns>
+    Task<bool> ShowFixInstallationAsync(Guid installationId);
+
     /// <summary>
     ///     Opens a native folder picker rooted at the supplied path (or a sensible default when <see langword="null" />) and returns the chosen folder, or <see langword="null" />
     ///     when the user cancels.

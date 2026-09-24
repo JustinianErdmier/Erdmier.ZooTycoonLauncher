@@ -54,40 +54,40 @@ public sealed partial class OpenGameInstallationViewModel : ViewModelBase, IDisp
         await _openInstallationAsync(Grid.SelectedRow.Id, cancellationToken);
     }
 
+    // The new row reaches Grid through InstallationAddedMessage, so no explicit reload is needed.
     [ RelayCommand ]
-    private async Task AddAsync(CancellationToken cancellationToken)
+    private async Task AddAsync()
     {
         if (_dialogs is null)
         {
             return;
         }
 
-        AddInstallationResult? result = await _dialogs.ShowAddInstallationAsync(prefilledPath: null);
-
-        if (result is not null)
-        {
-            await Grid.LoadAsync(cancellationToken);
-        }
+        await _dialogs.ShowAddInstallationAsync(prefilledPath: null);
     }
 
     [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
-    private Task InfoAsync(CancellationToken cancellationToken)
-        => Task.CompletedTask; // TODO: SDD §7.2.4 — Installation Info dialogue not yet implemented.
+    private async Task InfoAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
 
+        await _dialogs.ShowInstallationInfoAsync(Grid.SelectedRow.Id);
+    }
+
+    // Changes made in the manager reach Grid through the change messages, so no explicit reload is needed.
     [ RelayCommand ]
-    private async Task ManageAsync(CancellationToken cancellationToken)
+    private async Task ManageAsync()
     {
         if (_dialogs is null)
         {
             return;
         }
 
-        bool changed = await _dialogs.ShowInstallationManagerAsync();
-
-        if (changed)
-        {
-            await Grid.LoadAsync(cancellationToken);
-        }
+        await _dialogs.ShowInstallationManagerAsync();
     }
 
     private bool CanExecuteSelectionCommand() => Grid.HasSelection;

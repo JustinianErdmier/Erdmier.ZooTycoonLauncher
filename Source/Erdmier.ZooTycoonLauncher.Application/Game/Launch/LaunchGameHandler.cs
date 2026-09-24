@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace Erdmier.ZooTycoonLauncher.Application.Game.Launch;
 
 /// <summary>Handler for <see cref="LaunchGameCommand" />. SDD §7.10.</summary>

@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace Erdmier.ZooTycoonLauncher.Application.IniConfig.Save;
 
 /// <summary>

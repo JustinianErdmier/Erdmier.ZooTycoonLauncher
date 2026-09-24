@@ -83,7 +83,7 @@ Source/Erdmier.ZooTycoonLauncher.Desktop/
   ViewModels/Common/IPendingChangesGuard.cs, Boot/PlayViewModel, Tabs/GeneralTabViewModel + views (Task 17)
   ViewModels/MainWindowViewModel.cs, Views/MainWindow.axaml.cs                                   (Task 18)
 Tests/Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit/  (new project, Task 12)
-docs/  SDD rev 1.6, conventions.md, manual-end-to-end-tests.md                                   (Task 19)
+docs/  SDD rev 1.7, conventions.md, manual-end-to-end-tests.md                                   (Task 19)
 ```
 
 ---
@@ -7497,7 +7497,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 
 ---
 
-## Task 19: Documentation — SDD revision 1.6, conventions, manual test stubs
+## Task 19: Documentation — SDD revision 1.7, conventions, manual test stubs
 
 **Files:**
 - Modify: `docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md`
@@ -7516,8 +7516,8 @@ $inCode = $false; $n = 0; Get-Content <file> -Encoding UTF8 | ForEach-Object { $
 
 Make each change below; keep the SDD's voice and British English.
 
-1. **Document control:** Version `1.6`; Last updated `24 September 2026`.
-2. **Revision history:** add a `1.6 | 24 September 2026 | Justinian |` row: "INI Config core slice (spec `2026-09-24-ini-config-core-design.md`). §5.3 replaces the typed
+1. **Document control:** Version `1.7`; Last updated `24 September 2026`.
+2. **Revision history:** add a `1.7 | 24 September 2026 | Justinian |` row: "INI Config core slice (spec `2026-09-24-ini-config-core-design.md`). §5.3 replaces the typed
    `ZooIniModel` with a key registry (`IniKeyId`, `IniKeyRole`, `IniKeySpec`, `ZooIniDefaults`); raw values are stored as found and the editor falls back to defaults at
    display time. Drift is tiered (§7.1.3, §7.7, glossary): game-managed and unrecognised changes are adopted silently; only user-setting changes archive `Current`. Save
    (§7.3.2, §8.2) re-reads `zoo.ini` and merges edits onto the on-disk text after reconciling external drift in the same transaction. §8.1 records Latin-1 byte fidelity,
@@ -7655,7 +7655,7 @@ Run the 180-character check (above) on all three files; fix any line it reports.
 ```powershell
 git add docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md docs/user-interface-design/conventions.md docs/test-plans/manual-end-to-end-tests.md
 git commit -m @'
-docs(📝): amend the SDD to v1.6 for the INI Config core slice
+docs(📝): amend the SDD to v1.7 for the INI Config core slice
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 '@

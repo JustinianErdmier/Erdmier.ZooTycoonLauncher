@@ -1374,7 +1374,7 @@ stays responsive rather than crashing.
 
 ### Notes/Thoughts
 
-## 5. Pending-Changes Guard: close, Exit, Close Installation, and Open Installation… with Yes / No / Cancel
+## 5. Pending-Changes Guard: close, Exit, Close Installation, Open Installation…, and an Installation Manager change, each with Yes / No / Cancel
 
 ### Testing Strategy
 

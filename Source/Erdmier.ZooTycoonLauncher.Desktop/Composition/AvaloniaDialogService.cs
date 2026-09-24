@@ -42,6 +42,7 @@ internal sealed class AvaloniaDialogService : IDialogService
         }
 
         AddInstallationDialogViewModel vm = _services.GetRequiredService<AddInstallationDialogViewModel>();
+
         vm.PrefillPath(prefilledPath);
 
         await vm.InitialiseAsync();

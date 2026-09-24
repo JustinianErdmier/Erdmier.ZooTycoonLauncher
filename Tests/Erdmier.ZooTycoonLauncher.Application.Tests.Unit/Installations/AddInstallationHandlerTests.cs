@@ -1,5 +1,3 @@
-using NSubstitute.ExceptionExtensions;
-
 namespace Erdmier.ZooTycoonLauncher.Application.Tests.Unit.Installations;
 
 public sealed class AddInstallationHandlerTests
@@ -276,5 +274,9 @@ public sealed class AddInstallationHandlerTests
 
         events.Received(requiredNumberOfCalls: 1)
               .Publish(Arg.Any<InstallationAddedMessage>());
+
+        // Zero existing installations, so this one became the default — publishes even though provisioning threw.
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(Arg.Any<DefaultInstallationChangedMessage>());
     }
 }

@@ -30,6 +30,7 @@ global using Microsoft.Extensions.Logging.Abstractions;
 global using Microsoft.Extensions.Time.Testing;
 
 global using NSubstitute;
+global using NSubstitute.ExceptionExtensions;
 
 global using Shouldly;
 

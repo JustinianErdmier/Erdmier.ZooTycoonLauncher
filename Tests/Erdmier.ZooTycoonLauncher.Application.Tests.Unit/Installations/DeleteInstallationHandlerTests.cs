@@ -1,5 +1,3 @@
-using NSubstitute.ExceptionExtensions;
-
 namespace Erdmier.ZooTycoonLauncher.Application.Tests.Unit.Installations;
 
 public sealed class DeleteInstallationHandlerTests

@@ -25,7 +25,7 @@ public sealed partial class InstallationFormViewModel : ViewModelBase
     [ NotifyPropertyChangedFor(nameof(CanChangeDefault)) ]
     public partial bool AreInputsEnabled { get; set; } = true;
 
-    /// <summary><see langword="true" /> when Mark as default can be changed — the inputs are enabled and the flag is not locked (Ruling R11).</summary>
+    /// <summary><see langword="true" /> when Mark as default can be changed — the inputs are enabled and the flag is not locked.</summary>
     public bool CanChangeDefault => AreInputsEnabled && !IsDefaultLocked;
 
     // TODO: Should probably be a list so we can display multiple errors at once.

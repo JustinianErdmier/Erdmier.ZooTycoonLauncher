@@ -117,10 +117,10 @@ public sealed partial class DeleteInstallationDialogViewModel : ViewModelBase
             {
                 if (result.FirstError.Type == ErrorType.NotFound)
                 {
-                    ErrorMessage        = InstallationDialogMessages.InstallationMissing;
-                    HasPromotion        = false;
-                    IsLastInstallation  = false;
-                    IsLoaded            = false;
+                    ErrorMessage       = InstallationDialogMessages.InstallationMissing;
+                    HasPromotion       = false;
+                    IsLastInstallation = false;
+                    IsLoaded           = false;
 
                     return;
                 }

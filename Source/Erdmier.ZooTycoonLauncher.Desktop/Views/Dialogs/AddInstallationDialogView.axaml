@@ -2,6 +2,7 @@
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
                xmlns:layout="clr-namespace:Erdmier.ZooTycoonLauncher.Desktop.Views.Layout"
+               xmlns:common="using:Erdmier.ZooTycoonLauncher.Desktop.Views.Common"
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.AddInstallationDialogView"
                x:DataType="vm:AddInstallationDialogViewModel"
                Icon="/Assets/Win95Icons/foldercatalog16.ico"
@@ -36,52 +37,7 @@
                 <TextBlock Text="Give this installation a unique name, or use the one suggested. The folder you selected should be the root folder containing the zoo.exe file."
                            TextWrapping="Wrap" />
 
-                <Grid ColumnDefinitions="15*, 85*"
-                      RowDefinitions="*, *, *"
-                      RowSpacing="5">
-                    <TextBlock Grid.Column="0"
-                               Grid.Row="0"
-                               Text="Name:" />
-
-                    <TextBox Grid.Column="1"
-                             Grid.Row="0"
-                             Text="{Binding Name, Mode=TwoWay}" />
-
-                    <TextBlock Grid.Column="0"
-                               Grid.Row="1"
-                               Text="Folder:" />
-
-                    <DockPanel Grid.Column="1"
-                               Grid.Row="1"
-                               HorizontalSpacing="5">
-                        <Button DockPanel.Dock="Right"
-                                Content="Browse…"
-                                Command="{Binding BrowseCommand}"
-                                MinWidth="75" />
-
-                        <TextBox Text="{Binding Path, Mode=TwoWay}" />
-                    </DockPanel>
-
-                    <CheckBox Content="Mark as default installation"
-                              Grid.Column="1"
-                              Grid.Row="2"
-                              IsChecked="{Binding MakeDefault, Mode=TwoWay}" />
-                </Grid>
-
-                <DockPanel HorizontalSpacing="10"
-                           IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                    <Image DockPanel.Dock="Left"
-                           Height="16"
-                           Source="/Assets/Win95Icons/cancel16.gif"
-                           VerticalAlignment="Center"
-                           Width="16" />
-
-                    <TextBlock Foreground="Red"
-                               Margin="2 0 0 0"
-                               Text="{Binding ErrorMessage}"
-                               TextWrapping="Wrap" />
-                </DockPanel>
-
+                <common:InstallationFormView DataContext="{Binding Form}" />
 
                 <layout:UniformStack HorizontalAlignment="Right"
                                      Margin="0 5"

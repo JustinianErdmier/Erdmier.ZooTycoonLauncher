@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Common"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Common.InstallationFormView"
+             x:DataType="vm:InstallationFormViewModel">
+    <StackPanel Orientation="Vertical"
+                Spacing="10">
+        <Grid ColumnDefinitions="15*, 85*"
+              RowDefinitions="*, *, *"
+              RowSpacing="5">
+            <TextBlock Grid.Column="0"
+                       Grid.Row="0"
+                       Text="Name:" />
+
+            <TextBox Grid.Column="1"
+                     Grid.Row="0"
+                     Text="{Binding Name, Mode=TwoWay}" />
+
+            <TextBlock Grid.Column="0"
+                       Grid.Row="1"
+                       Text="Folder:" />
+
+            <DockPanel Grid.Column="1"
+                       Grid.Row="1"
+                       HorizontalSpacing="5">
+                <Button DockPanel.Dock="Right"
+                        Command="{Binding BrowseCommand}"
+                        Content="Browse…"
+                        IsVisible="{Binding IsBrowseVisible}"
+                        MinWidth="75" />
+
+                <TextBox IsReadOnly="{Binding IsFolderReadOnly}"
+                         Text="{Binding Path, Mode=TwoWay}" />
+            </DockPanel>
+
+            <CheckBox Content="Mark as default installation"
+                      Grid.Column="1"
+                      Grid.Row="2"
+                      IsChecked="{Binding MakeDefault, Mode=TwoWay}"
+                      IsEnabled="{Binding !IsDefaultLocked}" />
+        </Grid>
+
+        <DockPanel HorizontalSpacing="10"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <Image DockPanel.Dock="Left"
+                   Height="16"
+                   Source="/Assets/Win95Icons/cancel16.gif"
+                   VerticalAlignment="Center"
+                   Width="16" />
+
+            <TextBlock Foreground="Red"
+                       Margin="2 0 0 0"
+                       Text="{Binding ErrorMessage}"
+                       TextWrapping="Wrap" />
+        </DockPanel>
+    </StackPanel>
+</UserControl>

@@ -48,4 +48,40 @@ public sealed partial class MainWindow : ClassicWindow
 
         Position = new PixelPoint(x, y);
     }
+
+    /// <inheritdoc />
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        base.OnClosing(e);
+
+        if (e.Cancel
+            || DataContext is not MainWindowViewModel { IsCloseConfirmed: false, HasPendingChanges: true } viewModel)
+        {
+            return;
+        }
+
+        // Closing is synchronous, so cancel now, ask asynchronously, and close again once the user has answered.
+        e.Cancel = true;
+
+        _ = ConfirmAndCloseAsync(viewModel);
+    }
+
+    private async Task ConfirmAndCloseAsync(MainWindowViewModel viewModel)
+    {
+        try
+        {
+            if (!await viewModel.ConfirmCloseAsync())
+            {
+                return;
+            }
+
+            viewModel.IsCloseConfirmed = true;
+
+            Close();
+        }
+        catch (Exception)
+        {
+            // A failed prompt keeps the window open; the unsaved edits are still in memory.
+        }
+    }
 }

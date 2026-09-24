@@ -75,6 +75,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>The main window's width in device-independent pixels: narrow whilst booting, wide once booted. Derived from <see cref="IsBooting" /> so the two can never disagree.</summary>
     public double WindowWidth => IsBooting ? BootingWindowWidth : BootedWindowWidth;
 
+    /// <summary>Set once the user has confirmed leaving unsaved edits, so the window's close handler does not ask a second time.</summary>
+    public bool IsCloseConfirmed { get; set; }
+
+    /// <summary>Whether the active content holds unsaved edits.</summary>
+    public bool HasPendingChanges => ActiveContent is IPendingChangesGuard { HasPendingChanges: true };
+
+    /// <summary>Asks the active content whether the window may close (SDD §7.3.2). Used by the window's close handler.</summary>
+    /// <returns><see langword="true" /> when the window may close.</returns>
+    public Task<bool> ConfirmCloseAsync() => ConfirmLeaveActiveContentAsync(CancellationToken.None);
+
     [ RelayCommand ]
     private Task BootAsync(CancellationToken cancellationToken) => RunBootAsync(installationId: null, cancellationToken);
 
@@ -108,21 +118,51 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     // File → "Open Installation…" (SDD §9.10). Interim behaviour until a later milestone implements the SDD's "opens the Installation Manager focused on Open": switches
     // the main window to the picker from any booted state, so an installation can be opened without changing the startup preference. Disabled whilst already on the picker.
+    // Asks about unsaved INI edits first.
     [ RelayCommand(CanExecute = nameof(CanOpenInstallationPicker)) ]
-    private Task OpenInstallationPickerAsync(CancellationToken cancellationToken) => ShowPickerAsync(cancellationToken);
+    private async Task OpenInstallationPickerAsync(CancellationToken cancellationToken)
+    {
+        if (!await ConfirmLeaveActiveContentAsync(cancellationToken))
+        {
+            return;
+        }
+
+        await ShowPickerAsync(cancellationToken);
+    }
 
     private bool CanOpenInstallationPicker() => !IsBooting && ActiveContent is not OpenGameInstallationViewModel;
 
     // File → "Close Installation" (SDD §9.10): closes the open installation by returning to the picker — the state with no installation open (SDD §9.1). Disabled when no
-    // installation is open, i.e. whenever the Play view (Ready to Play / Cannot Play) is not the active content.
+    // installation is open, i.e. whenever the Play view (Ready to Play / Cannot Play) is not the active content. Asks about unsaved INI edits first.
     [ RelayCommand(CanExecute = nameof(CanCloseInstallation)) ]
-    private Task CloseInstallationAsync(CancellationToken cancellationToken) => ShowPickerAsync(cancellationToken);
+    private async Task CloseInstallationAsync(CancellationToken cancellationToken)
+    {
+        if (!await ConfirmLeaveActiveContentAsync(cancellationToken))
+        {
+            return;
+        }
+
+        await ShowPickerAsync(cancellationToken);
+    }
 
     private bool CanCloseInstallation() => !IsBooting && ActiveContent is PlayViewModel;
 
-    // File → "Exit" (SDD §9.10).
+    // File → "Exit" (SDD §9.10). Asks about unsaved INI edits first; on approval marks the close as confirmed so MainWindow's close handler does not ask again.
     [ RelayCommand ]
-    private void Exit() => _lifecycle.RequestShutdown();
+    private async Task ExitAsync(CancellationToken cancellationToken)
+    {
+        if (!await ConfirmLeaveActiveContentAsync(cancellationToken))
+        {
+            return;
+        }
+
+        IsCloseConfirmed = true;
+
+        _lifecycle.RequestShutdown();
+    }
+
+    private Task<bool> ConfirmLeaveActiveContentAsync(CancellationToken cancellationToken)
+        => ActiveContent is IPendingChangesGuard guard ? guard.ConfirmLeaveAsync(cancellationToken) : Task.FromResult(true);
 
     // Shared by Open Installation… and Close Installation. Loads the fresh picker's grid before swapping it in (the outgoing state view model is then disposed by
     // OnActiveContentChanged), mirroring RunBootAsync's load-then-show order. A load failure is logged and leaves the current state untouched.
@@ -282,13 +322,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                  ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
                                                                  _lifecycle,
                                                                  _dialogs,
-                                                                 _mediator),
+                                                                 _mediator,
+                                                                 iniErrorMessage: result.IniErrorMessage),
             AppBoot.BootOutcome.CannotPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                 canPlay: false,
                                                                 ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
                                                                 _lifecycle,
                                                                 _dialogs,
-                                                                _mediator),
+                                                                _mediator,
+                                                                iniErrorMessage: result.IniErrorMessage),
             AppBoot.BootOutcome.NoGameInstallationFound => new NoGameInstallationFoundViewModel(result.LocatedCandidatePath,
                                                                                                 _dialogs,
                                                                                                 BootAsync),

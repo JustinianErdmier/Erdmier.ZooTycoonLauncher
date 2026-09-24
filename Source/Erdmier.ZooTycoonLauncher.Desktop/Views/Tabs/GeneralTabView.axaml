@@ -120,6 +120,18 @@
                                IsVisible="{Binding IsMissingBothExeAndIni}"
                                Text="zoo.exe and zoo.ini are missing from this installation's directory. The game cannot be started without them. Use Fix to locate or recreate the files. Open the installation manager to try fixing the problem."
                                TextWrapping="Wrap" />
+
+                    <TextBlock Foreground="Gray"
+                               IsVisible="{Binding IsIniUnreadable}"
+                               TextWrapping="Wrap">
+                        <Run Text="The launcher could not read zoo.ini. " />
+                        <Run Text="{Binding IniErrorMessage}" />
+                    </TextBlock>
+
+                    <TextBlock Foreground="Gray"
+                               IsVisible="{Binding HasPendingIniChanges}"
+                               Text="Save or revert your INI changes to launch."
+                               TextWrapping="Wrap" />
                 </StackPanel>
             </DockPanel>
         </controls:GroupBox>

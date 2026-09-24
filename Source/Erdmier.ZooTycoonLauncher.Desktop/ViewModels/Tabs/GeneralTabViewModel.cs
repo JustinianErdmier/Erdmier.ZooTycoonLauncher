@@ -11,8 +11,9 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     /// <param name="installation">The installation whose general information is displayed.</param>
     /// <param name="canPlay"><see langword="true" /> when the owning <see cref="Boot.PlayViewModel" /> is in the ReadyToPlay state; drives <see cref="CanPlay" />.</param>
     /// <param name="mediator">The Mediator dispatcher.</param>
-    public GeneralTabViewModel(InstallationSummary installation, bool canPlay, IMediator mediator)
-        : this(installation, canPlay)
+    /// <param name="iniErrorMessage">The boot's INI synchronisation error, or <see langword="null" />.</param>
+    public GeneralTabViewModel(InstallationSummary installation, bool canPlay, IMediator mediator, string? iniErrorMessage = null)
+        : this(installation, canPlay, iniErrorMessage)
         => _mediator = mediator;
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
@@ -26,10 +27,11 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
                                        ModifiedUtc: null,
                                        LastPlayedUtc: null,
                                        LastOpenedUtc: null),
-               canPlay: true)
+               canPlay: true,
+               iniErrorMessage: null)
     { }
 
-    private GeneralTabViewModel(InstallationSummary installation, bool canPlay)
+    private GeneralTabViewModel(InstallationSummary installation, bool canPlay, string? iniErrorMessage)
     {
         _installationId  = installation.Id;
         InstallationName = installation.Name;
@@ -41,6 +43,8 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
 
         HasExe = installation.Validity.HasExe;
         HasIni = installation.Validity.HasIni;
+
+        IniErrorMessage = iniErrorMessage;
     }
 
     /// <summary>
@@ -54,6 +58,14 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
 
     /// <summary><see langword="true" /> when <c>zoo.ini</c> is present in the installation's directory; drives the INI status row.</summary>
     public bool HasIni { get; }
+
+    /// <summary><see langword="true" /> while the INI Config tab holds unsaved edits; disables Launch Game (SDD §7.3.2).</summary>
+    [ ObservableProperty ]
+    [ NotifyCanExecuteChangedFor(nameof(LaunchCommand)) ]
+    public partial bool HasPendingIniChanges { get; set; }
+
+    /// <summary>The boot's INI synchronisation error description, or <see langword="null" />.</summary>
+    public string? IniErrorMessage { get; }
 
     /// <summary>The installation's last played date, formatted for display; refreshed in place after a successful launch stamps a new value.</summary>
     [ ObservableProperty ]
@@ -69,6 +81,12 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(LaunchCommand)) ]
     public partial bool IsBusy { get; set; }
+
+    /// <summary>
+    ///     <see langword="true" /> when both files are present but the installation cannot be played because <c>zoo.ini</c> could not be read; drives the fourth CannotPlay
+    ///     message.
+    /// </summary>
+    public bool IsIniUnreadable => HasExe && HasIni && !CanPlay;
 
     /// <summary>
     ///     <see langword="true" /> when the installation cannot be played because both <c>zoo.exe</c> and <c>zoo.ini</c> are missing; drives the "missing both files" CannotPlay
@@ -120,7 +138,7 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
         }
     }
 
-    private bool CanExecuteLaunch() => CanPlay && !IsBusy && _mediator is not null;
+    private bool CanExecuteLaunch() => CanPlay && !IsBusy && !HasPendingIniChanges && _mediator is not null;
 
     /// <summary>Formats a nullable UTC last-played timestamp for display, localising to the user's timezone or rendering "Never" when unset.</summary>
     /// <param name="lastPlayedUtc">The UTC timestamp to format, or <see langword="null" /> when the installation has never been played.</param>

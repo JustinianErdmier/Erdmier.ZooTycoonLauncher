@@ -16,7 +16,8 @@
         <StackPanel DockPanel.Dock="Bottom"
                     Margin="0 8 0 0"
                     Spacing="8">
-            <TextBlock Text="{Binding Grid.Rows.Count, StringFormat='{}{0} installation(s) registered. Double-click a row to open.'}" />
+            <TextBlock Text="{Binding Grid.Rows.Count, StringFormat='{}{0} installation(s) registered. Double-click a row to open.'}"
+                       Opacity="0.6" />
 
             <Button Command="{Binding CloseCommand}"
                     Content="Close"
@@ -55,6 +56,6 @@
 
         <!-- Grid fills remaining space -->
         <common:InstallationGridView DataContext="{Binding Grid}"
-                                      Height="220" />
+                                     Height="220" />
     </DockPanel>
 </ClassicWindow>

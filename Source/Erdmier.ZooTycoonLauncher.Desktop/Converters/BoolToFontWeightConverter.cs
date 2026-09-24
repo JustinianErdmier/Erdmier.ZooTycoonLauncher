@@ -3,8 +3,8 @@ using Avalonia.Media;
 namespace Erdmier.ZooTycoonLauncher.Desktop.Converters;
 
 /// <summary>
-///     Converts a <see cref="bool" /> to a <see cref="FontWeight" />: <see langword="true" /> → <see cref="FontWeight.Bold" />, <see langword="false" /> →
-///     <see cref="FontWeight.Normal" />.
+///     Converts a <see cref="bool" /> to a <see cref="FontWeight" />: <see langword="true" /> → <see cref="FontWeight.Bold" />,
+///     <see langword="false" /> → <see cref="FontWeight.Normal" />.
 /// </summary>
 public sealed class BoolToFontWeightConverter : IValueConverter
 {

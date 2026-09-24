@@ -10,7 +10,7 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="grid">The installation grid view model. The manager takes ownership of it and disposes it alongside itself.</param>
-    /// <param name="dialogs">The dialogue service — used here to open the Add Installation modal.</param>
+    /// <param name="dialogs">The dialogue service — used here to open the Add, Info, Edit, Delete and Fix dialogues.</param>
     public InstallationManagerDialogViewModel(InstallationGridViewModel grid, IDialogService dialogs)
     {
         Grid     = grid;

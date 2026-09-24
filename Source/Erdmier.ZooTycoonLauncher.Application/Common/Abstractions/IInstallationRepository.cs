@@ -44,7 +44,7 @@ public interface IInstallationRepository
 
     /// <summary>
     ///     Picks the row that should be promoted to default — the alphabetically-first row (case-insensitive on <see cref="GameInstallation.Name" />) — or
-    ///     <see langword="null" /> when no rows remain.
+    ///     <see langword="null" /> when no rows remain — or, when <paramref name="excludeId" /> is supplied, when no other rows remain.
     /// </summary>
     /// <param name="excludeId">
     ///     When supplied, the row with this id is ignored — used to preview the promotion before that row is deleted. Pass <see langword="null" /> after a

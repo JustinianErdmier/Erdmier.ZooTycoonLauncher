@@ -120,8 +120,9 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
 
     void IRecipient<DefaultInstallationChangedMessage>.Receive(DefaultInstallationChangedMessage message) => ScheduleReload();
 
-    // Marshals the reload onto the UI thread (the publisher already sends on it, but Receive must not rely on that) and coalesces bursts: deleting the default publishes
-    // InstallationDeletedMessage and DefaultInstallationChangedMessage together, which must cost one reload, not two overlapping queries on the shared DbContext.
+    // Marshals the reload onto the UI thread (the publisher already sends on it, but Receive must not rely on that). A burst of messages — e.g. deleting the default
+    // publishes InstallationDeletedMessage and DefaultInstallationChangedMessage together — is handed to ReloadCoalescedAsync, which never runs overlapping queries
+    // on the shared DbContext.
     private void ScheduleReload()
         => Dispatcher.UIThread.Post(() =>
         {
@@ -131,9 +132,11 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
             }
         });
 
-    // Runs only on the UI thread (see ScheduleReload), so the two flags need no locking. A message that arrives whilst a reload is in flight marks one follow-up reload
-    // instead of starting a second, overlapping one. The catch sits inside the loop so a failed attempt is logged, leaves the previous rows in place, and still honours
-    // a follow-up reload requested whilst it was running.
+    // Runs only on the UI thread (see ScheduleReload), so the two flags need no locking. The gate is per grid instance: each InstallationGridViewModel serialises its
+    // own reloads independently. A message that arrives whilst a reload is in flight marks one follow-up reload instead of starting a second, overlapping one — but
+    // with SQLite's synchronous completion the first reload has usually already finished by the time a second message arrives, so back-to-back reloads are the common
+    // case rather than true coalescing. The catch sits inside the loop so a failed attempt is logged, leaves the previous rows in place, and still honours a follow-up
+    // reload requested whilst it was running. The explicit initial load (InitialiseAsync) calls LoadAsync directly and does not go through this gate.
     private async Task ReloadCoalescedAsync()
     {
         if (_isReloading)

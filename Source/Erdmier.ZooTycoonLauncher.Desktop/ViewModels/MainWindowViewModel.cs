@@ -86,11 +86,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // Pointed boot (SDD §7.2.7 — the picker's Open button): boots the given installation directly, bypassing the startup preference and default resolution.
     private Task OpenInstallationAsync(Guid installationId, CancellationToken cancellationToken) => RunBootAsync(installationId, cancellationToken);
 
-    // File → "Installation Manager…" (SDD §9.10): opens the modal manager, then refreshes whichever state is active — but only when the manager reports a change (D6).
-    // Three cases follow: a Play state (Ready to Play or Cannot Play) re-verifies the open installation with a pointed boot, so a rename shows, Cannot Play becomes
-    // Ready after a fix, and a deleted installation falls back to the normal resolution; NoGameInstallationFoundViewModel re-runs the normal boot, mirroring that
-    // state's own post-Add reboot, so a first installation added via the manager is picked up without requiring a restart; and the picker needs nothing, since its
-    // grid refreshes itself from the change messages.
+    // Both entry points into the Installation Manager route here: the File menu's "Installation Manager…" item, and Cannot Play's "Open Installation Manager…" button.
+    // Acts only when the manager reports a change. Three cases: a Play state (Ready to Play or Cannot Play) re-verifies the open installation with a pointed boot — a
+    // rename shows, Cannot Play becomes Ready after a fix, and a deleted installation falls back to the normal resolution (SDD §7.2.4); No Game Installation Found
+    // re-runs the normal boot, so a first installation added via the manager is picked up without requiring a restart; the picker needs nothing, since its grid
+    // refreshes itself from the change messages.
     [ RelayCommand ]
     private async Task ManageInstallationsAsync(CancellationToken cancellationToken)
     {
@@ -103,20 +103,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         switch (ActiveContent)
         {
-            // Re-verify the open installation: a rename shows, Cannot Play becomes Ready after a fix, and a deleted installation falls back to the normal resolution
-            // (SDD §7.2.4).
+            // Pointed boot of the open installation.
             case PlayViewModel play:
                 await RunBootAsync(play.InstallationId, cancellationToken);
 
                 break;
 
-            // Mirrors that state's own post-Add reboot, so a first installation added via the manager is picked up.
+            // Normal boot.
             case NoGameInstallationFoundViewModel:
                 await RunBootAsync(installationId: null, cancellationToken);
 
                 break;
-
-            // The picker needs nothing: its grid refreshes itself from the change messages.
         }
     }
 

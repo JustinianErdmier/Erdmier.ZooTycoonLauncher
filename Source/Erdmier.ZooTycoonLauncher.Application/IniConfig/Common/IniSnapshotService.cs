@@ -94,7 +94,10 @@ public sealed class IniSnapshotService : IIniSnapshotService
 
             if (reconciliation.Outcome != IniReconciliationOutcome.Unchanged)
             {
-                _logger.LogInformation(message: "INI snapshot reconciled for {InstallationId}: {Outcome}", installation.Id, reconciliation.Outcome);
+                _logger.LogInformation(message: "INI snapshot reconciled for {InstallationId}: {Outcome} ({ChangedKeyCount} changed keys)",
+                                       installation.Id,
+                                       reconciliation.Outcome,
+                                       reconciliation.ChangedKeyCount);
             }
 
             return new IniConfigResult(reconciliation.Values, content.LastWriteUtc);

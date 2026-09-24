@@ -23,7 +23,7 @@ public sealed class IniReconciler
             await transaction.AddAsync(CreateImportSnapshot(IniSnapshotKind.Original, diskText, diskValues, nowUtc), cancellationToken);
             await transaction.AddAsync(CreateImportSnapshot(IniSnapshotKind.Current, diskText, diskValues, nowUtc), cancellationToken);
 
-            return new IniReconciliation(diskValues, IniReconciliationOutcome.FirstImport);
+            return new IniReconciliation(diskValues, IniReconciliationOutcome.FirstImport, ChangedKeyCount: 0);
         }
 
         Dictionary<IniKeyId, string?> currentValues = current.Values.ToDictionary(value => new IniKeyId(value.Section, value.Key), value => value.Value);
@@ -34,7 +34,7 @@ public sealed class IniReconciler
         if (drift.Kind == IniDriftKind.None
             && !textChanged)
         {
-            return new IniReconciliation(diskValues, IniReconciliationOutcome.Unchanged);
+            return new IniReconciliation(diskValues, IniReconciliationOutcome.Unchanged, ChangedKeyCount: 0);
         }
 
         bool archive = drift.Kind == IniDriftKind.UserSettings;
@@ -50,7 +50,7 @@ public sealed class IniReconciler
 
         await transaction.UpdateCurrentAsync(diskText, changes, nowUtc, cancellationToken);
 
-        return new IniReconciliation(diskValues, archive ? IniReconciliationOutcome.ArchivedAndAdopted : IniReconciliationOutcome.AdoptedSilently);
+        return new IniReconciliation(diskValues, archive ? IniReconciliationOutcome.ArchivedAndAdopted : IniReconciliationOutcome.AdoptedSilently, drift.ChangedKeys.Count);
     }
 
     private static IniSnapshot CreateImportSnapshot(IniSnapshotKind kind, string text, IReadOnlyDictionary<IniKeyId, string?> values, DateTime nowUtc)

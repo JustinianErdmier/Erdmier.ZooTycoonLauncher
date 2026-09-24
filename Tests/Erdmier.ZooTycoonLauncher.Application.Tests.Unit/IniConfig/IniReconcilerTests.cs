@@ -16,6 +16,7 @@ public sealed class IniReconcilerTests
         IniReconciliation result = await _reconciler.ReconcileAsync(transaction, IniTestData.Sample, IniTestData.Now, CancellationToken.None);
 
         result.Outcome.ShouldBe(IniReconciliationOutcome.FirstImport);
+        result.ChangedKeyCount.ShouldBe(expected: 0);
         added.Select(snapshot => snapshot.Kind).ShouldBe([IniSnapshotKind.Original, IniSnapshotKind.Current]);
         added.ShouldAllBe(snapshot => snapshot.Trigger == IniSnapshotTrigger.OriginalImport && snapshot.StructureBlob == IniTestData.Sample);
         added[1].Values.Count.ShouldBe(expected: 5);
@@ -34,6 +35,7 @@ public sealed class IniReconcilerTests
         IniReconciliation result = await _reconciler.ReconcileAsync(transaction, IniTestData.Sample, IniTestData.Now, CancellationToken.None);
 
         result.Outcome.ShouldBe(IniReconciliationOutcome.Unchanged);
+        result.ChangedKeyCount.ShouldBe(expected: 0);
 
         await transaction.DidNotReceive().AddAsync(Arg.Any<IniSnapshot>(), Arg.Any<CancellationToken>());
         await transaction.DidNotReceive().ArchiveCurrentAsync(Arg.Any<IniSnapshotTrigger>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
@@ -49,6 +51,7 @@ public sealed class IniReconcilerTests
         IniReconciliation result = await _reconciler.ReconcileAsync(transaction, disk, IniTestData.Now, CancellationToken.None);
 
         result.Outcome.ShouldBe(IniReconciliationOutcome.AdoptedSilently);
+        result.ChangedKeyCount.ShouldBe(expected: 1);
 
         await transaction.DidNotReceive().ArchiveCurrentAsync(Arg.Any<IniSnapshotTrigger>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
 
@@ -72,12 +75,26 @@ public sealed class IniReconcilerTests
 
         result.Outcome.ShouldBe(IniReconciliationOutcome.ArchivedAndAdopted);
         result.Values[new IniKeyId(Section: "user", Key: "screenwidth")].ShouldBe(expected: "1024");
+        result.ChangedKeyCount.ShouldBe(expected: 1);
 
         Received.InOrder(() =>
         {
             transaction.ArchiveCurrentAsync(IniSnapshotTrigger.Manual, IniTestData.Now, Arg.Any<CancellationToken>());
             transaction.UpdateCurrentAsync(disk, Arg.Any<IReadOnlyList<IniValueChange>>(), IniTestData.Now, Arg.Any<CancellationToken>());
         });
+    }
+
+    [ Fact ]
+    public async Task Reconcile_UserSettingChangeOfTwoKeys_ReportsTheChangedKeyCount()
+    {
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+        string disk = IniTestData.Sample.Replace(oldValue: "screenwidth=800", newValue: "screenwidth=1024")
+                                        .Replace(oldValue: "tooltipDelay=1", newValue: "tooltipDelay=5");
+
+        IniReconciliation result = await _reconciler.ReconcileAsync(transaction, disk, IniTestData.Now, CancellationToken.None);
+
+        result.Outcome.ShouldBe(IniReconciliationOutcome.ArchivedAndAdopted);
+        result.ChangedKeyCount.ShouldBe(expected: 2);
     }
 
     [ Fact ]

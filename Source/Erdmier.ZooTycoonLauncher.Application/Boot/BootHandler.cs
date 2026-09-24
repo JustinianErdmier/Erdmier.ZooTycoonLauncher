@@ -99,7 +99,7 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
         // Either no default was ever set, or the persisted default no longer resolves to a stored installation
         // (e.g. the row was deleted out from under a stale settings pointer). In both cases attempt to promote
         // another installation as default, falling back to auto-location when none exists.
-        GameInstallation? promoted = await _installations.FindDefaultPromotionCandidateAsync(cancellationToken);
+        GameInstallation? promoted = await _installations.FindDefaultPromotionCandidateAsync(excludeId: null, cancellationToken);
 
         if (promoted is null)
         {

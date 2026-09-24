@@ -4,8 +4,8 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Common;
 
 /// <summary>
 ///     Shared view model for the installation <c>DataGrid</c> (SDD §9.4, §9.6). Owns the row collection, selected row, and data loading via
-///     <see cref="GetAllInstallationsQuery" />. Subscribes to installation messenger messages so the grid refreshes automatically once the Application
-///     handlers begin publishing them.
+///     <see cref="GetAllInstallationsQuery" />. Subscribes to the installation change messages the Application handlers publish, so the grid refreshes
+///     itself whoever made the change.
 /// </summary>
 public sealed partial class InstallationGridViewModel : ViewModelBase,
                                                         IDisposable,
@@ -14,26 +14,34 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
                                                         IRecipient<InstallationDeletedMessage>,
                                                         IRecipient<DefaultInstallationChangedMessage>
 {
+    private readonly ILogger<InstallationGridViewModel> _logger;
+
     private readonly IMediator _mediator;
 
     private readonly IMessenger _messenger;
 
     private bool _disposed;
 
+    private bool _isReloading;
+
+    private bool _reloadPending;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher — used to issue <see cref="GetAllInstallationsQuery" />.</param>
     /// <param name="messenger">The CommunityToolkit messenger — used to subscribe to installation-change notifications.</param>
-    public InstallationGridViewModel(IMediator mediator, IMessenger messenger)
+    /// <param name="logger">Logger for reload failures raised whilst handling installation change messages.</param>
+    public InstallationGridViewModel(IMediator mediator, IMessenger messenger, ILogger<InstallationGridViewModel> logger)
     {
         _mediator  = mediator;
         _messenger = messenger;
+        _logger    = logger;
 
         _messenger.RegisterAll(this);
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public InstallationGridViewModel()
-        : this(null!, WeakReferenceMessenger.Default)
+        : this(null!, WeakReferenceMessenger.Default, NullLogger<InstallationGridViewModel>.Instance)
     { }
 
     /// <summary>The rows bound to the DataGrid. Rebuilt wholesale on every <see cref="LoadAsync" /> call.</summary>
@@ -69,6 +77,9 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
 
         if (result.IsError)
         {
+            _logger.LogWarning("Failed to load the installation list: {Errors}",
+                               string.Join("; ", result.Errors.Select(error => $"{error.Code}: {error.Description}")));
+
             return;
         }
 
@@ -109,16 +120,57 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
 
     void IRecipient<DefaultInstallationChangedMessage>.Receive(DefaultInstallationChangedMessage message) => ScheduleReload();
 
-    // Marshals the reload onto the UI thread rather than calling LoadAsync() directly, so a future off-thread publisher of these messages cannot mutate Rows off the UI
-    // thread. Nothing publishes these messages yet, but Receive must not rely on a future publisher always raising on the UI thread.
+    // Marshals the reload onto the UI thread (the publisher already sends on it, but Receive must not rely on that). A burst of messages — e.g. deleting the default
+    // publishes InstallationDeletedMessage and DefaultInstallationChangedMessage together — is handed to ReloadCoalescedAsync, which never runs overlapping queries
+    // on the shared DbContext.
     private void ScheduleReload()
         => Dispatcher.UIThread.Post(() =>
         {
             if (!_disposed)
             {
-                _ = LoadAsync();
+                _ = ReloadCoalescedAsync();
             }
         });
+
+    // Runs only on the UI thread (see ScheduleReload), so the two flags need no locking. The gate is per grid instance: each InstallationGridViewModel serialises its
+    // own reloads independently. A message that arrives whilst a reload is in flight marks one follow-up reload instead of starting a second, overlapping one — but
+    // with SQLite's synchronous completion the first reload has usually already finished by the time a second message arrives, so back-to-back reloads are the common
+    // case rather than true coalescing. The catch sits inside the loop so a failed attempt is logged, leaves the previous rows in place, and still honours a follow-up
+    // reload requested whilst it was running. The explicit initial load is the hosts' InitialiseAsync (e.g. InstallationManagerDialogViewModel,
+    // OpenGameInstallationViewModel), which calls LoadAsync directly and bypasses this gate.
+    private async Task ReloadCoalescedAsync()
+    {
+        if (_isReloading)
+        {
+            _reloadPending = true;
+
+            return;
+        }
+
+        _isReloading = true;
+
+        try
+        {
+            do
+            {
+                _reloadPending = false;
+
+                try
+                {
+                    await LoadAsync();
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogError(ex, "Failed to reload the installation list.");
+                }
+            }
+            while (_reloadPending && !_disposed);
+        }
+        finally
+        {
+            _isReloading = false;
+        }
+    }
 }
 
 // Sort: default row first, then alphabetical case-insensitive by Name.

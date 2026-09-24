@@ -25,7 +25,9 @@ public sealed class UpdateInstallationHandlerTests
 
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
 
-        UpdateInstallationHandler handler = new(installations, settings, new FakeTimeProvider(fakeNow));
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        UpdateInstallationHandler handler = new(installations, settings, new FakeTimeProvider(fakeNow), events);
 
         ErrorOr<Success> result = await handler.Handle(new UpdateInstallationCommand(id, Name: "Renamed", MakeDefault: false), CancellationToken.None);
 
@@ -35,6 +37,12 @@ public sealed class UpdateInstallationHandlerTests
 
         await settings.DidNotReceive()
                       .UpdateAsync(Arg.Any<LauncherSettings>(), Arg.Any<CancellationToken>());
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationChangedMessage(id));
+
+        events.DidNotReceive()
+              .Publish(Arg.Any<DefaultInstallationChangedMessage>());
     }
 
     [ Fact ]
@@ -67,7 +75,7 @@ public sealed class UpdateInstallationHandlerTests
         settings.GetAsync(Arg.Any<CancellationToken>())
                 .Returns(stored);
 
-        UpdateInstallationHandler handler = new(installations, settings, TimeProvider.System);
+        UpdateInstallationHandler handler = new(installations, settings, TimeProvider.System, Substitute.For<IApplicationEventPublisher>());
 
         await handler.Handle(new UpdateInstallationCommand(id, Name: "Main", MakeDefault: true), CancellationToken.None);
 
@@ -85,11 +93,98 @@ public sealed class UpdateInstallationHandlerTests
         installations.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
-        UpdateInstallationHandler handler = new(installations, Substitute.For<ILauncherSettingsRepository>(), TimeProvider.System);
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        UpdateInstallationHandler handler = new(installations, Substitute.For<ILauncherSettingsRepository>(), TimeProvider.System, events);
 
         ErrorOr<Success> result = await handler.Handle(new UpdateInstallationCommand(Guid.CreateVersion7(), Name: "Whatever", MakeDefault: false), CancellationToken.None);
 
         result.IsError.ShouldBeTrue();
         result.FirstError.Type.ShouldBe(ErrorType.NotFound);
+
+        events.ReceivedCalls()
+              .ShouldBeEmpty();
+    }
+
+    [ Fact ]
+    public async Task Handle_PublishesChangedAndDefaultChanged_WhenMadeDefault()
+    {
+        Guid id = Guid.CreateVersion7();
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = id,
+                         Name     = "Main",
+                         Path     = @"C:\Games\Main",
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = Guid.CreateVersion7()
+                });
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        UpdateInstallationHandler handler = new(installations, settings, TimeProvider.System, events);
+
+        ErrorOr<Success> result = await handler.Handle(new UpdateInstallationCommand(id, Name: "Renamed", MakeDefault: true), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationChangedMessage(id));
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new DefaultInstallationChangedMessage(id));
+    }
+
+    [ Fact ]
+    public async Task Handle_PublishesOnlyChanged_WhenAlreadyDefault()
+    {
+        Guid id = Guid.CreateVersion7();
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = id,
+                         Name     = "Main",
+                         Path     = @"C:\Games\Main",
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = id
+                });
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        UpdateInstallationHandler handler = new(installations, settings, TimeProvider.System, events);
+
+        ErrorOr<Success> result = await handler.Handle(new UpdateInstallationCommand(id, Name: "Renamed", MakeDefault: true), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationChangedMessage(id));
+
+        events.DidNotReceive()
+              .Publish(Arg.Any<DefaultInstallationChangedMessage>());
+
+        events.ReceivedCalls()
+              .Count()
+              .ShouldBe(expected: 1);
     }
 }

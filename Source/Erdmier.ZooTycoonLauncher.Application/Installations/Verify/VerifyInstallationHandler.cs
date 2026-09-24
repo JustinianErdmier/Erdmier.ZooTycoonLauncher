@@ -5,6 +5,8 @@ public sealed class VerifyInstallationHandler : IQueryHandler<VerifyInstallation
 {
     private readonly TimeProvider _clock;
 
+    private readonly IApplicationEventPublisher _events;
+
     private readonly IInstallationRepository _installations;
 
     private readonly IInstallationVerifier _verifier;
@@ -13,11 +15,13 @@ public sealed class VerifyInstallationHandler : IQueryHandler<VerifyInstallation
     /// <param name="installations">Installation repository.</param>
     /// <param name="verifier">File-system verifier.</param>
     /// <param name="clock">Time provider for the <c>ModifiedUtc</c> stamp.</param>
-    public VerifyInstallationHandler(IInstallationRepository installations, IInstallationVerifier verifier, TimeProvider clock)
+    /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
+    public VerifyInstallationHandler(IInstallationRepository installations, IInstallationVerifier verifier, TimeProvider clock, IApplicationEventPublisher events)
     {
         _installations = installations;
         _verifier      = verifier;
         _clock         = clock;
+        _events        = events;
     }
 
     /// <inheritdoc />
@@ -42,6 +46,8 @@ public sealed class VerifyInstallationHandler : IQueryHandler<VerifyInstallation
                                     .UtcDateTime;
 
             await _installations.UpdateAsync(row, cancellationToken);
+
+            _events.Publish(new InstallationChangedMessage(row.Id));
         }
 
         return result;

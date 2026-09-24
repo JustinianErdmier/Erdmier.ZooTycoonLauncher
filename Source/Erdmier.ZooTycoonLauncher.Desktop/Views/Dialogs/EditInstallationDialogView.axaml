@@ -1,12 +1,12 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
-               xmlns:layout="clr-namespace:Erdmier.ZooTycoonLauncher.Desktop.Views.Layout"
                xmlns:common="using:Erdmier.ZooTycoonLauncher.Desktop.Views.Common"
-               x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.AddInstallationDialogView"
-               x:DataType="vm:AddInstallationDialogViewModel"
+               xmlns:layout="clr-namespace:Erdmier.ZooTycoonLauncher.Desktop.Views.Layout"
+               x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.EditInstallationDialogView"
+               x:DataType="vm:EditInstallationDialogViewModel"
                Icon="/Assets/Win95Icons/foldercatalog16.ico"
-               Title="  Add Installation"
+               Title="  Edit Installation"
                Width="420"
                SizeToContent="Height"
                CanResize="False"
@@ -26,18 +26,14 @@
                         Orientation="Vertical"
                         Spacing="4">
                 <TextBlock FontWeight="Solid"
-                           Text="New Installation" />
+                           Text="Edit installation" />
 
-                <TextBlock
-                    Text="Register a Zoo Tycoon installation with the launcher. This does not install the game to your machine; it tells the launcher where an already installed copy of the game exists."
-                    TextWrapping="Wrap" />
-
-                <Separator />
-
-                <TextBlock Text="Give this installation a unique name, or use the one suggested. The folder you selected should be the root folder containing the zoo.exe file."
+                <TextBlock Opacity="0.6"
+                           Text="Rename this installation or change which one is the launcher's default."
                            TextWrapping="Wrap" />
 
-                <common:InstallationFormView DataContext="{Binding Form}" />
+                <common:InstallationFormView DataContext="{Binding Form}"
+                                             Margin="0 6 0 0" />
 
                 <layout:UniformStack HorizontalAlignment="Right"
                                      Margin="0 5"

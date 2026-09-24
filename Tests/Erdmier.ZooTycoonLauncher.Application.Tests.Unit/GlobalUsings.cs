@@ -5,6 +5,7 @@ global using System.Threading;
 global using System.Threading.Tasks;
 
 global using Erdmier.ZooTycoonLauncher.Application.Common.Abstractions;
+global using Erdmier.ZooTycoonLauncher.Application.Common.Messaging;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Models;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Add;
 global using Erdmier.ZooTycoonLauncher.Application.Installations.Delete;
@@ -25,9 +26,11 @@ global using FluentValidation.Results;
 
 global using ErrorOr;
 
+global using Microsoft.Extensions.Logging.Abstractions;
 global using Microsoft.Extensions.Time.Testing;
 
 global using NSubstitute;
+global using NSubstitute.ExceptionExtensions;
 
 global using Shouldly;
 

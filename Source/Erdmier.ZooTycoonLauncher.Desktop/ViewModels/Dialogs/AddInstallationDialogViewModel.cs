@@ -1,33 +1,40 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
 /// <summary>
-///     The view model for the Add Installation modal (SDD §7.2.1, §9.5). Owns Name / Folder / Default inputs and dispatches <see cref="AddInstallationCommand" /> on Save. Raises
-///     <see cref="CloseRequested" /> with the dispatched result on success, or <see langword="null" /> when the user cancels.
+///     The view model for the Add Installation modal (SDD §7.2.1, §9.5). Hosts the shared <see cref="InstallationFormViewModel" /> and dispatches
+///     <see cref="AddInstallationCommand" /> on Save. With no installations registered yet, the name is pre-filled with <c>Main</c> and Mark as default is ticked and
+///     locked, because the first installation always becomes the default. Raises <see cref="CloseRequested" /> with the dispatched result on success, or
+///     <see langword="null" /> when the user cancels.
 /// </summary>
 public sealed partial class AddInstallationDialogViewModel : ViewModelBase
 {
-    private readonly IDialogService _dialogs;
+    private const string FirstInstallationName = "Main";
+
+    private readonly ILogger<AddInstallationDialogViewModel> _logger;
 
     private readonly IMediator _mediator;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
-    /// <param name="dialogs">The dialogue service — used here only for the folder picker.</param>
-    public AddInstallationDialogViewModel(IMediator mediator, IDialogService dialogs)
+    /// <param name="dialogs">The dialogue service — passed to the form for the folder picker.</param>
+    /// <param name="logger">Logger for unexpected load and save failures.</param>
+    public AddInstallationDialogViewModel(IMediator mediator, IDialogService dialogs, ILogger<AddInstallationDialogViewModel> logger)
     {
         _mediator = mediator;
-        _dialogs  = dialogs;
+        _logger   = logger;
+
+        Form = new InstallationFormViewModel(dialogs);
+
+        Form.PropertyChanged += OnFormPropertyChanged;
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public AddInstallationDialogViewModel()
-        : this(null!, null!)
+        : this(null!, null!, NullLogger<AddInstallationDialogViewModel>.Instance)
     { }
 
-    // TODO: Should probably be a list so we can display multiple errors at once.
-    /// <summary>The most recent validation or dispatch error description, or <see langword="null" /> when none. Bound to the error TextBlock.</summary>
-    [ ObservableProperty ]
-    public partial string? ErrorMessage { get; set; }
+    /// <summary>The shared Name / Folder / Default form. Bound to <c>InstallationFormView.DataContext</c>.</summary>
+    public InstallationFormViewModel Form { get; }
 
     // TODO: Test if this can be made private or if doing that will mess up the source generators.
     /// <summary><see langword="true" /> while a dispatch is in flight.</summary>
@@ -35,19 +42,38 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
     [ NotifyCanExecuteChangedFor(nameof(SaveCommand)) ]
     public partial bool IsBusy { get; set; }
 
-    /// <summary>Marks the new installation as the launcher default. Bound to the Default checkbox.</summary>
-    [ ObservableProperty ]
-    public partial bool MakeDefault { get; set; }
+    /// <summary>
+    ///     Applies the first-installation defaults (SDD §7.2.1): with no installations registered, pre-fills the name with <c>Main</c> and ticks and locks Mark as
+    ///     default. Must be awaited by the dialogue service before the window is shown.
+    /// </summary>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    public async Task InitialiseAsync(CancellationToken cancellationToken = default)
+    {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_mediator is null)
+        {
+            return;
+        }
 
-    /// <summary>The trimmed user-visible installation name. Bound to the Name TextBox.</summary>
-    [ ObservableProperty ]
-    [ NotifyCanExecuteChangedFor(nameof(SaveCommand)) ]
-    public partial string Name { get; set; } = string.Empty;
+        try
+        {
+            ErrorOr<IReadOnlyList<InstallationSummary>> existing = await _mediator.Send(new GetAllInstallationsQuery(), cancellationToken);
 
-    /// <summary>The folder path containing <c>zoo.exe</c>. Bound to the Folder TextBox.</summary>
-    [ ObservableProperty ]
-    [ NotifyCanExecuteChangedFor(nameof(SaveCommand)) ]
-    public partial string Path { get; set; } = string.Empty;
+            if (!existing.IsError
+                && existing.Value.Count == 0)
+            {
+                Form.Name = FirstInstallationName;
+
+                Form.LockDefault();
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to check for existing installations before showing the Add Installation dialogue.");
+
+            // Leave the normal (not-first-installation) defaults.
+        }
+    }
 
     /// <summary>Sets the initial folder when the dialogue is being opened with a discovered candidate.</summary>
     /// <param name="prefilledPath">The candidate path to pre-fill, or <see langword="null" />.</param>
@@ -55,18 +81,7 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
     {
         if (!string.IsNullOrWhiteSpace(prefilledPath))
         {
-            Path = prefilledPath;
-        }
-    }
-
-    [ RelayCommand ]
-    private async Task BrowseAsync()
-    {
-        string? chosen = await _dialogs.PickFolderAsync(string.IsNullOrWhiteSpace(Path) ? null : Path);
-
-        if (!string.IsNullOrWhiteSpace(chosen))
-        {
-            Path = chosen;
+            Form.Path = prefilledPath;
         }
     }
 
@@ -79,23 +94,29 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
             return;
         }
 
-        IsBusy       = true;
-        ErrorMessage = null;
+        IsBusy            = true;
+        Form.ErrorMessage = null;
 
         try
         {
             // TODO: Confirm that the handler validates the name being unique and the path being valid.
             ErrorOr<AddInstallationResult> result =
-                await _mediator.Send(new AddInstallationCommand(Name.Trim(), Path.Trim(), MakeDefault), cancellationToken);
+                await _mediator.Send(new AddInstallationCommand(Form.Name.Trim(), Form.Path.Trim(), Form.MakeDefault), cancellationToken);
 
             if (result.IsError)
             {
-                ErrorMessage = result.FirstError.Description;
+                Form.ErrorMessage = result.FirstError.Description;
 
                 return;
             }
 
             CloseRequested?.Invoke(this, result.Value);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to save the new installation.");
+
+            Form.ErrorMessage = InstallationDialogMessages.UnexpectedFailure;
         }
         finally
         {
@@ -108,11 +129,20 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
 
     private bool CanExecuteSave()
         => !IsBusy
-           && !string.IsNullOrWhiteSpace(Name)
-           && !string.IsNullOrWhiteSpace(Path)
+           && !string.IsNullOrWhiteSpace(Form.Name)
+           && !string.IsNullOrWhiteSpace(Form.Path)
 
            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
            && _mediator is not null;
+
+    private void OnFormPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(InstallationFormViewModel.Name)
+                           or nameof(InstallationFormViewModel.Path))
+        {
+            SaveCommand.NotifyCanExecuteChanged();
+        }
+    }
 
     /// <summary>Raised when the dialogue should close. Argument is the dispatched <see cref="AddInstallationResult" /> on Save, or <see langword="null" /> on Cancel.</summary>
     public event EventHandler<AddInstallationResult?>? CloseRequested;

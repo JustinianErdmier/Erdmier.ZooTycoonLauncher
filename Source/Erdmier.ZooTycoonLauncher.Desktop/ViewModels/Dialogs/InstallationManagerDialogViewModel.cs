@@ -2,8 +2,7 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
 /// <summary>
 ///     View model for the Installation Manager modal (SDD §7.2.2, §9.4). Hosts <see cref="InstallationGridViewModel" /> and exposes the five management
-///     commands. <c>Info</c>, <c>Edit</c>, <c>Delete</c>, and <c>Fix</c> are scaffolded stubs — each will be completed when its corresponding dialogue is
-///     implemented.
+///     commands — Add, Info, Edit, Delete and Fix — all of which are now live.
 /// </summary>
 public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, IDisposable
 {
@@ -11,7 +10,7 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="grid">The installation grid view model. The manager takes ownership of it and disposes it alongside itself.</param>
-    /// <param name="dialogs">The dialogue service — used here to open the Add Installation modal.</param>
+    /// <param name="dialogs">The dialogue service — used here to open the Add, Info, Edit, Delete and Fix dialogues.</param>
     public InstallationManagerDialogViewModel(InstallationGridViewModel grid, IDialogService dialogs)
     {
         Grid     = grid;
@@ -29,7 +28,7 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
     public InstallationGridViewModel Grid { get; }
 
     /// <summary>
-    ///     <see langword="true" /> when the user has changed anything during this session of the dialogue (currently: at least one successful Add). Read by
+    ///     <see langword="true" /> when the user has changed anything during this session of the dialogue (a successful Add, Edit, Delete or Fix). Read by
     ///     <see cref="Composition.AvaloniaDialogService.ShowInstallationManagerAsync" /> once the dialogue closes, so callers only refresh when something actually changed.
     /// </summary>
     public bool HasChanges { get; private set; }
@@ -47,7 +46,7 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
     }
 
     [ RelayCommand ]
-    private async Task AddAsync(CancellationToken cancellationToken)
+    private async Task AddAsync()
     {
         if (_dialogs is null)
         {
@@ -59,26 +58,65 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
         if (result is not null)
         {
             HasChanges = true;
-
-            await Grid.LoadAsync(cancellationToken);
         }
     }
 
     [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
-    private Task InfoAsync(CancellationToken cancellationToken)
-        => Task.CompletedTask; // TODO: SDD §7.2.4 — Installation Info dialogue not yet implemented.
+    private async Task InfoAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        await _dialogs.ShowInstallationInfoAsync(Grid.SelectedRow.Id);
+    }
 
     [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
-    private Task EditAsync(CancellationToken cancellationToken)
-        => Task.CompletedTask; // TODO: SDD §7.2.3 — Edit Installation dialogue not yet implemented.
+    private async Task EditAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        if (await _dialogs.ShowEditInstallationAsync(Grid.SelectedRow.Id))
+        {
+            HasChanges = true;
+        }
+    }
 
     [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
-    private Task DeleteAsync(CancellationToken cancellationToken)
-        => Task.CompletedTask; // TODO: SDD §7.2.5 — Delete Installation confirmation not yet implemented.
+    private async Task DeleteAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        if (await _dialogs.ShowDeleteInstallationAsync(Grid.SelectedRow.Id))
+        {
+            HasChanges = true;
+        }
+    }
 
     [ RelayCommand(CanExecute = nameof(CanExecuteFixCommand)) ]
-    private Task FixAsync(CancellationToken cancellationToken)
-        => Task.CompletedTask; // TODO: SDD §7.2.6 — Fix Installation dialogue not yet implemented.
+    private async Task FixAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        if (await _dialogs.ShowFixInstallationAsync(Grid.SelectedRow.Id))
+        {
+            HasChanges = true;
+        }
+    }
 
     [ RelayCommand ]
     private void Close() => CloseRequested?.Invoke(this, EventArgs.Empty);

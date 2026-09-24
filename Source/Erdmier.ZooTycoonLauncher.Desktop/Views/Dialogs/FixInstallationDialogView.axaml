@@ -1,0 +1,145 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
+               xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
+               x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.FixInstallationDialogView"
+               x:DataType="vm:FixInstallationDialogViewModel"
+               Icon="/Assets/Win95Icons/warning32.gif"
+               Title="  Fix Installation"
+               Width="460"
+               SizeToContent="Height"
+               CanResize="False"
+               WindowStartupLocation="CenterOwner"
+               ShowInTaskbar="False">
+    <StackPanel Margin="8"
+                Orientation="Vertical"
+                Spacing="10">
+        <TextBlock Opacity="0.6"
+                   TextWrapping="Wrap">
+            <Run Text="Recover an installation by locating missing files or restoring a fresh INI. The launcher never patches " /><Run FontFamily="Consolas"
+                                                                                                                                       Text="zoo.exe" /><Run Text="." />
+        </TextBlock>
+
+        <TextBlock Foreground="Red"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                   Text="{Binding ErrorMessage}"
+                   TextWrapping="Wrap" />
+
+        <controls:GroupBox Header="Fix EXE"
+                           IsVisible="{Binding IsLoaded}">
+            <DockPanel HorizontalSpacing="10"
+                       Margin="4">
+                <Image DockPanel.Dock="Left"
+                       Height="32"
+                       IsVisible="{Binding HasExe}"
+                       Source="/Assets/Win95Icons/ok32.gif"
+                       VerticalAlignment="Top"
+                       Width="32" />
+
+                <Image DockPanel.Dock="Left"
+                       Height="32"
+                       IsVisible="{Binding !HasExe}"
+                       Source="/Assets/Win95Icons/error32.gif"
+                       VerticalAlignment="Top"
+                       Width="32" />
+
+                <Button DockPanel.Dock="Right"
+                        Command="{Binding LocateCommand}"
+                        Content="Locate"
+                        MinWidth="75"
+                        VerticalAlignment="Top" />
+
+                <StackPanel Orientation="Vertical"
+                            Spacing="4">
+                    <StackPanel IsVisible="{Binding HasExe}"
+                                Orientation="Vertical"
+                                Spacing="4">
+                        <TextBlock Foreground="Green"
+                                   Text="EXE present" />
+                        <TextBlock Opacity="0.6"
+                                   TextWrapping="Wrap">
+                            <Run FontFamily="Consolas"
+                                 Text="zoo.exe" /><Run Text=" was located at the expected path." />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <StackPanel IsVisible="{Binding !HasExe}"
+                                Orientation="Vertical"
+                                Spacing="4">
+                        <TextBlock Foreground="Red"
+                                   Text="No EXE found!" />
+                        <TextBlock Opacity="0.6"
+                                   TextWrapping="Wrap">
+                            <Run FontFamily="Consolas"
+                                 Text="zoo.exe" /><Run Text=" is missing from this installation's directory. Browse to a folder that contains " /><Run FontFamily="Consolas"
+                                                                                                                                                       Text="zoo.exe" /><Run Text="." />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <TextBlock Foreground="Red"
+                               IsVisible="{Binding ExeErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               Text="{Binding ExeErrorMessage}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </DockPanel>
+        </controls:GroupBox>
+
+        <controls:GroupBox Header="Fix INI"
+                           IsVisible="{Binding IsLoaded}">
+            <DockPanel HorizontalSpacing="10"
+                       Margin="4">
+                <Image DockPanel.Dock="Left"
+                       Height="32"
+                       IsVisible="{Binding HasIni}"
+                       Source="/Assets/Win95Icons/ok32.gif"
+                       VerticalAlignment="Top"
+                       Width="32" />
+
+                <Image DockPanel.Dock="Left"
+                       Height="32"
+                       IsVisible="{Binding !HasIni}"
+                       Source="/Assets/Win95Icons/error32.gif"
+                       VerticalAlignment="Top"
+                       Width="32" />
+
+                <Button DockPanel.Dock="Right"
+                        Content="Create"
+                        IsEnabled="False"
+                        MinWidth="75"
+                        VerticalAlignment="Top" />
+
+                <StackPanel Orientation="Vertical"
+                            Spacing="4">
+                    <StackPanel IsVisible="{Binding HasIni}"
+                                Orientation="Vertical"
+                                Spacing="4">
+                        <TextBlock Foreground="Green"
+                                   Text="INI present" />
+                        <TextBlock Opacity="0.6"
+                                   TextWrapping="Wrap">
+                            <Run FontFamily="Consolas"
+                                 Text="zoo.ini" /><Run Text=" was found in the installation folder." />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <StackPanel IsVisible="{Binding !HasIni}"
+                                Orientation="Vertical"
+                                Spacing="4">
+                        <TextBlock Foreground="DarkGoldenrod"
+                                   Text="No INI found" />
+                        <TextBlock Opacity="0.6"
+                                   Text="INI repair arrives with the INI Config slice."
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </controls:GroupBox>
+
+        <Button Command="{Binding OkCommand}"
+                Content="OK"
+                HorizontalAlignment="Right"
+                IsCancel="True"
+                IsDefault="True"
+                MinWidth="75" />
+    </StackPanel>
+</ClassicWindow>

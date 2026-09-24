@@ -5,16 +5,23 @@ public sealed class RelocateInstallationHandler : ICommandHandler<RelocateInstal
 {
     private readonly TimeProvider _clock;
 
+    private readonly IApplicationEventPublisher _events;
+
     private readonly IInstallationRepository _installations;
 
     private readonly IInstallationVerifier _verifier;
 
     /// <summary>Initialises a new instance.</summary>
-    public RelocateInstallationHandler(IInstallationRepository installations, IInstallationVerifier verifier, TimeProvider clock)
+    /// <param name="installations">Installation repository.</param>
+    /// <param name="verifier">File-system verifier used to probe the new folder.</param>
+    /// <param name="clock">Time provider for the <c>ModifiedUtc</c> stamp.</param>
+    /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
+    public RelocateInstallationHandler(IInstallationRepository installations, IInstallationVerifier verifier, TimeProvider clock, IApplicationEventPublisher events)
     {
         _installations = installations;
         _verifier      = verifier;
         _clock         = clock;
+        _events        = events;
     }
 
     /// <inheritdoc />
@@ -34,6 +41,12 @@ public sealed class RelocateInstallationHandler : ICommandHandler<RelocateInstal
             return Error.Validation(code: "Installation.PathMissing", $"The folder \"{command.NewPath}\" does not exist.");
         }
 
+        if (!verification.HasExe)
+        {
+            // SDD §7.2.5: relocation exists to recover a missing zoo.exe — never move an installation to a folder that still lacks it.
+            return Error.Validation(code: "Installation.ExeMissing", $"The folder \"{command.NewPath}\" does not contain zoo.exe.");
+        }
+
         // GameInstallation.Path is init-only — model the relocation as remove + add with the same Id and AddedUtc.
         GameInstallation relocated = new()
         {
@@ -51,6 +64,8 @@ public sealed class RelocateInstallationHandler : ICommandHandler<RelocateInstal
 
         await _installations.DeleteAsync(row.Id, cancellationToken);
         await _installations.AddAsync(relocated, cancellationToken);
+
+        _events.Publish(new InstallationChangedMessage(row.Id));
 
         return new RelocateInstallationResult(verification.Validity);
     }

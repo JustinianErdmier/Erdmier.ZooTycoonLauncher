@@ -31,11 +31,11 @@
               IsVisible="{Binding !IsBooting}"
               Margin="5 1 5 2">
             <MenuItem Header="File">
-                <MenuItem Header="Open Installation…" />
+                <MenuItem Header="Open Installation…" Command="{Binding OpenInstallationPickerCommand}" />
 
-                <MenuItem Header="Installation Manager…" />
+                <MenuItem Header="Installation Manager…" Command="{Binding ManageInstallationsCommand}" />
 
-                <MenuItem Header="Close Installation" />
+                <MenuItem Header="Close Installation" Command="{Binding CloseInstallationCommand}" />
 
                 <Separator />
 
@@ -43,7 +43,7 @@
 
                 <Separator />
 
-                <MenuItem Header="Exit" />
+                <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="Contents" />

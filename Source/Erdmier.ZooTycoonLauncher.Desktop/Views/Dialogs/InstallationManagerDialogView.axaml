@@ -1,0 +1,61 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
+               xmlns:common="using:Erdmier.ZooTycoonLauncher.Desktop.Views.Common"
+               x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.InstallationManagerDialogView"
+               x:DataType="vm:InstallationManagerDialogViewModel"
+               Icon="/Assets/Win95Icons/installationoncomputer16.ico"
+               Title="Installation Manager"
+               Width="560"
+               SizeToContent="Height"
+               CanResize="False"
+               WindowStartupLocation="CenterOwner"
+               ShowInTaskbar="False">
+    <DockPanel Margin="8">
+        <!-- Footer: helper text, then Close on its own row -->
+        <StackPanel DockPanel.Dock="Bottom"
+                    Margin="0 8 0 0"
+                    Spacing="8">
+            <TextBlock Text="{Binding Grid.Rows.Count, StringFormat='{}{0} installation(s) registered. Double-click a row to open.'}"
+                       Opacity="0.6" />
+
+            <Button Command="{Binding CloseCommand}"
+                    Content="Close"
+                    HorizontalAlignment="Right"
+                    IsDefault="True"
+                    IsCancel="True"
+                    MinWidth="75" />
+        </StackPanel>
+
+        <!-- Right-side action panel -->
+        <StackPanel DockPanel.Dock="Right"
+                    Margin="8 0 0 0"
+                    Spacing="4"
+                    Width="80">
+            <Button Command="{Binding AddCommand}"
+                    Content="Add"
+                    HorizontalAlignment="Stretch" />
+
+            <Button Command="{Binding InfoCommand}"
+                    Content="Info"
+                    HorizontalAlignment="Stretch" />
+
+            <Button Command="{Binding EditCommand}"
+                    Content="Edit"
+                    HorizontalAlignment="Stretch" />
+
+            <Button Command="{Binding DeleteCommand}"
+                    Content="Delete"
+                    HorizontalAlignment="Stretch" />
+
+            <Button Command="{Binding FixCommand}"
+                    Content="Fix"
+                    HorizontalAlignment="Stretch"
+                    Margin="0 12 0 0" />
+        </StackPanel>
+
+        <!-- Grid fills remaining space -->
+        <common:InstallationGridView DataContext="{Binding Grid}"
+                                     Height="220" />
+    </DockPanel>
+</ClassicWindow>

@@ -53,6 +53,42 @@ internal sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
+    public async Task<bool> ShowInstallationManagerAsync()
+    {
+        Window? owner = ResolveOwner();
+
+        if (owner is null)
+        {
+            return false;
+        }
+
+        // New-ed up directly against root services (mirroring MainWindowViewModel's construction of the picker's grid), rather than resolved through a scope, so the
+        // manager's view model and grid share the same root-level services as everything else — including the nested Add dialogue — and so its reads see writes the
+        // Add dialogue makes on the same DbContext. Constructing directly here also keeps the container from tracking this disposable view model, which this method
+        // already disposes itself in the finally block below.
+        InstallationGridViewModel grid = new(_services.GetRequiredService<IMediator>(), _services.GetRequiredService<IMessenger>());
+        InstallationManagerDialogViewModel vm = new(grid, this);
+
+        try
+        {
+            await vm.InitialiseAsync();
+
+            InstallationManagerDialogView view = new()
+            {
+                DataContext = vm
+            };
+
+            await view.ShowDialog(owner);
+
+            return vm.HasChanges;
+        }
+        finally
+        {
+            vm.Dispose();
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<string?> PickFolderAsync(string? startPath)
     {
         Window? owner = ResolveOwner();
@@ -88,8 +124,10 @@ internal sealed class AvaloniaDialogService : IDialogService
                        .TryGetLocalPath();
     }
 
+    // The currently active window, falling back to MainWindow when none is active. Nested modals (e.g. the Add dialogue opened from the Installation Manager) must be owned by
+    // their parent window so ShowDialog disables the parent while the child is open.
     private static Window? ResolveOwner()
         => Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-               ? desktop.MainWindow
+               ? desktop.Windows.FirstOrDefault(window => window.IsActive) ?? desktop.MainWindow
                : null;
 }

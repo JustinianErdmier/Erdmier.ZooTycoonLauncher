@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Common"
+             xmlns:converters="using:Erdmier.ZooTycoonLauncher.Desktop.Converters"
+             xmlns:models="using:Erdmier.ZooTycoonLauncher.Desktop.Models"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Common.InstallationGridView"
+             x:DataType="vm:InstallationGridViewModel">
+    <UserControl.Resources>
+        <converters:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
+        <converters:ColourTokenToBrushConverter x:Key="ColourTokenToBrush" />
+    </UserControl.Resources>
+
+    <DataGrid ItemsSource="{Binding Rows}"
+              SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+              SelectionMode="Single"
+              IsReadOnly="True"
+              CanUserReorderColumns="False"
+              CanUserResizeColumns="True"
+              CanUserSortColumns="False"
+              AutoGenerateColumns="False">
+        <DataGrid.Columns>
+            <DataGridTemplateColumn Header="Name"
+                                    Width="*">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate DataType="models:InstallationGridRowModel">
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Margin="4 0">
+                            <TextBlock Text="{Binding Name}"
+                                       FontWeight="{Binding IsDefault, Converter={StaticResource BoolToFontWeight}}" />
+
+                            <TextBlock Text=" · default"
+                                       IsVisible="{Binding IsDefault}"
+                                       Opacity="0.6" />
+                        </StackPanel>
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+
+            <DataGridTextColumn Header="Path"
+                                Binding="{Binding Path}"
+                                Width="2*" />
+
+            <DataGridTemplateColumn Header="Status"
+                                    Width="Auto">
+                <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate DataType="models:InstallationGridRowModel">
+                        <TextBlock Text="{Binding ValidityDisplayName}"
+                                   Foreground="{Binding ValidityColourToken, Converter={StaticResource ColourTokenToBrush}}"
+                                   VerticalAlignment="Center"
+                                   Margin="4 0" />
+                    </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+        </DataGrid.Columns>
+    </DataGrid>
+</UserControl>

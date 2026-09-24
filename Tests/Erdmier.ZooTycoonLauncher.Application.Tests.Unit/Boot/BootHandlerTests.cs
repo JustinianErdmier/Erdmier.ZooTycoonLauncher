@@ -700,4 +700,259 @@ public sealed class BootHandlerTests
         result.Value.Outcome.ShouldBe(BootOutcome.ReadyToPlay);
         result.Value.ActiveInstallation!.Id.ShouldBe(id);
     }
+
+    [ Fact ]
+    public async Task Handle_ReturnsReadyToPlay_ForRequestedInstallation_WhenPreferenceIsNoInstallation()
+    {
+        Guid requestedId = Guid.CreateVersion7();
+        Guid otherId     = Guid.CreateVersion7();
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    LauncherStartupPreference = LauncherStartupPreference.NoInstallation,
+                    DefaultInstallationId     = otherId
+                });
+
+        GameInstallation row = new()
+        {
+            Id       = requestedId,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(requestedId, Arg.Any<CancellationToken>())
+                     .Returns(row);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
+
+        snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
+                 .Returns(Result.Success);
+
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  TimeProvider.System);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(requestedId), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Outcome.ShouldBe(BootOutcome.ReadyToPlay);
+        result.Value.ActiveInstallation!.Id.ShouldBe(requestedId);
+
+        // A pointed boot must never write DefaultInstallationId — the user's default stays untouched.
+        await settings.DidNotReceive()
+                      .UpdateAsync(Arg.Any<LauncherSettings>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Handle_ReturnsCannotPlay_ForRequestedInstallation_WhenVerificationFails()
+    {
+        Guid requestedId = Guid.CreateVersion7();
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings());
+
+        GameInstallation row = new()
+        {
+            Id       = requestedId,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(requestedId, Arg.Any<CancellationToken>())
+                     .Returns(row);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: false, HasIni: true));
+
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  Substitute.For<IIniSnapshotService>(),
+                                  TimeProvider.System);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(requestedId), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Outcome.ShouldBe(BootOutcome.CannotPlay);
+        result.Value.ActiveInstallation!.Id.ShouldBe(requestedId);
+
+        // A failed pointed boot must never write settings — mirrors the ReadyToPlay pointed test's guarantee.
+        await settings.DidNotReceive()
+                      .UpdateAsync(Arg.Any<LauncherSettings>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Handle_FallsBackToPreference_WhenRequestedInstallationMissing()
+    {
+        Guid requestedId = Guid.CreateVersion7();
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    LauncherStartupPreference = LauncherStartupPreference.NoInstallation
+                });
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(requestedId, Arg.Any<CancellationToken>())
+                     .Returns((GameInstallation?)null);
+
+        BootHandler handler = new(settings,
+                                  installations,
+                                  Substitute.For<IInstallationVerifier>(),
+                                  Substitute.For<IInstallationLocator>(),
+                                  Substitute.For<IIniSnapshotService>(),
+                                  TimeProvider.System);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(requestedId), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Outcome.ShouldBe(BootOutcome.OpenGameInstallation);
+
+        // NoInstallation already yields OpenGameInstallation on a normal boot, so this outcome alone cannot prove the fall-through ran; it proves only that the
+        // pointed lookup for requestedId actually happened before falling back to preference resolution.
+        await installations.Received(requiredNumberOfCalls: 1)
+                           .GetByIdAsync(requestedId, Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Handle_FallsBackToDefault_WhenRequestedInstallationMissing()
+    {
+        Guid requestedId = Guid.CreateVersion7();
+        Guid defaultId   = Guid.CreateVersion7();
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    LauncherStartupPreference = LauncherStartupPreference.DefaultInstallation,
+                    DefaultInstallationId     = defaultId
+                });
+
+        GameInstallation defaultRow = new()
+        {
+            Id       = defaultId,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(requestedId, Arg.Any<CancellationToken>())
+                     .Returns((GameInstallation?)null);
+
+        installations.GetByIdAsync(defaultId, Arg.Any<CancellationToken>())
+                     .Returns(defaultRow);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(defaultRow.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
+
+        snapshots.SynchroniseAsync(defaultRow, Arg.Any<CancellationToken>())
+                 .Returns(Result.Success);
+
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  TimeProvider.System);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(requestedId), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Outcome.ShouldBe(BootOutcome.ReadyToPlay);
+        result.Value.ActiveInstallation!.Id.ShouldBe(defaultId);
+
+        // Proves the pointed lookup for requestedId ran and fell through to the normal default-resolution path.
+        await installations.Received(requiredNumberOfCalls: 1)
+                           .GetByIdAsync(requestedId, Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Handle_StampsLastOpened_ForRequestedInstallation()
+    {
+        Guid     requestedId = Guid.CreateVersion7();
+        DateTime fakeNow     = new(year: 2026, month: 5, day: 28, hour: 10, minute: 0, second: 0, DateTimeKind.Utc);
+
+        FakeTimeProvider clock = new(fakeNow);
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings());
+
+        GameInstallation row = new()
+        {
+            Id       = requestedId,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(requestedId, Arg.Any<CancellationToken>())
+                     .Returns(row);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
+
+        snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
+                 .Returns(Result.Success);
+
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  clock);
+
+        await handler.Handle(new BootCommand(requestedId), CancellationToken.None);
+
+        await installations.Received(requiredNumberOfCalls: 1)
+                           .UpdateAsync(Arg.Is<GameInstallation>(i => i.Id == requestedId && i.LastOpenedUtc == fakeNow),
+                                        Arg.Any<CancellationToken>());
+    }
 }

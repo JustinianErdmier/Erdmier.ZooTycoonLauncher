@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
+             xmlns:common="using:Erdmier.ZooTycoonLauncher.Desktop.Views.Common"
+             xmlns:layout="clr-namespace:Erdmier.ZooTycoonLauncher.Desktop.Views.Layout"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.OpenGameInstallationView"
              x:DataType="vm:OpenGameInstallationViewModel">
     <StackPanel Orientation="Vertical"
@@ -19,33 +21,36 @@
                            Text="Open Game Installation" />
 
                 <!--TODO: The "No Installation" needs to be monospaced, and "Open" needs to be bold.-->
-                <TextBlock TextWrapping="Wrap">Your startup preference is set to No Installation. Please choose an installation below and click Open, or add a new one in the manager.</TextBlock>
+                <TextBlock TextWrapping="Wrap">Your startup preference is set to No Installation. Please choose an installation below and click Open, or add a new one.</TextBlock>
             </StackPanel>
         </DockPanel>
 
-        <!--TODO: The grid for managing game installations needs to be its own control that can be used both here and in the game installation management dialogue.-->
-        <TextBox Height="50"
-                 IsReadOnly="True"
-                 Padding="10">
-            Installation Management Grid coming soon...
-        </TextBox>
+        <common:InstallationGridView DataContext="{Binding Grid}"
+                                     DoubleTapped="OnGridDoubleTapped"
+                                     Height="150" />
 
         <DockPanel HorizontalSpacing="8"
                    LastChildFill="False">
-            <Button Content="Open"
+            <Button Command="{Binding OpenCommand}"
+                    Content="Open"
                     DockPanel.Dock="Right"
                     IsDefault="True"
-                    IsEnabled="False"
                     Padding="25 0" />
 
-            <Button Content="Manage"
-                    DockPanel.Dock="Left"
-                    Padding="10 0" />
+            <layout:UniformStack DockPanel.Dock="Left"
+                                 Spacing="8">
+                <Button Command="{Binding AddCommand}"
+                        Content="Add"
+                        Padding="10 0" />
 
-            <Button Content="Info"
-                    DockPanel.Dock="Left"
-                    IsEnabled="False"
-                    Padding="10 0" />
+                <Button Command="{Binding InfoCommand}"
+                        Content="Info"
+                        Padding="10 0" />
+
+                <Button Command="{Binding ManageCommand}"
+                        Content="Manage"
+                        Padding="10 0" />
+            </layout:UniformStack>
         </DockPanel>
     </StackPanel>
 </UserControl>

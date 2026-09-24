@@ -15,26 +15,52 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IApplicationLifecycle _lifecycle;
 
+    private readonly ILogger<MainWindowViewModel> _logger;
+
     private readonly IMediator _mediator;
+
+    private readonly IMessenger _messenger;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
-    /// <param name="dialogs">Chrome service for opening modeless dialogues.</param>
-    public MainWindowViewModel(IMediator mediator, IApplicationLifecycle lifecycle, IDialogService dialogs)
+    /// <param name="dialogs">Chrome service for opening modeless and modal dialogues.</param>
+    /// <param name="messenger">The CommunityToolkit messenger — passed to freshly-built picker grids so they can subscribe to installation-change notifications.</param>
+    /// <param name="logger">Logger for unexpected boot-dispatch and picker-initialisation failures.</param>
+    public MainWindowViewModel(IMediator                    mediator,
+                               IApplicationLifecycle        lifecycle,
+                               IDialogService               dialogs,
+                               IMessenger                   messenger,
+                               ILogger<MainWindowViewModel> logger)
     {
         _mediator  = mediator;
         _lifecycle = lifecycle;
         _dialogs   = dialogs;
+        _messenger = messenger;
+        _logger    = logger;
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
     [ ObservableProperty ]
+    [ NotifyCanExecuteChangedFor(nameof(OpenInstallationPickerCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(CloseInstallationCommand)) ]
     public partial object? ActiveContent { get; set; }
+
+    // Disposes the outgoing state view model when it holds disposable resources (currently only OpenGameInstallationViewModel's grid), so it unregisters from the
+    // messenger as soon as the main window navigates away from it.
+    partial void OnActiveContentChanged(object? oldValue, object? newValue)
+    {
+        if (oldValue is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
 
     /// <summary>Whether the launcher is currently running its boot sequence. Drives <see cref="WindowWidth" /> and is the single source of truth for the booting/booted distinction.</summary>
     [ ObservableProperty ]
     [ NotifyPropertyChangedFor(nameof(WindowWidth)) ]
+    [ NotifyCanExecuteChangedFor(nameof(OpenInstallationPickerCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(CloseInstallationCommand)) ]
     public partial bool IsBooting { get; set; } = true;
 
     [ ObservableProperty ]
@@ -50,42 +76,163 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public double WindowWidth => IsBooting ? BootingWindowWidth : BootedWindowWidth;
 
     [ RelayCommand ]
-    private async Task BootAsync(CancellationToken cancellationToken)
+    private Task BootAsync(CancellationToken cancellationToken) => RunBootAsync(installationId: null, cancellationToken);
+
+    // Pointed boot (SDD §7.2.7 — the picker's Open button): boots the given installation directly, bypassing the startup preference and default resolution.
+    private Task OpenInstallationAsync(Guid installationId, CancellationToken cancellationToken) => RunBootAsync(installationId, cancellationToken);
+
+    // File → "Installation Manager…" (SDD §9.10): opens the modal manager, then refreshes whichever state is active — but only when the manager reports a change — so
+    // installations added there are reflected immediately without an unnecessary reload or locator rescan when the user opened the manager and changed nothing. Reloads
+    // the picker grid when OpenGameInstallationViewModel is active, or re-runs the normal boot when NoGameInstallationFoundViewModel is active (mirroring that state's own
+    // post-Add reboot), so a first installation added via the manager is picked up without requiring a restart. Play and CannotPlay need no refresh — neither displays the
+    // installation list, and the Manager's own Info/Edit/Delete/Fix commands are still stubs.
+    [ RelayCommand ]
+    private async Task ManageInstallationsAsync(CancellationToken cancellationToken)
     {
-        ActiveContent              = new LookingForZooTycoonViewModel();
-        IsBooting                  = true;
-        StatusMessagePrimaryText   = "Discovering installations…";
-        StatusMessageSecondaryText = "Please wait…";
+        bool changed = await _dialogs.ShowInstallationManagerAsync();
 
-        // await Task.Delay(TimeSpan.FromSeconds(seconds: 2), cancellationToken);
+        if (!changed)
+        {
+            return;
+        }
 
-        ErrorOr<AppBoot.BootResult> result = await _mediator.Send(new AppBoot.BootCommand(), cancellationToken);
-
-        IsBooting = false;
-
-        ActiveContent = result.IsError
-                            ? new NoGameInstallationFoundViewModel(locatedCandidatePath: null, _dialogs, BootAsync)
-                            : RouteResult(result.Value);
-
-        UpdateStatusMessages(result);
+        if (ActiveContent is OpenGameInstallationViewModel picker)
+        {
+            await picker.Grid.LoadAsync(cancellationToken);
+        }
+        else if (ActiveContent is NoGameInstallationFoundViewModel)
+        {
+            await RunBootAsync(installationId: null, cancellationToken);
+        }
     }
 
-    private void UpdateStatusMessages(ErrorOr<AppBoot.BootResult> result)
-    {
-        StatusMessageSecondaryColour = null;
+    // File → "Open Installation…" (SDD §9.10). Interim behaviour until a later milestone implements the SDD's "opens the Installation Manager focused on Open": switches
+    // the main window to the picker from any booted state, so an installation can be opened without changing the startup preference. Disabled whilst already on the picker.
+    [ RelayCommand(CanExecute = nameof(CanOpenInstallationPicker)) ]
+    private Task OpenInstallationPickerAsync(CancellationToken cancellationToken) => ShowPickerAsync(cancellationToken);
 
-        if (result.IsError)
+    private bool CanOpenInstallationPicker() => !IsBooting && ActiveContent is not OpenGameInstallationViewModel;
+
+    // File → "Close Installation" (SDD §9.10): closes the open installation by returning to the picker — the state with no installation open (SDD §9.1). Disabled when no
+    // installation is open, i.e. whenever the Play view (Ready to Play / Cannot Play) is not the active content.
+    [ RelayCommand(CanExecute = nameof(CanCloseInstallation)) ]
+    private Task CloseInstallationAsync(CancellationToken cancellationToken) => ShowPickerAsync(cancellationToken);
+
+    private bool CanCloseInstallation() => !IsBooting && ActiveContent is PlayViewModel;
+
+    // File → "Exit" (SDD §9.10).
+    [ RelayCommand ]
+    private void Exit() => _lifecycle.RequestShutdown();
+
+    // Shared by Open Installation… and Close Installation. Loads the fresh picker's grid before swapping it in (the outgoing state view model is then disposed by
+    // OnActiveContentChanged), mirroring RunBootAsync's load-then-show order. A load failure is logged and leaves the current state untouched.
+    private async Task ShowPickerAsync(CancellationToken cancellationToken)
+    {
+        OpenGameInstallationViewModel picker = CreatePicker();
+
+        try
         {
-            StatusMessagePrimaryText   = "Error whilst booting up launcher…";
-            StatusMessageSecondaryText = string.Empty;
+            await picker.InitialiseAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            picker.Dispose();
+
+            if (ex is OperationCanceledException && cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+
+            _logger.LogError(ex, "Unexpected failure whilst loading the installation picker.");
+
+            StatusMessagePrimaryText = "Could not load the installation list…";
 
             return;
         }
 
-        switch (result.Value.Outcome)
+        ActiveContent = picker;
+
+        SetPickerStatusMessages();
+    }
+
+    private async Task RunBootAsync(Guid? installationId, CancellationToken cancellationToken)
+    {
+        ActiveContent              = new LookingForZooTycoonViewModel();
+        IsBooting                  = true;
+        StatusMessagePrimaryText   = installationId is null ? "Discovering installations…" : "Opening installation…";
+        StatusMessageSecondaryText = "Please wait…";
+
+        ViewModelBase? content = null;
+
+        try
+        {
+            ErrorOr<AppBoot.BootResult> result = await _mediator.Send(new AppBoot.BootCommand(installationId), cancellationToken);
+
+            if (result.IsError)
+            {
+                _logger.LogWarning("Boot failed for installation {InstallationId}: {Errors}",
+                                   installationId,
+                                   string.Join("; ", result.Errors.Select(error => $"{error.Code}: {error.Description}")));
+
+                ShowBootFailure(builtContent: null);
+
+                return;
+            }
+
+            content = RouteResult(result.Value);
+
+            if (content is OpenGameInstallationViewModel picker)
+            {
+                await picker.InitialiseAsync(cancellationToken);
+            }
+
+            IsBooting     = false;
+            ActiveContent = content;
+
+            // Handed over to ActiveContent above: it is now live and must not be disposed again if something below still throws (e.g. UpdateStatusMessages).
+            content = null;
+
+            UpdateStatusMessages(result.Value);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Disposes content built but never handed to ActiveContent (e.g. the picker's grid already registered with the messenger before cancellation was
+            // observed). IsBooting is left as-is: nothing cancels a boot today — if something ever does, the window would stay on the Looking state, so revisit this.
+            (content as IDisposable)?.Dispose();
+
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected failure whilst booting the launcher for installation {InstallationId}.", installationId);
+
+            ShowBootFailure(content);
+        }
+    }
+
+    // Shown both when the boot dispatch reports an ErrorOr error and when it or the picker's initialisation throws unexpectedly, so the two failure paths share one
+    // implementation. Disposes builtContent when a state view model was constructed but never shown as ActiveContent — e.g. the picker's grid already registered with the
+    // messenger before InitialiseAsync threw.
+    private void ShowBootFailure(ViewModelBase? builtContent)
+    {
+        (builtContent as IDisposable)?.Dispose();
+
+        IsBooting     = false;
+        ActiveContent = new NoGameInstallationFoundViewModel(locatedCandidatePath: null, _dialogs, BootAsync);
+
+        StatusMessagePrimaryText     = "Error whilst booting up launcher…";
+        StatusMessageSecondaryText   = string.Empty;
+        StatusMessageSecondaryColour = null;
+    }
+
+    private void UpdateStatusMessages(AppBoot.BootResult result)
+    {
+        StatusMessageSecondaryColour = null;
+
+        switch (result.Outcome)
         {
             case AppBoot.BootOutcome.ReadyToPlay:
-                StatusMessagePrimaryText = $"Ready — {result.Value.ActiveInstallation?.Name}";
+                StatusMessagePrimaryText = $"Ready — {result.ActiveInstallation?.Name}";
 
                 // TODO: Update with dynamic values once screen resolution is known.
                 StatusMessageSecondaryText = "Display: 1920 × 1080";
@@ -106,8 +253,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 break;
 
             case AppBoot.BootOutcome.OpenGameInstallation:
-                StatusMessagePrimaryText   = "Choose an installation to open";
-                StatusMessageSecondaryText = string.Empty;
+                SetPickerStatusMessages();
 
                 break;
 
@@ -116,26 +262,37 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    private void SetPickerStatusMessages()
+    {
+        StatusMessagePrimaryText     = "Choose an installation to open";
+        StatusMessageSecondaryText   = string.Empty;
+        StatusMessageSecondaryColour = null;
+    }
+
+    // Single construction point for the picker so boot routing and the File menu build it identically: a fresh grid per picker (the picker owns and disposes it) and the
+    // pointed-boot callback for its Open command.
+    private OpenGameInstallationViewModel CreatePicker()
+        => new(new InstallationGridViewModel(_mediator, _messenger), _dialogs, OpenInstallationAsync);
+
     private ViewModelBase RouteResult(AppBoot.BootResult result)
         => result.Outcome switch
         {
             AppBoot.BootOutcome.ReadyToPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                  canPlay: true,
-                                                                 BootAsync,
+                                                                 ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
                                                                  _lifecycle,
                                                                  _dialogs,
                                                                  _mediator),
             AppBoot.BootOutcome.CannotPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                 canPlay: false,
-                                                                BootAsync,
+                                                                ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
                                                                 _lifecycle,
                                                                 _dialogs,
                                                                 _mediator),
             AppBoot.BootOutcome.NoGameInstallationFound => new NoGameInstallationFoundViewModel(result.LocatedCandidatePath,
                                                                                                 _dialogs,
                                                                                                 BootAsync),
-            AppBoot.BootOutcome.OpenGameInstallation => new OpenGameInstallationViewModel(_dialogs,
-                                                                                          BootAsync),
+            AppBoot.BootOutcome.OpenGameInstallation => CreatePicker(),
             var _ => new NoGameInstallationFoundViewModel(locatedCandidatePath: null,
                                                           _dialogs,
                                                           BootAsync)

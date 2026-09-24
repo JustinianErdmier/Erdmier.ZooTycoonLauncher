@@ -17,7 +17,7 @@ public sealed class PlayViewModel : ViewModelBase
     /// <summary>Initialises a new instance.</summary>
     /// <param name="installation">The resolved active installation.</param>
     /// <param name="canPlay"><see langword="true" /> for the ReadyToPlay outcome; <see langword="false" /> for CannotPlay. Carried down into the tab view models.</param>
-    /// <param name="rebootAsync">Delegate that re-issues the boot pipeline (typically <c>MainWindowViewModel.BootAsync</c>).</param>
+    /// <param name="rebootAsync">Delegate that re-issues the boot pipeline as a pointed boot at this installation (SDD §7.2.7), re-verifying it in place.</param>
     /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
     /// <param name="dialogs">Chrome service for opening modeless dialogues.</param>
     /// <param name="mediator">The Mediator dispatcher (passed to the General tab).</param>
@@ -119,6 +119,8 @@ file sealed class NoOpDialogService : IDialogService
     { }
 
     public Task<AddInstallationResult?> ShowAddInstallationAsync(string? prefilledPath) => Task.FromResult<AddInstallationResult?>(result: null);
+
+    public Task<bool> ShowInstallationManagerAsync() => Task.FromResult(false);
 
     public Task<string?> PickFolderAsync(string? startPath) => Task.FromResult<string?>(result: null);
 }

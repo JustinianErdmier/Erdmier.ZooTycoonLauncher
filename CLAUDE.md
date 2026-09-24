@@ -19,6 +19,8 @@ copy-paste from the Ref assembly** — reimplement the moral equivalent fresh ag
 - **Milestone plans:** under [`docs/superpowers/plans/`](./docs/superpowers/plans/), named `YYYY-MM-DD-<feature-name>.md`. Each plan is an executable task list — use the
   `superpowers:executing-plans` or `superpowers:subagent-driven-development` skill to drive them. **Default to subagent-driven** without asking about the approach; ask only for a "
   go" / "stop" to start.
+- **Subagent models for plan runs:** implementer subagents (including fix-round re-dispatches) run on **Sonnet**; every reviewer (per-task review, scoped re-review, final
+  whole-branch review) and any advisor or escalation subagent run on **Opus**. Always pass the model explicitly when dispatching — never let a subagent inherit the session model.
 - **Reference build (read-only):** [`References/Erdmier.ZooTycoonLauncherRef/`](./References/Erdmier.ZooTycoonLauncherRef/). Cite Ref files inline as "for inspiration" when their
   design informed the new design; rewrite, never `git mv`.
 

@@ -6,7 +6,7 @@ namespace Erdmier.ZooTycoonLauncher.Domain.IniDocuments;
 /// </summary>
 public sealed class IniDocument
 {
-    private const string Utf8ByteOrderMarkAsLatin1 = "ï»¿";
+    private const string Utf8ByteOrderMarkAsLatin1 = "\u00EF\u00BB\u00BF";
 
     private readonly List<IniLine> _lines;
 

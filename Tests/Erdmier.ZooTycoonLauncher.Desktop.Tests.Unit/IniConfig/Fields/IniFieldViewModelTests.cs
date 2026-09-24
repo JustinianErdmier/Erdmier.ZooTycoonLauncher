@@ -145,6 +145,8 @@ public sealed class IniFieldViewModelTests
 
         IniChoiceOption selected = field.SelectedOption!;
 
+        selected.ShouldNotBeNull();
+
         field.SelectedOption = null;
 
         field.SelectedOption.ShouldBeSameAs(selected);

@@ -15,6 +15,7 @@ internal static class PlayTestData
                lifecycle,
                dialogs,
                mediator,
+               NullLogger<PlayViewModel>.Instance,
                iniErrorMessage);
 
     // Opens the INI Config tab over a one-key file and edits that key, so the Play view holds an unsaved change.

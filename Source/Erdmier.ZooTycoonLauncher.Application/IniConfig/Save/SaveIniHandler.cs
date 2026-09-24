@@ -22,7 +22,7 @@ public sealed class SaveIniHandler : ICommandHandler<SaveIniCommand, ErrorOr<Ini
     /// <param name="clock">Time provider for UTC timestamps.</param>
     /// <param name="files">The <c>zoo.ini</c> file store.</param>
     /// <param name="installations">Installation repository.</param>
-    /// <param name="logger">Logger for write failures.</param>
+    /// <param name="logger">Logger for read, write and snapshot-store failures.</param>
     /// <param name="reconciler">The tiered-drift reconciler.</param>
     /// <param name="snapshots">The snapshot repository.</param>
     public SaveIniHandler(TimeProvider            clock,
@@ -71,6 +71,15 @@ public sealed class SaveIniHandler : ICommandHandler<SaveIniCommand, ErrorOr<Ini
         DateTime nowUtc = _clock.GetUtcNow()
                                 .UtcDateTime;
 
+        // The validator guarantees every key is recognised; resolving before BeginAsync means this unreachable throw cannot be mislabelled StoreFailed by either
+        // catch below. Normalising to the registry id gives inserted keys the registry's casing.
+        Dictionary<IniKeyId, IniKeySpec> specs = [];
+
+        foreach (IniKeyId id in command.Edits.Keys)
+        {
+            specs[id] = ZooIniDefaults.TryGet(id, out IniKeySpec? found) ? found : throw new InvalidOperationException($"Unrecognised key {id}.");
+        }
+
         IIniSnapshotTransaction transaction;
 
         try
@@ -95,8 +104,7 @@ public sealed class SaveIniHandler : ICommandHandler<SaveIniCommand, ErrorOr<Ini
 
                 foreach ((IniKeyId id, string value) in command.Edits)
                 {
-                    // The validator guarantees the key is recognised; normalising to the registry id gives inserted keys the registry's casing.
-                    IniKeySpec spec = ZooIniDefaults.TryGet(id, out IniKeySpec? found) ? found : throw new InvalidOperationException($"Unrecognised key {id}.");
+                    IniKeySpec spec = specs[id];
 
                     if (!spec.AreEquivalent(value, reconciliation.Values.GetValueOrDefault(spec.Id)))
                     {
@@ -160,6 +168,11 @@ public sealed class SaveIniHandler : ICommandHandler<SaveIniCommand, ErrorOr<Ini
             {
                 await transaction.UpdateCurrentAsync(text, changes, nowUtc, CancellationToken.None);
                 await transaction.CommitAsync(CancellationToken.None);
+
+                // Disposing here (rather than leaving it to the outer await using) means a disposal failure after a successful commit is caught and logged by this
+                // block instead of escaping as "could not be saved" for a file that was, in fact, written. The outer await using then no-ops against the now-idempotent
+                // dispose.
+                await transaction.DisposeAsync();
             }
             catch (Exception ex)
             {

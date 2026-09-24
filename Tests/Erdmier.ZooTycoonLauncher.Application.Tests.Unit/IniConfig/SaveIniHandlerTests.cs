@@ -223,6 +223,29 @@ public sealed class SaveIniHandlerTests
         result.Value.FileLastWriteUtc.ShouldBe(NewLastWrite);
 
         await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+
+        // UpdateCurrentAsync threw before the post-write try's own DisposeAsync call, so the only DisposeAsync the transaction sees is the outer await using's —
+        // disposing uncommitted, which rolls the archive back.
+        await _transaction.Received(requiredNumberOfCalls: 1).DisposeAsync();
+    }
+
+    [ Fact ]
+    public async Task Save_DisposeAsyncFailsAfterASuccessfulWriteAndCommit_StillReturnsSuccess()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        // The first DisposeAsync call (made explicitly, right after CommitAsync) fails; the second — the outer await using's, against the now-disposed transaction —
+        // succeeds, mirroring the real IniSnapshotTransaction's idempotent dispose.
+        _transaction.DisposeAsync()
+                    .Returns(new ValueTask(Task.FromException(new InvalidOperationException(message: "connection pool exhausted"))), default(ValueTask));
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "1024"));
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Values[ScreenWidth].ShouldBe(expected: "1024");
+
+        await _transaction.Received(requiredNumberOfCalls: 1).CommitAsync(Arg.Any<CancellationToken>());
+        await _transaction.Received(requiredNumberOfCalls: 2).DisposeAsync();
     }
 
     [ Fact ]

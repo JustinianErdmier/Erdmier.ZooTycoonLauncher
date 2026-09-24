@@ -88,8 +88,8 @@ public sealed class IniReconcilerTests
     public async Task Reconcile_UserSettingChangeOfTwoKeys_ReportsTheChangedKeyCount()
     {
         IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
-        string disk = IniTestData.Sample.Replace(oldValue: "screenwidth=800", newValue: "screenwidth=1024")
-                                        .Replace(oldValue: "tooltipDelay=1", newValue: "tooltipDelay=5");
+        string                  disk        = IniTestData.Sample.Replace(oldValue: "screenwidth=800", newValue: "screenwidth=1024")
+                                                                 .Replace(oldValue: "tooltipDelay=1", newValue: "tooltipDelay=5");
 
         IniReconciliation result = await _reconciler.ReconcileAsync(transaction, disk, IniTestData.Now, CancellationToken.None);
 

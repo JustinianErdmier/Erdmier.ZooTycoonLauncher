@@ -65,6 +65,22 @@ public sealed class IniEditorViewModelTests
     }
 
     [ Fact ]
+    public void ChangingSectionAwayAndBack_HoveringTheSameRowAgain_ShowsItsHelp()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+
+        width.IsHelpActive = true;
+
+        editor.SelectedSection = editor.Sections[1];
+        editor.SelectedSection = editor.Sections[0];
+
+        width.IsHelpActive = true;
+
+        editor.IsFooterHelp.ShouldBeTrue();
+    }
+
+    [ Fact ]
     public async Task Save_Success_SendsOnlyTheEditsAndResetsTheBaseline()
     {
         IniEditorViewModel editor = CreateEditor();
@@ -101,7 +117,7 @@ public sealed class IniEditorViewModelTests
     }
 
     [ Fact ]
-    public async Task Save_Throws_ShowsTheExceptionMessage()
+    public async Task Save_Throws_ShowsAReadableMessage()
     {
         IniEditorViewModel editor = CreateEditor();
 
@@ -117,7 +133,7 @@ public sealed class IniEditorViewModelTests
     }
 
     [ Fact ]
-    public async Task TrySaveAsync_WhileASaveIsInFlight_ReturnsFalseWithoutSendingASecondCommand()
+    public async Task TrySaveAsync_WhileASaveIsInFlight_AwaitsItWithoutSendingASecondCommand()
     {
         IniEditorViewModel editor = CreateEditor();
 
@@ -128,15 +144,38 @@ public sealed class IniEditorViewModelTests
 
         IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
 
-        Task<bool> firstSave = editor.TrySaveAsync(CancellationToken.None);
-
-        (await editor.TrySaveAsync(CancellationToken.None)).ShouldBeFalse();
+        Task<bool> firstSave  = editor.TrySaveAsync(CancellationToken.None);
+        Task<bool> secondSave = editor.TrySaveAsync(CancellationToken.None);
 
         pending.SetResult(IniEditorTestData.Result(("user", "screenwidth", "1024")));
 
         (await firstSave).ShouldBeTrue();
+        (await secondSave).ShouldBeTrue();
 
         await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task TrySaveAsync_AfterASaveThatCompletedSynchronously_SendsTheNextSave()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+
+        IniEditorTestData.ReturnsForSave(_mediator, IniEditorTestData.Result(("user", "screenwidth", "1024")));
+
+        width.Value = 1024m;
+
+        (await editor.TrySaveAsync(CancellationToken.None)).ShouldBeTrue();
+
+        IniEditorTestData.ReturnsForSave(_mediator, IniEditorTestData.Result(("user", "screenwidth", "1280")));
+
+        width.Value = 1280m;
+
+        (await editor.TrySaveAsync(CancellationToken.None)).ShouldBeTrue();
+
+        editor.HasPendingChanges.ShouldBeFalse();
+
+        await _mediator.Received(requiredNumberOfCalls: 2).Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
     }
 
     [ Fact ]

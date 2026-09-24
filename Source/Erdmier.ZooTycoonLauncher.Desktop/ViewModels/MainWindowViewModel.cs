@@ -23,6 +23,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IMessenger _messenger;
 
+    private readonly ILogger<PlayViewModel> _playLogger;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
@@ -30,12 +32,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="messenger">The CommunityToolkit messenger — passed to freshly-built picker grids so they can subscribe to installation-change notifications.</param>
     /// <param name="logger">Logger for unexpected boot-dispatch and picker-initialisation failures.</param>
     /// <param name="gridLogger">Logger passed to freshly-built picker grids so their message-driven reload failures are recorded.</param>
+    /// <param name="playLogger">Logger passed to freshly-built <see cref="PlayViewModel" /> instances so their last-resort catches are recorded.</param>
     public MainWindowViewModel(IMediator                          mediator,
                                IApplicationLifecycle              lifecycle,
                                IDialogService                     dialogs,
                                IMessenger                         messenger,
                                ILogger<MainWindowViewModel>       logger,
-                               ILogger<InstallationGridViewModel> gridLogger)
+                               ILogger<InstallationGridViewModel> gridLogger,
+                               ILogger<PlayViewModel>             playLogger)
     {
         _mediator   = mediator;
         _lifecycle  = lifecycle;
@@ -43,6 +47,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _messenger  = messenger;
         _logger     = logger;
         _gridLogger = gridLogger;
+        _playLogger = playLogger;
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
@@ -87,7 +92,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public bool HasPendingChanges => ActiveContent is IPendingChangesGuard { HasPendingChanges: true };
 
     /// <summary>Asks the active content whether the window may close (SDD §7.3.2). Used by the window's close handler.</summary>
-    /// <returns><see langword="true" /> when the window may close.</returns>
+    /// <returns>
+    ///     <see langword="true" /> when the window may close. A failure whilst confirming is logged and treated as <see langword="false" />, so the window stays open and the
+    ///     edits are kept.
+    /// </returns>
     public Task<bool> ConfirmCloseAsync() => ConfirmLeaveActiveContentAsync(CancellationToken.None);
 
     [ RelayCommand ]
@@ -360,6 +368,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                  _lifecycle,
                                                                  _dialogs,
                                                                  _mediator,
+                                                                 _playLogger,
                                                                  iniErrorMessage: result.IniErrorMessage),
             AppBoot.BootOutcome.CannotPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                 canPlay: false,
@@ -368,6 +377,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                 _lifecycle,
                                                                 _dialogs,
                                                                 _mediator,
+                                                                _playLogger,
                                                                 iniErrorMessage: result.IniErrorMessage),
             AppBoot.BootOutcome.NoGameInstallationFound => new NoGameInstallationFoundViewModel(result.LocatedCandidatePath,
                                                                                                 _dialogs,

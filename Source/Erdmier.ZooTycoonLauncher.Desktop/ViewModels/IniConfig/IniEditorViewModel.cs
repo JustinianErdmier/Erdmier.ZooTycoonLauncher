@@ -16,6 +16,8 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
     private IniFieldViewModel? _helpField;
 
+    private Task<bool>? _pendingSave;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="installationId">The installation being edited.</param>
     /// <param name="mediator">The Mediator dispatcher.</param>
@@ -120,21 +122,38 @@ public sealed partial class IniEditorViewModel : ViewModelBase
     /// <summary>Saves the dirty rows. On failure shows the error dialogue and keeps the edits.</summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns><see langword="true" /> when nothing is left unsaved.</returns>
-    public async Task<bool> TrySaveAsync(CancellationToken cancellationToken)
+    public Task<bool> TrySaveAsync(CancellationToken cancellationToken)
     {
         if (!HasPendingChanges)
         {
-            return true;
+            return Task.FromResult(true);
         }
 
-        if (_mediator is null
+        if (_pendingSave is { } inFlight)
+        {
+            // A second call (e.g. a guard's "Yes" arriving whilst Save is already dispatched) awaits the same save instead of sending a second SaveIniCommand; the
+            // first call's outcome decides for both.
+            return inFlight;
+        }
+
+        if (_mediator is not { } mediator
             || IsBusy)
         {
-            // IsBusy means a save or revert is already in flight (e.g. a close arriving whilst Save is dispatched); dispatching a second SaveIniCommand here could race the
-            // first, so this call reports failure without touching the mediator.
-            return false;
+            // IsBusy without a _pendingSave means a revert is already in flight; a save cannot safely race it, so this call reports failure without touching the mediator.
+            return Task.FromResult(false);
         }
 
+        Task<bool> save = RunSaveAsync(mediator, cancellationToken);
+
+        // RunSaveAsync clears _pendingSave in its finally block; a save that completed synchronously has already run that block, so recording it here would leave a
+        // finished task behind for every later call to return.
+        _pendingSave = save.IsCompleted ? null : save;
+
+        return save;
+    }
+
+    private async Task<bool> RunSaveAsync(IMediator mediator, CancellationToken cancellationToken)
+    {
         Dictionary<IniKeyId, string> edits = [];
 
         foreach (IniFieldViewModel field in AllFields)
@@ -150,7 +169,7 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
         try
         {
-            ErrorOr<IniConfigResult> result = await _mediator.Send(new SaveIniCommand(_installationId, edits), cancellationToken);
+            ErrorOr<IniConfigResult> result = await mediator.Send(new SaveIniCommand(_installationId, edits), cancellationToken);
 
             if (result.IsError)
             {
@@ -171,7 +190,8 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         }
         finally
         {
-            IsBusy = false;
+            IsBusy       = false;
+            _pendingSave = null;
         }
     }
 
@@ -181,6 +201,13 @@ public sealed partial class IniEditorViewModel : ViewModelBase
     // OnFieldPropertyChanged expects), leaving the footer's help line stuck over "● Unsaved changes"; clearing it here whenever the section changes closes that gap.
     partial void OnSelectedSectionChanged(IniSectionViewModel value)
     {
+        if (_helpField is not null)
+        {
+            // Otherwise the old row's IsHelpActive stays true, and the first hover or focus on that row after switching back raises no change (its value already
+            // matches), so the footer never picks the help back up.
+            _helpField.IsHelpActive = false;
+        }
+
         _helpField = null;
         ActiveHelp = null;
     }

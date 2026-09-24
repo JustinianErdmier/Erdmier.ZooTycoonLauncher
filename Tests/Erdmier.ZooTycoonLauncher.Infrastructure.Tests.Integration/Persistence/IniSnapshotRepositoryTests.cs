@@ -120,6 +120,15 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
     }
 
     [ Fact ]
+    public async Task DisposeAsync_CalledTwice_DoesNotThrow()
+    {
+        IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        await transaction.DisposeAsync();
+        await transaction.DisposeAsync();
+    }
+
+    [ Fact ]
     public async Task PartialUniqueIndexes_RejectASecondCurrent()
     {
         await ImportAsync();

@@ -80,6 +80,26 @@ public sealed class PlayViewModelTests
     }
 
     [ Fact ]
+    public async Task ConfirmLeave_SecondCallWhilstThePromptIsOpen_ReturnsFalseWithoutStackingASecondPrompt()
+    {
+        PlayViewModel play = await CreateWithPendingEditAsync();
+
+        TaskCompletionSource<SaveChangesChoice> pending = new();
+
+        _dialogs.ShowSaveChangesPromptAsync().Returns(pending.Task);
+
+        Task<bool> first = play.ConfirmLeaveAsync(CancellationToken.None);
+
+        (await play.ConfirmLeaveAsync(CancellationToken.None)).ShouldBeFalse();
+
+        await _dialogs.Received(requiredNumberOfCalls: 1).ShowSaveChangesPromptAsync();
+
+        pending.SetResult(SaveChangesChoice.No);
+
+        (await first).ShouldBeTrue();
+    }
+
+    [ Fact ]
     public void IniErrorMessage_ReachesBothTabs()
     {
         PlayViewModel play = Create(canPlay: false, iniErrorMessage: "zoo.ini could not be read: locked");

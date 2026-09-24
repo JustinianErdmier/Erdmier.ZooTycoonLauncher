@@ -7,6 +7,8 @@ internal sealed class IniSnapshotTransaction : IIniSnapshotTransaction
 
     private readonly IDbContextTransaction _transaction;
 
+    private bool _disposed;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="context">The open context (owned).</param>
     /// <param name="transaction">The begun transaction (owned).</param>
@@ -111,9 +113,23 @@ internal sealed class IniSnapshotTransaction : IIniSnapshotTransaction
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        // Disposing an uncommitted EF Core transaction rolls it back.
-        await _transaction.DisposeAsync();
-        await _context.DisposeAsync();
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        try
+        {
+            // Disposing an uncommitted EF Core transaction rolls it back.
+            await _transaction.DisposeAsync();
+        }
+        finally
+        {
+            // Always disposed, even when the rollback above throws, so a rollback failure can never leak the context.
+            await _context.DisposeAsync();
+        }
     }
 
     private async Task<IniSnapshot> RequireCurrentAsync(CancellationToken cancellationToken)

@@ -14,7 +14,11 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
 
     private readonly IApplicationLifecycle _lifecycle;
 
+    private readonly ILogger<PlayViewModel> _logger;
+
     private readonly Func<CancellationToken, Task> _rebootAsync;
+
+    private bool _confirmLeaveInProgress;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="installation">The resolved active installation.</param>
@@ -24,6 +28,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
     /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
     /// <param name="dialogs">Chrome service for opening modeless dialogues.</param>
     /// <param name="mediator">The Mediator dispatcher (passed to the General tab).</param>
+    /// <param name="logger">Logger for unexpected failures whilst activating the INI Config tab and whilst handling a launch outcome.</param>
     /// <param name="iniErrorMessage">The boot's INI synchronisation error, or <see langword="null" />; shown on both tabs.</param>
     public PlayViewModel(InstallationSummary           installation,
                          bool                          canPlay,
@@ -32,11 +37,13 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
                          IApplicationLifecycle         lifecycle,
                          IDialogService                dialogs,
                          IMediator                     mediator,
+                         ILogger<PlayViewModel>        logger,
                          string?                       iniErrorMessage = null)
     {
         _rebootAsync = rebootAsync;
         _lifecycle   = lifecycle;
         _dialogs     = dialogs;
+        _logger      = logger;
 
         CanPlay        = canPlay;
         InstallationId = installation.Id;
@@ -54,6 +61,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
         _rebootAsync = static _ => Task.CompletedTask;
         _lifecycle   = new NoOpApplicationLifecycle();
         _dialogs     = new NoOpDialogService();
+        _logger      = NullLogger<PlayViewModel>.Instance;
 
         CanPlay = true;
 
@@ -91,21 +99,37 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
             return true;
         }
 
-        SaveChangesChoice choice = await _dialogs.ShowSaveChangesPromptAsync();
-
-        switch (choice)
+        if (_confirmLeaveInProgress)
         {
-            case SaveChangesChoice.Yes:
-                // A failed save has already shown its error dialogue; stay so the edits are not lost.
-                return await IniConfigTab.SaveAsync(cancellationToken);
+            // A second call arrived whilst the first prompt is still open — e.g. a Drifted launch outcome racing a close, Exit or Close Installation guard. Let the
+            // first answer decide rather than stacking an identical prompt on top of it.
+            return false;
+        }
 
-            case SaveChangesChoice.No:
-                IniConfigTab.DiscardChanges();
+        _confirmLeaveInProgress = true;
 
-                return true;
+        try
+        {
+            SaveChangesChoice choice = await _dialogs.ShowSaveChangesPromptAsync();
 
-            default:
-                return false;
+            switch (choice)
+            {
+                case SaveChangesChoice.Yes:
+                    // A failed save has already shown its error dialogue; stay so the edits are not lost.
+                    return await IniConfigTab.SaveAsync(cancellationToken);
+
+                case SaveChangesChoice.No:
+                    IniConfigTab.DiscardChanges();
+
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+        finally
+        {
+            _confirmLeaveInProgress = false;
         }
     }
 
@@ -123,9 +147,11 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
         {
             await IniConfigTab.ActivateAsync(CancellationToken.None);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // ActivateAsync already turns load failures into its placeholder; this only stops an unexpected fault escaping the fire-and-forget call.
+            // ActivateAsync already turns a load failure into either the placeholder or a dialogue; this catch only stops an unexpected fault escaping the
+            // fire-and-forget call.
+            _logger.LogError(ex, "Unexpected failure whilst activating the INI Config tab.");
         }
     }
 
@@ -178,6 +204,8 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Unexpected failure whilst handling the launch outcome.");
+
             // Nested guard: ShowLaunchError can itself throw (e.g. Avalonia visual-tree failure); an uncaught throw here would escape async void to the synchronisation context and
             // crash the process. Swallow the secondary failure — the original error is already lost.
             try

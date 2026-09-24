@@ -83,6 +83,16 @@ public sealed class MainWindowViewModelGuardTests
         (await window.ConfirmCloseAsync()).ShouldBeFalse();
     }
 
+    [ Fact ]
+    public async Task ConfirmClose_GuardThrows_ReturnsFalseWithoutThrowing()
+    {
+        MainWindowViewModel window = Create();
+
+        window.ActiveContent = new FakePendingChangesGuard(hasPendingChanges: true, allowLeave: false, throwOnConfirm: new InvalidOperationException());
+
+        (await window.ConfirmCloseAsync()).ShouldBeFalse();
+    }
+
     private MainWindowViewModel Create()
         => new(Substitute.For<IMediator>(), _lifecycle, Substitute.For<IDialogService>(), new WeakReferenceMessenger(), NullLogger<MainWindowViewModel>.Instance);
 }

@@ -81,7 +81,7 @@ public sealed partial class MainWindow : ClassicWindow
         }
         catch (Exception)
         {
-            // A failed prompt keeps the window open; the unsaved edits are still in memory.
+            // The view model already logs a guard failure and returns false, so it never reaches here; this last-resort catch only guards Close() itself.
         }
     }
 }

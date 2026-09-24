@@ -81,9 +81,24 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>Whether the active content holds unsaved edits.</summary>
     public bool HasPendingChanges => ActiveContent is IPendingChangesGuard { HasPendingChanges: true };
 
-    /// <summary>Asks the active content whether the window may close (SDD §7.3.2). Used by the window's close handler.</summary>
+    /// <summary>
+    ///     Asks the active content whether the window may close (SDD §7.3.2). Used by the window's close handler. A failure is logged and keeps the window open, so
+    ///     unsaved edits are never lost to an unhandled fault.
+    /// </summary>
     /// <returns><see langword="true" /> when the window may close.</returns>
-    public Task<bool> ConfirmCloseAsync() => ConfirmLeaveActiveContentAsync(CancellationToken.None);
+    public async Task<bool> ConfirmCloseAsync()
+    {
+        try
+        {
+            return await ConfirmLeaveActiveContentAsync(CancellationToken.None);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Unexpected failure whilst confirming the window close.");
+
+            return false;
+        }
+    }
 
     [ RelayCommand ]
     private Task BootAsync(CancellationToken cancellationToken) => RunBootAsync(installationId: null, cancellationToken);

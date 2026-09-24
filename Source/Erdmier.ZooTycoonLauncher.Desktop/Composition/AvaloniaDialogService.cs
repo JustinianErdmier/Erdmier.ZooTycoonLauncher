@@ -62,19 +62,26 @@ internal sealed class AvaloniaDialogService : IDialogService
             return;
         }
 
-        // A per-dialogue scope so the manager's transient view model (and its transient grid) are disposed when the scope is disposed below, rather than living until app exit.
-        using IServiceScope scope = _services.CreateScope();
+        // New-ed up directly against root services (mirroring MainWindowViewModel's construction of the picker's grid), rather than resolved through a scope, so the
+        // manager's grid shares the ROOT LauncherDbContext with everything else — including the nested Add dialogue — and picks up its writes immediately (I-1).
+        InstallationGridViewModel grid = new(_services.GetRequiredService<IMediator>(), _services.GetRequiredService<IMessenger>());
+        InstallationManagerDialogViewModel vm = new(grid, this);
 
-        InstallationManagerDialogViewModel vm = scope.ServiceProvider.GetRequiredService<InstallationManagerDialogViewModel>();
-
-        await vm.InitialiseAsync();
-
-        InstallationManagerDialogView view = new()
+        try
         {
-            DataContext = vm
-        };
+            await vm.InitialiseAsync();
 
-        await view.ShowDialog(owner);
+            InstallationManagerDialogView view = new()
+            {
+                DataContext = vm
+            };
+
+            await view.ShowDialog(owner);
+        }
+        finally
+        {
+            vm.Dispose();
+        }
     }
 
     /// <inheritdoc />
@@ -114,8 +121,7 @@ internal sealed class AvaloniaDialogService : IDialogService
     }
 
     // The currently active window, falling back to MainWindow when none is active. Nested modals (e.g. the Add dialogue opened from the Installation Manager) must be owned by
-    // the topmost open window rather than always MainWindow, otherwise the owner stays interactive and closing it while the nested modal is still open disposes that modal's
-    // per-dialogue scope out from under it.
+    // their parent window so ShowDialog disables the parent while the child is open.
     private static Window? ResolveOwner()
         => Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
                ? desktop.Windows.FirstOrDefault(window => window.IsActive) ?? desktop.MainWindow

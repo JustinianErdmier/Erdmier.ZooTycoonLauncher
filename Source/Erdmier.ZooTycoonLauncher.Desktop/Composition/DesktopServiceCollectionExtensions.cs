@@ -11,10 +11,8 @@ public static class DesktopServiceCollectionExtensions
         services.AddSingleton<IApplicationLifecycle, AvaloniaApplicationLifecycle>();
         services.AddSingleton<IDialogService>(sp => new AvaloniaDialogService(sp));
         services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
-        services.AddTransient<InstallationGridViewModel>();
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<AddInstallationDialogViewModel>();
-        services.AddTransient<InstallationManagerDialogViewModel>();
 
         return services;
     }

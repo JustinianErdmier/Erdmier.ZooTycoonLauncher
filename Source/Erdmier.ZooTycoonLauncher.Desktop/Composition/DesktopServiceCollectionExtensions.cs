@@ -14,6 +14,7 @@ public static class DesktopServiceCollectionExtensions
         services.AddSingleton<IApplicationEventPublisher, MessengerEventPublisher>();
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<AddInstallationDialogViewModel>();
+        services.AddTransient<EditInstallationDialogViewModel>();
 
         return services;
     }

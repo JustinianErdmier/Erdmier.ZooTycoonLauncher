@@ -2,8 +2,7 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
 /// <summary>
 ///     View model for the Installation Manager modal (SDD §7.2.2, §9.4). Hosts <see cref="InstallationGridViewModel" /> and exposes the five management
-///     commands. <c>Info</c>, <c>Edit</c>, <c>Delete</c>, and <c>Fix</c> are scaffolded stubs — each will be completed when its corresponding dialogue is
-///     implemented.
+///     commands. <c>Info</c>, <c>Delete</c>, and <c>Fix</c> are scaffolded stubs — each will be completed when its corresponding dialogue is implemented.
 /// </summary>
 public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, IDisposable
 {
@@ -29,7 +28,7 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
     public InstallationGridViewModel Grid { get; }
 
     /// <summary>
-    ///     <see langword="true" /> when the user has changed anything during this session of the dialogue (currently: at least one successful Add). Read by
+    ///     <see langword="true" /> when the user has changed anything during this session of the dialogue (a successful Add, Edit, Delete or Fix). Read by
     ///     <see cref="Composition.AvaloniaDialogService.ShowInstallationManagerAsync" /> once the dialogue closes, so callers only refresh when something actually changed.
     /// </summary>
     public bool HasChanges { get; private set; }
@@ -67,8 +66,19 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
         => Task.CompletedTask; // TODO: SDD §7.2.4 — Installation Info dialogue not yet implemented.
 
     [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
-    private Task EditAsync(CancellationToken cancellationToken)
-        => Task.CompletedTask; // TODO: SDD §7.2.3 — Edit Installation dialogue not yet implemented.
+    private async Task EditAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        if (await _dialogs.ShowEditInstallationAsync(Grid.SelectedRow.Id))
+        {
+            HasChanges = true;
+        }
+    }
 
     [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
     private Task DeleteAsync(CancellationToken cancellationToken)

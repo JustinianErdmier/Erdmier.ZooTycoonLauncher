@@ -15,6 +15,11 @@ public interface IDialogService
     /// <returns><see langword="true" /> when the user changed anything whilst the dialogue was open (for example, added an installation); otherwise <see langword="false" />.</returns>
     Task<bool> ShowInstallationManagerAsync();
 
+    /// <summary>Opens the modal Edit Installation dialogue (SDD §7.2.3, §9.5) for the given installation.</summary>
+    /// <param name="installationId">The installation to edit.</param>
+    /// <returns><see langword="true" /> when the edit was saved; otherwise <see langword="false" />.</returns>
+    Task<bool> ShowEditInstallationAsync(Guid installationId);
+
     /// <summary>
     ///     Opens a native folder picker rooted at the supplied path (or a sensible default when <see langword="null" />) and returns the chosen folder, or <see langword="null" />
     ///     when the user cancels.

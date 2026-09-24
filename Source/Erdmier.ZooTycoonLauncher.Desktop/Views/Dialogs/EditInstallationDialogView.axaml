@@ -1,0 +1,53 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
+               xmlns:common="using:Erdmier.ZooTycoonLauncher.Desktop.Views.Common"
+               xmlns:layout="clr-namespace:Erdmier.ZooTycoonLauncher.Desktop.Views.Layout"
+               x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.EditInstallationDialogView"
+               x:DataType="vm:EditInstallationDialogViewModel"
+               Icon="/Assets/Win95Icons/foldercatalog16.ico"
+               Title="Edit Installation"
+               Width="420"
+               SizeToContent="Height"
+               CanResize="False"
+               WindowStartupLocation="CenterOwner"
+               ShowInTaskbar="False">
+    <StackPanel Margin="8"
+                Orientation="Vertical"
+                Spacing="10">
+        <DockPanel HorizontalSpacing="10">
+            <Image DockPanel.Dock="Left"
+                   Height="32"
+                   Source="/Assets/Win95Icons/foldercatalog16.ico"
+                   VerticalAlignment="Top"
+                   Width="32" />
+
+            <StackPanel Margin="5 0 0 0"
+                        Orientation="Vertical"
+                        Spacing="4">
+                <TextBlock FontWeight="Solid"
+                           Text="Edit installation" />
+
+                <TextBlock Opacity="0.6"
+                           Text="Rename this installation or change which one is the launcher's default."
+                           TextWrapping="Wrap" />
+
+                <common:InstallationFormView DataContext="{Binding Form}"
+                                             Margin="0 6 0 0" />
+
+                <layout:UniformStack HorizontalAlignment="Right"
+                                     Margin="0 5"
+                                     Spacing="8">
+                    <Button Command="{Binding SaveCommand}"
+                            Content="Save"
+                            IsDefault="True"
+                            MinWidth="75" />
+                    <Button Command="{Binding CancelCommand}"
+                            Content="Cancel"
+                            IsCancel="True"
+                            MinWidth="75" />
+                </layout:UniformStack>
+            </StackPanel>
+        </DockPanel>
+    </StackPanel>
+</ClassicWindow>

@@ -21,6 +21,13 @@ public sealed class InstallationDbContextFactory : IInstallationDbContextFactory
 
     /// <inheritdoc />
     public async Task<IInstallationDbContextHandle> CreateAsync(Guid installationId, CancellationToken cancellationToken)
+        => new Handle(await OpenAsync(installationId, cancellationToken));
+
+    /// <summary>Creates (when absent) or opens the per-installation database, runs migrations, and returns the open context. The caller owns and disposes it.</summary>
+    /// <param name="installationId">The installation's identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The open, migrated context.</returns>
+    internal async Task<InstallationDbContext> OpenAsync(Guid installationId, CancellationToken cancellationToken)
     {
         string databasePath = _locations.InstallationDatabasePath(installationId);
 
@@ -30,9 +37,18 @@ public sealed class InstallationDbContextFactory : IInstallationDbContextFactory
 
         InstallationDbContext context = new(options);
 
-        await context.Database.MigrateAsync(cancellationToken);
+        try
+        {
+            await context.Database.MigrateAsync(cancellationToken);
+        }
+        catch
+        {
+            await context.DisposeAsync();
 
-        return new Handle(context);
+            throw;
+        }
+
+        return context;
     }
 
     /// <inheritdoc />

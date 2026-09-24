@@ -3,8 +3,8 @@ namespace Erdmier.ZooTycoonLauncher.Domain.IniSnapshots;
 /// <summary>Point-in-time materialisation of every recognised <c>zoo.ini</c> setting plus the file's raw text (SDD §5.1, §6.3).</summary>
 public sealed class IniSnapshot
 {
-    /// <summary>UTC timestamp of capture.</summary>
-    public DateTime CapturedUtc { get; init; }
+    /// <summary>UTC timestamp of capture; on the <c>Current</c> snapshot, the last time the launcher changed it.</summary>
+    public DateTime CapturedUtc { get; set; }
 
     /// <summary>The snapshot's identifier.</summary>
     public Guid Id { get; init; }

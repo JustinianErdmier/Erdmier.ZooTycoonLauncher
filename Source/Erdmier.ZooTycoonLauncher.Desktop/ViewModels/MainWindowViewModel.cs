@@ -117,7 +117,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
             if (result.IsError)
             {
-                ShowBootFailure(content);
+                ShowBootFailure(builtContent: null);
 
                 return;
             }
@@ -132,15 +132,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             IsBooting     = false;
             ActiveContent = content;
 
+            // Handed over to ActiveContent above: it is now live and must not be disposed again if something below still throws (e.g. UpdateStatusMessages).
+            content = null;
+
             UpdateStatusMessages(result.Value);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected failure whilst booting the launcher.");
+            _logger.LogError(ex, "Unexpected failure whilst booting the launcher for installation {InstallationId}.", installationId);
 
             ShowBootFailure(content);
         }

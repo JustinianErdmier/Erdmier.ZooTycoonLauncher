@@ -18,6 +18,8 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
 
     private readonly IMessenger _messenger;
 
+    private bool _disposed;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher — used to issue <see cref="GetAllInstallationsQuery" />.</param>
     /// <param name="messenger">The CommunityToolkit messenger — used to subscribe to installation-change notifications.</param>
@@ -92,7 +94,12 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
     }
 
     /// <inheritdoc />
-    public void Dispose() => _messenger.UnregisterAll(this);
+    public void Dispose()
+    {
+        _disposed = true;
+
+        _messenger.UnregisterAll(this);
+    }
 
     void IRecipient<InstallationAddedMessage>.Receive(InstallationAddedMessage message) => ScheduleReload();
 
@@ -103,8 +110,15 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
     void IRecipient<DefaultInstallationChangedMessage>.Receive(DefaultInstallationChangedMessage message) => ScheduleReload();
 
     // Marshals the reload onto the UI thread rather than calling LoadAsync() directly, so a future off-thread publisher of these messages cannot mutate Rows off the UI
-    // thread. Today's publishers already raise on the UI thread, but Receive must not rely on that continuing to be true.
-    private void ScheduleReload() => Dispatcher.UIThread.Post(() => _ = LoadAsync());
+    // thread. Nothing publishes these messages yet, but Receive must not rely on a future publisher always raising on the UI thread.
+    private void ScheduleReload()
+        => Dispatcher.UIThread.Post(() =>
+        {
+            if (!_disposed)
+            {
+                _ = LoadAsync();
+            }
+        });
 }
 
 // Sort: default row first, then alphabetical case-insensitive by Name.

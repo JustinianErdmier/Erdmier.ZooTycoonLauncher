@@ -5,14 +5,14 @@ using Serilog.Extensions.Logging;
 using ILogger = Serilog.ILogger;
 
 // Local usings — the two MEL namespaces above collide with Serilog's unqualified ILogger in other Infrastructure files
-// (e.g. NullIniSnapshotService), so they must NOT be global. CLAUDE.md "local using only for namespace conflicts" applies.
+// (e.g. IniFileStore), so they must NOT be global. CLAUDE.md "local using only for namespace conflicts" applies.
 
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Common.Extensions;
 
 /// <summary>Composition-root extensions that register every Infrastructure service into a service collection.</summary>
 public static class InfrastructureServiceCollectionExtensions
 {
-    /// <summary>Registers Infrastructure services — file system, storage locations, Serilog, EF Core, repositories, locator/verifier/registry, INI snapshot placeholder.</summary>
+    /// <summary>Registers Infrastructure services — file system, storage locations, Serilog, EF Core, repositories, locator/verifier/registry, INI file store and snapshot repository.</summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection, for chaining.</returns>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
@@ -22,7 +22,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IFileSystem, FileSystem>();
         services.AddSingleton<IAppStorageLocations, AppStorageLocations>();
 
-        // Build the underlying Serilog logger once and share it between Serilog.ILogger consumers (e.g. NullIniSnapshotService)
+        // Build the underlying Serilog logger once and share it between Serilog.ILogger consumers (e.g. IniFileStore)
         // and the Microsoft.Extensions.Logging bridge (e.g. LaunchGameHandler taking ILogger<TCategory>).
         services.AddSingleton<ILogger>(provider =>
         {
@@ -56,8 +56,10 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IInstallationLocator, InstallationLocator>();
         services.AddSingleton<IProcessLauncher, WindowsProcessLauncher>();
 
-        services.AddSingleton<IInstallationDbContextFactory, InstallationDbContextFactory>();
-        services.AddScoped<IIniSnapshotService, NullIniSnapshotService>();
+        services.AddSingleton<InstallationDbContextFactory>();
+        services.AddSingleton<IInstallationDbContextFactory>(provider => provider.GetRequiredService<InstallationDbContextFactory>());
+        services.AddSingleton<IIniSnapshotRepository, IniSnapshotRepository>();
+        services.AddSingleton<IIniFileStore, IniFileStore>();
 
         return services;
     }

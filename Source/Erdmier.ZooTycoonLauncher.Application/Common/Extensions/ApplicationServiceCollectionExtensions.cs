@@ -6,8 +6,8 @@ namespace Erdmier.ZooTycoonLauncher.Application.Common.Extensions;
 public static class ApplicationServiceCollectionExtensions
 {
     /// <summary>
-    ///     Registers <c>Mediator</c> (source-generated dispatcher), every <see cref="IValidator{T}" /> in the Application assembly, and the
-    ///     <see cref="ValidationBehaviour{TMessage,TResponse}" /> pipeline.
+    ///     Registers <c>Mediator</c> (source-generated dispatcher), every <see cref="IValidator{T}" /> in the Application assembly, the
+    ///     <see cref="ValidationBehaviour{TMessage,TResponse}" /> pipeline, and the INI snapshot service.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection, for chaining.</returns>
@@ -18,6 +18,9 @@ public static class ApplicationServiceCollectionExtensions
         services.AddValidatorsFromAssembly(typeof(ApplicationServiceCollectionExtensions).Assembly, includeInternalTypes: true);
 
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+
+        services.AddSingleton<IniReconciler>();
+        services.AddScoped<IIniSnapshotService, IniSnapshotService>();
 
         return services;
     }

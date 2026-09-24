@@ -143,7 +143,8 @@ public sealed partial class FixInstallationDialogViewModel : ViewModelBase
             {
                 if (result.FirstError.Type == ErrorType.NotFound)
                 {
-                    ExeErrorMessage = InstallationDialogMessages.InstallationMissing;
+                    ErrorMessage    = InstallationDialogMessages.InstallationMissing;
+                    ExeErrorMessage = null;
                     IsLoaded        = false;
 
                     return;

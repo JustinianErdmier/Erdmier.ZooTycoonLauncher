@@ -176,6 +176,74 @@ public sealed class SaveIniHandlerTests
         result.FirstError.Code.ShouldBe(expected: "Installation.NotFound");
     }
 
+    [ Fact ]
+    public async Task Save_BeginFails_ReturnsStoreFailedAndNeverWrites()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        _snapshots.BeginAsync(_installation.Id, Arg.Any<CancellationToken>())
+                  .ThrowsAsync(new InvalidOperationException(message: "database is locked"));
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "1024"));
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.StoreFailed");
+        result.FirstError.Description.ShouldContain(expected: "database is locked");
+
+        await _files.DidNotReceive().WriteAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Save_ArchiveFails_ReturnsStoreFailedAndNeverWrites()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        _transaction.ArchiveCurrentAsync(Arg.Any<IniSnapshotTrigger>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+                    .ThrowsAsync(new InvalidOperationException(message: "database is locked"));
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "1024"));
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.StoreFailed");
+
+        await _files.DidNotReceive().WriteAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _transaction.Received(requiredNumberOfCalls: 1).DisposeAsync();
+    }
+
+    [ Fact ]
+    public async Task Save_UpdateCurrentFailsAfterWrite_StillReturnsSuccessWithTheWrittenValues()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        _transaction.UpdateCurrentAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<IniValueChange>>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+                    .ThrowsAsync(new InvalidOperationException(message: "database is locked"));
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "1024"));
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Values[ScreenWidth].ShouldBe(expected: "1024");
+        result.Value.FileLastWriteUtc.ShouldBe(NewLastWrite);
+
+        await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Save_Success_PostWriteCallsUseNoneEvenWithALiveCallerToken()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        using CancellationTokenSource cts = new();
+
+        SaveIniHandler handler = CreateHandler();
+
+        ErrorOr<IniConfigResult> result = await handler.Handle(new SaveIniCommand(_installation.Id, new Dictionary<IniKeyId, string> { [ScreenWidth] = "1024" }), cts.Token);
+
+        result.IsError.ShouldBeFalse();
+
+        await _transaction.Received(requiredNumberOfCalls: 1)
+                          .UpdateCurrentAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<IniValueChange>>(), Arg.Any<DateTime>(), CancellationToken.None);
+
+        await _transaction.Received(requiredNumberOfCalls: 1).CommitAsync(CancellationToken.None);
+    }
+
     private void DiskHolds(string text)
         => _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
                  .Returns(new IniFileContent(text, DiskLastWrite));

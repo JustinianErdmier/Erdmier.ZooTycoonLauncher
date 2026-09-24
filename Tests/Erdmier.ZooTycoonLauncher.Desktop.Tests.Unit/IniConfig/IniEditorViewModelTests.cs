@@ -95,7 +95,7 @@ public sealed class IniEditorViewModelTests
 
         (await editor.TrySaveAsync(CancellationToken.None)).ShouldBeFalse();
 
-        await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync(title: "Cannot Save zoo.ini", message: "database is locked");
+        await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync(title: "Cannot Save zoo.ini", message: "zoo.ini could not be saved: database is locked");
         editor.IsBusy.ShouldBeFalse();
     }
 
@@ -112,6 +112,22 @@ public sealed class IniEditorViewModelTests
 
         IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value.ShouldBe(expected: 640m);
         editor.HasPendingChanges.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task Revert_Throws_ShowsAReadableMessage()
+    {
+        IniEditorViewModel editor = CreateEditor();
+
+        _mediator.Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniConfigResult>>>(_ => throw new InvalidOperationException(message: "database is locked"));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.RevertCommand.ExecuteAsync(parameter: null);
+
+        await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync(title: "Cannot Reload zoo.ini", message: "zoo.ini could not be reloaded: database is locked");
+        editor.IsBusy.ShouldBeFalse();
     }
 
     [ Fact ]

@@ -162,7 +162,7 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            await _dialogs.ShowErrorAsync(ErrorTitle, ex.Message);
+            await _dialogs.ShowErrorAsync(ErrorTitle, $"zoo.ini could not be saved: {ex.Message}");
 
             return false;
         }
@@ -204,7 +204,7 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            await _dialogs.ShowErrorAsync(title: "Cannot Reload zoo.ini", ex.Message);
+            await _dialogs.ShowErrorAsync(title: "Cannot Reload zoo.ini", $"zoo.ini could not be reloaded: {ex.Message}");
         }
         finally
         {

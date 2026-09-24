@@ -58,6 +58,8 @@ public sealed class SaveIniHandler : ICommandHandler<SaveIniCommand, ErrorOr<Ini
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+            _logger.LogWarning(ex, message: "Reading zoo.ini failed for {InstallationId}", installation.Id);
+
             return IniErrors.ReadFailed(ex.Message);
         }
 
@@ -69,68 +71,104 @@ public sealed class SaveIniHandler : ICommandHandler<SaveIniCommand, ErrorOr<Ini
         DateTime nowUtc = _clock.GetUtcNow()
                                 .UtcDateTime;
 
-        await using IIniSnapshotTransaction transaction = await _snapshots.BeginAsync(installation.Id, cancellationToken);
-
-        IniReconciliation reconciliation = await _reconciler.ReconcileAsync(transaction, content.Text, nowUtc, cancellationToken);
-
-        Dictionary<IniKeyId, string> edits = [];
-
-        foreach ((IniKeyId id, string value) in command.Edits)
-        {
-            // The validator guarantees the key is recognised; normalising to the registry id gives inserted keys the registry's casing.
-            IniKeySpec spec = ZooIniDefaults.TryGet(id, out IniKeySpec? found) ? found : throw new InvalidOperationException($"Unrecognised key {id}.");
-
-            if (!spec.AreEquivalent(value, reconciliation.Values.GetValueOrDefault(spec.Id)))
-            {
-                edits[spec.Id] = value;
-            }
-        }
-
-        if (edits.Count == 0)
-        {
-            await transaction.CommitAsync(cancellationToken);
-
-            return new IniConfigResult(reconciliation.Values, content.LastWriteUtc);
-        }
-
-        await transaction.ArchiveCurrentAsync(IniSnapshotTrigger.LauncherGui, nowUtc, cancellationToken);
-
-        IniDocument document = IniDocument.Parse(content.Text);
-
-        foreach ((IniKeyId id, string value) in edits)
-        {
-            document.SetValue(id, value);
-        }
-
-        string text = document.Render();
-
-        DateTime lastWriteUtc;
+        IIniSnapshotTransaction transaction;
 
         try
         {
-            lastWriteUtc = await _files.WriteAsync(installation.Path, text, cancellationToken);
+            transaction = await _snapshots.BeginAsync(installation.Id, cancellationToken);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // Returning disposes the transaction uncommitted, rolling back the archive: the file and the database both keep their previous state.
-            _logger.LogWarning(ex, message: "Writing zoo.ini failed for {InstallationId}", installation.Id);
+            _logger.LogError(ex, message: "The INI snapshot store failed for {InstallationId}", installation.Id);
 
-            return IniErrors.WriteFailed(ex.Message);
+            return IniErrors.StoreFailed(ex.Message);
         }
 
-        List<IniValueChange> changes = edits.Select(edit => new IniValueChange(edit.Key, edit.Value, IniValueSource.LauncherGui))
-                                            .ToList();
-
-        await transaction.UpdateCurrentAsync(text, changes, nowUtc, cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-
-        Dictionary<IniKeyId, string?> values = new(reconciliation.Values);
-
-        foreach ((IniKeyId id, string value) in edits)
+        await using (transaction)
         {
-            values[id] = value;
-        }
+            Dictionary<IniKeyId, string>  edits = [];
+            Dictionary<IniKeyId, string?> values;
 
-        return new IniConfigResult(values, lastWriteUtc);
+            try
+            {
+                IniReconciliation reconciliation = await _reconciler.ReconcileAsync(transaction, content.Text, nowUtc, cancellationToken);
+
+                foreach ((IniKeyId id, string value) in command.Edits)
+                {
+                    // The validator guarantees the key is recognised; normalising to the registry id gives inserted keys the registry's casing.
+                    IniKeySpec spec = ZooIniDefaults.TryGet(id, out IniKeySpec? found) ? found : throw new InvalidOperationException($"Unrecognised key {id}.");
+
+                    if (!spec.AreEquivalent(value, reconciliation.Values.GetValueOrDefault(spec.Id)))
+                    {
+                        edits[spec.Id] = value;
+                    }
+                }
+
+                if (edits.Count == 0)
+                {
+                    await transaction.CommitAsync(cancellationToken);
+
+                    return new IniConfigResult(reconciliation.Values, content.LastWriteUtc);
+                }
+
+                await transaction.ArchiveCurrentAsync(IniSnapshotTrigger.LauncherGui, nowUtc, cancellationToken);
+
+                values = new Dictionary<IniKeyId, string?>(reconciliation.Values);
+
+                foreach ((IniKeyId id, string value) in edits)
+                {
+                    values[id] = value;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogError(ex, message: "The INI snapshot store failed for {InstallationId}", installation.Id);
+
+                return IniErrors.StoreFailed(ex.Message);
+            }
+
+            IniDocument document = IniDocument.Parse(content.Text);
+
+            foreach ((IniKeyId id, string value) in edits)
+            {
+                document.SetValue(id, value);
+            }
+
+            string text = document.Render();
+
+            DateTime lastWriteUtc;
+
+            try
+            {
+                lastWriteUtc = await _files.WriteAsync(installation.Path, text, cancellationToken);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Returning disposes the transaction uncommitted, rolling back the archive: the file and the database both keep their previous state.
+                _logger.LogWarning(ex, message: "Writing zoo.ini failed for {InstallationId}", installation.Id);
+
+                return IniErrors.WriteFailed(ex.Message);
+            }
+
+            List<IniValueChange> changes = edits.Select(edit => new IniValueChange(edit.Key, edit.Value, IniValueSource.LauncherGui))
+                                                .ToList();
+
+            // The file is now the source of truth, so its write is not rolled back even if the snapshot cannot be recorded: use CancellationToken.None rather than the
+            // caller's token, and swallow (rather than fault the command on) a failure here. The next synchronise sees the disk differs from Current and adopts it as Manual
+            // drift (SDD §7.7).
+            try
+            {
+                await transaction.UpdateCurrentAsync(text, changes, nowUtc, CancellationToken.None);
+                await transaction.CommitAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                                  message: "zoo.ini was saved for {InstallationId} but its snapshot could not be recorded; the next synchronise adopts the file",
+                                  installation.Id);
+            }
+
+            return new IniConfigResult(values, lastWriteUtc);
+        }
     }
 }

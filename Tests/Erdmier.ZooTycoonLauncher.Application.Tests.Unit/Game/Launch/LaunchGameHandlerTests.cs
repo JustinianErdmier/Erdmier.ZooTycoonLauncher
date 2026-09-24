@@ -334,4 +334,42 @@ public sealed class LaunchGameHandlerTests
             settings.GetAsync(Arg.Any<CancellationToken>());
         });
     }
+
+    [ Fact ]
+    public async Task Handle_IniMissingAtLaunch_ReturnsDriftedWithoutLaunching()
+    {
+        Guid             id    = Guid.CreateVersion7();
+        FakeTimeProvider clock = new(new DateTimeOffset(year: 2026, month: 9, day: 24, hour: 12, minute: 0, second: 0, TimeSpan.Zero));
+
+        GameInstallation row = new()
+        {
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\Games\Zoo",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(row);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: false));
+
+        IProcessLauncher launcher = Substitute.For<IProcessLauncher>();
+
+        LaunchGameHandler handler = new(clock, installations, NullLogger<LaunchGameHandler>.Instance, launcher, Substitute.For<ILauncherSettingsRepository>(), verifier);
+
+        ErrorOr<LaunchGameResult> result = await handler.Handle(new LaunchGameCommand(id), CancellationToken.None);
+
+        result.Value.Outcome.ShouldBe(LaunchGameOutcome.Drifted);
+        row.HasIni.ShouldBeFalse();
+
+        await launcher.DidNotReceive().LaunchAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
 }

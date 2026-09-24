@@ -7,4 +7,7 @@ namespace Erdmier.ZooTycoonLauncher.Application.Boot;
 ///     Non-null when <see cref="BootOutcome.NoGameInstallationFound" /> is returned because <see cref="IInstallationLocator" /> found a candidate
 ///     directory but the Add Installation dialogue is deferred; surfaces the discovery to the user.
 /// </param>
-public sealed record BootResult(BootOutcome Outcome, InstallationSummary? ActiveInstallation, string? LocatedCandidatePath);
+/// <param name="IniErrorMessage">
+///     Non-null when the outcome is <see cref="BootOutcome.CannotPlay" /> because synchronising <c>zoo.ini</c> failed; the user-readable error description, shown on both tabs.
+/// </param>
+public sealed record BootResult(BootOutcome Outcome, InstallationSummary? ActiveInstallation, string? LocatedCandidatePath, string? IniErrorMessage = null);

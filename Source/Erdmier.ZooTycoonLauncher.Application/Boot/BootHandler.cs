@@ -23,7 +23,7 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
     /// <param name="installations">Installation repository.</param>
     /// <param name="verifier">File-system verifier.</param>
     /// <param name="locator">Registry and path locator.</param>
-    /// <param name="iniSnapshots">INI snapshot service (stub until the INI Config slice).</param>
+    /// <param name="iniSnapshots">INI snapshot service.</param>
     /// <param name="clock">Time provider for UTC timestamps.</param>
     public BootHandler(ILauncherSettingsRepository settings,
                        IInstallationRepository     installations,
@@ -146,8 +146,10 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
             await _installations.UpdateAsync(row, cancellationToken);
         }
 
-        if (!result.HasExe)
+        if (!result.HasExe
+            || !result.HasIni)
         {
+            // No EXE or no INI: the game cannot launch (SDD §7.1.2). Synchronisation is skipped — there is nothing to parse without zoo.ini.
             return new BootResult(BootOutcome.CannotPlay, Project(row, settings), LocatedCandidatePath: null);
         }
 
@@ -155,7 +157,7 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
 
         if (syncResult.IsError)
         {
-            return new BootResult(BootOutcome.CannotPlay, Project(row, settings), LocatedCandidatePath: null);
+            return new BootResult(BootOutcome.CannotPlay, Project(row, settings), LocatedCandidatePath: null, syncResult.FirstError.Description);
         }
 
         row.LastOpenedUtc = _clock.GetUtcNow()

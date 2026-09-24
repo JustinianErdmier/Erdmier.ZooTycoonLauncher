@@ -63,7 +63,9 @@ public sealed class LaunchGameHandler : ICommandHandler<LaunchGameCommand, Error
             await _installations.UpdateAsync(row, cancellationToken);
         }
 
-        if (!result.HasExe)
+        // Without zoo.exe there is nothing to start; without zoo.ini the launcher will not start the game (SDD §7.1.2). Either way the caller re-boots.
+        if (!result.HasExe
+            || !result.HasIni)
         {
             return new LaunchGameResult(LaunchGameOutcome.Drifted, CloseAfterGameLaunch: false, FailureMessage: null);
         }

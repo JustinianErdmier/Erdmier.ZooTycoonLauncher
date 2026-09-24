@@ -79,9 +79,8 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
 
         if (snapshotResult.IsError)
         {
-            // The installation is persisted; snapshot failure is non-fatal here. The INI Config slice's real service will treat
-            // snapshot failure as a transition into the CorruptedIni state rather than an outright error. Infrastructure
-            // logging happens inside NullIniSnapshotService / the real service, not here.
+            // The installation is persisted; a capture failure is non-fatal. Its database stays empty, and the next synchronise (at boot or when the INI tab opens) retries
+            // the first import. IniSnapshotService has already logged the failure.
             _ = snapshotResult; // Discard: failure surfaced to caller via SnapshotFailed flag if needed in future.
         }
 

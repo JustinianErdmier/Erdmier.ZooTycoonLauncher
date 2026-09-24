@@ -26,6 +26,7 @@
         </DockPanel>
 
         <common:InstallationGridView DataContext="{Binding Grid}"
+                                      DoubleTapped="OnGridDoubleTapped"
                                       Height="150" />
 
         <DockPanel HorizontalSpacing="8"

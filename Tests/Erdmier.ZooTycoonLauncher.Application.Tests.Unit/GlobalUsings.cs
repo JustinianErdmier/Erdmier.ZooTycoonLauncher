@@ -19,6 +19,7 @@ global using Erdmier.ZooTycoonLauncher.Application.Boot;
 global using Erdmier.ZooTycoonLauncher.Application.Game.Launch;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Common;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Get;
+global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Save;
 global using Erdmier.ZooTycoonLauncher.Application.Tests.Unit.IniConfig;
 global using Erdmier.ZooTycoonLauncher.Domain.Installations;
 global using Erdmier.ZooTycoonLauncher.Domain.Settings;

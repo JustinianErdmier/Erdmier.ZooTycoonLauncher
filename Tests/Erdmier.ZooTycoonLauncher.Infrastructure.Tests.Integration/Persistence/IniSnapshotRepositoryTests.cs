@@ -130,6 +130,16 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
     }
 
     [ Fact ]
+    public async Task PartialUniqueIndexes_RejectASecondOriginal()
+    {
+        await ImportAsync();
+
+        await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        await Should.ThrowAsync<DbUpdateException>(() => transaction.AddAsync(Snapshot(IniSnapshotKind.Original), CancellationToken.None));
+    }
+
+    [ Fact ]
     public async Task Migration_UpgradesADatabaseCreatedByTheInitialSchema()
     {
         await using (InstallationDbContext context = OpenContext())

@@ -280,8 +280,7 @@
 
         <TextBlock Foreground="Gray"
                    HorizontalAlignment="Right">
-            <Run Text="Last played: " />
-            <Run Text="{Binding InstallationLastPlayed}" />
+            <Run Text="Last played: " /><Run Text="{Binding InstallationLastPlayed}" />
         </TextBlock>
     </StackPanel>
 </UserControl>

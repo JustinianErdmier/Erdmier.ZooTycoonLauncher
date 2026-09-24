@@ -17,7 +17,7 @@
         <TextBlock Opacity="0.6"
                    TextWrapping="Wrap">
             <Run Text="Recover an installation by locating missing files or restoring a fresh INI. The launcher never patches " /><Run FontFamily="Consolas"
-                 Text="zoo.exe" /><Run Text="." />
+                                                                                                                                       Text="zoo.exe" /><Run Text="." />
         </TextBlock>
 
         <TextBlock Foreground="Red"

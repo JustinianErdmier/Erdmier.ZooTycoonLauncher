@@ -30,7 +30,7 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
     /// <summary>The shared installation grid view model. Bound to <c>InstallationGridView.DataContext</c>.</summary>
     public InstallationGridViewModel Grid { get; }
 
-    /// <summary>Loads the installation list. Must be awaited by the dialog service before the window is shown.</summary>
+    /// <summary>Loads the installation list. Must be awaited by the dialogue service before the window is shown.</summary>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     public Task InitialiseAsync(CancellationToken cancellationToken = default)
         => Grid.LoadAsync(cancellationToken);

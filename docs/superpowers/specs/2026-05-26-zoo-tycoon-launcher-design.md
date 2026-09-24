@@ -27,7 +27,7 @@
 | 1.2     | 27 May 2026 | Justinian | Hi-fi prototype consumed and merged into §9 — File/Help menus only, no min/max chrome, 720 px main window, button-label cleanup (no ellipses on buttons); Installation Manager rename; new INI Config tab layout (sectioned list on the left, scrolling form on the right, hover + status help affordance, no dedicated help groupbox); Add/Edit Installation dialogue gains a folder input with `Browse…` (no picker-first flow); Restore Previous INI dialogue gains an inline diff (key · current · snapshot) and drops the Note column; Cannot Play Display section matches Ready's layout (muted, with a one-liner); Last played surfaced even in Cannot Play; [ai] section carries a stock-limit blurb; INI Config tab disabled in Looking / NoInstall / OpenPicker states; Settings dialogue picks up a `Theme` choice (System / Light / Dark) and a corresponding entity field. Old `docs/wireframes/` JPGs removed; replaced by a single screen-recording GIF at `docs/user-interface-design/ZooTycoonLauncherHiFiUIPrototype.gif`. The live hi-fi prototype in Claude Design remains the authoritative visual reference; the GIF is a quick in-repo glance. |
 | 1.3     | 5 June 2026 | Justinian | Startup state machine overhauled (§7.1.1): `AutoLocate` now always settles to `NoGameInstallationFound` (carrying the discovered candidate as a suggestion) rather than skipping straight to the Add dialogue; `NoGameInstallationFound → AddInstallationDialogue → ParseIni` is the new add-from-boot path. `HasIni = false` resolves to **Cannot Play** (not Ready to Play) — no INI, no launch. `§9` made leaner: dialogue/panel pixel widths, column percentages, opacity values, and other dev-time style decisions stripped in favour of brief layout sketches that defer to the live hi-fi prototype. Application services formalised: `IDialogService` covers `ShowAddInstallationAsync(prefilledPath)` / `PickFolderAsync(startPath)` / `ShowLaunchError(message)`; new `IApplicationLifecycle` carries `CloseAfterGameLaunch` shutdown intent. `LaunchGameResult` returns one of three `LaunchGameOutcome` branches: `Started`, `Drifted` (re-verify failed; re-enter boot), `StartFailed` (OS rejected the start). Main window width is 480 px while booting and 720 px once booted; `ScenariosTabViewModel` removed (Scenarios is a section of the INI Config tab, never a sibling tab). |
 | 1.4     | 10 July 2026 | Justinian | Startup default-resolution hardened (§7.1.1, §7.1.2): a *stale* `DefaultInstallationId` (set but with no matching `GameInstallation` row) now falls through the same Promote Default → Auto Locate path as a null id instead of dead-ending on `NoGameInstallationFound`; when nothing can be promoted the stale pointer is cleared back to null so it no longer dangles (complements the defensive delete cascade in §7.2.4). `InstallationValidity` gains `HasExe` / `HasIni` flags so the presentation reads the `(HasExe, HasIni)` pair off the smart enum rather than re-deriving it. Cannot Play General tab reworked (§9.1, §9.2.1): per-sub-state Status messaging (missing EXE / INI / both), the `Launch Game` slot swaps to an `Open Installation Manager…` button (no separate disabled button or duplicated Fix control), and the Display and new Your System group boxes stay un-muted with a state-specific footnote each. |
-| 1.5     | 23 September 2026 | Justinian | Amended §7.2.2 (Installation Manager dialogue) to match §9.4 and the implementation: the first sentence now describes the actual three-column, headered `DataGrid` (`Name`, `Path`, `Status`) instead of the old two-unheadered-column description, and the Sort-order bullet cites `InstallationGridRowModel` and the ` · default` suffix instead of the retired `InstallationRow` / `IComparer<InstallationRow>`. Rewrote §7.2.7 (retitled `Picker (Open Game Installation) — pointed boot`) to match §9.6 and the implementation: the picker is the `OpenGameInstallation` main-window state, not a modal dialogue, and selecting a row + `Open` (or double-clicking) dispatches `BootCommand` with the chosen installation's id as a *pointed boot* that re-enters the pipeline at `Verify`, bypasses the startup preference, and never writes `DefaultInstallationId`, falling back to normal resolution if the id no longer exists; the unsaved-INI-changes guard sentence is kept as a future requirement since the INI Config tab is not yet implemented. Both amendments were drafted by Claude during the installation-grid-control implementation run. |
+| 1.5     | 23 September 2026 | Justinian | Amended §7.2.2 (Installation Manager dialogue) to match §9.4 and the implementation: the first sentence now describes the actual three-column, headered `DataGrid` (`Name`, `Path`, `Status`) instead of the old two-unheadered-column description, and the Sort-order bullet cites `InstallationGridRowModel` and the ` · default` suffix instead of the retired `InstallationRow` / `IComparer<InstallationRow>`. Rewrote §7.2.7 (retitled `Picker (Open Game Installation) — pointed boot`) to match §9.6 and the implementation: the picker is the `OpenGameInstallation` main-window state, not a modal dialogue, and selecting a row + `Open` (or double-clicking) dispatches `BootCommand` with the chosen installation's id as a *pointed boot* that re-enters the pipeline at `Verify`, bypasses the startup preference, and never writes `DefaultInstallationId`, falling back to normal resolution if the id no longer exists. A same-revision follow-up pass then finished aligning the SDD with the picker's main-window-state nature: §7.2.7's closing sentence now states plainly that no unsaved-changes guard is needed on the picker, since it only appears when no installation is active; the §7.3.2 pending-changes bullet now attributes the `IPendingChangesGuard` path to switching installations from the Installation Manager instead of the picker; the §7.2.2 subscribers list now reads "the picker's grid (the `OpenGameInstallation` state)" instead of "the picker dialogue's grid"; and the §9.2 Dialogues folder list no longer lists `Picker` (already covered by the `OpenGameInstallationView.axaml` entry under States/). All amendments in this revision were drafted by Claude during the installation-grid-control implementation run. |
 
   
 ---  
@@ -826,7 +826,7 @@ A modal hosting a three-column, headered `DataGrid` (`Name`, `Path`, `Status`) a
     - `Fix` requires a selected row whose validity is not `Valid`.
 
 Changes propagate via `IMessenger.Send(InstallationChangedMessage | InstallationAddedMessage | InstallationDeletedMessage | DefaultInstallationChangedMessage)`. Subscribers: the  
-Installation Manager dialogue's grid, the main window's tab content, the picker dialogue's grid.
+Installation Manager dialogue's grid, the main window's tab content, the picker's grid (the `OpenGameInstallation` state).
 
 #### 7.2.3 Edit Installation
 
@@ -881,8 +881,8 @@ re-enters the startup pipeline at the `Verify` step for that installation (→ R
 never writing `LauncherSettings.DefaultInstallationId`. If the requested id no longer resolves to a stored installation (e.g. deleted between load and  
 click), the boot falls back to the normal startup resolution (§7.1) instead.
 
-If the active installation has unsaved INI changes, an unsaved-changes guard prompts first ([Section 7.3](#73-ini-config-tab--ini-present-state)) — a  
-future requirement, since the INI Config tab itself is not yet implemented.
+No unsaved-changes guard is needed here: the picker only appears when no installation is active (§7.1), so there is never a pending edit to lose. The guard applies  
+instead when switching installations from the Installation Manager (§7.3.2).
 
 ### 7.3 INI Config tab — Ini Present state
 
@@ -910,7 +910,8 @@ tooltip propagates from the hovered visual up the parent chain, so attaching to 
 All edits are pending in the view model until the user clicks **Save**. Pending changes:
 
 - Disable **Launch Game** on the General tab.
-- Disable installation switching (the Picker and Management dialogues' `OK` paths route through `IPendingChangesGuard`, which prompts; cancel keeps the pending edits).
+- Disable installation switching (switching installations from the Installation Manager routes through `IPendingChangesGuard`, which prompts; cancel keeps the pending  
+  edits — the picker cannot have an active installation with unsaved changes, so the guard does not apply there; see §7.2.7).
 - Disable closing the main window (the close handler intercepts and routes through the same guard).
 
 The Save command runs `SaveIniCommand` ([Section 8.2](#82-atomic-write-ordering)):
@@ -1280,7 +1281,7 @@ Desktop/
 │   ├── Tabs/                              Layer 2  
 │   ├── IniStates/                         IniPresentView / NoIniPresentView / CorruptedIniView  
 │   ├── IniSections/                       Layer 3  
-│   └── Dialogues/                         Modal UserControls (Add, Edit, Info, Fix, Picker, Historical, Settings, Confirm)  
+│   └── Dialogues/                         Modal UserControls (Add, Edit, Info, Fix, Historical, Settings, Confirm)  
 └── ViewModels/                            Mirrors Views/ exactly; every *View has a corresponding *ViewModel.  
 ```  
 

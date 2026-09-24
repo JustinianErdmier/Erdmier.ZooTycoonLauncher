@@ -5,7 +5,7 @@
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.FixInstallationDialogView"
                x:DataType="vm:FixInstallationDialogViewModel"
                Icon="/Assets/Win95Icons/warning32.gif"
-               Title="Fix Installation"
+               Title="  Fix Installation"
                Width="460"
                SizeToContent="Height"
                CanResize="False"

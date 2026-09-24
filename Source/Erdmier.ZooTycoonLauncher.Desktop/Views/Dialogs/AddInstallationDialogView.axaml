@@ -6,7 +6,7 @@
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.AddInstallationDialogView"
                x:DataType="vm:AddInstallationDialogViewModel"
                Icon="/Assets/Win95Icons/foldercatalog16.ico"
-               Title="Add Installation"
+               Title="  Add Installation"
                Width="420"
                SizeToContent="Height"
                CanResize="False"

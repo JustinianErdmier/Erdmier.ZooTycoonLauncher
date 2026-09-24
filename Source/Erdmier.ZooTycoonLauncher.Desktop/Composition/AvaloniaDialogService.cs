@@ -63,7 +63,9 @@ internal sealed class AvaloniaDialogService : IDialogService
         }
 
         // New-ed up directly against root services (mirroring MainWindowViewModel's construction of the picker's grid), rather than resolved through a scope, so the
-        // manager's grid shares the ROOT LauncherDbContext with everything else — including the nested Add dialogue — and picks up its writes immediately (I-1).
+        // manager's view model and grid share the same root-level services as everything else — including the nested Add dialogue — and so its reads see writes the
+        // Add dialogue makes on the same DbContext. Constructing directly here also keeps the container from tracking this disposable view model, which this method
+        // already disposes itself in the finally block below.
         InstallationGridViewModel grid = new(_services.GetRequiredService<IMediator>(), _services.GetRequiredService<IMessenger>());
         InstallationManagerDialogViewModel vm = new(grid, this);
 

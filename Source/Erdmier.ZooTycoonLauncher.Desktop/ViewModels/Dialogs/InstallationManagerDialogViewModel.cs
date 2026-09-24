@@ -10,7 +10,7 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
     private readonly IDialogService? _dialogs;
 
     /// <summary>Initialises a new instance.</summary>
-    /// <param name="grid">The shared installation grid view model.</param>
+    /// <param name="grid">The installation grid view model. The manager takes ownership of it and disposes it alongside itself.</param>
     /// <param name="dialogs">The dialogue service — used here to open the Add Installation modal.</param>
     public InstallationManagerDialogViewModel(InstallationGridViewModel grid, IDialogService dialogs)
     {
@@ -25,7 +25,7 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
         : this(new InstallationGridViewModel(), null!)
     { }
 
-    /// <summary>The shared installation grid view model. Bound to <c>InstallationGridView.DataContext</c>.</summary>
+    /// <summary>The installation grid view model. Bound to <c>InstallationGridView.DataContext</c>.</summary>
     public InstallationGridViewModel Grid { get; }
 
     /// <summary>

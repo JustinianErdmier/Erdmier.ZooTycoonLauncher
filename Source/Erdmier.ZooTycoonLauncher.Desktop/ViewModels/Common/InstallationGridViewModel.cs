@@ -51,7 +51,8 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
 
     /// <summary>
     ///     Loads all registered installations from the database, projects them to <see cref="InstallationGridRowModel" />, sorts them (default first, then
-    ///     alphabetical), and replaces <see cref="Rows" />.
+    ///     alphabetical), and replaces <see cref="Rows" />. The previously selected row's identity is preserved across the reload when it still exists; otherwise
+    ///     <see cref="SelectedRow" /> becomes <see langword="null" />.
     /// </summary>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     public async Task LoadAsync(CancellationToken cancellationToken = default)
@@ -69,6 +70,8 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
             return;
         }
 
+        Guid? selectedId = SelectedRow?.Id;
+
         IEnumerable<InstallationGridRowModel> sorted = result.Value
                                                              .Select(s => new InstallationGridRowModel(s.Id,
                                                                                                        s.Name,
@@ -84,22 +87,24 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
         {
             Rows.Add(row);
         }
+
+        SelectedRow = Rows.FirstOrDefault(row => row.Id == selectedId);
     }
 
     /// <inheritdoc />
     public void Dispose() => _messenger.UnregisterAll(this);
 
-    void IRecipient<InstallationAddedMessage>.Receive(InstallationAddedMessage message)
-        => _ = LoadAsync();
+    void IRecipient<InstallationAddedMessage>.Receive(InstallationAddedMessage message) => ScheduleReload();
 
-    void IRecipient<InstallationChangedMessage>.Receive(InstallationChangedMessage message)
-        => _ = LoadAsync();
+    void IRecipient<InstallationChangedMessage>.Receive(InstallationChangedMessage message) => ScheduleReload();
 
-    void IRecipient<InstallationDeletedMessage>.Receive(InstallationDeletedMessage message)
-        => _ = LoadAsync();
+    void IRecipient<InstallationDeletedMessage>.Receive(InstallationDeletedMessage message) => ScheduleReload();
 
-    void IRecipient<DefaultInstallationChangedMessage>.Receive(DefaultInstallationChangedMessage message)
-        => _ = LoadAsync();
+    void IRecipient<DefaultInstallationChangedMessage>.Receive(DefaultInstallationChangedMessage message) => ScheduleReload();
+
+    // Marshals the reload onto the UI thread rather than calling LoadAsync() directly, so a future off-thread publisher of these messages cannot mutate Rows off the UI
+    // thread. Today's publishers already raise on the UI thread, but Receive must not rely on that continuing to be true.
+    private void ScheduleReload() => Dispatcher.UIThread.Post(() => _ = LoadAsync());
 }
 
 // Sort: default row first, then alphabetical case-insensitive by Name.
@@ -107,9 +112,20 @@ file sealed class InstallationGridRowComparer : IComparer<InstallationGridRowMod
 {
     public int Compare(InstallationGridRowModel? x, InstallationGridRowModel? y)
     {
-        if (x is null && y is null) return 0;
-        if (x is null) return 1;
-        if (y is null) return -1;
+        if (x is null && y is null)
+        {
+            return 0;
+        }
+
+        if (x is null)
+        {
+            return 1;
+        }
+
+        if (y is null)
+        {
+            return -1;
+        }
 
         if (x.IsDefault != y.IsDefault)
         {

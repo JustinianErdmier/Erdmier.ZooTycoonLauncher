@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
 /// <summary>

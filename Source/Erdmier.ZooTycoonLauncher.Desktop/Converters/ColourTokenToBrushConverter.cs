@@ -1,5 +1,3 @@
-using System.Globalization;
-using Avalonia.Data.Converters;
 using Avalonia.Media;
 
 namespace Erdmier.ZooTycoonLauncher.Desktop.Converters;
@@ -15,6 +13,7 @@ public sealed class ColourTokenToBrushConverter : IValueConverter
         => value is "Green" ? Brushes.Green : Brushes.Red;
 
     /// <inheritdoc />
+    /// <exception cref="NotSupportedException">Always — this converter is one-way.</exception>
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotSupportedException();
 }

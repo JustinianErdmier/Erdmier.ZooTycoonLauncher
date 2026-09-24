@@ -30,7 +30,8 @@
                                        FontWeight="{Binding IsDefault, Converter={StaticResource BoolToFontWeight}}" />
 
                             <TextBlock Text=" · default"
-                                       IsVisible="{Binding IsDefault}" />
+                                       IsVisible="{Binding IsDefault}"
+                                       Opacity="0.6" />
                         </StackPanel>
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>

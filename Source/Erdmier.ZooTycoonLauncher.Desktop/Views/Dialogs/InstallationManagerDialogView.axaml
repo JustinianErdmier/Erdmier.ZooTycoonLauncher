@@ -12,19 +12,19 @@
                WindowStartupLocation="CenterOwner"
                ShowInTaskbar="False">
     <DockPanel Margin="8">
-        <!-- Footer: row count + Close button -->
-        <DockPanel DockPanel.Dock="Bottom"
-                   Margin="0 8 0 0">
-            <Button DockPanel.Dock="Right"
-                    Command="{Binding CloseCommand}"
+        <!-- Footer: helper text, then Close on its own row -->
+        <StackPanel DockPanel.Dock="Bottom"
+                    Margin="0 8 0 0"
+                    Spacing="8">
+            <TextBlock Text="{Binding Grid.Rows.Count, StringFormat='{}{0} installation(s) registered. Double-click a row to open.'}" />
+
+            <Button Command="{Binding CloseCommand}"
                     Content="Close"
+                    HorizontalAlignment="Right"
                     IsDefault="True"
                     IsCancel="True"
                     MinWidth="75" />
-
-            <TextBlock VerticalAlignment="Center"
-                       Text="{Binding Grid.Rows.Count, StringFormat='{}{0} installation(s) registered. Double-click a row to open.'}" />
-        </DockPanel>
+        </StackPanel>
 
         <!-- Right-side action panel -->
         <StackPanel DockPanel.Dock="Right"
@@ -47,11 +47,10 @@
                     Content="Delete"
                     HorizontalAlignment="Stretch" />
 
-            <Separator />
-
             <Button Command="{Binding FixCommand}"
                     Content="Fix"
-                    HorizontalAlignment="Stretch" />
+                    HorizontalAlignment="Stretch"
+                    Margin="0 12 0 0" />
         </StackPanel>
 
         <!-- Grid fills remaining space -->

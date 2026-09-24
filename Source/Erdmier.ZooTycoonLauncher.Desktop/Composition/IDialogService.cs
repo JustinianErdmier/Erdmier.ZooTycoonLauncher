@@ -29,6 +29,11 @@ public interface IDialogService
     /// <returns><see langword="true" /> when the installation was deleted; otherwise <see langword="false" />.</returns>
     Task<bool> ShowDeleteInstallationAsync(Guid installationId);
 
+    /// <summary>Opens the Fix Installation dialogue (SDD §7.2.5, §9.5) for the given installation.</summary>
+    /// <param name="installationId">The installation to fix.</param>
+    /// <returns><see langword="true" /> when anything was persisted (a relocation, or drift found by the re-probe); otherwise <see langword="false" />.</returns>
+    Task<bool> ShowFixInstallationAsync(Guid installationId);
+
     /// <summary>
     ///     Opens a native folder picker rooted at the supplied path (or a sensible default when <see langword="null" />) and returns the chosen folder, or <see langword="null" />
     ///     when the user cancels.

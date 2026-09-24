@@ -159,6 +159,30 @@ internal sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
+    public async Task<bool> ShowFixInstallationAsync(Guid installationId)
+    {
+        Window? owner = ResolveOwner();
+
+        if (owner is null)
+        {
+            return false;
+        }
+
+        FixInstallationDialogViewModel vm = _services.GetRequiredService<FixInstallationDialogViewModel>();
+
+        await vm.InitialiseAsync(installationId);
+
+        FixInstallationDialogView view = new()
+        {
+            DataContext = vm
+        };
+
+        await view.ShowDialog(owner);
+
+        return vm.HasChanges;
+    }
+
+    /// <inheritdoc />
     public async Task<string?> PickFolderAsync(string? startPath)
     {
         Window? owner = ResolveOwner();

@@ -104,9 +104,15 @@ public sealed partial class EditInstallationDialogViewModel : ViewModelBase
 
             if (result.IsError)
             {
-                Form.ErrorMessage = result.FirstError.Type == ErrorType.NotFound
-                                        ? InstallationDialogMessages.InstallationMissing
-                                        : result.FirstError.Description;
+                if (result.FirstError.Type == ErrorType.NotFound)
+                {
+                    Form.ErrorMessage = InstallationDialogMessages.InstallationMissing;
+                    IsLoaded          = false;
+
+                    return;
+                }
+
+                Form.ErrorMessage = result.FirstError.Description;
 
                 return;
             }

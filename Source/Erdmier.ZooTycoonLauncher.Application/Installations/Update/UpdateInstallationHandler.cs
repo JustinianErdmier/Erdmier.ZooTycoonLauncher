@@ -38,8 +38,6 @@ public sealed class UpdateInstallationHandler : ICommandHandler<UpdateInstallati
 
         await _installations.UpdateAsync(row, cancellationToken);
 
-        _events.Publish(new InstallationChangedMessage(row.Id));
-
         if (command.MakeDefault)
         {
             LauncherSettings settings = await _settings.GetAsync(cancellationToken);
@@ -53,6 +51,8 @@ public sealed class UpdateInstallationHandler : ICommandHandler<UpdateInstallati
                 _events.Publish(new DefaultInstallationChangedMessage(row.Id));
             }
         }
+
+        _events.Publish(new InstallationChangedMessage(row.Id));
 
         return Result.Success;
     }

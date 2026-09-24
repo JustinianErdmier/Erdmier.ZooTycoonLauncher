@@ -21,4 +21,13 @@ public interface IDialogService
     /// </summary>
     /// <param name="startPath">A directory to start the picker in, when present.</param>
     Task<string?> PickFolderAsync(string? startPath);
+
+    /// <summary>Asks the Win95-style "Do you want to save the changes to <c>zoo.ini</c>?" question (SDD §7.3.2).</summary>
+    /// <returns>The answer; closing the prompt from its title bar answers <see cref="SaveChangesChoice.Cancel" />.</returns>
+    Task<SaveChangesChoice> ShowSaveChangesPromptAsync();
+
+    /// <summary>Shows a modal error message box owned by the active window.</summary>
+    /// <param name="title">The window title.</param>
+    /// <param name="message">The message, shown verbatim.</param>
+    Task ShowErrorAsync(string title, string message);
 }

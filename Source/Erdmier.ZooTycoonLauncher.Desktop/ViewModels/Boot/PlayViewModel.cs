@@ -123,4 +123,8 @@ file sealed class NoOpDialogService : IDialogService
     public Task<bool> ShowInstallationManagerAsync() => Task.FromResult(false);
 
     public Task<string?> PickFolderAsync(string? startPath) => Task.FromResult<string?>(result: null);
+
+    public Task<SaveChangesChoice> ShowSaveChangesPromptAsync() => Task.FromResult(SaveChangesChoice.Cancel);
+
+    public Task ShowErrorAsync(string title, string message) => Task.CompletedTask;
 }

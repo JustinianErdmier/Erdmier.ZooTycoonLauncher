@@ -20,6 +20,10 @@ public interface IDialogService
     /// <returns><see langword="true" /> when the edit was saved; otherwise <see langword="false" />.</returns>
     Task<bool> ShowEditInstallationAsync(Guid installationId);
 
+    /// <summary>Opens the read-only Installation Info dialogue (SDD §7.2.6, §9.5) for the given installation.</summary>
+    /// <param name="installationId">The installation to describe.</param>
+    Task ShowInstallationInfoAsync(Guid installationId);
+
     /// <summary>
     ///     Opens a native folder picker rooted at the supplied path (or a sensible default when <see langword="null" />) and returns the chosen folder, or <see langword="null" />
     ///     when the user cancels.

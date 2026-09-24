@@ -67,8 +67,16 @@ public sealed partial class OpenGameInstallationViewModel : ViewModelBase, IDisp
     }
 
     [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
-    private Task InfoAsync(CancellationToken cancellationToken)
-        => Task.CompletedTask; // TODO: SDD §7.2.4 — Installation Info dialogue not yet implemented.
+    private async Task InfoAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        await _dialogs.ShowInstallationInfoAsync(Grid.SelectedRow.Id);
+    }
 
     // Changes made in the manager reach Grid through the change messages, so no explicit reload is needed.
     [ RelayCommand ]

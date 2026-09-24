@@ -28,7 +28,7 @@
 | 1.3     | 5 June 2026 | Justinian | Startup state machine overhauled (§7.1.1): `AutoLocate` now always settles to `NoGameInstallationFound` (carrying the discovered candidate as a suggestion) rather than skipping straight to the Add dialogue; `NoGameInstallationFound → AddInstallationDialogue → ParseIni` is the new add-from-boot path. `HasIni = false` resolves to **Cannot Play** (not Ready to Play) — no INI, no launch. `§9` made leaner: dialogue/panel pixel widths, column percentages, opacity values, and other dev-time style decisions stripped in favour of brief layout sketches that defer to the live hi-fi prototype. Application services formalised: `IDialogService` covers `ShowAddInstallationAsync(prefilledPath)` / `PickFolderAsync(startPath)` / `ShowLaunchError(message)`; new `IApplicationLifecycle` carries `CloseAfterGameLaunch` shutdown intent. `LaunchGameResult` returns one of three `LaunchGameOutcome` branches: `Started`, `Drifted` (re-verify failed; re-enter boot), `StartFailed` (OS rejected the start). Main window width is 480 px while booting and 720 px once booted; `ScenariosTabViewModel` removed (Scenarios is a section of the INI Config tab, never a sibling tab). |
 | 1.4     | 10 July 2026 | Justinian | Startup default-resolution hardened (§7.1.1, §7.1.2): a *stale* `DefaultInstallationId` (set but with no matching `GameInstallation` row) now falls through the same Promote Default → Auto Locate path as a null id instead of dead-ending on `NoGameInstallationFound`; when nothing can be promoted the stale pointer is cleared back to null so it no longer dangles (complements the defensive delete cascade in §7.2.4). `InstallationValidity` gains `HasExe` / `HasIni` flags so the presentation reads the `(HasExe, HasIni)` pair off the smart enum rather than re-deriving it. Cannot Play General tab reworked (§9.1, §9.2.1): per-sub-state Status messaging (missing EXE / INI / both), the `Launch Game` slot swaps to an `Open Installation Manager…` button (no separate disabled button or duplicated Fix control), and the Display and new Your System group boxes stay un-muted with a state-specific footnote each. |
 | 1.5     | 23 September 2026 | Justinian | Amended §7.2.2 (Installation Manager dialogue) to match §9.4 and the implementation: the first sentence now describes the actual three-column, headered `DataGrid` (`Name`, `Path`, `Status`) instead of the old two-unheadered-column description, and the Sort-order bullet cites `InstallationGridRowModel` and the ` · default` suffix instead of the retired `InstallationRow` / `IComparer<InstallationRow>`. Rewrote §7.2.7 (retitled `Picker (Open Game Installation) — pointed boot`) to match §9.6 and the implementation: the picker is the `OpenGameInstallation` main-window state, not a modal dialogue, and selecting a row + `Open` (or double-clicking) dispatches `BootCommand` with the chosen installation's id as a *pointed boot* that re-enters the pipeline at `Verify`, bypasses the startup preference, and never writes `DefaultInstallationId`, falling back to normal resolution if the id no longer exists. A same-revision follow-up pass then finished aligning the SDD with the picker's main-window-state nature: §7.2.7's closing sentence now states plainly that no unsaved-changes guard is needed on the picker, since it only appears when no installation is active; the §7.3.2 pending-changes bullet now attributes the `IPendingChangesGuard` path to switching installations from the Installation Manager instead of the picker; the §7.2.2 subscribers list now reads "the picker's grid (the `OpenGameInstallation` state)" instead of "the picker dialogue's grid"; and the §9.2 Dialogues folder list no longer lists `Picker` (already covered by the `OpenGameInstallationView.axaml` entry under States/). All amendments in this revision were drafted by Claude during the installation-grid-control implementation run. |
-| 1.6     | 24 September 2026 | Justinian | §7.2.1: with no installations registered, the Add Installation dialogue pre-fills the Name input with `Main` (an editable value, previously described as a placeholder); the Default checkbox stays ticked and read-only. Drafted by Claude during the installation-management-dialogues slice. |
+| 1.6     | 24 September 2026 | Justinian | §7.2.1: with no installations registered, the Add Installation dialogue pre-fills the Name input with `Main` (an editable value, previously described as a placeholder); the Default checkbox stays ticked and read-only; the "Placeholder rules" heading is renamed "Default-name rules" to match. §7.2.3 / §9.5: Edit Installation shares the Add form rather than duplicating it — the folder is read-only with no `Browse…` button (relocation is Fix's job, §7.2.5), and the Default checkbox is ticked and read-only when the installation is already the default. Drafted by Claude during the installation-management-dialogues slice. |
 
   
 ---  
@@ -790,7 +790,7 @@ Three entry points share one slice (`AddInstallationCommand`):
 
 `AddInstallationCommand` opens the **Add Installation** dialogue directly (the prototype rejected the earlier picker-first flow as un-Windows-95). The dialogue exposes:
 
-- **Name input.** Placeholder rules:
+- **Name input.** Default-name rules:
     - Zero existing installations → the Name input is **pre-filled** with `Main` (an editable value, not a placeholder).
     - ≥ 1 existing → placeholder `Installation N` where `N = COUNT(*) + 1`; if that name collides with an existing installation (case-insensitive), increment `N` until unique.
 - **Folder input.** A read-write `TextBox` paired with a `Browse…` button. The user can type or paste the path directly, or click `Browse…` to open a folder picker rooted at  
@@ -831,7 +831,8 @@ Installation Manager dialogue's grid, the main window's tab content, the picker'
 
 #### 7.2.3 Edit Installation
 
-Same view as Add Installation; title swapped to `Edit Installation`; inputs pre-populated from the row. Submitting runs `UpdateInstallationCommand` which:
+Shares the Add Installation form (§9.5); title `Edit Installation`; inputs pre-populated from the row. The folder is shown read-only with no `Browse…` button — relocation  
+happens through Fix (§7.2.5). Submitting runs `UpdateInstallationCommand` which:
 
 1. Validates uniqueness on `Name` (case-insensitive) excluding the current row.
 2. Updates `Name`, sets `ModifiedUtc = now`.
@@ -1360,8 +1361,9 @@ that owns both label and input is what carries `ToolTip.Tip` so the whole row tr
       `PrefillPath(prefilledPath)` for that.
     - **Mark as default installation** Checkbox (disabled and pre-checked when this is the first installation, per §7.2.1).
     - Footer: `Save` (default) + `Cancel`. `Save` is enabled when both inputs have non-empty values; the handler does the final validation. On dispatch error the message is
-      surfaced as a textblock under the inputs and the dialogue stays open. Both buttons carry no ellipses. Edit mode reuses the same view; only the title bar text changes and
-      inputs are pre-populated.
+      surfaced as a textblock under the inputs and the dialogue stays open. Both buttons carry no ellipses. Edit mode shares the form: the title and heading change (`Edit
+      Installation` / "Rename this installation or change which one is the launcher's default."), inputs are pre-populated, the folder is read-only with no `Browse…`, and
+      `Mark as default installation` is ticked and read-only when the installation is already the default.
 - **Installation Info** — read-only modal listing `Name`, `Path`, `Status`, `Default` (Yes/No), `Added`, `Last opened`, `Last played` (localised; "—" when null), and a
   `History entries` count. `Close` default button.
 - **Fix Installation** — `ClassicWindow` modal. Two group boxes (`Fix EXE`, `Fix INI`); each has a status indicator (file present / missing), an explanation, and a

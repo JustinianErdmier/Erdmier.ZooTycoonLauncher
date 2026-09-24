@@ -84,10 +84,12 @@ public sealed partial class OpenGameInstallationViewModel : ViewModelBase, IDisp
             return;
         }
 
-        await _dialogs.ShowInstallationManagerAsync();
+        bool changed = await _dialogs.ShowInstallationManagerAsync();
 
-        // Reload the picker grid in case the user added or removed installations from the manager.
-        await Grid.LoadAsync(cancellationToken);
+        if (changed)
+        {
+            await Grid.LoadAsync(cancellationToken);
+        }
     }
 
     private bool CanExecuteSelectionCommand() => Grid.HasSelection;

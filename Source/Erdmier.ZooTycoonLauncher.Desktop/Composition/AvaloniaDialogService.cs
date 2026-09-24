@@ -53,13 +53,13 @@ internal sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public async Task ShowInstallationManagerAsync()
+    public async Task<bool> ShowInstallationManagerAsync()
     {
         Window? owner = ResolveOwner();
 
         if (owner is null)
         {
-            return;
+            return false;
         }
 
         // New-ed up directly against root services (mirroring MainWindowViewModel's construction of the picker's grid), rather than resolved through a scope, so the
@@ -77,6 +77,8 @@ internal sealed class AvaloniaDialogService : IDialogService
             };
 
             await view.ShowDialog(owner);
+
+            return vm.HasChanges;
         }
         finally
         {

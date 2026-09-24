@@ -4,8 +4,8 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Common;
 
 /// <summary>
 ///     Shared view model for the installation <c>DataGrid</c> (SDD §9.4, §9.6). Owns the row collection, selected row, and data loading via
-///     <see cref="GetAllInstallationsQuery" />. Subscribes to installation messenger messages so the grid refreshes automatically once the Application
-///     handlers begin publishing them.
+///     <see cref="GetAllInstallationsQuery" />. Subscribes to the installation change messages the Application handlers publish, so the grid refreshes
+///     itself whoever made the change.
 /// </summary>
 public sealed partial class InstallationGridViewModel : ViewModelBase,
                                                         IDisposable,
@@ -19,6 +19,10 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
     private readonly IMessenger _messenger;
 
     private bool _disposed;
+
+    private bool _isReloading;
+
+    private bool _reloadPending;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher — used to issue <see cref="GetAllInstallationsQuery" />.</param>
@@ -109,16 +113,45 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
 
     void IRecipient<DefaultInstallationChangedMessage>.Receive(DefaultInstallationChangedMessage message) => ScheduleReload();
 
-    // Marshals the reload onto the UI thread rather than calling LoadAsync() directly, so a future off-thread publisher of these messages cannot mutate Rows off the UI
-    // thread. Nothing publishes these messages yet, but Receive must not rely on a future publisher always raising on the UI thread.
+    // Marshals the reload onto the UI thread (the publisher already sends on it, but Receive must not rely on that) and coalesces bursts: deleting the default publishes
+    // InstallationDeletedMessage and DefaultInstallationChangedMessage together, which must cost one reload, not two overlapping queries on the shared DbContext.
     private void ScheduleReload()
         => Dispatcher.UIThread.Post(() =>
         {
             if (!_disposed)
             {
-                _ = LoadAsync();
+                _ = ReloadCoalescedAsync();
             }
         });
+
+    // Runs only on the UI thread (see ScheduleReload), so the two flags need no locking. A message that arrives whilst a reload is in flight marks one follow-up reload
+    // instead of starting a second, overlapping one. A failed reload leaves the previous rows in place.
+    private async Task ReloadCoalescedAsync()
+    {
+        if (_isReloading)
+        {
+            _reloadPending = true;
+
+            return;
+        }
+
+        _isReloading = true;
+
+        try
+        {
+            do
+            {
+                _reloadPending = false;
+
+                await LoadAsync();
+            }
+            while (_reloadPending && !_disposed);
+        }
+        finally
+        {
+            _isReloading = false;
+        }
+    }
 }
 
 // Sort: default row first, then alphabetical case-insensitive by Name.

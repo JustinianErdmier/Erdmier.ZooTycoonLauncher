@@ -82,9 +82,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private Task OpenInstallationAsync(Guid installationId, CancellationToken cancellationToken) => RunBootAsync(installationId, cancellationToken);
 
     // File → "Installation Manager…" (SDD §9.10): opens the modal manager, then refreshes whichever state is active — but only when the manager reports a change — so
-    // installations added there are reflected immediately without an unnecessary reload or locator rescan when the user opened the manager and changed nothing. Reloads
-    // the picker grid when OpenGameInstallationViewModel is active, or re-runs the normal boot when NoGameInstallationFoundViewModel is active (mirroring that state's own
-    // post-Add reboot), so a first installation added via the manager is picked up without requiring a restart. Play and CannotPlay need no refresh — neither displays the
+    // installations added there are reflected immediately without an unnecessary locator rescan when the user opened the manager and changed nothing. Re-runs the normal
+    // boot when NoGameInstallationFoundViewModel is active (mirroring that state's own post-Add reboot), so a first installation added via the manager is picked up without
+    // requiring a restart. The picker needs nothing here: its grid refreshes itself from the change messages. Play and CannotPlay need no refresh — neither displays the
     // installation list, and the Manager's own Info/Edit/Delete/Fix commands are still stubs.
     [ RelayCommand ]
     private async Task ManageInstallationsAsync(CancellationToken cancellationToken)
@@ -96,11 +96,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        if (ActiveContent is OpenGameInstallationViewModel picker)
-        {
-            await picker.Grid.LoadAsync(cancellationToken);
-        }
-        else if (ActiveContent is NoGameInstallationFoundViewModel)
+        // The picker needs nothing here: its grid refreshes itself from the change messages.
+        if (ActiveContent is NoGameInstallationFoundViewModel)
         {
             await RunBootAsync(installationId: null, cancellationToken);
         }

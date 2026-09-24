@@ -47,7 +47,7 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
     }
 
     [ RelayCommand ]
-    private async Task AddAsync(CancellationToken cancellationToken)
+    private async Task AddAsync()
     {
         if (_dialogs is null)
         {
@@ -59,8 +59,6 @@ public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, 
         if (result is not null)
         {
             HasChanges = true;
-
-            await Grid.LoadAsync(cancellationToken);
         }
     }
 

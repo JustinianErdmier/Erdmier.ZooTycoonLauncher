@@ -1256,6 +1256,242 @@ stays responsive rather than crashing.
 
 ---
 
+# INI Config Core
+
+## 1. First Import: an installation registered before the INI slice opens with an empty snapshot database
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 2. Edit and Save: one change per control kind, file changes only on the edited lines
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 3. Revert: pending edits discarded and values reloaded from disk
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 4. Game Session Drift: launcher open while ZT1 runs, then the INI tab is re-activated
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 5. Pending-Changes Guard: close, Exit, Close Installation, and Open Installation… with Yes / No / Cancel
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 6. Launch Lock: Launch Game disabled while INI edits are pending
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 7. No INI: zoo.ini renamed away, boot resolves to Cannot Play
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 8. Write Refused: zoo.ini read-only, Save shows the error and keeps the edits
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+---
+
 # Notes & Future Tasks/Goals
 
 1. Abstract shared string literals used in the UI into a single constants/helper class so that everything can be easily updated in one single place and also eliminate duplication.

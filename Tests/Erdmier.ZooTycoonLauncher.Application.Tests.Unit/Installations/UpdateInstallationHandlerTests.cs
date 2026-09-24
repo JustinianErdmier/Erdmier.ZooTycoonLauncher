@@ -25,7 +25,9 @@ public sealed class UpdateInstallationHandlerTests
 
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
 
-        UpdateInstallationHandler handler = new(installations, settings, new FakeTimeProvider(fakeNow), Substitute.For<IApplicationEventPublisher>());
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        UpdateInstallationHandler handler = new(installations, settings, new FakeTimeProvider(fakeNow), events);
 
         ErrorOr<Success> result = await handler.Handle(new UpdateInstallationCommand(id, Name: "Renamed", MakeDefault: false), CancellationToken.None);
 
@@ -35,6 +37,12 @@ public sealed class UpdateInstallationHandlerTests
 
         await settings.DidNotReceive()
                       .UpdateAsync(Arg.Any<LauncherSettings>(), Arg.Any<CancellationToken>());
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationChangedMessage(id));
+
+        events.DidNotReceive()
+              .Publish(Arg.Any<DefaultInstallationChangedMessage>());
     }
 
     [ Fact ]
@@ -85,15 +93,17 @@ public sealed class UpdateInstallationHandlerTests
         installations.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
-        UpdateInstallationHandler handler = new(installations,
-                                                Substitute.For<ILauncherSettingsRepository>(),
-                                                TimeProvider.System,
-                                                Substitute.For<IApplicationEventPublisher>());
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        UpdateInstallationHandler handler = new(installations, Substitute.For<ILauncherSettingsRepository>(), TimeProvider.System, events);
 
         ErrorOr<Success> result = await handler.Handle(new UpdateInstallationCommand(Guid.CreateVersion7(), Name: "Whatever", MakeDefault: false), CancellationToken.None);
 
         result.IsError.ShouldBeTrue();
         result.FirstError.Type.ShouldBe(ErrorType.NotFound);
+
+        events.ReceivedCalls()
+              .ShouldBeEmpty();
     }
 
     [ Fact ]
@@ -172,5 +182,9 @@ public sealed class UpdateInstallationHandlerTests
 
         events.DidNotReceive()
               .Publish(Arg.Any<DefaultInstallationChangedMessage>());
+
+        events.ReceivedCalls()
+              .Count()
+              .ShouldBe(expected: 1);
     }
 }

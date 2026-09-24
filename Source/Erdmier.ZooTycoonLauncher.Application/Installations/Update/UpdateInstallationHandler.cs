@@ -12,6 +12,9 @@ public sealed class UpdateInstallationHandler : ICommandHandler<UpdateInstallati
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
+    /// <param name="installations">Installation repository.</param>
+    /// <param name="settings">Launcher settings repository, updated when the installation becomes the default.</param>
+    /// <param name="clock">Time provider for the <c>ModifiedUtc</c> stamp.</param>
     /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
     public UpdateInstallationHandler(IInstallationRepository installations, ILauncherSettingsRepository settings, TimeProvider clock, IApplicationEventPublisher events)
     {

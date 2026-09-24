@@ -68,8 +68,9 @@ public sealed class AddInstallationHandlerTests
 
         IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
         IIniSnapshotService           snapshots = Substitute.For<IIniSnapshotService>();
+        IApplicationEventPublisher    events    = Substitute.For<IApplicationEventPublisher>();
 
-        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System, Substitute.For<IApplicationEventPublisher>());
+        AddInstallationHandler handler = new(installations, settings, verifier, dbFactory, snapshots, TimeProvider.System, events);
 
         ErrorOr<AddInstallationResult> result = await handler.Handle(command, CancellationToken.None);
 
@@ -78,6 +79,9 @@ public sealed class AddInstallationHandlerTests
 
         await installations.DidNotReceive()
                            .AddAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>());
+
+        events.ReceivedCalls()
+              .ShouldBeEmpty();
     }
 
     [ Fact ]
@@ -227,6 +231,10 @@ public sealed class AddInstallationHandlerTests
 
         events.DidNotReceive()
               .Publish(Arg.Any<DefaultInstallationChangedMessage>());
+
+        events.ReceivedCalls()
+              .Count()
+              .ShouldBe(expected: 1);
     }
 
     [ Fact ]

@@ -12,6 +12,9 @@ public sealed class RelocateInstallationHandler : ICommandHandler<RelocateInstal
     private readonly IInstallationVerifier _verifier;
 
     /// <summary>Initialises a new instance.</summary>
+    /// <param name="installations">Installation repository.</param>
+    /// <param name="verifier">File-system verifier used to probe the new folder.</param>
+    /// <param name="clock">Time provider for the <c>ModifiedUtc</c> stamp.</param>
     /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
     public RelocateInstallationHandler(IInstallationRepository installations, IInstallationVerifier verifier, TimeProvider clock, IApplicationEventPublisher events)
     {

@@ -10,6 +10,8 @@ public sealed class SetDefaultInstallationHandler : ICommandHandler<SetDefaultIn
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
+    /// <param name="installations">Installation repository.</param>
+    /// <param name="settings">Launcher settings repository, updated with the new default.</param>
     /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
     public SetDefaultInstallationHandler(IInstallationRepository installations, ILauncherSettingsRepository settings, IApplicationEventPublisher events)
     {

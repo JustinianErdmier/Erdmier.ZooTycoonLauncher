@@ -137,6 +137,7 @@ public sealed class InstallationRepositoryTests : IDisposable
     public async Task FindDefaultPromotionCandidateAsync_WithExcludeId_SkipsExcludedRow()
     {
         GameInstallation antelope = NewInstallation(name: "antelope", path: @"C:\Games\antelope");
+
         await _repository.AddAsync(antelope, CancellationToken.None);
         await _repository.AddAsync(NewInstallation(name: "Buffalo", path: @"C:\Games\Buffalo"), CancellationToken.None);
         await _repository.AddAsync(NewInstallation(name: "zebra", path: @"C:\Games\zebra"), CancellationToken.None);
@@ -151,6 +152,7 @@ public sealed class InstallationRepositoryTests : IDisposable
     public async Task FindDefaultPromotionCandidateAsync_WithExcludeId_MatchesPostDeleteCandidate()
     {
         GameInstallation doomed = NewInstallation(name: "Aardvark", path: @"C:\Games\Aardvark");
+
         await _repository.AddAsync(doomed, CancellationToken.None);
         await _repository.AddAsync(NewInstallation(name: "bison", path: @"C:\Games\bison"), CancellationToken.None);
         await _repository.AddAsync(NewInstallation(name: "Camel", path: @"C:\Games\Camel"), CancellationToken.None);
@@ -162,6 +164,7 @@ public sealed class InstallationRepositoryTests : IDisposable
         GameInstallation? promoted = await _repository.FindDefaultPromotionCandidateAsync(excludeId: null, CancellationToken.None);
 
         previewed.ShouldNotBeNull();
+        previewed.Name.ShouldBe(expected: "bison");
         promoted.ShouldNotBeNull();
         previewed.Id.ShouldBe(promoted.Id);
     }

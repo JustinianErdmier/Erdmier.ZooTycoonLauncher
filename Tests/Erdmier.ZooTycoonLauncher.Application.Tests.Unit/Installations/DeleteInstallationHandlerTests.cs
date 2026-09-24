@@ -301,6 +301,10 @@ public sealed class DeleteInstallationHandlerTests
 
         events.DidNotReceive()
               .Publish(Arg.Any<DefaultInstallationChangedMessage>());
+
+        events.ReceivedCalls()
+              .Count()
+              .ShouldBe(expected: 1);
     }
 
     [ Fact ]

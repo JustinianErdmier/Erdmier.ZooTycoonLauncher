@@ -52,15 +52,17 @@ public sealed class RelocateInstallationHandlerTests
         installations.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
-        RelocateInstallationHandler handler = new(installations,
-                                                  Substitute.For<IInstallationVerifier>(),
-                                                  TimeProvider.System,
-                                                  Substitute.For<IApplicationEventPublisher>());
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        RelocateInstallationHandler handler = new(installations, Substitute.For<IInstallationVerifier>(), TimeProvider.System, events);
 
         ErrorOr<RelocateInstallationResult> result = await handler.Handle(new RelocateInstallationCommand(Guid.CreateVersion7(), NewPath: @"C:\Games\New"), CancellationToken.None);
 
         result.IsError.ShouldBeTrue();
         result.FirstError.Type.ShouldBe(ErrorType.NotFound);
+
+        events.ReceivedCalls()
+              .ShouldBeEmpty();
     }
 
     [ Fact ]
@@ -86,7 +88,9 @@ public sealed class RelocateInstallationHandlerTests
         verifier.VerifyAsync(path: @"C:\Missing", Arg.Any<CancellationToken>())
                 .Returns(new VerificationResult(DirectoryExists: false, HasExe: false, HasIni: false));
 
-        RelocateInstallationHandler handler = new(installations, verifier, TimeProvider.System, Substitute.For<IApplicationEventPublisher>());
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        RelocateInstallationHandler handler = new(installations, verifier, TimeProvider.System, events);
 
         ErrorOr<RelocateInstallationResult> result = await handler.Handle(new RelocateInstallationCommand(id, NewPath: @"C:\Missing"), CancellationToken.None);
 
@@ -95,6 +99,9 @@ public sealed class RelocateInstallationHandlerTests
 
         await installations.DidNotReceive()
                            .DeleteAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+
+        events.ReceivedCalls()
+              .ShouldBeEmpty();
     }
 
     [ Fact ]
@@ -166,7 +173,7 @@ public sealed class RelocateInstallationHandlerTests
         await installations.DidNotReceive()
                            .AddAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>());
 
-        events.DidNotReceive()
-              .Publish(Arg.Any<InstallationChangedMessage>());
+        events.ReceivedCalls()
+              .ShouldBeEmpty();
     }
 }

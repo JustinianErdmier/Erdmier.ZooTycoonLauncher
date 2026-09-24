@@ -14,6 +14,9 @@ public sealed class DeleteInstallationHandler : ICommandHandler<DeleteInstallati
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
+    /// <param name="installations">Installation repository.</param>
+    /// <param name="settings">Launcher settings repository, updated when the removed installation was the default.</param>
+    /// <param name="dbFactory">Per-installation database factory, used to best-effort delete the installation's database file.</param>
     /// <param name="logger">Logger for the best-effort database file delete failure.</param>
     /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
     public DeleteInstallationHandler(IInstallationRepository            installations,

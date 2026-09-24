@@ -18,6 +18,12 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
     private readonly IInstallationVerifier _verifier;
 
     /// <summary>Initialises a new instance.</summary>
+    /// <param name="installations">Installation repository.</param>
+    /// <param name="settings">Launcher settings repository, updated when the new installation becomes the default.</param>
+    /// <param name="verifier">File-system verifier used to probe the candidate folder.</param>
+    /// <param name="dbFactory">Per-installation database factory, used to provision the new installation's database.</param>
+    /// <param name="snapshots">INI snapshot service, used to capture the <c>Original</c> snapshot.</param>
+    /// <param name="clock">Time provider for the <c>AddedUtc</c> stamp.</param>
     /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
     public AddInstallationHandler(IInstallationRepository       installations,
                                   ILauncherSettingsRepository   settings,

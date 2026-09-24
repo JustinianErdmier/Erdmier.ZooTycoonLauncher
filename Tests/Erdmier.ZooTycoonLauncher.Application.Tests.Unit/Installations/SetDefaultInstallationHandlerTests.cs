@@ -149,7 +149,7 @@ public sealed class SetDefaultInstallationHandlerTests
 
         result.IsError.ShouldBeFalse();
 
-        events.DidNotReceive()
-              .Publish(Arg.Any<DefaultInstallationChangedMessage>());
+        events.ReceivedCalls()
+              .ShouldBeEmpty();
     }
 }

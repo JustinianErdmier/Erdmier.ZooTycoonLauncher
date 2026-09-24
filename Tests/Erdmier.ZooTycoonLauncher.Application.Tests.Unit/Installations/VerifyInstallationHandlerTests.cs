@@ -138,8 +138,8 @@ public sealed class VerifyInstallationHandlerTests
 
         result.IsError.ShouldBeFalse();
 
-        events.DidNotReceive()
-              .Publish(Arg.Any<InstallationChangedMessage>());
+        events.ReceivedCalls()
+              .ShouldBeEmpty();
     }
 }
 

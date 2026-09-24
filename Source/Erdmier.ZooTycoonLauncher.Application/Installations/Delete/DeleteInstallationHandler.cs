@@ -9,18 +9,23 @@ public sealed class DeleteInstallationHandler : ICommandHandler<DeleteInstallati
 
     private readonly IInstallationRepository _installations;
 
+    private readonly ILogger<DeleteInstallationHandler> _logger;
+
     private readonly ILauncherSettingsRepository _settings;
 
     /// <summary>Initialises a new instance.</summary>
+    /// <param name="logger">Logger for the best-effort database file delete failure.</param>
     /// <param name="events">Publishes installation-change messages after changes are persisted (SDD §7.2).</param>
-    public DeleteInstallationHandler(IInstallationRepository       installations,
-                                     ILauncherSettingsRepository   settings,
-                                     IInstallationDbContextFactory dbFactory,
-                                     IApplicationEventPublisher    events)
+    public DeleteInstallationHandler(IInstallationRepository            installations,
+                                     ILauncherSettingsRepository        settings,
+                                     IInstallationDbContextFactory      dbFactory,
+                                     ILogger<DeleteInstallationHandler> logger,
+                                     IApplicationEventPublisher         events)
     {
         _installations = installations;
         _settings      = settings;
         _dbFactory     = dbFactory;
+        _logger        = logger;
         _events        = events;
     }
 
@@ -50,7 +55,16 @@ public sealed class DeleteInstallationHandler : ICommandHandler<DeleteInstallati
             await _settings.UpdateAsync(settings, cancellationToken);
         }
 
-        await _dbFactory.DeleteAsync(row.Id, cancellationToken);
+        try
+        {
+            await _dbFactory.DeleteAsync(row.Id, cancellationToken);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex,
+                               "Could not delete the database file for installation {InstallationId}; it has been removed from the registry.",
+                               row.Id);
+        }
 
         _events.Publish(new InstallationDeletedMessage(row.Id));
 

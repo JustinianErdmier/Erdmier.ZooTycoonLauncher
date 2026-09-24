@@ -1,3 +1,5 @@
+using NSubstitute.ExceptionExtensions;
+
 namespace Erdmier.ZooTycoonLauncher.Application.Tests.Unit.Installations;
 
 public sealed class DeleteInstallationHandlerTests
@@ -32,7 +34,11 @@ public sealed class DeleteInstallationHandlerTests
 
         IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
 
-        DeleteInstallationHandler handler = new(installations, settings, dbFactory, Substitute.For<IApplicationEventPublisher>());
+        DeleteInstallationHandler handler = new(installations,
+                                                settings,
+                                                dbFactory,
+                                                NullLogger<DeleteInstallationHandler>.Instance,
+                                                Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(id), CancellationToken.None);
 
@@ -92,7 +98,11 @@ public sealed class DeleteInstallationHandlerTests
 
         IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
 
-        DeleteInstallationHandler handler = new(installations, settingsRepo, dbFactory, Substitute.For<IApplicationEventPublisher>());
+        DeleteInstallationHandler handler = new(installations,
+                                                settingsRepo,
+                                                dbFactory,
+                                                NullLogger<DeleteInstallationHandler>.Instance,
+                                                Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(removedId), CancellationToken.None);
 
@@ -141,6 +151,7 @@ public sealed class DeleteInstallationHandlerTests
         DeleteInstallationHandler handler = new(installations,
                                                 settingsRepo,
                                                 Substitute.For<IInstallationDbContextFactory>(),
+                                                NullLogger<DeleteInstallationHandler>.Instance,
                                                 Substitute.For<IApplicationEventPublisher>());
 
         ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(removedId), CancellationToken.None);
@@ -186,7 +197,11 @@ public sealed class DeleteInstallationHandlerTests
 
         IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
 
-        DeleteInstallationHandler handler = new(installations, settings, Substitute.For<IInstallationDbContextFactory>(), events);
+        DeleteInstallationHandler handler = new(installations,
+                                                settings,
+                                                Substitute.For<IInstallationDbContextFactory>(),
+                                                NullLogger<DeleteInstallationHandler>.Instance,
+                                                events);
 
         ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(removedId), CancellationToken.None);
 
@@ -228,7 +243,11 @@ public sealed class DeleteInstallationHandlerTests
 
         IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
 
-        DeleteInstallationHandler handler = new(installations, settings, Substitute.For<IInstallationDbContextFactory>(), events);
+        DeleteInstallationHandler handler = new(installations,
+                                                settings,
+                                                Substitute.For<IInstallationDbContextFactory>(),
+                                                NullLogger<DeleteInstallationHandler>.Instance,
+                                                events);
 
         ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(removedId), CancellationToken.None);
 
@@ -267,7 +286,11 @@ public sealed class DeleteInstallationHandlerTests
 
         IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
 
-        DeleteInstallationHandler handler = new(installations, settings, Substitute.For<IInstallationDbContextFactory>(), events);
+        DeleteInstallationHandler handler = new(installations,
+                                                settings,
+                                                Substitute.For<IInstallationDbContextFactory>(),
+                                                NullLogger<DeleteInstallationHandler>.Instance,
+                                                events);
 
         ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(removedId), CancellationToken.None);
 
@@ -278,5 +301,50 @@ public sealed class DeleteInstallationHandlerTests
 
         events.DidNotReceive()
               .Publish(Arg.Any<DefaultInstallationChangedMessage>());
+    }
+
+    [ Fact ]
+    public async Task Handle_StillPublishes_AndSucceeds_WhenDatabaseFileDeleteFails()
+    {
+        Guid id = Guid.CreateVersion7();
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = id,
+                         Name     = "Main",
+                         Path     = @"C:\Games\Main",
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = Guid.CreateVersion7()
+                });
+
+        IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
+
+        dbFactory.DeleteAsync(id, Arg.Any<CancellationToken>())
+                 .Throws(new IOException(message: "File in use"));
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        DeleteInstallationHandler handler = new(installations,
+                                                settings,
+                                                dbFactory,
+                                                NullLogger<DeleteInstallationHandler>.Instance,
+                                                events);
+
+        ErrorOr<DeleteInstallationResult> result = await handler.Handle(new DeleteInstallationCommand(id), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(new InstallationDeletedMessage(id));
     }
 }

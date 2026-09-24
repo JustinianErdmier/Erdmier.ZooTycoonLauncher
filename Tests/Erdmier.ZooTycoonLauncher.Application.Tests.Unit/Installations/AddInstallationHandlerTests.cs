@@ -1,3 +1,5 @@
+using NSubstitute.ExceptionExtensions;
+
 namespace Erdmier.ZooTycoonLauncher.Application.Tests.Unit.Installations;
 
 public sealed class AddInstallationHandlerTests
@@ -225,5 +227,46 @@ public sealed class AddInstallationHandlerTests
 
         events.DidNotReceive()
               .Publish(Arg.Any<DefaultInstallationChangedMessage>());
+    }
+
+    [ Fact ]
+    public async Task Handle_StillPublishesAdded_WhenDatabaseProvisioningThrows()
+    {
+        AddInstallationCommand command = new(Name: "Main", Path: @"C:\Games\Main", MakeDefault: false);
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetAllAsync(Arg.Any<CancellationToken>())
+                     .Returns(Array.Empty<GameInstallation>());
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings());
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(command.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IInstallationDbContextFactory dbFactory = Substitute.For<IInstallationDbContextFactory>();
+
+        dbFactory.CreateAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+                 .Throws(new IOException(message: "Disk full"));
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        AddInstallationHandler handler = new(installations,
+                                             settings,
+                                             verifier,
+                                             dbFactory,
+                                             Substitute.For<IIniSnapshotService>(),
+                                             TimeProvider.System,
+                                             events);
+
+        await Should.ThrowAsync<IOException>(async () => await handler.Handle(command, CancellationToken.None));
+
+        events.Received(requiredNumberOfCalls: 1)
+              .Publish(Arg.Any<InstallationAddedMessage>());
     }
 }

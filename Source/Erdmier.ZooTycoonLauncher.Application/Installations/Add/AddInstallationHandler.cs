@@ -73,28 +73,35 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
             await _settings.UpdateAsync(settings, cancellationToken);
         }
 
-        // Provision the per-installation database — the file is created and migrations applied here so the INI slice can drop
-        // straight in without retrofitting.
-        await using (IInstallationDbContextHandle handle = await _dbFactory.CreateAsync(row.Id, cancellationToken))
+        try
         {
-            // Handle disposed immediately — we just need the DB file on disk with schema applied.
+            // Provision the per-installation database — the file is created and migrations applied here so the INI slice can drop
+            // straight in without retrofitting.
+            await using (IInstallationDbContextHandle handle = await _dbFactory.CreateAsync(row.Id, cancellationToken))
+            {
+                // Handle disposed immediately — we just need the DB file on disk with schema applied.
+            }
+
+            ErrorOr<Success> snapshotResult = await _snapshots.CaptureOriginalAsync(row, cancellationToken);
+
+            if (snapshotResult.IsError)
+            {
+                // The installation is persisted; snapshot failure is non-fatal here. The INI Config slice's real service will treat
+                // snapshot failure as a transition into the CorruptedIni state rather than an outright error. Infrastructure
+                // logging happens inside NullIniSnapshotService / the real service, not here.
+                _ = snapshotResult; // Discard: failure surfaced to caller via SnapshotFailed flag if needed in future.
+            }
         }
-
-        ErrorOr<Success> snapshotResult = await _snapshots.CaptureOriginalAsync(row, cancellationToken);
-
-        if (snapshotResult.IsError)
+        finally
         {
-            // The installation is persisted; snapshot failure is non-fatal here. The INI Config slice's real service will treat
-            // snapshot failure as a transition into the CorruptedIni state rather than an outright error. Infrastructure
-            // logging happens inside NullIniSnapshotService / the real service, not here.
-            _ = snapshotResult; // Discard: failure surfaced to caller via SnapshotFailed flag if needed in future.
-        }
+            // The row (and default setting) is already persisted, so publish even when provisioning above throws — the
+            // exception still propagates once the finally block completes.
+            _events.Publish(new InstallationAddedMessage(row.Id));
 
-        _events.Publish(new InstallationAddedMessage(row.Id));
-
-        if (becameDefault)
-        {
-            _events.Publish(new DefaultInstallationChangedMessage(row.Id));
+            if (becameDefault)
+            {
+                _events.Publish(new DefaultInstallationChangedMessage(row.Id));
+            }
         }
 
         return new AddInstallationResult(row.Id, verification.Validity, becameDefault);

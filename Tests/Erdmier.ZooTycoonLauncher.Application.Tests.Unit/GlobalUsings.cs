@@ -26,6 +26,7 @@ global using FluentValidation.Results;
 
 global using ErrorOr;
 
+global using Microsoft.Extensions.Logging.Abstractions;
 global using Microsoft.Extensions.Time.Testing;
 
 global using NSubstitute;

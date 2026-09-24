@@ -26,10 +26,8 @@
                         Spacing="8">
                 <TextBlock IsVisible="{Binding IsLoaded}"
                            TextWrapping="Wrap">
-                    <Run Text="Remove " />
-                    <Run FontWeight="Bold"
-                         Text="{Binding InstallationName}" />
-                    <Run Text=" from the launcher's registry?" />
+                    <Run Text="Remove " /><Run FontWeight="Bold"
+                                                Text="{Binding InstallationName}" /><Run Text=" from the launcher's registry?" />
                 </TextBlock>
 
                 <TextBlock IsVisible="{Binding IsLoaded}"
@@ -40,8 +38,7 @@
                 <TextBlock IsVisible="{Binding HasPromotion}"
                            TextWrapping="Wrap">
                     <Run FontWeight="Bold"
-                         Text="{Binding PromotedName}" />
-                    <Run Text=" will be promoted to default." />
+                         Text="{Binding PromotedName}" /><Run Text=" will be promoted to default." />
                 </TextBlock>
 
                 <TextBlock IsVisible="{Binding IsLastInstallation}"

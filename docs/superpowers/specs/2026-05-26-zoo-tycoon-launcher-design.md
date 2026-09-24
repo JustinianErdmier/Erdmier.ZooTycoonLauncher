@@ -1361,9 +1361,9 @@ that owns both label and input is what carries `ToolTip.Tip` so the whole row tr
       `PrefillPath(prefilledPath)` for that.
     - **Mark as default installation** Checkbox (disabled and pre-checked when this is the first installation, per §7.2.1).
     - Footer: `Save` (default) + `Cancel`. `Save` is enabled when both inputs have non-empty values; the handler does the final validation. On dispatch error the message is
-      surfaced as a textblock under the inputs and the dialogue stays open. Both buttons carry no ellipses. Edit mode shares the form: the title and heading change (`Edit
-      Installation` / "Rename this installation or change which one is the launcher's default."), inputs are pre-populated, the folder is read-only with no `Browse…`, and
-      `Mark as default installation` is ticked and read-only when the installation is already the default.
+      surfaced as a textblock under the inputs and the dialogue stays open. Both buttons carry no ellipses. Edit mode shares the form: the title (`Edit Installation`),
+      heading ("Edit installation"), and muted prose ("Rename this installation or change which one is the launcher's default.") change; inputs are pre-populated, the
+      folder is read-only with no `Browse…`, and `Mark as default installation` is ticked and read-only when the installation is already the default.
 - **Installation Info** — read-only modal listing `Name`, `Path`, `Status`, `Default` (Yes/No), `Added`, `Last opened`, `Last played` (localised; "—" when null), and a
   `History entries` count. `Close` default button.
 - **Fix Installation** — `ClassicWindow` modal. Two group boxes (`Fix EXE`, `Fix INI`); each has a status indicator (file present / missing), an explanation, and a

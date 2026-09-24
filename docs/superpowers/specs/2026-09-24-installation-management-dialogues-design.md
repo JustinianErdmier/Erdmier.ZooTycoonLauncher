@@ -183,8 +183,8 @@ and Mark as default is ticked and locked (`IsDefaultLocked`), mirroring `AddInst
   Config slice." **Create** is disabled in both states (D1).
 - Status comes from `VerifyInstallationQuery`, which re-probes the folder on open (and after a relocation) and persists any drift — the stored flags are only refreshed at
   boot, so they can be stale. The title is the fixed "Fix Installation" (as both mock-ups show), not the installation's name; `GetInstallationByIdQuery` instead supplies
-  the folder path for the picker and the stored flags, which are compared against the re-probe's result to detect drift. Returns `true` when a relocation succeeded or the
-  re-probe persisted drift.
+  the folder path for the folder picker and the stored flags, which are compared against the re-probe's result to detect drift. Returns `true` when a relocation
+  succeeded or the re-probe persisted drift.
 
 ---
 

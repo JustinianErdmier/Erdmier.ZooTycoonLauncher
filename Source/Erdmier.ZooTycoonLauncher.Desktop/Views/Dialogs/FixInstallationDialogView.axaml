@@ -16,10 +16,8 @@
                 Spacing="10">
         <TextBlock Opacity="0.6"
                    TextWrapping="Wrap">
-            <Run Text="Recover an installation by locating missing files or restoring a fresh INI. The launcher never patches " />
-            <Run FontFamily="Consolas"
-                 Text="zoo.exe" />
-            <Run Text="." />
+            <Run Text="Recover an installation by locating missing files or restoring a fresh INI. The launcher never patches " /><Run FontFamily="Consolas"
+                 Text="zoo.exe" /><Run Text="." />
         </TextBlock>
 
         <TextBlock Foreground="Red"
@@ -61,8 +59,7 @@
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
                             <Run FontFamily="Consolas"
-                                 Text="zoo.exe" />
-                            <Run Text=" was located at the expected path." />
+                                 Text="zoo.exe" /><Run Text=" was located at the expected path." />
                         </TextBlock>
                     </StackPanel>
 
@@ -74,11 +71,8 @@
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
                             <Run FontFamily="Consolas"
-                                 Text="zoo.exe" />
-                            <Run Text=" is missing from this installation's directory. Browse to a folder that contains " />
-                            <Run FontFamily="Consolas"
-                                 Text="zoo.exe" />
-                            <Run Text="." />
+                                 Text="zoo.exe" /><Run Text=" is missing from this installation's directory. Browse to a folder that contains " /><Run FontFamily="Consolas"
+                                                                                                                                                       Text="zoo.exe" /><Run Text="." />
                         </TextBlock>
                     </StackPanel>
 
@@ -124,8 +118,7 @@
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
                             <Run FontFamily="Consolas"
-                                 Text="zoo.ini" />
-                            <Run Text=" was found in the installation folder." />
+                                 Text="zoo.ini" /><Run Text=" was found in the installation folder." />
                         </TextBlock>
                     </StackPanel>
 

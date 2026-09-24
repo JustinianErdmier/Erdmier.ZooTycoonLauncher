@@ -136,7 +136,8 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
     // own reloads independently. A message that arrives whilst a reload is in flight marks one follow-up reload instead of starting a second, overlapping one — but
     // with SQLite's synchronous completion the first reload has usually already finished by the time a second message arrives, so back-to-back reloads are the common
     // case rather than true coalescing. The catch sits inside the loop so a failed attempt is logged, leaves the previous rows in place, and still honours a follow-up
-    // reload requested whilst it was running. The explicit initial load (InitialiseAsync) calls LoadAsync directly and does not go through this gate.
+    // reload requested whilst it was running. The explicit initial load is the hosts' InitialiseAsync (e.g. InstallationManagerDialogViewModel,
+    // OpenGameInstallationViewModel), which calls LoadAsync directly and bypasses this gate.
     private async Task ReloadCoalescedAsync()
     {
         if (_isReloading)

@@ -72,6 +72,7 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     /// <summary><see langword="true" /> while the INI Config tab holds unsaved edits; disables Launch Game (SDD §7.3.2).</summary>
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(LaunchCommand)) ]
+    [ NotifyPropertyChangedFor(nameof(ShowPendingIniChangesHint)) ]
     public partial bool HasPendingIniChanges { get; set; }
 
     /// <summary>The boot's INI synchronisation error description, or <see langword="null" />.</summary>
@@ -115,6 +116,12 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     ///     CannotPlay message. Maps to <see cref="InstallationValidity.InvalidNoIni" />.
     /// </summary>
     public bool IsMissingOnlyIni => HasExe && !HasIni;
+
+    /// <summary>
+    ///     <see langword="true" /> when the "Save or revert your INI changes to launch." hint should show: Cannot Play already hides the Launch button, so the hint would be
+    ///     meaningless there.
+    /// </summary>
+    public bool ShowPendingIniChangesHint => CanPlay && HasPendingIniChanges;
 
     [ RelayCommand(CanExecute = nameof(CanExecuteLaunch)) ]
     private async Task LaunchAsync(CancellationToken cancellationToken)

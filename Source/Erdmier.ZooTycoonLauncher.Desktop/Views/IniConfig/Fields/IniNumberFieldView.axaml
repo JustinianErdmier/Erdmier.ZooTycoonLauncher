@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig.Fields"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.Fields.IniNumberFieldView"
+             x:DataType="vm:IniNumberFieldViewModel">
+    <NumericUpDown FormatString="0"
+                   HorizontalAlignment="Left"
+                   Increment="1"
+                   Maximum="{Binding Maximum}"
+                   Minimum="{Binding Minimum}"
+                   ParsingNumberStyle="Integer"
+                   Value="{Binding Value}"
+                   Width="120" />
+</UserControl>

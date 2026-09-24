@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig.Fields"
+             xmlns:models="using:Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.Fields.IniLanguageFieldView"
+             x:DataType="vm:IniLanguageFieldViewModel">
+    <ComboBox ItemsSource="{Binding Options}"
+              MaxWidth="260"
+              MinWidth="200"
+              SelectedItem="{Binding SelectedOption}">
+        <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="models:IniLanguageOption">
+                <TextBlock Text="{Binding Label}" />
+            </DataTemplate>
+        </ComboBox.ItemTemplate>
+    </ComboBox>
+</UserControl>

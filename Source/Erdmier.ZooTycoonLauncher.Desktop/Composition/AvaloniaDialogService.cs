@@ -66,7 +66,9 @@ internal sealed class AvaloniaDialogService : IDialogService
         // manager's view model and grid share the same root-level services as everything else — including the nested Add dialogue — and so its reads see writes the
         // Add dialogue makes on the same DbContext. Constructing directly here also keeps the container from tracking this disposable view model, which this method
         // already disposes itself in the finally block below.
-        InstallationGridViewModel grid = new(_services.GetRequiredService<IMediator>(), _services.GetRequiredService<IMessenger>());
+        InstallationGridViewModel grid = new(_services.GetRequiredService<IMediator>(),
+                                             _services.GetRequiredService<IMessenger>(),
+                                             _services.GetRequiredService<ILogger<InstallationGridViewModel>>());
         InstallationManagerDialogViewModel vm = new(grid, this);
 
         try

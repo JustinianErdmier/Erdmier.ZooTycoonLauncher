@@ -13,6 +13,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IDialogService _dialogs;
 
+    private readonly ILogger<InstallationGridViewModel> _gridLogger;
+
     private readonly IApplicationLifecycle _lifecycle;
 
     private readonly ILogger<MainWindowViewModel> _logger;
@@ -27,17 +29,20 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="dialogs">Chrome service for opening modeless and modal dialogues.</param>
     /// <param name="messenger">The CommunityToolkit messenger — passed to freshly-built picker grids so they can subscribe to installation-change notifications.</param>
     /// <param name="logger">Logger for unexpected boot-dispatch and picker-initialisation failures.</param>
-    public MainWindowViewModel(IMediator                    mediator,
-                               IApplicationLifecycle        lifecycle,
-                               IDialogService               dialogs,
-                               IMessenger                   messenger,
-                               ILogger<MainWindowViewModel> logger)
+    /// <param name="gridLogger">Logger passed to freshly-built picker grids so their message-driven reload failures are recorded.</param>
+    public MainWindowViewModel(IMediator                          mediator,
+                               IApplicationLifecycle              lifecycle,
+                               IDialogService                     dialogs,
+                               IMessenger                         messenger,
+                               ILogger<MainWindowViewModel>       logger,
+                               ILogger<InstallationGridViewModel> gridLogger)
     {
-        _mediator  = mediator;
-        _lifecycle = lifecycle;
-        _dialogs   = dialogs;
-        _messenger = messenger;
-        _logger    = logger;
+        _mediator   = mediator;
+        _lifecycle  = lifecycle;
+        _dialogs    = dialogs;
+        _messenger  = messenger;
+        _logger     = logger;
+        _gridLogger = gridLogger;
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
@@ -269,7 +274,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // Single construction point for the picker so boot routing and the File menu build it identically: a fresh grid per picker (the picker owns and disposes it) and the
     // pointed-boot callback for its Open command.
     private OpenGameInstallationViewModel CreatePicker()
-        => new(new InstallationGridViewModel(_mediator, _messenger), _dialogs, OpenInstallationAsync);
+        => new(new InstallationGridViewModel(_mediator, _messenger, _gridLogger), _dialogs, OpenInstallationAsync);
 
     private ViewModelBase RouteResult(AppBoot.BootResult result)
         => result.Outcome switch

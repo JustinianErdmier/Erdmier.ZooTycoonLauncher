@@ -14,6 +14,8 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
                                                         IRecipient<InstallationDeletedMessage>,
                                                         IRecipient<DefaultInstallationChangedMessage>
 {
+    private readonly ILogger<InstallationGridViewModel> _logger;
+
     private readonly IMediator _mediator;
 
     private readonly IMessenger _messenger;
@@ -27,17 +29,19 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher — used to issue <see cref="GetAllInstallationsQuery" />.</param>
     /// <param name="messenger">The CommunityToolkit messenger — used to subscribe to installation-change notifications.</param>
-    public InstallationGridViewModel(IMediator mediator, IMessenger messenger)
+    /// <param name="logger">Logger for reload failures raised whilst handling installation change messages.</param>
+    public InstallationGridViewModel(IMediator mediator, IMessenger messenger, ILogger<InstallationGridViewModel> logger)
     {
         _mediator  = mediator;
         _messenger = messenger;
+        _logger    = logger;
 
         _messenger.RegisterAll(this);
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public InstallationGridViewModel()
-        : this(null!, WeakReferenceMessenger.Default)
+        : this(null!, WeakReferenceMessenger.Default, NullLogger<InstallationGridViewModel>.Instance)
     { }
 
     /// <summary>The rows bound to the DataGrid. Rebuilt wholesale on every <see cref="LoadAsync" /> call.</summary>
@@ -125,7 +129,7 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
         });
 
     // Runs only on the UI thread (see ScheduleReload), so the two flags need no locking. A message that arrives whilst a reload is in flight marks one follow-up reload
-    // instead of starting a second, overlapping one. A failed reload leaves the previous rows in place.
+    // instead of starting a second, overlapping one. A failed reload is logged and leaves the previous rows in place.
     private async Task ReloadCoalescedAsync()
     {
         if (_isReloading)
@@ -146,6 +150,10 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
                 await LoadAsync();
             }
             while (_reloadPending && !_disposed);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to reload the installation list.");
         }
         finally
         {

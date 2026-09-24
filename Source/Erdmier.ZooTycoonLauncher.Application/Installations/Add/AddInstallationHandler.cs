@@ -93,7 +93,7 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
             if (snapshotResult.IsError)
             {
                 // The installation is persisted; a capture failure is non-fatal. Its database stays empty, and the next synchronise (at boot or when the INI tab opens) retries
-                // the first import. IniSnapshotService has already logged the failure.
+                // the first import. IniSnapshotService logs read and store failures itself; a missing zoo.ini produces no log there — it is simply recorded as HasIni = false.
                 _ = snapshotResult; // Discard: failure surfaced to caller via SnapshotFailed flag if needed in future.
             }
         }

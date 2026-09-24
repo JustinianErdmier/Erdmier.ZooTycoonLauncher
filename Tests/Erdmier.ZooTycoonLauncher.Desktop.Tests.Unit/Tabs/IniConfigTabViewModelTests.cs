@@ -1,5 +1,3 @@
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.Tabs;
 
 public sealed class IniConfigTabViewModelTests

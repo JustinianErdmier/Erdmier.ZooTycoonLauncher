@@ -1,5 +1,3 @@
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.Boot;
 
 internal static class PlayTestData

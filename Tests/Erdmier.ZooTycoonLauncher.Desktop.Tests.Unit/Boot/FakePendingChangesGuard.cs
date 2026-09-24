@@ -1,6 +1,3 @@
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels;
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Common;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.Boot;
 
 internal sealed class FakePendingChangesGuard(bool hasPendingChanges, bool allowLeave, Exception? throwOnConfirm = null) : ViewModelBase, IPendingChangesGuard

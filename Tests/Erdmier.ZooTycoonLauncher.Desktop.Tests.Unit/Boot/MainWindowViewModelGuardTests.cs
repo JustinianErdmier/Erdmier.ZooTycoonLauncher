@@ -1,12 +1,3 @@
-using CommunityToolkit.Mvvm.Messaging;
-
-using Erdmier.ZooTycoonLauncher.Application.Boot;
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels;
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Common;
-
-using Microsoft.Extensions.Logging.Abstractions;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.Boot;
 
 public sealed class MainWindowViewModelGuardTests

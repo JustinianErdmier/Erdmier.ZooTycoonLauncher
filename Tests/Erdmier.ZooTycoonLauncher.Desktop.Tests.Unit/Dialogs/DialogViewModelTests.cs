@@ -1,5 +1,3 @@
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.Dialogs;
 
 public sealed class DialogViewModelTests

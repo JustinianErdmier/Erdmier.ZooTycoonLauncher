@@ -1,5 +1,3 @@
-using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.Boot;
 
 public sealed class PlayViewModelTests

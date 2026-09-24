@@ -314,7 +314,7 @@ Task<ErrorOr<IniConfigResult>> LoadAsync(GameInstallation installation, Cancella
 Brings `Current` in line with the on-disk text inside a caller-owned transaction:
 
 ```text
-ReconcileAsync(transaction, diskText, nowUtc) → IniReconciliation(Values, Outcome)
+ReconcileAsync(transaction, diskText, nowUtc) → IniReconciliation(Values, Outcome, ChangedKeyCount)
   document   = IniDocument.Parse(diskText)
   diskValues = ZooIniDefaults.ExtractValues(document)
   current    = transaction.GetCurrentAsync()
@@ -379,6 +379,12 @@ contain no CR / LF and no character above U+00FF (Latin-1 cannot encode it, and 
 10. transaction.CommitAsync()
 11. return (reconciliation.Values overlaid with edits, lastWriteUtc)
 ```
+
+Step 3 (`BeginAsync`) and steps 4–6 (reconcile, the no-edits commit, and the archive) are each wrapped in their own catch, both mapping any unexpected exception to
+`StoreFailed` and logging at error — two catches rather than one, so a fault from step 8's `WriteAsync` is never caught by the store-failure handler. Steps 9–10 use
+`CancellationToken.None` rather than the caller's token and swallow (log, don't fail) an exception there: the file at step 8 is already written and is the new source of
+truth, so the command still returns success built from `reconciliation.Values` overlaid with the edits; the next synchronise sees `Current` disagreeing with the file and
+adopts it as `Manual` drift.
 
 The returned values let the editor reset its baseline — including values merged in from disk for keys the user did not touch.
 
@@ -557,7 +563,8 @@ Per kind:
 - **Number** — `decimal? Value` bound to `NumericUpDown` with `Minimum` / `Maximum` from the spec (`int.MinValue` / `int.MaxValue` when unbounded), `Increment 1`,
   `FormatString "0"`. `CurrentRaw` is the invariant integer text.
 - **Text** — `string Value`; `CurrentRaw` is the text.
-- **Choice** — `Options` + `SelectedOption`; `CurrentRaw` is the selected option's raw value; the selected option is the one `AreEquivalent` to the effective value.
+- **Choice** — `Options` + `SelectedOption`; `CurrentRaw` is the selected option's raw value; the selected option is the one `AreEquivalent` to the effective value. The
+  public setter ignores an externally-written `null` (mirroring `LanguagePicker`'s number-field pair) — only the reload path (`ApplyValue`) can clear it.
 - **LanguagePicker** — holds the `lang` and `sublang` number fields; `SelectedOption` reads the option matching both (none when the pair is not curated) and, when set, writes
   both fields. It listens to both fields to re-raise `SelectedOption`. It is never dirty and never yields an edit — change tracking lives on the two number rows.
 
@@ -581,7 +588,8 @@ Per kind:
 
 - `[ ObservableProperty ] ViewModelBase Content` — the editor or an `IniPlaceholderViewModel`:
   - `!installation.Validity.HasIni` → **No INI present** — *"This installation has no `zoo.ini` on disk, so its settings cannot be edited."*
-  - `iniErrorMessage` set, or a failed load → **`zoo.ini` could not be read** — the error description. Retried on the next activation.
+  - `iniErrorMessage` set, or a failed load → **`zoo.ini` could not be read** — the error description. Retried on the next activation, unless the editor already holds
+    pending edits, in which case the editor stays on screen and the failure is reported via `ShowErrorAsync` instead of swapping in the placeholder.
   - otherwise, until the first load completes → **Loading `zoo.ini`…**
 - `HasPendingChanges` — the editor's, or `false`.
 - `ActivateAsync(CancellationToken)` — called when the tab becomes selected. Unless the `HasIni` placeholder applies or edits are pending, sends `GetIniConfigQuery`; on success
@@ -605,7 +613,9 @@ Footer label, highest priority first:
 ### 7.7 Save and Revert
 
 - **Save** (`[ RelayCommand ]`, enabled when dirty and not busy) collects `TryGetEdit` from dirty fields and sends `SaveIniCommand`. Success → `Load(result)` (baselines reset,
-  merged disk values applied). Failure → `IDialogService.ShowErrorAsync("Cannot Save zoo.ini", description)`; edits are kept.
+  merged disk values applied). Failure → `IDialogService.ShowErrorAsync("Cannot Save zoo.ini", description)`; edits are kept. The underlying `TrySaveAsync` — not just the
+  command's `CanExecute` — never dispatches a second save while one is in flight: a second call awaits the in-flight save and returns its result (a call during a Revert
+  returns failure instead), so a close arriving whilst Save is in flight can never send a duplicate `SaveIniCommand`.
 - **Revert** (enabled when dirty and not busy) sends `GetIniConfigQuery` and `Load`s the result — discarding edits and refreshing from disk. Failure → error dialogue; edits kept.
 
 ### 7.8 Pending-changes guard
@@ -624,6 +634,8 @@ public interface IPendingChangesGuard
 - **No** → `IniConfigTab.DiscardChanges()`; proceed;
 - **Cancel** (or the prompt closed via its title bar) → stay.
 
+A second call while the prompt is already open returns `false` without prompting, so guards that race (a `Drifted` launch outcome and a close, say) never stack two prompts.
+
 `MainWindowViewModel`:
 
 - `CloseInstallationAsync` and `OpenInstallationPickerAsync` await the guard (when `ActiveContent is IPendingChangesGuard`) before showing the picker.
@@ -633,8 +645,9 @@ public interface IPendingChangesGuard
 - `HasPendingChanges` and `ConfirmCloseAsync()` for the window.
 
 `MainWindow` code-behind overrides `OnClosing`: when the view model has pending changes and `IsCloseConfirmed` is false, it sets `e.Cancel = true`, awaits `ConfirmCloseAsync()`,
-and on `true` sets `IsCloseConfirmed` and calls `Close()` again (guarded against exceptions). `MainWindow.axaml` does not change. `CloseAfterGameLaunch` cannot collide with pending
-edits because Launch is disabled while they exist.
+and on `true` sets `IsCloseConfirmed` and calls `Close()` again (guarded against exceptions). `MainWindow.axaml` does not change. Launch is only disabled at the moment of
+the click, so edits can still arrive while a launch is in flight: a successful `Started` outcome then skips the automatic `CloseAfterGameLaunch` shutdown, and a `Drifted`
+outcome runs this same guard — declining skips the reboot — before re-entering the boot pipeline.
 
 ### 7.9 Dialogues
 

@@ -15,8 +15,12 @@
                 Orientation="Vertical"
                 Spacing="10">
         <TextBlock Opacity="0.6"
-                   Text="Recover an installation by locating missing files or restoring a fresh INI. The launcher never patches zoo.exe."
-                   TextWrapping="Wrap" />
+                   TextWrapping="Wrap">
+            <Run Text="Recover an installation by locating missing files or restoring a fresh INI. The launcher never patches " />
+            <Run FontFamily="Consolas"
+                 Text="zoo.exe" />
+            <Run Text="." />
+        </TextBlock>
 
         <TextBlock Foreground="Red"
                    IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
@@ -55,8 +59,11 @@
                         <TextBlock Foreground="Green"
                                    Text="EXE present" />
                         <TextBlock Opacity="0.6"
-                                   Text="zoo.exe was located at the expected path."
-                                   TextWrapping="Wrap" />
+                                   TextWrapping="Wrap">
+                            <Run FontFamily="Consolas"
+                                 Text="zoo.exe" />
+                            <Run Text=" was located at the expected path." />
+                        </TextBlock>
                     </StackPanel>
 
                     <StackPanel IsVisible="{Binding !HasExe}"
@@ -65,8 +72,14 @@
                         <TextBlock Foreground="Red"
                                    Text="No EXE found!" />
                         <TextBlock Opacity="0.6"
-                                   Text="zoo.exe is missing from this installation's directory. Browse to a folder that contains zoo.exe."
-                                   TextWrapping="Wrap" />
+                                   TextWrapping="Wrap">
+                            <Run FontFamily="Consolas"
+                                 Text="zoo.exe" />
+                            <Run Text=" is missing from this installation's directory. Browse to a folder that contains " />
+                            <Run FontFamily="Consolas"
+                                 Text="zoo.exe" />
+                            <Run Text="." />
+                        </TextBlock>
                     </StackPanel>
 
                     <TextBlock Foreground="Red"
@@ -109,8 +122,11 @@
                         <TextBlock Foreground="Green"
                                    Text="INI present" />
                         <TextBlock Opacity="0.6"
-                                   Text="zoo.ini was found in the installation folder."
-                                   TextWrapping="Wrap" />
+                                   TextWrapping="Wrap">
+                            <Run FontFamily="Consolas"
+                                 Text="zoo.ini" />
+                            <Run Text=" was found in the installation folder." />
+                        </TextBlock>
                     </StackPanel>
 
                     <StackPanel IsVisible="{Binding !HasIni}"

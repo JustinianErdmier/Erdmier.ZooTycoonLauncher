@@ -30,7 +30,8 @@
                         IsVisible="{Binding IsBrowseVisible}"
                         MinWidth="75" />
 
-                <TextBox IsReadOnly="{Binding IsFolderReadOnly}"
+                <TextBox FontFamily="Consolas"
+                         IsReadOnly="{Binding IsFolderReadOnly}"
                          Text="{Binding Path, Mode=TwoWay}" />
             </DockPanel>
 

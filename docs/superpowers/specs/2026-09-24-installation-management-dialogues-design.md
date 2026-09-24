@@ -1,7 +1,7 @@
 # Installation Management Dialogues — Design Spec
 
 **Date:** 2026-09-24  
-**Status:** Draft — awaiting review  
+**Status:** Approved  
 **Related SDD sections:** §3.1 (goal 2), §7.2.1, §7.2.3–§7.2.6, §9.4, §9.5, §13.2 (Installation lifecycle)
 
 ---
@@ -86,8 +86,9 @@ keeps calling it after the delete (no exclusion needed). Both therefore use the 
 
 ### 4.1 `MessengerEventPublisher`
 
-`Composition/MessengerEventPublisher : IApplicationEventPublisher` sends through the registered `IMessenger` on the UI thread (`Dispatcher.UIThread.Post` when called off it).
-Registered as a singleton in `AddDesktop`.
+`Composition/MessengerEventPublisher : IApplicationEventPublisher` sends through the registered `IMessenger`, always posting to the UI thread via `Dispatcher.UIThread.Post`
+(even when already called from it), and catches and logs any exception a recipient throws rather than letting it propagate back into the publishing handler. Registered as
+a singleton in `AddDesktop`.
 
 ### 4.2 Grids refresh themselves
 
@@ -181,8 +182,9 @@ and Mark as default is ticked and locked (`IsDefaultLocked`), mirroring `AddInst
 - **Fix INI** — present: green tick, "INI present", "`zoo.ini` was found in the installation folder." Missing: red cross, "No INI found", "INI repair arrives with the INI
   Config slice." **Create** is disabled in both states (D1).
 - Status comes from `VerifyInstallationQuery`, which re-probes the folder on open (and after a relocation) and persists any drift — the stored flags are only refreshed at
-  boot, so they can be stale. The installation's name for the title comes from `GetInstallationByIdQuery`. Returns `true` when a relocation succeeded or the re-probe
-  persisted drift.
+  boot, so they can be stale. The title is the fixed "Fix Installation" (as both mock-ups show), not the installation's name; `GetInstallationByIdQuery` instead supplies
+  the folder path for the picker and the stored flags, which are compared against the re-probe's result to detect drift. Returns `true` when a relocation succeeded or the
+  re-probe persisted drift.
 
 ---
 
@@ -192,6 +194,8 @@ and Mark as default is ticked and locked (`IsDefaultLocked`), mirroring `AddInst
 - **Installation no longer exists** (deleted since the grid loaded): the dialogue shows "This installation no longer exists." and only Close / Cancel remains enabled.
 - **Unexpected exceptions** are logged (`ILogger<T>`) and shown as a generic inline message.
 - Publishing never throws into a handler (fire-and-forget); a failed grid reload leaves the previous rows in place.
+- Delete's per-installation database clean-up is best-effort: a locked `{id}.db` file is logged and left behind rather than failing the operation — the registry change
+  still completes and publishes.
 
 ---
 

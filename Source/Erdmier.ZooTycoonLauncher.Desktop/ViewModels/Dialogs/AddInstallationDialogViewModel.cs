@@ -10,14 +10,18 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
 {
     private const string FirstInstallationName = "Main";
 
+    private readonly ILogger<AddInstallationDialogViewModel> _logger;
+
     private readonly IMediator _mediator;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="dialogs">The dialogue service — passed to the form for the folder picker.</param>
-    public AddInstallationDialogViewModel(IMediator mediator, IDialogService dialogs)
+    /// <param name="logger">Logger for unexpected load and save failures.</param>
+    public AddInstallationDialogViewModel(IMediator mediator, IDialogService dialogs, ILogger<AddInstallationDialogViewModel> logger)
     {
         _mediator = mediator;
+        _logger   = logger;
 
         Form = new InstallationFormViewModel(dialogs);
 
@@ -26,7 +30,7 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public AddInstallationDialogViewModel()
-        : this(null!, null!)
+        : this(null!, null!, NullLogger<AddInstallationDialogViewModel>.Instance)
     { }
 
     /// <summary>The shared Name / Folder / Default form. Bound to <c>InstallationFormView.DataContext</c>.</summary>
@@ -51,14 +55,23 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
             return;
         }
 
-        ErrorOr<IReadOnlyList<InstallationSummary>> existing = await _mediator.Send(new GetAllInstallationsQuery(), cancellationToken);
-
-        if (!existing.IsError
-            && existing.Value.Count == 0)
+        try
         {
-            Form.Name = FirstInstallationName;
+            ErrorOr<IReadOnlyList<InstallationSummary>> existing = await _mediator.Send(new GetAllInstallationsQuery(), cancellationToken);
 
-            Form.LockDefault();
+            if (!existing.IsError
+                && existing.Value.Count == 0)
+            {
+                Form.Name = FirstInstallationName;
+
+                Form.LockDefault();
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to check for existing installations before showing the Add Installation dialogue.");
+
+            // Leave the normal (not-first-installation) defaults.
         }
     }
 
@@ -92,6 +105,12 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
             }
 
             CloseRequested?.Invoke(this, result.Value);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to save the new installation.");
+
+            Form.ErrorMessage = InstallationDialogMessages.UnexpectedFailure;
         }
         finally
         {

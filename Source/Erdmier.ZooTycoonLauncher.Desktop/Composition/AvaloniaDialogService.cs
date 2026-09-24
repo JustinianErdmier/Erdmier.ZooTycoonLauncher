@@ -75,7 +75,15 @@ internal sealed class AvaloniaDialogService : IDialogService
 
         try
         {
-            await vm.InitialiseAsync();
+            try
+            {
+                await vm.InitialiseAsync();
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _services.GetRequiredService<ILogger<AvaloniaDialogService>>()
+                         .LogError(ex, "Failed to load the installation list for the Installation Manager.");
+            }
 
             InstallationManagerDialogView view = new()
             {

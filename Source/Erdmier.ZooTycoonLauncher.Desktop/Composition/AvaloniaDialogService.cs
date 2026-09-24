@@ -53,6 +53,31 @@ internal sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
+    public async Task ShowInstallationManagerAsync()
+    {
+        Window? owner = ResolveOwner();
+
+        if (owner is null)
+        {
+            return;
+        }
+
+        // A per-dialogue scope so the manager's transient view model (and its transient grid) are disposed when the scope is disposed below, rather than living until app exit.
+        using IServiceScope scope = _services.CreateScope();
+
+        InstallationManagerDialogViewModel vm = scope.ServiceProvider.GetRequiredService<InstallationManagerDialogViewModel>();
+
+        await vm.InitialiseAsync();
+
+        InstallationManagerDialogView view = new()
+        {
+            DataContext = vm
+        };
+
+        await view.ShowDialog(owner);
+    }
+
+    /// <inheritdoc />
     public async Task<string?> PickFolderAsync(string? startPath)
     {
         Window? owner = ResolveOwner();
@@ -88,8 +113,11 @@ internal sealed class AvaloniaDialogService : IDialogService
                        .TryGetLocalPath();
     }
 
+    // The currently active window, falling back to MainWindow when none is active. Nested modals (e.g. the Add dialogue opened from the Installation Manager) must be owned by
+    // the topmost open window rather than always MainWindow, otherwise the owner stays interactive and closing it while the nested modal is still open disposes that modal's
+    // per-dialogue scope out from under it.
     private static Window? ResolveOwner()
         => Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
-               ? desktop.MainWindow
+               ? desktop.Windows.FirstOrDefault(window => window.IsActive) ?? desktop.MainWindow
                : null;
 }

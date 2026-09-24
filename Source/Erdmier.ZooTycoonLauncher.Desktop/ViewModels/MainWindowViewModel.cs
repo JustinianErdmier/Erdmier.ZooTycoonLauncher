@@ -68,6 +68,19 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // Pointed boot (SDD §7.2.7 — the picker's Open button): boots the given installation directly, bypassing the startup preference and default resolution.
     private Task OpenInstallationAsync(Guid installationId, CancellationToken cancellationToken) => RunBootAsync(installationId, cancellationToken);
 
+    // File → "Installation Manager…" (SDD §9.10): opens the modal manager, then refreshes the picker grid if it is the active content, so installations added or removed there
+    // are reflected immediately.
+    [ RelayCommand ]
+    private async Task ManageInstallationsAsync(CancellationToken cancellationToken)
+    {
+        await _dialogs.ShowInstallationManagerAsync();
+
+        if (ActiveContent is OpenGameInstallationViewModel picker)
+        {
+            await picker.Grid.LoadAsync(cancellationToken);
+        }
+    }
+
     private async Task RunBootAsync(Guid? installationId, CancellationToken cancellationToken)
     {
         ActiveContent              = new LookingForZooTycoonViewModel();

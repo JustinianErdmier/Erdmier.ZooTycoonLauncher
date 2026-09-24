@@ -120,5 +120,7 @@ file sealed class NoOpDialogService : IDialogService
 
     public Task<AddInstallationResult?> ShowAddInstallationAsync(string? prefilledPath) => Task.FromResult<AddInstallationResult?>(result: null);
 
+    public Task ShowInstallationManagerAsync() => Task.CompletedTask;
+
     public Task<string?> PickFolderAsync(string? startPath) => Task.FromResult<string?>(result: null);
 }

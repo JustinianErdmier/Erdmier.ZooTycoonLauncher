@@ -11,6 +11,9 @@ public interface IDialogService
     /// <param name="prefilledPath">A candidate path to pre-fill into the Folder input — typically <c>BootResult.LocatedCandidatePath</c>.</param>
     Task<AddInstallationResult?> ShowAddInstallationAsync(string? prefilledPath);
 
+    /// <summary>Opens the modal Installation Manager dialogue (SDD §7.2.2, §9.4).</summary>
+    Task ShowInstallationManagerAsync();
+
     /// <summary>
     ///     Opens a native folder picker rooted at the supplied path (or a sensible default when <see langword="null" />) and returns the chosen folder, or <see langword="null" />
     ///     when the user cancels.

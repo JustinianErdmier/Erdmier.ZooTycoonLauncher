@@ -33,7 +33,7 @@
             <MenuItem Header="File">
                 <MenuItem Header="Open Installation…" />
 
-                <MenuItem Header="Installation Manager…" />
+                <MenuItem Header="Installation Manager…" Command="{Binding ManageInstallationsCommand}" />
 
                 <MenuItem Header="Close Installation" />
 

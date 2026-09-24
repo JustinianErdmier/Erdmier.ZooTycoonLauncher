@@ -75,8 +75,18 @@ public sealed partial class OpenGameInstallationViewModel : ViewModelBase, IDisp
         => Task.CompletedTask; // TODO: SDD §7.2.4 — Installation Info dialogue not yet implemented.
 
     [ RelayCommand ]
-    private Task ManageAsync(CancellationToken cancellationToken)
-        => Task.CompletedTask; // TODO: wired in Task 7 once IDialogService.ShowInstallationManagerAsync exists.
+    private async Task ManageAsync(CancellationToken cancellationToken)
+    {
+        if (_dialogs is null)
+        {
+            return;
+        }
+
+        await _dialogs.ShowInstallationManagerAsync();
+
+        // Reload the picker grid in case the user added or removed installations from the manager.
+        await Grid.LoadAsync(cancellationToken);
+    }
 
     private bool CanExecuteSelectionCommand() => Grid.HasSelection;
 

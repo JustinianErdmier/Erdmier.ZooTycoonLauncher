@@ -15,6 +15,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IApplicationLifecycle _lifecycle;
 
+    private readonly ILogger<MainWindowViewModel> _logger;
+
     private readonly IMediator _mediator;
 
     private readonly IMessenger _messenger;
@@ -24,12 +26,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
     /// <param name="dialogs">Chrome service for opening modeless and modal dialogues.</param>
     /// <param name="messenger">The CommunityToolkit messenger — passed to freshly-built picker grids so they can subscribe to installation-change notifications.</param>
-    public MainWindowViewModel(IMediator mediator, IApplicationLifecycle lifecycle, IDialogService dialogs, IMessenger messenger)
+    /// <param name="logger">Logger for unexpected boot-dispatch and picker-initialisation failures.</param>
+    public MainWindowViewModel(IMediator                    mediator,
+                               IApplicationLifecycle        lifecycle,
+                               IDialogService               dialogs,
+                               IMessenger                   messenger,
+                               ILogger<MainWindowViewModel> logger)
     {
         _mediator  = mediator;
         _lifecycle = lifecycle;
         _dialogs   = dialogs;
         _messenger = messenger;
+        _logger    = logger;
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
@@ -92,45 +100,69 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         ActiveContent              = new LookingForZooTycoonViewModel();
         IsBooting                  = true;
-        StatusMessagePrimaryText   = "Discovering installations…";
+        StatusMessagePrimaryText   = installationId is null ? "Discovering installations…" : "Opening installation…";
         StatusMessageSecondaryText = "Please wait…";
 
-        // await Task.Delay(TimeSpan.FromSeconds(seconds: 2), cancellationToken);
+        ViewModelBase? content = null;
 
-        ErrorOr<AppBoot.BootResult> result = await _mediator.Send(new AppBoot.BootCommand(installationId), cancellationToken);
-
-        IsBooting = false;
-
-        ViewModelBase content = result.IsError
-                                    ? new NoGameInstallationFoundViewModel(locatedCandidatePath: null, _dialogs, BootAsync)
-                                    : RouteResult(result.Value);
-
-        if (content is OpenGameInstallationViewModel picker)
+        try
         {
-            await picker.InitialiseAsync(cancellationToken);
+            ErrorOr<AppBoot.BootResult> result = await _mediator.Send(new AppBoot.BootCommand(installationId), cancellationToken);
+
+            if (result.IsError)
+            {
+                ShowBootFailure(content);
+
+                return;
+            }
+
+            content = RouteResult(result.Value);
+
+            if (content is OpenGameInstallationViewModel picker)
+            {
+                await picker.InitialiseAsync(cancellationToken);
+            }
+
+            IsBooting     = false;
+            ActiveContent = content;
+
+            UpdateStatusMessages(result.Value);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected failure whilst booting the launcher.");
 
-        ActiveContent = content;
-
-        UpdateStatusMessages(result);
+            ShowBootFailure(content);
+        }
     }
 
-    private void UpdateStatusMessages(ErrorOr<AppBoot.BootResult> result)
+    // Shown both when the boot dispatch reports an ErrorOr error and when it or the picker's initialisation throws unexpectedly, so the two failure paths share one
+    // implementation. Disposes builtContent when a state view model was constructed but never shown as ActiveContent — e.g. the picker's grid already registered with the
+    // messenger before InitialiseAsync threw.
+    private void ShowBootFailure(ViewModelBase? builtContent)
+    {
+        (builtContent as IDisposable)?.Dispose();
+
+        IsBooting     = false;
+        ActiveContent = new NoGameInstallationFoundViewModel(locatedCandidatePath: null, _dialogs, BootAsync);
+
+        StatusMessagePrimaryText     = "Error whilst booting up launcher…";
+        StatusMessageSecondaryText   = string.Empty;
+        StatusMessageSecondaryColour = null;
+    }
+
+    private void UpdateStatusMessages(AppBoot.BootResult result)
     {
         StatusMessageSecondaryColour = null;
 
-        if (result.IsError)
-        {
-            StatusMessagePrimaryText   = "Error whilst booting up launcher…";
-            StatusMessageSecondaryText = string.Empty;
-
-            return;
-        }
-
-        switch (result.Value.Outcome)
+        switch (result.Outcome)
         {
             case AppBoot.BootOutcome.ReadyToPlay:
-                StatusMessagePrimaryText = $"Ready — {result.Value.ActiveInstallation?.Name}";
+                StatusMessagePrimaryText = $"Ready — {result.ActiveInstallation?.Name}";
 
                 // TODO: Update with dynamic values once screen resolution is known.
                 StatusMessageSecondaryText = "Display: 1920 × 1080";

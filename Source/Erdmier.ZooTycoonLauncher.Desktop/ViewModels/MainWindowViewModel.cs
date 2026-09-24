@@ -86,24 +86,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>Whether the active content holds unsaved edits.</summary>
     public bool HasPendingChanges => ActiveContent is IPendingChangesGuard { HasPendingChanges: true };
 
-    /// <summary>
-    ///     Asks the active content whether the window may close (SDD §7.3.2). Used by the window's close handler. A failure is logged and keeps the window open, so
-    ///     unsaved edits are never lost to an unhandled fault.
-    /// </summary>
+    /// <summary>Asks the active content whether the window may close (SDD §7.3.2). Used by the window's close handler.</summary>
     /// <returns><see langword="true" /> when the window may close.</returns>
-    public async Task<bool> ConfirmCloseAsync()
-    {
-        try
-        {
-            return await ConfirmLeaveActiveContentAsync(CancellationToken.None);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            _logger.LogError(ex, "Unexpected failure whilst confirming the window close.");
-
-            return false;
-        }
-    }
+    public Task<bool> ConfirmCloseAsync() => ConfirmLeaveActiveContentAsync(CancellationToken.None);
 
     [ RelayCommand ]
     private Task BootAsync(CancellationToken cancellationToken) => RunBootAsync(installationId: null, cancellationToken);
@@ -131,7 +116,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             // Pointed boot of the open installation. The boot rebuilds the Play view, so unsaved INI edits are confirmed first (SDD §7.3.2); declining keeps the edits and
             // the view as it is.
             case PlayViewModel play:
-                if (!await play.ConfirmLeaveAsync(cancellationToken))
+                if (!await ConfirmLeaveActiveContentAsync(cancellationToken))
                 {
                     break;
                 }
@@ -193,8 +178,27 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _lifecycle.RequestShutdown();
     }
 
-    private Task<bool> ConfirmLeaveActiveContentAsync(CancellationToken cancellationToken)
-        => ActiveContent is IPendingChangesGuard guard ? guard.ConfirmLeaveAsync(cancellationToken) : Task.FromResult(true);
+    // Guards every exit from the active content — Exit, Close Installation, Open Installation…, the window's close handler (via ConfirmCloseAsync), and the Installation
+    // Manager's reboot of the open installation. A failure whilst confirming unsaved INI changes is logged and treated as "may not leave", so unsaved edits are never lost
+    // to an unhandled fault.
+    private async Task<bool> ConfirmLeaveActiveContentAsync(CancellationToken cancellationToken)
+    {
+        if (ActiveContent is not IPendingChangesGuard guard)
+        {
+            return true;
+        }
+
+        try
+        {
+            return await guard.ConfirmLeaveAsync(cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Unexpected failure whilst confirming unsaved INI changes.");
+
+            return false;
+        }
+    }
 
     // Shared by Open Installation… and Close Installation. Loads the fresh picker's grid before swapping it in (the outgoing state view model is then disposed by
     // OnActiveContentChanged), mirroring RunBootAsync's load-then-show order. A load failure is logged and leaves the current state untouched.

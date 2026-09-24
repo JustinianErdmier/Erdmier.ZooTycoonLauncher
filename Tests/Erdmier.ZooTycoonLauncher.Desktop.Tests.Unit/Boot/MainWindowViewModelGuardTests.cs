@@ -150,6 +150,36 @@ public sealed class MainWindowViewModelGuardTests
         (await window.ConfirmCloseAsync()).ShouldBeFalse();
     }
 
+    [ Fact ]
+    public async Task Exit_GuardThrows_StaysOpenWithoutThrowing()
+    {
+        MainWindowViewModel window = Create();
+
+        window.ActiveContent = new FakePendingChangesGuard(hasPendingChanges: true, allowLeave: false, throwOnConfirm: new InvalidOperationException());
+
+        await window.ExitCommand.ExecuteAsync(parameter: null);
+
+        _lifecycle.DidNotReceive().RequestShutdown();
+        window.IsCloseConfirmed.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task CloseInstallation_GuardThrows_KeepsTheCurrentContent()
+    {
+        MainWindowViewModel window = Create();
+        PlayViewModel       play   = await PlayTestData.CreateWithPendingEditAsync(_mediator, _dialogs, _lifecycle);
+
+        window.IsBooting     = false;
+        window.ActiveContent = play;
+
+        _dialogs.ShowSaveChangesPromptAsync()
+                .Returns<Task<SaveChangesChoice>>(_ => throw new InvalidOperationException());
+
+        await window.CloseInstallationCommand.ExecuteAsync(parameter: null);
+
+        window.ActiveContent.ShouldBeSameAs(play);
+    }
+
     private MainWindowViewModel Create()
         => new(_mediator,
                _lifecycle,

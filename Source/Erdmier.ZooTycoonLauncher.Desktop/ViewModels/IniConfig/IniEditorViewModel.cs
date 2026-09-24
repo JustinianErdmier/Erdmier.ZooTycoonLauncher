@@ -127,8 +127,11 @@ public sealed partial class IniEditorViewModel : ViewModelBase
             return true;
         }
 
-        if (_mediator is null)
+        if (_mediator is null
+            || IsBusy)
         {
+            // IsBusy means a save or revert is already in flight (e.g. a close arriving whilst Save is dispatched); dispatching a second SaveIniCommand here could race the
+            // first, so this call reports failure without touching the mediator.
             return false;
         }
 

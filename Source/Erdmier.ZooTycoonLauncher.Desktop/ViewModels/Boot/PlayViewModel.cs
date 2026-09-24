@@ -147,7 +147,9 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
         {
             switch (result.Outcome)
             {
-                case LaunchGameOutcome.Started when result.CloseAfterGameLaunch:
+                // HasPendingChanges guards against edits typed whilst the launch was in flight: shutting down now would silently discard them, so the launcher stays open
+                // and the edits remain on screen.
+                case LaunchGameOutcome.Started when result.CloseAfterGameLaunch && !HasPendingChanges:
                     _lifecycle.RequestShutdown();
 
                     break;
@@ -156,8 +158,14 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
                     break;
 
                 case LaunchGameOutcome.Drifted:
-                    // CancellationToken.None: a drift-triggered reboot should always complete; the user already committed by clicking Launch, and there is no UI-level cancellation
+                    // The same in-flight-edit race applies here: confirm before rebooting, exactly as the pending-changes guard does elsewhere, so a reboot never overwrites
+                    // edits typed whilst the launch was running. CancellationToken.None: the user already committed by clicking Launch, and there is no UI-level cancellation
                     // source here.
+                    if (!await ConfirmLeaveAsync(CancellationToken.None))
+                    {
+                        break;
+                    }
+
                     await _rebootAsync(CancellationToken.None);
 
                     break;

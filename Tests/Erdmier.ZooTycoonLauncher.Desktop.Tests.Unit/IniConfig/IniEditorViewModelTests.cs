@@ -100,6 +100,29 @@ public sealed class IniEditorViewModelTests
     }
 
     [ Fact ]
+    public async Task TrySaveAsync_WhileASaveIsInFlight_ReturnsFalseWithoutSendingASecondCommand()
+    {
+        IniEditorViewModel editor = CreateEditor();
+
+        TaskCompletionSource<ErrorOr<IniConfigResult>> pending = new();
+
+        _mediator.Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniConfigResult>>(pending.Task));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        Task<bool> firstSave = editor.TrySaveAsync(CancellationToken.None);
+
+        (await editor.TrySaveAsync(CancellationToken.None)).ShouldBeFalse();
+
+        pending.SetResult(IniEditorTestData.Result(("user", "screenwidth", "1024")));
+
+        (await firstSave).ShouldBeTrue();
+
+        await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
     public async Task Revert_ReloadsFromDisk()
     {
         IniEditorViewModel editor = CreateEditor();

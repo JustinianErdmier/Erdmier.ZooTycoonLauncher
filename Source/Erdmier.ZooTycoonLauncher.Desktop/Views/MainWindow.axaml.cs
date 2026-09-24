@@ -81,7 +81,8 @@ public sealed partial class MainWindow : ClassicWindow
         }
         catch (Exception)
         {
-            // The view model already logs a guard failure and returns false, so it never reaches here; this last-resort catch only guards Close() itself.
+            // ConfirmCloseAsync already logs and swallows an ordinary guard failure, returning false; only an unexpected OperationCanceledException from the guard (excluded
+            // from that catch) or a failure of Close() itself still reaches here.
         }
     }
 }

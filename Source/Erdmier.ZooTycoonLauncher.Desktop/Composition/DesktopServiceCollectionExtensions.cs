@@ -14,6 +14,7 @@ public static class DesktopServiceCollectionExtensions
         services.AddTransient<InstallationGridViewModel>();
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<AddInstallationDialogViewModel>();
+        services.AddTransient<InstallationManagerDialogViewModel>();
 
         return services;
     }

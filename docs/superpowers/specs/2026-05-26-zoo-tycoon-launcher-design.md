@@ -125,6 +125,10 @@ The
 launcher tracks three kinds: `Original` (captured once when the installation was first added), `Current` (the value the launcher believes is on disk *right now*), and  
 `Historical` (every prior `Current` state, retained for restore).
 
+**Drift.** A difference between the `Current` snapshot's values and the actual `zoo.ini` on disk. Drift is tiered: a changed user setting archives `Current` to `Historical`  
+(`Trigger = Manual`) before the new values are adopted; game-managed and unrecognised changes are adopted silently, with no archive. Detection runs whenever the installation  
+opens (at boot, or when switching installations), when the INI Config tab is activated, and when saving.
+
 **Scenarios.** The `[scenario]` section of `zoo.ini` is a list of two-letter keys whose values control which scenarios are flagged complete or locked. The full mapping (key →  
 scenario, value → state) is unverified at the time of writing and is a Phase 0 research deliverable ([Section 7.8](#78-scenarios-research-workflow)).
 
@@ -157,13 +161,15 @@ a 32-bit Windows executable from 2001; Avalonia's cross-platform UI capability i
 2. **Manage installations** through a dedicated dialogue: add, edit (rename, change default), delete, fix invalid, view info.
 3. **Persist launcher state** to SQLite under `%LOCALAPPDATA%\ZooTycoonLauncher\Data\` with code-first EF Core migrations.
 4. **Persist per-installation INI state** to a per-installation SQLite database, modelled as EAV snapshots with `Original`, `Current`, and `Historical` tables.
-5. **Parse `zoo.ini`** into a strongly typed `ZooIniModel`, preserving comments, blank lines, key ordering, and unknown keys for byte-fidelity round-trip writes.
+5. **Parse `zoo.ini`** into an `IniDocument` and extract every recognised key's raw value via `ZooIniDefaults`, preserving comments, blank lines, key ordering, and  
+   unrecognised keys for byte-fidelity round-trip writes.
 6. **Edit every recognised INI setting** through a dedicated INI Config tab, grouped by section, with strongly typed inputs (checkbox, NumericUpDown, TextBox, ComboBox).
 7. **Atomic INI writes** with crash-recoverable ordering: archive `Current` → write the file → replace `Current`, in a single EF transaction; the file write operation itself is a
    temp-file +  
    `Move(overwrite: true)`.
-8. **Manual-edit detection.** When `zoo.ini` is mutated outside the launcher between sessions, the launcher detects the drift on next open and archives the prior `Current` to  
-   `Historical` before adopting the file's values.
+8. **Manual-edit detection.** When `zoo.ini` is mutated outside the launcher, the launcher detects the drift (on next open, on INI tab activation, and on save) and applies the  
+   tiered rule: a changed user setting archives the prior `Current` to `Historical` before adopting the file's values; game-managed and unrecognised changes are adopted  
+   silently, with no archive.
 9. **Historical restore.** The Undo button on the INI tab opens a dialogue listing every prior version (timestamped) and lets the user restore any of them.
 10. **Three-state INI tab** that switches between `IniPresent` / `NoIniPresent` / `CorruptedIni` based on the installation's state, with dedicated recovery actions in the latter
     two. A missing `zoo.ini` resolves the main window to **Cannot Play** with the Launch Game button disabled — the launcher will not start the game without a parsed INI.
@@ -899,7 +905,7 @@ The default state when `HasIni = true` and the last parse succeeded. Sections re
 | Kind          | Control                                      |  
 |---------------|----------------------------------------------|  
 | `Bool`        | Checkbox                                     |  
-| `Int`         | NumericUpDown (bounds from `IniRanges`)      |  
+| `Int`         | NumericUpDown (bounds from `IniKeySpec.Min` / `Max`) |  
 | `NullableInt` | NumericUpDown with clear-to-empty affordance |  
 | `Str`         | TextBox                                      |  
 | `NullableStr` | TextBox                                      |  
@@ -999,7 +1005,7 @@ Buttons: **Restore** and **Cancel**.
 
 1. Open transaction.
 2. Copy current `Current` rows into a new `Historical` snapshot (`Trigger = LauncherGui`). Skipped when in Corrupted source mode.
-3. Materialise the chosen historical snapshot's values into a `ZooIniModel`.
+3. Read the chosen historical snapshot's raw values, keyed by `IniKeyId`.
 4. Replay onto the cached `IniDocument` to preserve the Current blob's structure (comments, blanks, key order). Skipped when in Corrupted source mode: in that case, emit from the  
    historical snapshot's own `StructureBlob` instead, since the Current blob is suspect.
 5. Write the file (temp + move).
@@ -1130,8 +1136,8 @@ Every INI write — Save, Restore, Create Default, Restore Defaults — follows 
 
 Crash recovery scenarios are catalogued in §7.7.
 
-For `CorruptedSource` restores (§7.6) — deferred to the future Restore Previous INI dialogue, not part of this slice — step 4 emits from the *historical* snapshot's  
-`StructureBlob` rather than `Current`'s, and step 3 is skipped (we don't want to archive the corrupted Current).
+For a future Restore in `CorruptedSource` mode (§7.6) — not part of this slice — step 6 builds the document from the *historical* snapshot's `StructureBlob` rather than the  
+on-disk text, and step 5 (the `LauncherGui` archive of `Current`) is skipped, since we don't want to archive the corrupted `Current`.
 
 ### 8.3 Scenarios lock/unlock encoding
 
@@ -1262,12 +1268,11 @@ launch slot shows `Launch Game` or `Open Installation Manager…`). There is no 
 ```text  
 Desktop/Views/Tabs/  
 ├── GeneralTabView.axaml                   (Launch Game button, screen-mode counters, installation info)  
-└── IniConfigTabView.axaml                 (hosts a ContentControl that swaps between the three INI sub-states)  
+└── IniConfigTabView.axaml                 (hosts a ContentControl bound to IniConfigTabViewModel.Content)  
 ```  
 
-`IniConfigTabView` holds only a `ContentControl` bound to one of three sub-state view models (`IniPresentViewModel`, `NoIniPresentViewModel`, `CorruptedIniViewModel`); each is
-its  
-own `UserControl` under `Desktop/Views/IniStates/`. This keeps the tab itself tiny and the §7.3 / §7.4 / §7.5 state handling visually separate.
+`IniConfigTabView` hosts a `ContentControl` bound to `IniConfigTabViewModel.Content`, which is either the `IniEditorViewModel` or an `IniPlaceholderViewModel` (Loading, No INI  
+present, or `zoo.ini` could not be read — §9.3.1). Every view lives under `Desktop/Views/IniConfig/`. This keeps the tab itself tiny and the state handling visually separate.
 
 **Layer 3 — INI sections.** `IniEditorView` hosts one generic `IniSectionView` / `IniSectionViewModel` pair for every section. The rows come from the Desktop catalogue  
 (`IniEditorCatalogue`) and are field view models (`IniToggleFieldViewModel`, `IniNumberFieldViewModel`, `IniTextFieldViewModel`, `IniChoiceFieldViewModel`,  
@@ -1319,18 +1324,21 @@ an optional muted hint sub-line (`px`, `1–60 ticks/sec`, `-10000 silent → 0 
 
 #### 9.3.1 INI Config sub-states
 
-`IniConfigTabView` swaps between three sub-state UserControls inside its `ContentControl` (§9.2):
+`IniConfigTabView` hosts a `ContentControl` bound to `IniConfigTabViewModel.Content` (§9.2), which is either the editor or one of three `IniPlaceholderViewModel` cases:
 
-- **IniPresent** — the editor described above. Active when `HasIni = true` and the parse succeeded.
-- **NoIniPresent** — a single `INI status` group box with a warning icon, "No INI present" headline, an explanation, and two action buttons: `Create zoo.ini from defaults` (  
-  default) and `Locate existing zoo.ini`. Active in `CannotPlay` when `HasIni = false`. Until the INI recovery slice lands, this is a message-only placeholder (no buttons).
-- **Disabled placeholder** — a muted centred message: *"INI editing becomes available once an installation is open and its `zoo.ini` has been parsed."* Rendered when the tab
-  itself  
-  is disabled (Looking / NoInstall / OpenPicker); having the placeholder behind the disabled tab keeps the panel from flashing empty if the tab is briefly visible during a state  
-  transition.
+- **Editor** — the `IniEditorViewModel` described above. Shown once the installation's `zoo.ini` has loaded successfully.
+- **Loading** — a muted "Loading `zoo.ini`…" placeholder, shown until the first load completes.
+- **No INI present** — a single `INI status` group box with a warning icon, "No INI present" headline, an explanation, and two action buttons: `Create zoo.ini from defaults`  
+  (default) and `Locate existing zoo.ini`. Shown when `HasIni = false`. Until the INI recovery slice lands, this is a message-only placeholder (no buttons).
+- **`zoo.ini` could not be read** — a warning placeholder carrying the read- or snapshot-store-failure description (§7.5's MVP note). Retried on the next tab activation.
 
-The `CorruptedIni` sub-state previously named in §9.2 is not currently materialised — the prototype showed that `NoIniPresent` covers the only failure mode we surface today (  
-missing file). If a corrupted-but-present scenario emerges from Phase 0 INI research, a third sub-state can be added without restructuring.
+There is also a **disabled placeholder** outside `IniConfigTabViewModel.Content` — a muted centred message: *"INI editing becomes available once an installation is open and its  
+`zoo.ini` has been parsed."* Rendered when the tab itself is disabled (Looking / NoInstall / OpenPicker); having the placeholder behind the disabled tab keeps the panel from  
+flashing empty if the tab is briefly visible during a state transition.
+
+The views for the editor and every placeholder case live under `Desktop/Views/IniConfig/`. The `CorruptedIni` sub-state previously named in §9.2 is not materialised as its own  
+case — a corrupted-but-present file surfaces through the "could not be read" placeholder above, alongside the missing-file case, rather than through a separate sub-state. If a  
+scenario emerges from Phase 0 INI research that needs different recovery actions, a dedicated sub-state can still be added without restructuring.
 
 #### 9.3.2 Hover-and-status help affordance
 
@@ -1501,7 +1509,7 @@ Four test projects, one per layer:
 Pure POCO logic with xUnit + Shouldly + NSubstitute.
 
 - `IniKeySpec` — `IsValid`, `AreEquivalent`, `EffectiveValue` per kind; `ZooIniDefaults` — registry integrity; `IniDriftDetector` — tier classification.
-- `ZooIniDefaults` — every registered key resolves to a property on the matching submodel.
+- `ZooIniDefaults` — 56 keys, unique ids, every default valid under its own spec, `Min ≤ Max`, `ExtractValues` returns only present recognised keys.
 - `ScenarioKeyRegistry` — every key has a non-null descriptor; unknown-keys fallback resolves; descriptor citations are non-empty.
 - `InstallationValidity.From(hasExe, hasIni)` — every cell of the 2×2 truth table.
 - `InstallationNameSuggester` — collision resolution (`Installation 2` taken → `Installation 3`); zero-existing case yields `Main`.
@@ -1519,7 +1527,7 @@ Slice handlers with fakes for every Infrastructure interface.
 - `LaunchGameHandler` — three-branch `LaunchGameOutcome`: `Started` (process started, `LastPlayedUtc` set, `CloseAfterGameLaunch` snapshot carried back); `Drifted` (re-verification
   failed, no launch attempted, caller re-enters boot); `StartFailed` (`Process.Start` rejected, `FailureMessage` carried back for the launch-error window).
 - `RestoreSnapshotCommand` — historical archiving order matches §8.2; `CorruptedSource` mode skips the archive and emits from the historical blob.
-- INI-tab routing — `IniPresent / NoIniPresent / CorruptedIni` selection from `(HasIni, ParseResult)`.
+- `IniConfigTabViewModel` sub-state selection — editor / loading / no-INI / could-not-be-read, from `HasIni` and the `GetIniConfigQuery` load result or error.
 - Pending-changes guard — switching/closing while edits are pending is blocked unless the user confirms discard.
 
 ### 11.3 `Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration`
@@ -1531,7 +1539,8 @@ EF Core against an ephemeral SQLite database per test (`Filename=:memory:` for n
   `Original`  
   and `Current`.
 - Cascade behaviour — `Snapshots → IniValues` cascades; deleting a `GameInstallation` referenced as `DefaultInstallationId` sets it to NULL.
-- INI parser fixtures — vanilla, with comments and blanks preserved, with unknown keys preserved, with out-of-range values silently falling back to current.
+- INI parser fixtures — vanilla, with comments and blanks preserved, with unrecognised keys preserved, with an out-of-range value preserved on disk and in history (the  
+  display-time fallback to the key's default is an editor concern, not a parser one).
 - Atomic write — simulate a failure between file write and DB commit (inject failure via a wrapping `IFileSystem`); verify the next-open recovery path archives the on-disk drift
   to  
   `Historical` with `Trigger = Manual`.
@@ -1676,7 +1685,7 @@ an Avalonia-12 fork is not planned.
 | 5 | Lock value may vary by campaign tier       | Risk (Phase 0)   | If realised, `ScenarioDescriptor` grows `LockedValue`; UI becomes tri-state.                                                 |  
 | 6 | Carried-over library licences/versions     | Assumption       | Re-verify "confirm" entries in §4.6 at implementation.                                                                       |  
 | 7 | Antivirus / SmartScreen flagging           | Risk (mitigated) | The launcher itself is a signed-on-build-machine binary; ZT1 launch failures due to AV are surfaced as a non-blocking error. |  
-| 8 | Out-of-band INI edits between sessions     | Risk (mitigated) | Drift detection on parse (§7.1, §7.7) archives `Current` → `Historical` before adopting the on-disk values.                  |  
+| 8 | Out-of-band INI edits between sessions     | Risk (mitigated) | Tiered drift detection (§2.2, §7.1.3, §7.7) archives `Current` → `Historical` for changed user settings before adopting the on-disk values; game-managed and unrecognised changes are adopted silently. |  
 | 9 | UAC VirtualStore redirection                | Risk (open)      | A Program Files install may have the game reading a VirtualStore copy of `zoo.ini`; the launcher assumes it can write in place. Candidate future slice. |  
 | 10 | Edits saved while ZT1 is running           | Risk (accepted)  | The game may overwrite them on exit; the next activation shows what it wrote, and the launcher's version is archived as `Manual` drift.                 |  
 
@@ -1694,7 +1703,7 @@ an Avalonia-12 fork is not planned.
 | **Structure blob**                  | The raw INI file text captured on a snapshot, used to re-emit the file with comments, blanks, and key ordering preserved.                                     |  
 | **Source flag (per value)**         | `OriginalImport`, `LauncherGui`, or `Manual` — how the value got into the current snapshot.                                                                   |  
 | **Atomic write**                    | The temp-file + `Move(overwrite: true)` pattern, wrapped in an EF transaction that archives `Current` → `Historical` before replacing `Current`.              |  
-| **Drift**                           | A difference between `Current` snapshot values and the actual `zoo.ini` on disk, detected on launcher open.                                                   |  
+| **Drift**                           | A difference between `Current` snapshot values and the actual `zoo.ini` on disk. Tiered: a changed user setting archives `Current` to `Historical` (`Manual`) before adopting; game-managed and unrecognised changes are adopted silently. Detected on open/boot, INI tab activation, and save. |  
 | **Validity**                        | `Valid`, `Invalid — No EXE`, `Invalid — No INI`, or `Invalid — No EXE or INI`; derived from `HasExe` and `HasIni`.                                            |  
 | **Scenarios (in-game)**             | The campaign challenges shipped with ZT1, configured via the `[scenario]` section using two-letter keys.                                                      |  
 | **Display mode / screen mode**      | A `(width, height, colour depth, refresh rate, orientation)` tuple Windows reports via `EnumDisplaySettingsEx`.                                               |  

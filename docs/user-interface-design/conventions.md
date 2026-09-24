@@ -265,7 +265,7 @@ Every brush, font, and spacing referenced from XAML uses `{DynamicResource KeyNa
 
 ## 9. State-bar message catalogue
 
-Cell 1 of the status bar carries the primary message; cell 2 carries the secondary detail; cell 3 carries the version. Cell 2's text comes from this table unless a hover help one-liner has been published through `IStatusBarSink` (which overrides cell 1, see §6).
+Cell 1 of the status bar carries the primary message; cell 2 carries the secondary detail; cell 3 carries the version. Cell 2's text comes from this table.
 
 | State          | Cell 1                                        | Cell 2                                  | Notes                                |
 |----------------|-----------------------------------------------|------------------------------------------|---------------------------------------|

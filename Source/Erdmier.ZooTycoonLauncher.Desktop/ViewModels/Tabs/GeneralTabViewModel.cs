@@ -14,8 +14,13 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     /// <param name="canPlay"><see langword="true" /> when the owning <see cref="Boot.PlayViewModel" /> is in the ReadyToPlay state; drives <see cref="CanPlay" />.</param>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="openInstallationManagerAsync">Opens the Installation Manager through the main window, which refreshes the open installation afterwards.</param>
-    public GeneralTabViewModel(InstallationSummary installation, bool canPlay, IMediator mediator, Func<CancellationToken, Task> openInstallationManagerAsync)
-        : this(installation, canPlay)
+    /// <param name="iniErrorMessage">The boot's INI synchronisation error, or <see langword="null" />.</param>
+    public GeneralTabViewModel(InstallationSummary           installation,
+                               bool                          canPlay,
+                               IMediator                     mediator,
+                               Func<CancellationToken, Task> openInstallationManagerAsync,
+                               string?                       iniErrorMessage = null)
+        : this(installation, canPlay, iniErrorMessage)
     {
         _mediator                     = mediator;
         _openInstallationManagerAsync = openInstallationManagerAsync;
@@ -32,10 +37,11 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
                                        ModifiedUtc: null,
                                        LastPlayedUtc: null,
                                        LastOpenedUtc: null),
-               canPlay: true)
+               canPlay: true,
+               iniErrorMessage: null)
     { }
 
-    private GeneralTabViewModel(InstallationSummary installation, bool canPlay)
+    private GeneralTabViewModel(InstallationSummary installation, bool canPlay, string? iniErrorMessage)
     {
         _installationId  = installation.Id;
         InstallationName = installation.Name;
@@ -47,6 +53,8 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
 
         HasExe = installation.Validity.HasExe;
         HasIni = installation.Validity.HasIni;
+
+        IniErrorMessage = iniErrorMessage;
     }
 
     /// <summary>
@@ -60,6 +68,15 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
 
     /// <summary><see langword="true" /> when <c>zoo.ini</c> is present in the installation's directory; drives the INI status row.</summary>
     public bool HasIni { get; }
+
+    /// <summary><see langword="true" /> while the INI Config tab holds unsaved edits; disables Launch Game (SDD §7.3.2).</summary>
+    [ ObservableProperty ]
+    [ NotifyCanExecuteChangedFor(nameof(LaunchCommand)) ]
+    [ NotifyPropertyChangedFor(nameof(ShowPendingIniChangesHint)) ]
+    public partial bool HasPendingIniChanges { get; set; }
+
+    /// <summary>The boot's INI synchronisation error description, or <see langword="null" />.</summary>
+    public string? IniErrorMessage { get; }
 
     /// <summary>The installation's last played date, formatted for display; refreshed in place after a successful launch stamps a new value.</summary>
     [ ObservableProperty ]
@@ -75,6 +92,12 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(LaunchCommand)) ]
     public partial bool IsBusy { get; set; }
+
+    /// <summary>
+    ///     <see langword="true" /> when both files are present but the installation cannot be played because <c>zoo.ini</c> could not be read; drives the fourth CannotPlay
+    ///     message.
+    /// </summary>
+    public bool IsIniUnreadable => HasExe && HasIni && !CanPlay;
 
     /// <summary>
     ///     <see langword="true" /> when the installation cannot be played because both <c>zoo.exe</c> and <c>zoo.ini</c> are missing; drives the "missing both files" CannotPlay
@@ -93,6 +116,12 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     ///     CannotPlay message. Maps to <see cref="InstallationValidity.InvalidNoIni" />.
     /// </summary>
     public bool IsMissingOnlyIni => HasExe && !HasIni;
+
+    /// <summary>
+    ///     <see langword="true" /> when the "Save or revert your INI changes to launch." hint should show: Cannot Play already hides the Launch button, so the hint would be
+    ///     meaningless there.
+    /// </summary>
+    public bool ShowPendingIniChangesHint => CanPlay && HasPendingIniChanges;
 
     [ RelayCommand(CanExecute = nameof(CanExecuteLaunch)) ]
     private async Task LaunchAsync(CancellationToken cancellationToken)
@@ -126,7 +155,7 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
         }
     }
 
-    private bool CanExecuteLaunch() => CanPlay && !IsBusy && _mediator is not null;
+    private bool CanExecuteLaunch() => CanPlay && !IsBusy && !HasPendingIniChanges && _mediator is not null;
 
     // Cannot Play's "Open Installation Manager…" button — the natural route into Fix (SDD §9.1).
     [ RelayCommand ]

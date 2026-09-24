@@ -124,11 +124,14 @@ Optional `TextBlock` immediately below the label, styled with `MutedText`. Carri
 
 Every row participates in the hover + status help affordance (SDD §9.3.2):
 
-1. **Tooltip.** Set `ToolTip.Tip` on the **row's parent panel** (the `Grid` itself, not the label or input). Avalonia's tooltip propagates from the hovered visual up the parent chain, so attaching to the panel makes the whole row trigger the tip. Tip text comes from `IIniHelpRegistry.GetLongDescription(IniKeyId id)` — a registry seeded from `Resources/IniTooltips.axaml` in the Ref build.
-2. **Status-bar one-liner.** Attach `PointerEntered` / `PointerExited` on the row (`Grid.PointerEntered=…`). Enter → call `IStatusBarSink.SetHelp(IIniHelpRegistry.GetShortHelp(id))`. Exit → call `IStatusBarSink.ClearHelp()`. The status-bar VM falls back to its dirty-state indicator when `SetHelp` hasn't been called.
-3. **Keyboard parity.** The same enter/exit pair fires on `GotFocus` / `LostFocus` for the row's input control, so tab navigation surfaces the same one-liner.
+1. **Tooltip.** Set `ToolTip.Tip` on the **row's parent panel** (the `Grid` itself, not the label or input). Avalonia's tooltip propagates from the hovered visual up the parent
+   chain, so attaching to the panel makes the whole row trigger the tip. Tip text comes from `IniFieldDescriptor.Help` in `IniEditorCatalogue` (`Desktop/Models/IniConfig/`), not
+   `IIniHelpRegistry`.
+2. **Editor footer one-liner.** The row template in `IniSectionView` sets the field's `IsHelpActive` on `PointerEntered` / `PointerExited`. The editor's own footer (not the
+   main-window status bar) shows that field's help while it is active.
+3. **Keyboard parity.** The same row template sets `IsHelpActive` on `GotFocus` / `LostFocus` for the row's input control, so tab navigation surfaces the same help line.
 
-A shared `IniRowBehavior` attached behaviour wires (1)–(3) given an `IniKeyId`. Hand-rolling per row is forbidden.
+The wiring lives once in `IniSectionView`'s row template; rows never hand-roll it.
 
 ### 3.4 Section header and sub-header
 
@@ -208,28 +211,8 @@ Footer order from left to right matches the natural reading order: positive acti
 
 ## 6. Hover + status help wiring
 
-A single application service drives the status-bar help affordance:
-
-```csharp
-public interface IStatusBarSink
-{
-    void SetHelp(string oneLiner);
-    void ClearHelp();
-}
-```
-
-The implementation owns the main window's status-bar cell 1 (`Foreground` italic when a one-liner is set, `Foreground` normal + dirty/saved indicator otherwise). Views never poke the cell directly.
-
-`IniRowBehavior` (§3.3) is the only caller in the MVP. Future surfaces can call `SetHelp` too — Phase 2's saves catalogue, for example — but they go through the same service.
-
-The full long-form tooltip text comes from `IIniHelpRegistry`. The two methods that matter are:
-
-```csharp
-string GetShortHelp(IniKeyId id);   // status-bar one-liner
-string GetLongDescription(IniKeyId id); // OS-level tooltip
-```
-
-The registry is seeded from `Resources/IniTooltips.axaml` (Ref launcher) at app startup, then immutable. Strings are British English; the prototype's prose lives in `src/ini-config.jsx` as a `HELP` object — port that map into the registry.
+The INI editor's footer label carries help: the hovered or focused row's `Help` (italic), otherwise `● Unsaved changes` (maroon, bold), otherwise
+`All changes saved · Last write: <local time>` (muted). There is no `IStatusBarSink` or `IIniHelpRegistry`; the main-window status bar is unaffected (SDD §9.3.2).
 
 ---
 
@@ -282,7 +265,7 @@ Every brush, font, and spacing referenced from XAML uses `{DynamicResource KeyNa
 
 ## 9. State-bar message catalogue
 
-Cell 1 of the status bar carries the primary message; cell 2 carries the secondary detail; cell 3 carries the version. Cell 2's text comes from this table unless a hover help one-liner has been published through `IStatusBarSink` (which overrides cell 1, see §6).
+Cell 1 of the status bar carries the primary message; cell 2 carries the secondary detail; cell 3 carries the version. Cell 2's text comes from this table.
 
 | State          | Cell 1                                        | Cell 2                                  | Notes                                |
 |----------------|-----------------------------------------------|------------------------------------------|---------------------------------------|
@@ -292,7 +275,7 @@ Cell 1 of the status bar carries the primary message; cell 2 carries the seconda
 | No Installation| `No installation registered`                  | *(empty)*                                |                                       |
 | Open Picker    | `Choose an installation to open`              | *(empty)*                                |                                       |
 
-Cell 1 string in italic + `AccentMaroon` while the INI editor has unsaved changes (override from `IniConfigTabViewModel`). The full set of state strings is fixed and tested.
+The INI editor's own footer shows unsaved-change state (§6). The full set of state strings is fixed and tested.
 
 ---
 

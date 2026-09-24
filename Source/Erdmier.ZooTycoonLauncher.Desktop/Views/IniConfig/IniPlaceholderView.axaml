@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig"
+             xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
+             x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.IniPlaceholderView"
+             x:DataType="vm:IniPlaceholderViewModel">
+    <controls:GroupBox Header="INI status"
+                       Margin="8"
+                       Padding="10 15"
+                       VerticalAlignment="Top">
+        <DockPanel HorizontalSpacing="10">
+            <Image DockPanel.Dock="Left"
+                   Height="32"
+                   IsVisible="{Binding ShowWarningIcon}"
+                   Source="/Assets/Win95Icons/warning32.gif"
+                   VerticalAlignment="Top"
+                   Width="32" />
+
+            <StackPanel Spacing="4">
+                <TextBlock FontWeight="Bold"
+                           Text="{Binding Headline}" />
+
+                <TextBlock Foreground="Gray"
+                           IsVisible="{Binding HasBody}"
+                           Text="{Binding Body}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </DockPanel>
+    </controls:GroupBox>
+</UserControl>

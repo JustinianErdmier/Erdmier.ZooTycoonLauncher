@@ -955,4 +955,96 @@ public sealed class BootHandlerTests
                            .UpdateAsync(Arg.Is<GameInstallation>(i => i.Id == requestedId && i.LastOpenedUtc == fakeNow),
                                         Arg.Any<CancellationToken>());
     }
+
+    [ Fact ]
+    public async Task Handle_ReturnsCannotPlayWithoutSynchronising_WhenIniMissing()
+    {
+        Guid id = Guid.CreateVersion7();
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = id
+                });
+
+        GameInstallation row = new()
+        {
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(row);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: false));
+
+        IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
+
+        BootHandler handler = new(settings, installations, verifier, Substitute.For<IInstallationLocator>(), snapshots, TimeProvider.System);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
+
+        result.Value.Outcome.ShouldBe(BootOutcome.CannotPlay);
+        result.Value.IniErrorMessage.ShouldBeNull();
+        row.HasIni.ShouldBeFalse();
+
+        await snapshots.DidNotReceive().SynchroniseAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Handle_CarriesTheIniErrorMessage_WhenSynchroniseFails()
+    {
+        Guid id = Guid.CreateVersion7();
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = id
+                });
+
+        GameInstallation row = new()
+        {
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = true,
+            HasIni   = true,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(row);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: true, HasIni: true));
+
+        IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
+
+        snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
+                 .Returns(Error.Failure(code: "Ini.ReadFailed", description: "zoo.ini could not be read: locked"));
+
+        BootHandler handler = new(settings, installations, verifier, Substitute.For<IInstallationLocator>(), snapshots, TimeProvider.System);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
+
+        result.Value.Outcome.ShouldBe(BootOutcome.CannotPlay);
+        result.Value.IniErrorMessage.ShouldBe(expected: "zoo.ini could not be read: locked");
+    }
 }

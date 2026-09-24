@@ -3,7 +3,7 @@
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.PlayView"
              x:DataType="vm:PlayViewModel">
-    <TabControl>
+    <TabControl SelectedIndex="{Binding SelectedTabIndex}">
         <TabItem Header="General">
             <ContentControl Content="{Binding GeneralTab}" />
         </TabItem>

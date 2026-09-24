@@ -227,6 +227,46 @@ internal sealed class AvaloniaDialogService : IDialogService
                        .TryGetLocalPath();
     }
 
+    /// <inheritdoc />
+    public async Task<SaveChangesChoice> ShowSaveChangesPromptAsync()
+    {
+        Window? owner = ResolveOwner();
+
+        if (owner is null)
+        {
+            return SaveChangesChoice.Cancel;
+        }
+
+        SaveChangesPromptView view = new()
+        {
+            DataContext = new SaveChangesPromptViewModel()
+        };
+
+        SaveChangesChoice? choice = await view.ShowDialog<SaveChangesChoice?>(owner);
+
+        return choice ?? SaveChangesChoice.Cancel;
+    }
+
+    /// <inheritdoc />
+    public async Task ShowErrorAsync(string title, string message)
+    {
+        ErrorMessageView view = new()
+        {
+            DataContext = new ErrorMessageViewModel(title, message)
+        };
+
+        Window? owner = ResolveOwner();
+
+        if (owner is null)
+        {
+            view.Show();
+
+            return;
+        }
+
+        await view.ShowDialog(owner);
+    }
+
     // The currently active window, falling back to MainWindow when none is active. Nested modals (e.g. the Add dialogue opened from the Installation Manager) must be owned by
     // their parent window so ShowDialog disables the parent while the child is open.
     private static Window? ResolveOwner()

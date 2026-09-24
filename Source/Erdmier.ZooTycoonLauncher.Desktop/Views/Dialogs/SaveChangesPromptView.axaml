@@ -1,0 +1,56 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
+               x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.SaveChangesPromptView"
+               x:DataType="vm:SaveChangesPromptViewModel"
+               CanResize="False"
+               Icon="/Assets/BrandIcons/ZTL_Title-Icon.png"
+               ShowInTaskbar="False"
+               SizeToContent="WidthAndHeight"
+               Title="Zoo Tycoon Launcher"
+               WindowStartupLocation="CenterOwner">
+    <ClassicWindow.Styles>
+        <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+        <Style Selector="CaptionButtons /template/ Button#PART_RestoreButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+    </ClassicWindow.Styles>
+
+    <StackPanel Margin="14"
+                Spacing="14">
+        <DockPanel HorizontalSpacing="10">
+            <Image DockPanel.Dock="Left"
+                   Height="32"
+                   Source="/Assets/Win95Icons/warning32.gif"
+                   VerticalAlignment="Center"
+                   Width="32" />
+
+            <TextBlock MaxWidth="320"
+                       Text="{Binding Message}"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center" />
+        </DockPanel>
+
+        <StackPanel HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="6">
+            <Button Click="OnYesClick"
+                    Content="Yes"
+                    IsDefault="True"
+                    MinWidth="75" />
+
+            <Button Click="OnNoClick"
+                    Content="No"
+                    MinWidth="75" />
+
+            <Button Click="OnCancelClick"
+                    Content="Cancel"
+                    IsCancel="True"
+                    MinWidth="75" />
+        </StackPanel>
+    </StackPanel>
+</ClassicWindow>

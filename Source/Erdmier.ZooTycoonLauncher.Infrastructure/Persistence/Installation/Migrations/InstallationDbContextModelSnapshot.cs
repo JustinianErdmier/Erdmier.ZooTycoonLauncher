@@ -15,7 +15,7 @@ namespace Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Installation.Migr
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
 
             modelBuilder.Entity("Erdmier.ZooTycoonLauncher.Domain.IniSnapshots.IniSnapshot", b =>
                 {
@@ -38,6 +38,17 @@ namespace Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Installation.Migr
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex(new[] { "Kind", "CapturedUtc" }, "IX_Snapshots_Kind_CapturedUtc")
+                        .IsDescending(false, true);
+
+                    b.HasIndex(new[] { "Kind" }, "IX_Snapshots_Kind_Current")
+                        .IsUnique()
+                        .HasFilter("\"Kind\" = 'Current'");
+
+                    b.HasIndex(new[] { "Kind" }, "IX_Snapshots_Kind_Original")
+                        .IsUnique()
+                        .HasFilter("\"Kind\" = 'Original'");
 
                     b.ToTable("Snapshots", (string)null);
                 });

@@ -1,0 +1,43 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
+               x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.ErrorMessageView"
+               x:DataType="vm:ErrorMessageViewModel"
+               CanResize="False"
+               Icon="/Assets/BrandIcons/ZTL_Title-Icon.png"
+               ShowInTaskbar="False"
+               SizeToContent="Height"
+               Title="{Binding Title}"
+               Width="420"
+               WindowStartupLocation="CenterOwner">
+    <ClassicWindow.Styles>
+        <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+        <Style Selector="CaptionButtons /template/ Button#PART_RestoreButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+    </ClassicWindow.Styles>
+
+    <StackPanel Margin="14"
+                Spacing="14">
+        <DockPanel HorizontalSpacing="10">
+            <Image DockPanel.Dock="Left"
+                   Height="32"
+                   Source="/Assets/Win95Icons/error32.gif"
+                   VerticalAlignment="Top"
+                   Width="32" />
+
+            <TextBlock Text="{Binding Message}"
+                       TextWrapping="Wrap" />
+        </DockPanel>
+
+        <Button Click="OnOkClick"
+                Content="OK"
+                HorizontalAlignment="Center"
+                IsDefault="True"
+                MinWidth="75" />
+    </StackPanel>
+</ClassicWindow>

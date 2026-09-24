@@ -48,4 +48,41 @@ public sealed partial class MainWindow : ClassicWindow
 
         Position = new PixelPoint(x, y);
     }
+
+    /// <inheritdoc />
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        base.OnClosing(e);
+
+        if (e.Cancel
+            || DataContext is not MainWindowViewModel { IsCloseConfirmed: false, HasPendingChanges: true } viewModel)
+        {
+            return;
+        }
+
+        // Closing is synchronous, so cancel now, ask asynchronously, and close again once the user has answered.
+        e.Cancel = true;
+
+        _ = ConfirmAndCloseAsync(viewModel);
+    }
+
+    private async Task ConfirmAndCloseAsync(MainWindowViewModel viewModel)
+    {
+        try
+        {
+            if (!await viewModel.ConfirmCloseAsync())
+            {
+                return;
+            }
+
+            viewModel.IsCloseConfirmed = true;
+
+            Close();
+        }
+        catch (Exception)
+        {
+            // ConfirmCloseAsync already logs and swallows an ordinary guard failure, returning false; only an unexpected OperationCanceledException from the guard (excluded
+            // from that catch) or a failure of Close() itself still reaches here.
+        }
+    }
 }

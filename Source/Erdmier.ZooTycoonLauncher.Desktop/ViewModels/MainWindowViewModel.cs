@@ -17,20 +17,33 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IMediator _mediator;
 
+    private readonly IMessenger _messenger;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
     /// <param name="dialogs">Chrome service for opening modeless dialogues.</param>
-    public MainWindowViewModel(IMediator mediator, IApplicationLifecycle lifecycle, IDialogService dialogs)
+    /// <param name="messenger">The CommunityToolkit messenger — passed to freshly-built picker grids so they can subscribe to installation-change notifications.</param>
+    public MainWindowViewModel(IMediator mediator, IApplicationLifecycle lifecycle, IDialogService dialogs, IMessenger messenger)
     {
         _mediator  = mediator;
         _lifecycle = lifecycle;
         _dialogs   = dialogs;
+        _messenger = messenger;
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
     [ ObservableProperty ]
     public partial object? ActiveContent { get; set; }
+
+    // Disposes the outgoing state view model when it holds disposable resources (currently only OpenGameInstallationViewModel's grid), so it unregisters from the messenger as soon as the main window navigates away from it.
+    partial void OnActiveContentChanged(object? oldValue, object? newValue)
+    {
+        if (oldValue is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
 
     /// <summary>Whether the launcher is currently running its boot sequence. Drives <see cref="WindowWidth" /> and is the single source of truth for the booting/booted distinction.</summary>
     [ ObservableProperty ]
@@ -50,7 +63,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public double WindowWidth => IsBooting ? BootingWindowWidth : BootedWindowWidth;
 
     [ RelayCommand ]
-    private async Task BootAsync(CancellationToken cancellationToken)
+    private Task BootAsync(CancellationToken cancellationToken) => RunBootAsync(installationId: null, cancellationToken);
+
+    // Pointed boot (SDD §7.2.7 — the picker's Open button): boots the given installation directly, bypassing the startup preference and default resolution.
+    private Task OpenInstallationAsync(Guid installationId, CancellationToken cancellationToken) => RunBootAsync(installationId, cancellationToken);
+
+    private async Task RunBootAsync(Guid? installationId, CancellationToken cancellationToken)
     {
         ActiveContent              = new LookingForZooTycoonViewModel();
         IsBooting                  = true;
@@ -59,7 +77,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         // await Task.Delay(TimeSpan.FromSeconds(seconds: 2), cancellationToken);
 
-        ErrorOr<AppBoot.BootResult> result = await _mediator.Send(new AppBoot.BootCommand(), cancellationToken);
+        ErrorOr<AppBoot.BootResult> result = await _mediator.Send(new AppBoot.BootCommand(installationId), cancellationToken);
 
         IsBooting = false;
 
@@ -134,8 +152,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             AppBoot.BootOutcome.NoGameInstallationFound => new NoGameInstallationFoundViewModel(result.LocatedCandidatePath,
                                                                                                 _dialogs,
                                                                                                 BootAsync),
-            AppBoot.BootOutcome.OpenGameInstallation => new OpenGameInstallationViewModel(_dialogs,
-                                                                                          BootAsync),
+            AppBoot.BootOutcome.OpenGameInstallation => new OpenGameInstallationViewModel(new InstallationGridViewModel(_mediator, _messenger),
+                                                                                          _dialogs,
+                                                                                          OpenInstallationAsync),
             var _ => new NoGameInstallationFoundViewModel(locatedCandidatePath: null,
                                                           _dialogs,
                                                           BootAsync)

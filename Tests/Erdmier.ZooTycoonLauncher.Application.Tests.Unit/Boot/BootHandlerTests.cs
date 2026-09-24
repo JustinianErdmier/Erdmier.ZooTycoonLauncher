@@ -350,7 +350,7 @@ public sealed class BootHandlerTests
         settings.GetAsync(Arg.Any<CancellationToken>())
                 .Returns(settingsRow);
 
-        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
                      .Returns(promoted);
 
         IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
@@ -409,7 +409,7 @@ public sealed class BootHandlerTests
         installations.GetByIdAsync(staleId, Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
-        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
                      .Returns(promoted);
 
         IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
@@ -458,7 +458,7 @@ public sealed class BootHandlerTests
         installations.GetByIdAsync(staleId, Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
-        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
         locator.LocateAsync(persistedLastKnownPath: null, Arg.Any<CancellationToken>())
@@ -493,7 +493,7 @@ public sealed class BootHandlerTests
         settings.GetAsync(Arg.Any<CancellationToken>())
                 .Returns(new LauncherSettings());
 
-        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
         locator.LocateAsync(persistedLastKnownPath: null, Arg.Any<CancellationToken>())
@@ -523,7 +523,7 @@ public sealed class BootHandlerTests
         settings.GetAsync(Arg.Any<CancellationToken>())
                 .Returns(new LauncherSettings());
 
-        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
         locator.LocateAsync(persistedLastKnownPath: null, Arg.Any<CancellationToken>())

@@ -129,4 +129,44 @@ public sealed class RelocateInstallationHandlerTests
         events.Received(requiredNumberOfCalls: 1)
               .Publish(new InstallationChangedMessage(id));
     }
+
+    [ Fact ]
+    public async Task Handle_ReturnsExeMissing_AndLeavesRowUntouched_WhenFolderHasNoExe()
+    {
+        Guid id = Guid.CreateVersion7();
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(new GameInstallation
+                     {
+                         Id       = id,
+                         Name     = "Main",
+                         Path     = @"C:\Games\Old",
+                         AddedUtc = DateTime.UtcNow
+                     });
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(path: @"C:\Games\NoExe", Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, HasExe: false, HasIni: true));
+
+        IApplicationEventPublisher events = Substitute.For<IApplicationEventPublisher>();
+
+        RelocateInstallationHandler handler = new(installations, verifier, TimeProvider.System, events);
+
+        ErrorOr<RelocateInstallationResult> result = await handler.Handle(new RelocateInstallationCommand(id, NewPath: @"C:\Games\NoExe"), CancellationToken.None);
+
+        result.IsError.ShouldBeTrue();
+        result.FirstError.Code.ShouldBe(expected: "Installation.ExeMissing");
+
+        await installations.DidNotReceive()
+                           .DeleteAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+
+        await installations.DidNotReceive()
+                           .AddAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>());
+
+        events.DidNotReceive()
+              .Publish(Arg.Any<InstallationChangedMessage>());
+    }
 }

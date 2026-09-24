@@ -77,7 +77,7 @@ public sealed class DeleteInstallationHandlerTests
         installations.GetByIdAsync(removedId, Arg.Any<CancellationToken>())
                      .Returns(row);
 
-        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
                      .Returns(promotion);
 
         LauncherSettings settings = new()
@@ -125,7 +125,7 @@ public sealed class DeleteInstallationHandlerTests
         installations.GetByIdAsync(removedId, Arg.Any<CancellationToken>())
                      .Returns(row);
 
-        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
         LauncherSettings settings = new()
@@ -167,7 +167,7 @@ public sealed class DeleteInstallationHandlerTests
                          AddedUtc = DateTime.UtcNow
                      });
 
-        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
                      .Returns(new GameInstallation
                      {
                          Id       = promotedId,
@@ -215,7 +215,7 @@ public sealed class DeleteInstallationHandlerTests
                          AddedUtc = DateTime.UtcNow
                      });
 
-        installations.FindDefaultPromotionCandidateAsync(Arg.Any<CancellationToken>())
+        installations.FindDefaultPromotionCandidateAsync(Arg.Any<Guid?>(), Arg.Any<CancellationToken>())
                      .Returns((GameInstallation?)null);
 
         ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();

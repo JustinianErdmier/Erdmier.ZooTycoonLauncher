@@ -43,7 +43,7 @@ public sealed class DeleteInstallationHandler : ICommandHandler<DeleteInstallati
 
         if (removedWasDefault)
         {
-            GameInstallation? promotion = await _installations.FindDefaultPromotionCandidateAsync(cancellationToken);
+            GameInstallation? promotion = await _installations.FindDefaultPromotionCandidateAsync(excludeId: null, cancellationToken);
             newDefaultId                   = promotion?.Id;
             settings.DefaultInstallationId = newDefaultId;
 

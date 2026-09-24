@@ -38,6 +38,12 @@ public sealed class RelocateInstallationHandler : ICommandHandler<RelocateInstal
             return Error.Validation(code: "Installation.PathMissing", $"The folder \"{command.NewPath}\" does not exist.");
         }
 
+        if (!verification.HasExe)
+        {
+            // SDD §7.2.5: relocation exists to recover a missing zoo.exe — never move an installation to a folder that still lacks it.
+            return Error.Validation(code: "Installation.ExeMissing", $"The folder \"{command.NewPath}\" does not contain zoo.exe.");
+        }
+
         // GameInstallation.Path is init-only — model the relocation as remove + add with the same Id and AddedUtc.
         GameInstallation relocated = new()
         {

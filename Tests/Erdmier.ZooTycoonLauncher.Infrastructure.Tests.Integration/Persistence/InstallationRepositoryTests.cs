@@ -120,7 +120,7 @@ public sealed class InstallationRepositoryTests : IDisposable
         await _repository.AddAsync(NewInstallation(name: "antelope", path: @"C:\Games\antelope"), CancellationToken.None);
         await _repository.AddAsync(NewInstallation(name: "Buffalo", path: @"C:\Games\Buffalo"), CancellationToken.None);
 
-        GameInstallation? winner = await _repository.FindDefaultPromotionCandidateAsync(CancellationToken.None);
+        GameInstallation? winner = await _repository.FindDefaultPromotionCandidateAsync(excludeId: null, CancellationToken.None);
 
         winner.ShouldNotBeNull();
         winner.Name.ShouldBe(expected: "antelope");
@@ -129,8 +129,41 @@ public sealed class InstallationRepositoryTests : IDisposable
     [ Fact ]
     public async Task FindDefaultPromotionCandidateAsync_ReturnsNullWhenTableEmpty()
     {
-        GameInstallation? winner = await _repository.FindDefaultPromotionCandidateAsync(CancellationToken.None);
+        GameInstallation? winner = await _repository.FindDefaultPromotionCandidateAsync(excludeId: null, CancellationToken.None);
         winner.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public async Task FindDefaultPromotionCandidateAsync_WithExcludeId_SkipsExcludedRow()
+    {
+        GameInstallation antelope = NewInstallation(name: "antelope", path: @"C:\Games\antelope");
+        await _repository.AddAsync(antelope, CancellationToken.None);
+        await _repository.AddAsync(NewInstallation(name: "Buffalo", path: @"C:\Games\Buffalo"), CancellationToken.None);
+        await _repository.AddAsync(NewInstallation(name: "zebra", path: @"C:\Games\zebra"), CancellationToken.None);
+
+        GameInstallation? winner = await _repository.FindDefaultPromotionCandidateAsync(antelope.Id, CancellationToken.None);
+
+        winner.ShouldNotBeNull();
+        winner.Name.ShouldBe(expected: "Buffalo");
+    }
+
+    [ Fact ]
+    public async Task FindDefaultPromotionCandidateAsync_WithExcludeId_MatchesPostDeleteCandidate()
+    {
+        GameInstallation doomed = NewInstallation(name: "Aardvark", path: @"C:\Games\Aardvark");
+        await _repository.AddAsync(doomed, CancellationToken.None);
+        await _repository.AddAsync(NewInstallation(name: "bison", path: @"C:\Games\bison"), CancellationToken.None);
+        await _repository.AddAsync(NewInstallation(name: "Camel", path: @"C:\Games\Camel"), CancellationToken.None);
+
+        GameInstallation? previewed = await _repository.FindDefaultPromotionCandidateAsync(doomed.Id, CancellationToken.None);
+
+        await _repository.DeleteAsync(doomed.Id, CancellationToken.None);
+
+        GameInstallation? promoted = await _repository.FindDefaultPromotionCandidateAsync(excludeId: null, CancellationToken.None);
+
+        previewed.ShouldNotBeNull();
+        promoted.ShouldNotBeNull();
+        previewed.Id.ShouldBe(promoted.Id);
     }
 
     private static GameInstallation NewInstallation(string name, string path)

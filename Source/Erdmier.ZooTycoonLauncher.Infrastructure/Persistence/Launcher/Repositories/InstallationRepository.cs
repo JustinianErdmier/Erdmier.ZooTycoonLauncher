@@ -67,8 +67,9 @@ public sealed class InstallationRepository : IInstallationRepository
                    .AnyAsync(i => i.Path == path, cancellationToken);
 
     /// <inheritdoc />
-    public Task<GameInstallation?> FindDefaultPromotionCandidateAsync(CancellationToken cancellationToken)
+    public Task<GameInstallation?> FindDefaultPromotionCandidateAsync(Guid? excludeId, CancellationToken cancellationToken)
         => _context.GameInstallations
+                   .Where(i => excludeId == null || i.Id != excludeId)
                    .OrderBy(i => i.Name.ToLower())
                    .FirstOrDefaultAsync(cancellationToken);
 }

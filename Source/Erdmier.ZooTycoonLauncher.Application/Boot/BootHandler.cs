@@ -1,6 +1,9 @@
 namespace Erdmier.ZooTycoonLauncher.Application.Boot;
 
-/// <summary>Handler for <see cref="BootCommand" />. Implements the SDD §7.1.1 startup state machine.</summary>
+/// <summary>
+///     Handler for <see cref="BootCommand" />. Implements the SDD §7.1.1 startup state machine, plus the SDD §7.2.7 pointed-boot short-circuit for
+///     <see cref="BootCommand.InstallationId" />.
+/// </summary>
 public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResult>>
 {
     private readonly TimeProvider _clock;
@@ -41,6 +44,19 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
     public async ValueTask<ErrorOr<BootResult>> Handle(BootCommand command, CancellationToken cancellationToken)
     {
         LauncherSettings settings = await _settings.GetAsync(cancellationToken);
+
+        if (command.InstallationId is not null)
+        {
+            GameInstallation? requested = await _installations.GetByIdAsync(command.InstallationId.Value, cancellationToken);
+
+            if (requested is not null)
+            {
+                return await VerifyAsync(requested, settings, cancellationToken);
+            }
+
+            // The picker's snapshot is stale (the row was deleted since it loaded) — fall through to the
+            // ordinary preference-driven resolution below rather than pointing at a row that no longer exists.
+        }
 
         if (settings.LauncherStartupPreference == LauncherStartupPreference.NoInstallation)
         {

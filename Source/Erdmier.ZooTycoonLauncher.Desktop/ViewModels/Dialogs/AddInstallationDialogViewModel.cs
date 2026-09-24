@@ -32,6 +32,7 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
     /// <summary>The shared Name / Folder / Default form. Bound to <c>InstallationFormView.DataContext</c>.</summary>
     public InstallationFormViewModel Form { get; }
 
+    // TODO: Test if this can be made private or if doing that will mess up the source generators.
     /// <summary><see langword="true" /> while a dispatch is in flight.</summary>
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(SaveCommand)) ]
@@ -79,6 +80,7 @@ public sealed partial class AddInstallationDialogViewModel : ViewModelBase
 
         try
         {
+            // TODO: Confirm that the handler validates the name being unique and the path being valid.
             ErrorOr<AddInstallationResult> result =
                 await _mediator.Send(new AddInstallationCommand(Form.Name.Trim(), Form.Path.Trim(), Form.MakeDefault), cancellationToken);
 

@@ -17,6 +17,7 @@ public sealed partial class InstallationFormViewModel : ViewModelBase
         : this(null!)
     { }
 
+    // TODO: Should probably be a list so we can display multiple errors at once.
     /// <summary>The most recent validation or dispatch error, or <see langword="null" /> when none. Shown under the inputs.</summary>
     [ ObservableProperty ]
     public partial string? ErrorMessage { get; set; }

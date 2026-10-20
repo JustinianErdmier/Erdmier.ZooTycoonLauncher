@@ -30,6 +30,9 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
         : this(null!, null!)
     { }
 
+    /// <summary>Whether the window may close now; <see langword="false" /> while a restore is in progress, so the window's own close (title-bar button) must respect it.</summary>
+    public bool CanClose => !IsBusy;
+
     /// <summary>The differing settings of the selected snapshot, against the current values.</summary>
     [ ObservableProperty ]
     public partial IReadOnlyList<IniHistoryDiffRow> DiffRows { get; set; } = [ ];
@@ -47,6 +50,8 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
     /// <summary>Whether a restore is in progress.</summary>
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(RestoreCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(CancelCommand)) ]
+    [ NotifyPropertyChangedFor(nameof(CanClose)) ]
     public partial bool IsBusy { get; set; }
 
     /// <summary>The keys the selected snapshot lacks, which keep their current values; empty when there are none.</summary>
@@ -101,9 +106,11 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
         SelectedRow  = Rows.Count > 0 ? Rows[0] : null;
     }
 
-    /// <summary>Closes the dialogue without restoring anything.</summary>
-    [ RelayCommand ]
+    /// <summary>Closes the dialogue without restoring anything. Unavailable while a restore is in progress.</summary>
+    [ RelayCommand(CanExecute = nameof(CanCancel)) ]
     private void Cancel() => CloseRequested?.Invoke(this, EventArgs.Empty);
+
+    private bool CanCancel() => !IsBusy;
 
     private bool CanRestore() => !IsBusy && SelectedRow is { Entry.Comparison.Rows.Count: > 0 };
 
@@ -112,7 +119,8 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
     {
         IniHistoryRow? row = SelectedRow;
 
-        if (row is null)
+        // Execute() does not consult CanExecute, so the guard is repeated here.
+        if (IsBusy || row is null)
         {
             return;
         }

@@ -160,12 +160,40 @@ public sealed class RestorePreviousIniDialogViewModelTests
 
         viewModel.IsBusy.ShouldBeTrue();
         viewModel.RestoreCommand.CanExecute(parameter: null).ShouldBeFalse();
+        viewModel.RestoreCommand.Execute(parameter: null);
 
         pending.SetResult(IniEditorTestData.Result(("user", "screenwidth", "640")));
 
         await first;
 
         await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<RestoreIniSnapshotCommand>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Cancel_WhileRestoring_CannotExecute()
+    {
+        RestorePreviousIniDialogViewModel viewModel = await LoadedAsync();
+
+        TaskCompletionSource<ErrorOr<IniConfigResult>> pending = new();
+
+        _dialogs.ShowConfirmationAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
+        _mediator.Send(Arg.Any<RestoreIniSnapshotCommand>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniConfigResult>>(pending.Task));
+
+        viewModel.CancelCommand.CanExecute(parameter: null).ShouldBeTrue();
+        viewModel.CanClose.ShouldBeTrue();
+
+        Task restoring = viewModel.RestoreCommand.ExecuteAsync(parameter: null);
+
+        viewModel.CancelCommand.CanExecute(parameter: null).ShouldBeFalse();
+        viewModel.CanClose.ShouldBeFalse();
+
+        pending.SetResult(IniEditorTestData.Result(("user", "screenwidth", "640")));
+
+        await restoring;
+
+        viewModel.CancelCommand.CanExecute(parameter: null).ShouldBeTrue();
+        viewModel.CanClose.ShouldBeTrue();
     }
 
     [ Fact ]

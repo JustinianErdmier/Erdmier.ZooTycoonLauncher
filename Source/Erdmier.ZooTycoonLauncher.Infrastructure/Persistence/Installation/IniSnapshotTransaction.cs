@@ -25,6 +25,33 @@ internal sealed class IniSnapshotTransaction : IIniSnapshotTransaction
                    .SingleOrDefaultAsync(snapshot => snapshot.Kind == IniSnapshotKind.Current, cancellationToken);
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<IniSnapshot>> ListHistoricalAsync(CancellationToken cancellationToken)
+        => await _context.Snapshots
+                         .AsNoTracking()
+                         .Include(snapshot => snapshot.Values)
+                         .Where(snapshot => snapshot.Kind == IniSnapshotKind.Historical)
+                         .OrderByDescending(snapshot => snapshot.CapturedUtc)
+                         .ToListAsync(cancellationToken);
+
+    /// <inheritdoc />
+    public Task<IniSnapshot?> GetOriginalAsync(CancellationToken cancellationToken)
+        => _context.Snapshots
+                   .AsNoTracking()
+                   .Include(snapshot => snapshot.Values)
+                   .SingleOrDefaultAsync(snapshot => snapshot.Kind == IniSnapshotKind.Original, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<IniSnapshot?> GetByIdAsync(Guid snapshotId, CancellationToken cancellationToken)
+        => _context.Snapshots
+                   .AsNoTracking()
+                   .Include(snapshot => snapshot.Values)
+                   .SingleOrDefaultAsync(snapshot => snapshot.Id == snapshotId && snapshot.Kind != IniSnapshotKind.Current, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<int> CountHistoricalAsync(CancellationToken cancellationToken)
+        => _context.Snapshots.CountAsync(snapshot => snapshot.Kind == IniSnapshotKind.Historical, cancellationToken);
+
+    /// <inheritdoc />
     public async Task AddAsync(IniSnapshot snapshot, CancellationToken cancellationToken)
     {
         _context.Snapshots.Add(snapshot);

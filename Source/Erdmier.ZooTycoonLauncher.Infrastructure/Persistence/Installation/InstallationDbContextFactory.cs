@@ -51,6 +51,28 @@ public sealed class InstallationDbContextFactory : IInstallationDbContextFactory
         return context;
     }
 
+    /// <summary>Opens the per-installation database only when its file already exists, without migrating it. The caller owns and disposes the context.</summary>
+    /// <param name="installationId">The installation's identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The open context, or <see langword="null" /> when the database file does not exist (so no file is created).</returns>
+    internal Task<InstallationDbContext?> OpenExistingAsync(Guid installationId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string databasePath = _locations.InstallationDatabasePath(installationId);
+
+        if (!_fileSystem.File.Exists(databasePath))
+        {
+            return Task.FromResult<InstallationDbContext?>(null);
+        }
+
+        DbContextOptions<InstallationDbContext> options = new DbContextOptionsBuilder<InstallationDbContext>()
+                                                          .UseSqlite($"Data Source={databasePath};Mode=ReadWrite")
+                                                          .Options;
+
+        return Task.FromResult<InstallationDbContext?>(new InstallationDbContext(options));
+    }
+
     /// <inheritdoc />
     public Task DeleteAsync(Guid installationId, CancellationToken cancellationToken)
     {

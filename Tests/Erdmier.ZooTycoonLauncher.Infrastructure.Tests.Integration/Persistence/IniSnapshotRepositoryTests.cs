@@ -168,6 +168,107 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
         (await IndexExistsAsync(verify, indexName: "IX_Snapshots_Kind_CapturedUtc")).ShouldBeTrue();
     }
 
+    [ Fact ]
+    public async Task ListHistorical_ReturnsNewestFirstWithValues()
+    {
+        await ImportAsync();
+        await ArchiveAsync(Captured.AddHours(2), Captured.AddHours(1), Captured.AddHours(3));
+
+        await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        IReadOnlyList<IniSnapshot> historical = await transaction.ListHistoricalAsync(CancellationToken.None);
+
+        historical.Select(snapshot => snapshot.CapturedUtc).ShouldBe([Captured.AddHours(3), Captured.AddHours(2), Captured.AddHours(1)]);
+        historical.ShouldAllBe(snapshot => snapshot.Kind == IniSnapshotKind.Historical);
+        historical.ShouldAllBe(snapshot => snapshot.Values.Count == 1);
+    }
+
+    [ Fact ]
+    public async Task GetOriginal_ReturnsTheFirstImportWithValues()
+    {
+        await ImportAsync();
+
+        await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        IniSnapshot? original = await transaction.GetOriginalAsync(CancellationToken.None);
+
+        original.ShouldNotBeNull();
+        original.Kind.ShouldBe(IniSnapshotKind.Original);
+        original.Values.Single().Value.ShouldBe(expected: "800");
+    }
+
+    [ Fact ]
+    public async Task GetById_ReturnsAHistoricalSnapshot()
+    {
+        await ImportAsync();
+        await ArchiveAsync(Captured.AddHours(1));
+
+        await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        IniSnapshot historical = (await transaction.ListHistoricalAsync(CancellationToken.None)).Single();
+
+        IniSnapshot? found = await transaction.GetByIdAsync(historical.Id, CancellationToken.None);
+
+        found.ShouldNotBeNull();
+        found.Id.ShouldBe(historical.Id);
+        found.Values.Single().Value.ShouldBe(expected: "800");
+    }
+
+    [ Fact ]
+    public async Task GetById_CurrentOrUnknownId_ReturnsNull()
+    {
+        await ImportAsync();
+
+        await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        IniSnapshot current = (await transaction.GetCurrentAsync(CancellationToken.None))!;
+
+        (await transaction.GetByIdAsync(current.Id, CancellationToken.None)).ShouldBeNull();
+        (await transaction.GetByIdAsync(Guid.NewGuid(), CancellationToken.None)).ShouldBeNull();
+    }
+
+    [ Fact ]
+    public async Task CountHistorical_CountsOnlyHistorical()
+    {
+        await ImportAsync();
+        await ArchiveAsync(Captured.AddHours(1), Captured.AddHours(2));
+
+        await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        (await transaction.CountHistoricalAsync(CancellationToken.None)).ShouldBe(expected: 2);
+    }
+
+    [ Fact ]
+    public async Task RepositoryCountHistorical_MissingDatabase_ReturnsZeroAndCreatesNoFile()
+    {
+        Guid missingId = Guid.CreateVersion7();
+
+        (await _repository.CountHistoricalAsync(missingId, CancellationToken.None)).ShouldBe(expected: 0);
+
+        File.Exists(Path.Combine(_directory, $"{missingId}.db")).ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task RepositoryCountHistorical_ExistingDatabase_Counts()
+    {
+        await ImportAsync();
+        await ArchiveAsync(Captured.AddHours(1), Captured.AddHours(2), Captured.AddHours(3));
+
+        (await _repository.CountHistoricalAsync(_installationId, CancellationToken.None)).ShouldBe(expected: 3);
+    }
+
+    private async Task ArchiveAsync(params DateTime[] capturedTimes)
+    {
+        await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        foreach (DateTime captured in capturedTimes)
+        {
+            await transaction.ArchiveCurrentAsync(IniSnapshotTrigger.LauncherGui, captured, CancellationToken.None);
+        }
+
+        await transaction.CommitAsync(CancellationToken.None);
+    }
+
     private async Task ImportAsync(params (string Section, string Key, string Value)[] extraValues)
     {
         await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);

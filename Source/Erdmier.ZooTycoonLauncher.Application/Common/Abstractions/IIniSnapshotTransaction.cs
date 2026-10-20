@@ -7,6 +7,23 @@ public interface IIniSnapshotTransaction : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     Task<IniSnapshot?> GetCurrentAsync(CancellationToken cancellationToken);
 
+    /// <summary>Returns every <c>Historical</c> snapshot with its values, newest first (by <c>CapturedUtc</c>).</summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<IReadOnlyList<IniSnapshot>> ListHistoricalAsync(CancellationToken cancellationToken);
+
+    /// <summary>Returns the <c>Original</c> snapshot with its values, or <see langword="null" /> when the database has never been imported.</summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<IniSnapshot?> GetOriginalAsync(CancellationToken cancellationToken);
+
+    /// <summary>Returns the <c>Historical</c> or <c>Original</c> snapshot with the given identifier and its values; a <c>Current</c> or unknown identifier yields <see langword="null" />.</summary>
+    /// <param name="snapshotId">The snapshot's identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<IniSnapshot?> GetByIdAsync(Guid snapshotId, CancellationToken cancellationToken);
+
+    /// <summary>Counts the <c>Historical</c> snapshots.</summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<int> CountHistoricalAsync(CancellationToken cancellationToken);
+
     /// <summary>Inserts a snapshot with its values (used by the first import: <c>Original</c>, then <c>Current</c>).</summary>
     /// <param name="snapshot">The snapshot to insert.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

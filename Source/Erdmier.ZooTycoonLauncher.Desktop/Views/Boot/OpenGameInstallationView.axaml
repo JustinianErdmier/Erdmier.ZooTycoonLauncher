@@ -40,7 +40,7 @@
             <layout:UniformStack DockPanel.Dock="Left"
                                  Spacing="8">
                 <Button Command="{Binding AddCommand}"
-                        Content="Add"
+                        Content="Add…"
                         Padding="10 0" />
 
                 <Button Command="{Binding InfoCommand}"
@@ -48,7 +48,7 @@
                         Padding="10 0" />
 
                 <Button Command="{Binding ManageCommand}"
-                        Content="Manage"
+                        Content="Manage…"
                         Padding="10 0" />
             </layout:UniformStack>
         </DockPanel>

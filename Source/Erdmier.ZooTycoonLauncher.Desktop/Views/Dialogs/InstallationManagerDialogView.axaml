@@ -33,7 +33,7 @@
                     Spacing="4"
                     Width="80">
             <Button Command="{Binding AddCommand}"
-                    Content="Add"
+                    Content="Add…"
                     HorizontalAlignment="Stretch" />
 
             <Button Command="{Binding InfoCommand}"
@@ -41,7 +41,7 @@
                     HorizontalAlignment="Stretch" />
 
             <Button Command="{Binding EditCommand}"
-                    Content="Edit"
+                    Content="Edit…"
                     HorizontalAlignment="Stretch" />
 
             <Button Command="{Binding DeleteCommand}"
@@ -49,7 +49,7 @@
                     HorizontalAlignment="Stretch" />
 
             <Button Command="{Binding FixCommand}"
-                    Content="Fix"
+                    Content="Fix…"
                     HorizontalAlignment="Stretch"
                     Margin="0 12 0 0" />
         </StackPanel>

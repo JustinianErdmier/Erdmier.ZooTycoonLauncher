@@ -59,6 +59,8 @@ public sealed class IniWritePipeline
 
         try
         {
+            await _files.DeleteOrphanedTempFilesAsync(installation.Path, cancellationToken);
+
             content = await _files.ReadAsync(installation.Path, cancellationToken);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -94,10 +96,11 @@ public sealed class IniWritePipeline
             IReadOnlyDictionary<IniKeyId, string> edits;
             Dictionary<IniKeyId, string?>         values;
             int                                   historicalCount;
+            IniReconciliation                     reconciliation;
 
             try
             {
-                IniReconciliation reconciliation = await IniLoadSteps.ReconcileAsync(transaction, _reconciler, _logger, installation, content.Text, nowUtc, cancellationToken);
+                reconciliation = await IniLoadSteps.ReconcileAsync(transaction, _reconciler, content.Text, nowUtc, cancellationToken);
 
                 ErrorOr<IReadOnlyDictionary<IniKeyId, string>> selection = await selectEdits(transaction, reconciliation.Values, cancellationToken);
 
@@ -113,6 +116,8 @@ public sealed class IniWritePipeline
                     int unchangedCount = await transaction.CountHistoricalAsync(cancellationToken);
 
                     await transaction.CommitAsync(cancellationToken);
+
+                    IniLoadSteps.LogReconciliation(_logger, installation, reconciliation);
 
                     return new IniConfigResult(reconciliation.Values, content.LastWriteUtc, unchangedCount);
                 }
@@ -168,6 +173,8 @@ public sealed class IniWritePipeline
             {
                 await transaction.UpdateCurrentAsync(text, changes, nowUtc, CancellationToken.None);
                 await transaction.CommitAsync(CancellationToken.None);
+
+                IniLoadSteps.LogReconciliation(_logger, installation, reconciliation);
 
                 // Disposing here (rather than leaving it to the outer await using) means a disposal failure after a successful commit is caught and logged by this
                 // block instead of escaping as "could not be saved" for a file that was, in fact, written. The outer await using then no-ops against the now-idempotent

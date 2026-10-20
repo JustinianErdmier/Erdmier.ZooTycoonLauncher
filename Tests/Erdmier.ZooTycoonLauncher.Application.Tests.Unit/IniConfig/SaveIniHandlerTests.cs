@@ -191,6 +191,19 @@ public sealed class SaveIniHandlerTests
     }
 
     [ Fact ]
+    public async Task Save_HasIniFalseButFilePresent_Succeeds()
+    {
+        _installation.HasIni = false;
+
+        DiskHolds(IniTestData.Sample);
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "1024"));
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Values[ScreenWidth].ShouldBe(expected: "1024");
+    }
+
+    [ Fact ]
     public async Task Save_FileMissing_ReturnsMissing()
     {
         _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())

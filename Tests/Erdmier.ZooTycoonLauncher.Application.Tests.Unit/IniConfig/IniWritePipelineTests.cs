@@ -64,6 +64,81 @@ public sealed class IniWritePipelineTests
         await _transaction.Received(requiredNumberOfCalls: 1).CommitAsync(Arg.Any<CancellationToken>());
     }
 
-    private IniWritePipeline CreatePipeline()
-        => new(new FakeTimeProvider(IniTestData.Now), _files, _installations, NullLogger<IniWritePipeline>.Instance, new IniReconciler(), _snapshots);
+    [ Fact ]
+    public async Task Write_CommitFails_LogsNoReconciliation()
+    {
+        RecordingLogger<IniWritePipeline> logger = new();
+
+        _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
+              .Returns(new IniFileContent(Drifted(), DiskLastWrite));
+
+        _files.WriteAsync(_installation.Path, Arg.Any<string>(), Arg.Any<CancellationToken>())
+              .Returns(IniTestData.Now);
+
+        _transaction.CommitAsync(Arg.Any<CancellationToken>())
+                    .ThrowsAsync(new InvalidOperationException(message: "database is locked"));
+
+        ErrorOr<IniConfigResult> result = await CreatePipeline(logger).WriteAsync(_installation.Id, SelectScreenWidth, CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        logger.Entries.ShouldNotContain(entry => entry.Message.Contains("reconciled"));
+    }
+
+    [ Fact ]
+    public async Task Write_Succeeds_LogsReconciliationAfterCommit()
+    {
+        RecordingLogger<IniWritePipeline> logger = new();
+
+        _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
+              .Returns(new IniFileContent(Drifted(), DiskLastWrite));
+
+        _files.WriteAsync(_installation.Path, Arg.Any<string>(), Arg.Any<CancellationToken>())
+              .Returns(IniTestData.Now);
+
+        ErrorOr<IniConfigResult> result = await CreatePipeline(logger).WriteAsync(_installation.Id, SelectScreenWidth, CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+
+        logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Information
+                                              && entry.Message.Contains("INI snapshot reconciled")
+                                              && entry.Message.Contains(_installation.Id.ToString()));
+    }
+
+    [ Fact ]
+    public async Task Write_NoOpSelection_LogsReconciliationAfterCommit()
+    {
+        RecordingLogger<IniWritePipeline> logger = new();
+
+        _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
+              .Returns(new IniFileContent(Drifted(), DiskLastWrite));
+
+        ErrorOr<IniConfigResult> result = await CreatePipeline(logger).WriteAsync(_installation.Id,
+                                                                                  (_, _, _) => Task.FromResult<ErrorOr<IReadOnlyDictionary<IniKeyId, string>>>(new Dictionary<IniKeyId, string>()),
+                                                                                  CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        logger.Entries.ShouldContain(entry => entry.Message.Contains("INI snapshot reconciled"));
+    }
+
+    [ Fact ]
+    public async Task Write_DeletesOrphanedTempFilesBeforeReading()
+    {
+        await CreatePipeline().WriteAsync(_installation.Id, SelectScreenWidth, CancellationToken.None);
+
+        Received.InOrder(() =>
+        {
+            _files.DeleteOrphanedTempFilesAsync(_installation.Path, Arg.Any<CancellationToken>());
+            _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>());
+        });
+    }
+
+    private static string Drifted() => IniTestData.Sample.Replace(oldValue: "tooltipDelay=1", newValue: "tooltipDelay=5");
+
+    private static Task<ErrorOr<IReadOnlyDictionary<IniKeyId, string>>> SelectScreenWidth(IIniSnapshotTransaction        transaction,
+                                                                                         IReadOnlyDictionary<IniKeyId, string?> values,
+                                                                                         CancellationToken                    cancellationToken)
+        => Task.FromResult<ErrorOr<IReadOnlyDictionary<IniKeyId, string>>>(new Dictionary<IniKeyId, string> { [new IniKeyId(Section: "user", Key: "screenwidth")] = "1024" });
+
+    private IniWritePipeline CreatePipeline(ILogger<IniWritePipeline>? logger = null)
+        => new(new FakeTimeProvider(IniTestData.Now), _files, _installations, logger ?? NullLogger<IniWritePipeline>.Instance, new IniReconciler(), _snapshots);
 }

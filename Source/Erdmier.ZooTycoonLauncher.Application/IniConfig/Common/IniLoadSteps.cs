@@ -34,33 +34,37 @@ public static class IniLoadSteps
         return content is null ? IniErrors.Missing(installation.Path) : content;
     }
 
-    /// <summary>Reconciles <c>Current</c> with the text read from disk inside an open transaction and logs any non-<see cref="IniReconciliationOutcome.Unchanged" /> outcome.</summary>
+    /// <summary>
+    ///     Reconciles <c>Current</c> with the text read from disk inside an open transaction. It does not log: callers call <see cref="LogReconciliation" /> once the
+    ///     transaction has committed, so a rolled-back reconciliation is never reported as done.
+    /// </summary>
     /// <param name="transaction">The open snapshot transaction.</param>
     /// <param name="reconciler">The tiered-drift reconciler.</param>
-    /// <param name="logger">Logger for the outcome.</param>
-    /// <param name="installation">The installation being reconciled.</param>
     /// <param name="diskText">The text read from disk.</param>
     /// <param name="nowUtc">The UTC time to stamp snapshots with.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The reconciliation.</returns>
-    public static async Task<IniReconciliation> ReconcileAsync(IIniSnapshotTransaction transaction,
-                                                               IniReconciler           reconciler,
-                                                               ILogger                 logger,
-                                                               GameInstallation        installation,
-                                                               string                  diskText,
-                                                               DateTime                nowUtc,
-                                                               CancellationToken       cancellationToken)
-    {
-        IniReconciliation reconciliation = await reconciler.ReconcileAsync(transaction, diskText, nowUtc, cancellationToken);
+    public static Task<IniReconciliation> ReconcileAsync(IIniSnapshotTransaction transaction,
+                                                         IniReconciler           reconciler,
+                                                         string                  diskText,
+                                                         DateTime                nowUtc,
+                                                         CancellationToken       cancellationToken)
+        => reconciler.ReconcileAsync(transaction, diskText, nowUtc, cancellationToken);
 
-        if (reconciliation.Outcome != IniReconciliationOutcome.Unchanged)
+    /// <summary>Logs a committed reconciliation at information level when its outcome is not <see cref="IniReconciliationOutcome.Unchanged" />.</summary>
+    /// <param name="logger">Logger for the outcome.</param>
+    /// <param name="installation">The installation that was reconciled.</param>
+    /// <param name="reconciliation">The committed reconciliation.</param>
+    public static void LogReconciliation(ILogger logger, GameInstallation installation, IniReconciliation reconciliation)
+    {
+        if (reconciliation.Outcome == IniReconciliationOutcome.Unchanged)
         {
-            logger.LogInformation(message: "INI snapshot reconciled for {InstallationId}: {Outcome} ({ChangedKeyCount} changed keys)",
-                                  installation.Id,
-                                  reconciliation.Outcome,
-                                  reconciliation.ChangedKeyCount);
+            return;
         }
 
-        return reconciliation;
+        logger.LogInformation(message: "INI snapshot reconciled for {InstallationId}: {Outcome} ({ChangedKeyCount} changed keys)",
+                              installation.Id,
+                              reconciliation.Outcome,
+                              reconciliation.ChangedKeyCount);
     }
 }

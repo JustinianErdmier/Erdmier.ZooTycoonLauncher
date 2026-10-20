@@ -133,6 +133,22 @@ public sealed class GetIniHistoryHandlerTests
         result.FirstError.Description.ShouldContain(expected: "database is locked");
     }
 
+    [ Fact ]
+    public async Task History_StoreFailsAfterReconcile_LogsNoReconciliation()
+    {
+        RecordingLogger<GetIniHistoryHandler> logger = new();
+
+        DiskHolds(IniTestData.Sample.Replace(oldValue: "tooltipDelay=1", newValue: "tooltipDelay=5"));
+
+        _transaction.CommitAsync(Arg.Any<CancellationToken>())
+                    .ThrowsAsync(new InvalidOperationException(message: "database is locked"));
+
+        ErrorOr<IniHistoryResult> result = await CreateHandler(logger).Handle(new GetIniHistoryQuery(_installation.Id), CancellationToken.None);
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.StoreFailed");
+        logger.Entries.ShouldNotContain(entry => entry.Message.Contains("reconciled"));
+    }
+
     private static IniSnapshot Snapshot(IniSnapshotKind kind, IniSnapshotTrigger trigger, string text)
         => new()
         {
@@ -148,6 +164,6 @@ public sealed class GetIniHistoryHandlerTests
         => _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
                  .Returns(new IniFileContent(text, IniTestData.Now.AddHours(-1)));
 
-    private GetIniHistoryHandler CreateHandler()
-        => new(new FakeTimeProvider(IniTestData.Now), _files, _installations, NullLogger<GetIniHistoryHandler>.Instance, new IniReconciler(), _snapshots);
+    private GetIniHistoryHandler CreateHandler(ILogger<GetIniHistoryHandler>? logger = null)
+        => new(new FakeTimeProvider(IniTestData.Now), _files, _installations, logger ?? NullLogger<GetIniHistoryHandler>.Instance, new IniReconciler(), _snapshots);
 }

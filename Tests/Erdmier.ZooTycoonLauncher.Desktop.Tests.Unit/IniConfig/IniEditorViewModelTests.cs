@@ -179,7 +179,7 @@ public sealed class IniEditorViewModelTests
     }
 
     [ Fact ]
-    public async Task Revert_ReloadsFromDisk()
+    public async Task Reset_ReloadsFromDisk()
     {
         IniEditorViewModel editor = CreateEditor();
 
@@ -187,14 +187,56 @@ public sealed class IniEditorViewModelTests
 
         IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
 
-        await editor.RevertCommand.ExecuteAsync(parameter: null);
+        await editor.ResetCommand.ExecuteAsync(parameter: null);
 
         IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value.ShouldBe(expected: 640m);
         editor.HasPendingChanges.ShouldBeFalse();
     }
 
     [ Fact ]
-    public async Task Revert_Throws_ShowsAReadableMessage()
+    public void RestoreDefaults_SetsEveryFieldToItsDefault()
+    {
+        IniEditorViewModel editor = new(Guid.CreateVersion7(), _mediator, _dialogs,
+                                        IniEditorTestData.Result(("user", "screenwidth", "1024"), ("language", "lang", "12"), ("language", "sublang", "1")));
+
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeTrue();
+
+        editor.RestoreDefaultsCommand.Execute(parameter: null);
+
+        editor.Sections.SelectMany(section => section.Fields).ShouldAllBe(field => field.IsAtDefault);
+        editor.HasPendingChanges.ShouldBeTrue();
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value.ShouldBe(expected: 800m);
+        editor.Sections.SelectMany(section => section.Fields).OfType<IniLanguageFieldViewModel>().Single().SelectedOption!.Label.ShouldBe(expected: "English (United States)");
+    }
+
+    [ Fact ]
+    public void RestoreDefaults_IsDisabledWhenEverythingIsAlreadyDefault()
+    {
+        IniEditorViewModel editor = CreateEditor();
+
+        editor.RestoreDefaultsCommand.Execute(parameter: null);
+
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task RestoreDefaults_ThenReset_ReloadsTheSavedValues()
+    {
+        IniEditorViewModel editor = CreateEditor();
+
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "640")));
+
+        editor.RestoreDefaultsCommand.Execute(parameter: null);
+
+        await editor.ResetCommand.ExecuteAsync(parameter: null);
+
+        await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>());
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value.ShouldBe(expected: 640m);
+        editor.HasPendingChanges.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task Reset_Throws_ShowsAReadableMessage()
     {
         IniEditorViewModel editor = CreateEditor();
 
@@ -203,7 +245,7 @@ public sealed class IniEditorViewModelTests
 
         IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
 
-        await editor.RevertCommand.ExecuteAsync(parameter: null);
+        await editor.ResetCommand.ExecuteAsync(parameter: null);
 
         await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync(title: "Cannot Reload zoo.ini", message: "zoo.ini could not be reloaded: database is locked");
         editor.IsBusy.ShouldBeFalse();

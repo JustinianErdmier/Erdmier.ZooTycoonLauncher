@@ -168,6 +168,35 @@ public sealed class IniFieldViewModelTests
     }
 
     [ Fact ]
+    public void ResetToDefault_AppliesTheSpecDefaultAndMarksDirty()
+    {
+        IniNumberFieldViewModel field = new(Descriptor(section: "Map", key: "mapX"));
+
+        field.Load(raw: "90");
+
+        field.ResetToDefault();
+
+        field.Value.ShouldBe(expected: 75m);
+        field.IsDirty.ShouldBeTrue();
+        field.TryGetEdit(out string? edit).ShouldBeTrue();
+        edit.ShouldBe(expected: "75");
+    }
+
+    [ Fact ]
+    public void IsAtDefault_FollowsTheControlValue()
+    {
+        IniNumberFieldViewModel field = new(Descriptor(section: "Map", key: "mapX"));
+
+        field.Load(raw: "90");
+
+        field.IsAtDefault.ShouldBeFalse();
+
+        field.Value = 75m;
+
+        field.IsAtDefault.ShouldBeTrue();
+    }
+
+    [ Fact ]
     public void IsDirtyChanges_RaisePropertyChanged()
     {
         IniToggleFieldViewModel field   = new(Descriptor(section: "advanced", key: "drag"));

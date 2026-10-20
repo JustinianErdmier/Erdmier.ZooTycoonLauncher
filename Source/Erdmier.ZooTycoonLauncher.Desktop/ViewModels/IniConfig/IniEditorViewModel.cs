@@ -2,7 +2,7 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig;
 
 /// <summary>
 ///     The INI Config editor (SDD §9.3): a section list, the selected section's form, and a footer whose label shows the active row's help, then the unsaved-changes marker, then
-///     the saved state. Save sends only the dirty rows; Revert reloads from disk.
+///     the saved state. Save sends only the dirty rows; Reset reloads from disk.
 /// </summary>
 public sealed partial class IniEditorViewModel : ViewModelBase
 {
@@ -32,7 +32,7 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         : this(Guid.Empty, new NoOpDialogService(), new IniConfigResult(new Dictionary<IniKeyId, string?>(), DateTime.UtcNow, HistoricalCount: 0))
     { }
 
-    // Mediator-less core (the GeneralTabViewModel pattern): the designer leaves _mediator null, which disables Save and Revert.
+    // Mediator-less core (the GeneralTabViewModel pattern): the designer leaves _mediator null, which disables Save, Reset and Restore defaults.
     private IniEditorViewModel(Guid installationId, IDialogService dialogs, IniConfigResult initial)
     {
         _installationId = installationId;
@@ -59,7 +59,8 @@ public sealed partial class IniEditorViewModel : ViewModelBase
     /// <summary><see langword="true" /> while a save or reload is in flight; disables the pane and the footer commands.</summary>
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(SaveCommand)) ]
-    [ NotifyCanExecuteChangedFor(nameof(RevertCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(ResetCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(RestoreDefaultsCommand)) ]
     public partial bool IsBusy { get; set; }
 
     /// <summary>The file's last-write time (UTC), shown localised in the footer.</summary>
@@ -139,7 +140,7 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         if (_mediator is not { } mediator
             || IsBusy)
         {
-            // IsBusy without a _pendingSave means a revert is already in flight; a save cannot safely race it, so this call reports failure without touching the mediator.
+            // IsBusy without a _pendingSave means a reset is already in flight; a save cannot safely race it, so this call reports failure without touching the mediator.
             return Task.FromResult(false);
         }
 
@@ -214,11 +215,11 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
     partial void OnFileLastWriteUtcChanged(DateTime value) => RaiseFooterChanged();
 
-    [ RelayCommand(CanExecute = nameof(CanSaveOrRevert)) ]
+    [ RelayCommand(CanExecute = nameof(CanSaveOrReset)) ]
     private Task SaveAsync(CancellationToken cancellationToken) => TrySaveAsync(cancellationToken);
 
-    [ RelayCommand(CanExecute = nameof(CanSaveOrRevert)) ]
-    private async Task RevertAsync(CancellationToken cancellationToken)
+    [ RelayCommand(CanExecute = nameof(CanSaveOrReset)) ]
+    private async Task ResetAsync(CancellationToken cancellationToken)
     {
         if (_mediator is null)
         {
@@ -250,7 +251,21 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         }
     }
 
-    private bool CanSaveOrRevert() => HasPendingChanges && !IsBusy && _mediator is not null;
+    private bool CanSaveOrReset() => HasPendingChanges && !IsBusy && _mediator is not null;
+
+    // Loads every setting's default into the form as unsaved edits; nothing is written until Save.
+    [ RelayCommand(CanExecute = nameof(CanRestoreDefaults)) ]
+    private void RestoreDefaults()
+    {
+        foreach (IniFieldViewModel field in AllFields)
+        {
+            field.ResetToDefault();
+        }
+
+        RaiseDirtyChanged();
+    }
+
+    private bool CanRestoreDefaults() => !IsBusy && _mediator is not null && AllFields.Any(field => !field.IsAtDefault);
 
     private void OnFieldPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
@@ -290,7 +305,8 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         RaiseFooterChanged();
 
         SaveCommand.NotifyCanExecuteChanged();
-        RevertCommand.NotifyCanExecuteChanged();
+        ResetCommand.NotifyCanExecuteChanged();
+        RestoreDefaultsCommand.NotifyCanExecuteChanged();
     }
 
     private void RaiseFooterChanged()

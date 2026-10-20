@@ -126,6 +126,23 @@ public sealed class RestorePreviousIniDialogViewModelTests
     }
 
     [ Fact ]
+    public async Task Restore_Succeeds_CanCloseIsTrueWhenCloseIsRequested()
+    {
+        RestorePreviousIniDialogViewModel viewModel = await LoadedAsync();
+
+        bool? canCloseInHandler = null;
+
+        viewModel.CloseRequested += (_, _) => canCloseInHandler = viewModel.CanClose;
+        _dialogs.ShowConfirmationAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
+        _mediator.Send(Arg.Any<RestoreIniSnapshotCommand>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniConfigResult>>(IniEditorTestData.Result(("user", "screenwidth", "640"))));
+
+        await viewModel.RestoreCommand.ExecuteAsync(parameter: null);
+
+        canCloseInHandler.ShouldBe(expected: true);
+    }
+
+    [ Fact ]
     public async Task Restore_Fails_ShowsTheErrorAndStaysOpen()
     {
         RestorePreviousIniDialogViewModel viewModel = await LoadedAsync();

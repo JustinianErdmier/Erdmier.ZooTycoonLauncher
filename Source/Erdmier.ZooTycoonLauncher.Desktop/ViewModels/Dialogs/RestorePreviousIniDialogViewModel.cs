@@ -30,7 +30,7 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
         : this(null!, null!)
     { }
 
-    /// <summary>Whether the window may close now; <see langword="false" /> while a restore is in progress, so the window's own close (title-bar button) must respect it.</summary>
+    /// <summary>Whether a user-initiated close (the title-bar button) is allowed: <see langword="false" /> while a restore is in flight. It is already <see langword="true" /> by the time <see cref="CloseRequested" /> is raised.</summary>
     public bool CanClose => !IsBusy;
 
     /// <summary>The differing settings of the selected snapshot, against the current values.</summary>
@@ -147,6 +147,9 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
             }
 
             Result = restored.Value;
+
+            // Release the busy flag first so CanClose is true when the window's Closing handler runs in response to CloseRequested.
+            IsBusy = false;
 
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }

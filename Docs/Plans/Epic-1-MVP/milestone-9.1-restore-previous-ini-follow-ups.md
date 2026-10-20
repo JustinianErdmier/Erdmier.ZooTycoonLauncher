@@ -56,17 +56,17 @@ Ordering becomes `OrderByDescending(CapturedUtc)` → `ThenBy(Trigger)` → `The
 `LauncherGui` before `Manual` — the order a Save or Restore archives them within one instant. If EF cannot translate `ThenBy(snapshot => snapshot.Trigger)`, use
 `ThenBy(snapshot => snapshot.Trigger == IniSnapshotTrigger.Manual ? 1 : 0)` instead (same comment).
 
-- [ ] **Step 1: Rewrite the failing test** `ListHistorical_EqualTimestamps_NewestArchiveFirst`: remove the `Task.Delay`; after `ImportAsync()`, insert two
+- [x] **Step 1: Rewrite the failing test** `ListHistorical_EqualTimestamps_NewestArchiveFirst`: remove the `Task.Delay`; after `ImportAsync()`, insert two
   `Historical` snapshots directly through the transaction's `AddAsync` (or the context) with the **same** `CapturedUtc`, a `Manual` one with the *larger* explicit id
   and a `LauncherGui` one with the smaller; commit; assert `ListHistoricalAsync` returns the `LauncherGui` one first.
-- [ ] **Step 2: Run it** — the new test fails:
+- [x] **Step 2: Run it** — the new test fails:
 
   ```powershell
   dotnet test Tests/Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration/Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration.csproj --filter "FullyQualifiedName~IniSnapshotRepositoryTests"
   ```
-- [ ] **Step 3: Implement** the ordering and comment.
-- [ ] **Step 4: Run** the same filter, then the whole project → pass.
-- [ ] **Step 5: Commit** — `fix(🐛): list same-instant INI archives newest first by trigger`
+- [x] **Step 3: Implement** the ordering and comment.
+- [x] **Step 4: Run** the same filter, then the whole project → pass.
+- [x] **Step 5: Commit** — `fix(🐛): list same-instant INI archives newest first by trigger`
 
 ---
 
@@ -91,16 +91,16 @@ existing read `try`; it does **not** check `HasIni`.
 To assert logging, use a test `ILogger` that records entries (add a small `RecordingLogger<T>` test helper if none exists) rather than mocking `ILogger` extension
 methods.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
   - `Write_CommitFails_LogsNoReconciliation` (pipeline: disk drift, `CommitAsync` throws after the write → no "reconciled" entry);
   - `Write_Succeeds_LogsReconciliationAfterCommit`;
   - `Write_DeletesOrphanedTempFilesBeforeReading` (`Received.InOrder`: `DeleteOrphanedTempFilesAsync` → `ReadAsync`);
   - `Save_HasIniFalseButFilePresent_Succeeds` (installation with `HasIni = false`, file on disk → not an error);
   - `Load_StoreFailsAtCommit_LogsNoReconciliation`; `History_StoreFailsAfterReconcile_LogsNoReconciliation`.
-- [ ] **Step 2: Run** — Application tests filtered `IniWritePipelineTests|IniSnapshotServiceTests|GetIniHistoryHandlerTests|SaveIniHandlerTests` → new tests fail.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the whole Application test project → pass.
-- [ ] **Step 5: Commit** — `fix(🐛): log INI reconciliation only after commit and clean temp files before saving`
+- [x] **Step 2: Run** — Application tests filtered `IniWritePipelineTests|IniSnapshotServiceTests|GetIniHistoryHandlerTests|SaveIniHandlerTests` → new tests fail.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the whole Application test project → pass.
+- [x] **Step 5: Commit** — `fix(🐛): log INI reconciliation only after commit and clean temp files before saving`
 
 ---
 
@@ -116,15 +116,15 @@ methods.
 - Produces: `public static bool TryParseBool(string? value, out bool result)` on `IniKeySpec` — trims; `null`/blank → `false`; `"0"`/`"1"` and `bool.TryParse` spellings
   as today. Existing private callers use it unchanged.
 
-- [ ] **Step 1: Write the failing tests** — `TryParseBool` theory: `"1"`→(true,true), `" 0 "`→(true,false), `"true"`→(true,true), `"False"`→(true,false),
+- [x] **Step 1: Write the failing tests** — `TryParseBool` theory: `"1"`→(true,true), `" 0 "`→(true,false), `"true"`→(true,true), `"False"`→(true,false),
   `"2"`→(false,_), `null`→(false,_), `""`→(false,_).
-- [ ] **Step 2: Run** — Domain tests filtered `IniKeySpecTests` → compile failure.
-- [ ] **Step 3: Implement** the public method; set `IniErrors.StoreFailed` to
+- [x] **Step 2: Run** — Domain tests filtered `IniKeySpecTests` → compile failure.
+- [x] **Step 3: Implement** the public method; set `IniErrors.StoreFailed` to
   `$"The installation's settings history could not be read or updated: {message}"` (update any test asserting the old text); rewrite both
   `ApplicationServiceCollectionExtensions` summaries to list Mediator, the validators, the validation behaviour, `IniReconciler`, `IniWritePipeline` and
   `IIniSnapshotService`.
-- [ ] **Step 4: Run** Domain and Application test projects → pass.
-- [ ] **Step 5: Commit** — `refactor(♻️): expose IniKeySpec.TryParseBool and correct INI error and registration wording`
+- [x] **Step 4: Run** Domain and Application test projects → pass.
+- [x] **Step 5: Commit** — `refactor(♻️): expose IniKeySpec.TryParseBool and correct INI error and registration wording`
 
 ---
 
@@ -152,16 +152,16 @@ Shared activation: `ActivateAsync` starts the shared `LoadAsync(_mediator, Cance
 first and later callers). Update the `ActivateAsync` XML doc to name its three skips (no INI, pending edits, no mediator) and that each caller's token cancels only
 its own wait.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
   - `ConcurrentActivation_FirstCallerCancels_SecondStillLoads` (first call's token cancelled while the mediator `Send` is pending → the second call completes and
     `Content` is the editor);
   - `ConcurrentActivation_SecondCallerCancels_LoadContinues` (second call's awaited task is cancelled; the first completes with the editor);
   - `Activate_LoadThrows_LogsError` (tab), `Save_Throws_LogsError` and `Reload_Fails_LogsWarning` (editor), `Initialise_QueryThrows_LogsError` (dialogue) — with a
     recording logger.
-- [ ] **Step 2: Run** — Desktop tests → compile failure or new tests fail.
-- [ ] **Step 3: Implement** the constructors, logging and activation change; update every construction site (DI resolves `ILogger<T>` automatically).
-- [ ] **Step 4: Run** the Desktop and Architecture test projects; build the Desktop project → pass.
-- [ ] **Step 5: Commit** — `fix(🐛): log INI view-model failures and let each caller cancel only its own INI activation`
+- [x] **Step 2: Run** — Desktop tests → compile failure or new tests fail.
+- [x] **Step 3: Implement** the constructors, logging and activation change; update every construction site (DI resolves `ILogger<T>` automatically).
+- [x] **Step 4: Run** the Desktop and Architecture test projects; build the Desktop project → pass.
+- [x] **Step 5: Commit** — `fix(🐛): log INI view-model failures and let each caller cancel only its own INI activation`
 
 ---
 
@@ -178,15 +178,15 @@ its own wait.
   `IsHovered`, focus events set `IsFocused`. The editor tracks `_hoveredField` and `_focusedField`; `ActiveHelp = (_hoveredField ?? _focusedField)?.Help`. Changing
   section clears both fields' flags and both references.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
   - `Help_PointerLeavesFocusedRow_KeepsItsHelp`;
   - `Help_HoverAnotherRowWhileOneIsFocused_ShowsTheHoveredHelp`, then hover ends → the focused row's help;
   - `Help_NeitherHoveredNorFocused_ShowsTheFooterState`;
   - `Help_SectionChange_ClearsHoverAndFocus`. Rename/adjust existing `IsHelpActive` tests.
-- [ ] **Step 2: Run** — Desktop tests filtered `IniEditorViewModelTests` → fail.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the Desktop test project; build the Desktop project → pass.
-- [ ] **Step 5: Commit** — `fix(🐛): keep a focused INI row's help when the pointer leaves it`
+- [x] **Step 2: Run** — Desktop tests filtered `IniEditorViewModelTests` → fail.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the Desktop test project; build the Desktop project → pass.
+- [x] **Step 5: Commit** — `fix(🐛): keep a focused INI row's help when the pointer leaves it`
 
 ---
 
@@ -208,12 +208,12 @@ Values:
 - `Content` setter becomes private (`[ ObservableProperty ] public partial ViewModelBase Content { get; private set; }`).
 - `ShowErrorAsync` doc: *"Shows a modal error message box owned by the active window. With no owner window, shows a non-modal box and returns without waiting."*
 
-- [ ] **Step 1: Write the failing tests** — `SelectedOption_Set_RaisesChangeOnceAfterBothWrites` (count `SelectedOption` notifications and assert the pair at
+- [x] **Step 1: Write the failing tests** — `SelectedOption_Set_RaisesChangeOnceAfterBothWrites` (count `SelectedOption` notifications and assert the pair at
   notification time); `LanguageDesigner_ShowsTheDefaultSelection`; catalogue test for the footnote text.
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement** all items above.
-- [ ] **Step 4: Run** the Desktop test project; build the Desktop project → pass.
-- [ ] **Step 5: Commit** — `refactor(♻️): tidy the INI editor's catalogue, language picker and dialogue docs`
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement** all items above.
+- [x] **Step 4: Run** the Desktop test project; build the Desktop project → pass.
+- [x] **Step 5: Commit** — `refactor(♻️): tidy the INI editor's catalogue, language picker and dialogue docs`
 
 ---
 
@@ -227,11 +227,11 @@ Requirements (spec §3.5): the diff header stays column-aligned with the rows wh
 or the scrollbar width reserved on the header — builder's choice); every mono run uses `FontFamily="Lucida Console, Courier New, monospace"` (C4); each diff row has a
 1 px dotted light-grey bottom separator (`dialogs.jsx:485`).
 
-- [ ] **Step 1: Implement**; build the Desktop project; run the Architecture tests.
+- [x] **Step 1: Implement**; build the Desktop project; run the Architecture tests.
 - [ ] **Step 2: Drive it** (if desktop control is available): launch the app, open an installation with enough history that a snapshot's diff scrolls (save several
   different settings in one Save first), open `Restore previous…`, confirm header alignment with the scrollbar visible, the font and the separators; replace the
   screenshot if it changed visibly; close the app. Without desktop control, say so in the report — the controller drives it.
-- [ ] **Step 3: Commit** — `style(🎨): align the restore diff header and match the prototype's font and row separators`
+- [x] **Step 3: Commit** — `style(🎨): align the restore diff header and match the prototype's font and row separators`
 
 ---
 
@@ -253,10 +253,10 @@ Add or tighten (spec §3.7), each as its own named test or assertion:
   `ShowRestorePreviousIniAsync` callback); the `Yes` path asserts save-before-open with `Received.InOrder`; replace the vacuous `ResetCommand` assertion in
   `RestorePrevious_WhileDialogueOpen_EditorIsBusy` with one that holds pending edits; `HistoryEntries_SummaryFails_DoesNotQueryTheCount`.
 
-- [ ] **Step 1: Write the tests**; run each project's filter — every new test passes against current code (these pin existing behaviour); a test that *fails* is a real
+- [x] **Step 1: Write the tests**; run each project's filter — every new test passes against current code (these pin existing behaviour); a test that *fails* is a real
   defect: fix it in the owning source file and say so in the report.
-- [ ] **Step 2: Run** all five test projects → pass.
-- [ ] **Step 3: Commit** — `test(✅): strengthen the INI history, restore and editor tests`
+- [x] **Step 2: Run** all five test projects → pass.
+- [x] **Step 3: Commit** — `test(✅): strengthen the INI history, restore and editor tests`
 
 ---
 

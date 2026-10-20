@@ -17,6 +17,7 @@ global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig;
 global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig.Fields;
 global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
+global using Erdmier.ZooTycoonLauncher.Application.Installations.GetById;
 global using Erdmier.ZooTycoonLauncher.Domain.Installations;
 global using Erdmier.ZooTycoonLauncher.Domain.IniKeys;
 global using Erdmier.ZooTycoonLauncher.Domain.IniSnapshots;

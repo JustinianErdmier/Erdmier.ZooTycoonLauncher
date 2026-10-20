@@ -102,7 +102,9 @@ public sealed record IniKeySpec(IniKeyId Id, IniValueKind Kind, string? DefaultV
             return false;
         }
 
-        switch (value.Trim())
+        string trimmed = value.Trim();
+
+        switch (trimmed)
         {
             case "0":
                 result = false;
@@ -115,7 +117,7 @@ public sealed record IniKeySpec(IniKeyId Id, IniValueKind Kind, string? DefaultV
                 return true;
 
             default:
-                return bool.TryParse(value.Trim(), out result);
+                return bool.TryParse(trimmed, out result);
         }
     }
 

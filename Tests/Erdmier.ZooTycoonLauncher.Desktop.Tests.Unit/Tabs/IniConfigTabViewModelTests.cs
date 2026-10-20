@@ -51,11 +51,11 @@ public sealed class IniConfigTabViewModelTests
     {
         IniConfigTabViewModel tab = new(IniEditorTestData.Installation(), iniErrorMessage: null, _mediator, _dialogs);
 
-        IniEditorTestData.ReturnsForGet(_mediator, Error.Unexpected(code: "Ini.StoreFailed", description: "The installation's settings history could not be opened: x"));
+        IniEditorTestData.ReturnsForGet(_mediator, Error.Unexpected(code: "Ini.StoreFailed", description: "The installation's settings history could not be read or updated: x"));
 
         await tab.ActivateAsync(CancellationToken.None);
 
-        tab.Content.ShouldBeOfType<IniPlaceholderViewModel>().Body.ShouldBe(expected: "The installation's settings history could not be opened: x");
+        tab.Content.ShouldBeOfType<IniPlaceholderViewModel>().Body.ShouldBe(expected: "The installation's settings history could not be read or updated: x");
     }
 
     [ Fact ]
@@ -141,7 +141,7 @@ public sealed class IniConfigTabViewModelTests
 
         IniEditorTestData.Field<IniNumberFieldViewModel>((IniEditorViewModel)tab.Content, section: "user", key: "screenwidth").Value = 1024m;
 
-        pending.SetResult(Error.Unexpected(code: "Ini.StoreFailed", description: "The installation's settings history could not be opened: x"));
+        pending.SetResult(Error.Unexpected(code: "Ini.StoreFailed", description: "The installation's settings history could not be read or updated: x"));
 
         await reload;
 
@@ -149,7 +149,7 @@ public sealed class IniConfigTabViewModelTests
         tab.HasPendingChanges.ShouldBeTrue();
 
         await _dialogs.Received(requiredNumberOfCalls: 1)
-                      .ShowErrorAsync(title: "Cannot Reload zoo.ini", message: "The installation's settings history could not be opened: x");
+                      .ShowErrorAsync(title: "Cannot Reload zoo.ini", message: "The installation's settings history could not be read or updated: x");
     }
 
     [ Fact ]

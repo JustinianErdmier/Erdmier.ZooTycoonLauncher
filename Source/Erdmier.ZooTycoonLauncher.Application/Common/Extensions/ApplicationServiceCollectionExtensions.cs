@@ -2,7 +2,10 @@ using Erdmier.ZooTycoonLauncher.Application.Common.Behaviours;
 
 namespace Erdmier.ZooTycoonLauncher.Application.Common.Extensions;
 
-/// <summary>Composition-root extensions that register Application-layer services (Mediator, the FluentValidation pipeline and the INI write services).</summary>
+/// <summary>
+///     Composition-root extensions that register Application-layer services: Mediator, the FluentValidation validators and validation behaviour,
+///     <see cref="IniReconciler" />, <see cref="IniWritePipeline" /> and <see cref="IIniSnapshotService" />.
+/// </summary>
 public static class ApplicationServiceCollectionExtensions
 {
     /// <summary>

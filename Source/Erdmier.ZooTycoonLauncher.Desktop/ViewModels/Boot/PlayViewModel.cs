@@ -247,5 +247,7 @@ file sealed class NoOpDialogService : IDialogService
 
     public Task<SaveChangesChoice> ShowSaveChangesPromptAsync() => Task.FromResult(SaveChangesChoice.Cancel);
 
+    public Task<bool> ShowConfirmationAsync(string title, string message) => Task.FromResult(false);
+
     public Task ShowErrorAsync(string title, string message) => Task.CompletedTask;
 }

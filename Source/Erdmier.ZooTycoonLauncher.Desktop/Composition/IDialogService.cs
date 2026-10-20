@@ -45,6 +45,12 @@ public interface IDialogService
     /// <returns>The answer; closing the prompt from its title bar answers <see cref="SaveChangesChoice.Cancel" />.</returns>
     Task<SaveChangesChoice> ShowSaveChangesPromptAsync();
 
+    /// <summary>Asks a Win95-style Yes / No question in a modal prompt owned by the active window.</summary>
+    /// <param name="title">The window title.</param>
+    /// <param name="message">The question, shown verbatim.</param>
+    /// <returns><see langword="true" /> only when the user answers Yes; No, or closing the prompt from its title bar, answers <see langword="false" />.</returns>
+    Task<bool> ShowConfirmationAsync(string title, string message);
+
     /// <summary>Shows a modal error message box owned by the active window.</summary>
     /// <param name="title">The window title.</param>
     /// <param name="message">The message, shown verbatim.</param>

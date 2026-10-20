@@ -248,6 +248,26 @@ internal sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
+    public async Task<bool> ShowConfirmationAsync(string title, string message)
+    {
+        Window? owner = ResolveOwner();
+
+        if (owner is null)
+        {
+            return false;
+        }
+
+        ConfirmationPromptView view = new()
+        {
+            DataContext = new ConfirmationPromptViewModel(title, message)
+        };
+
+        bool? answer = await view.ShowDialog<bool?>(owner);
+
+        return answer ?? false;
+    }
+
+    /// <inheritdoc />
     public async Task ShowErrorAsync(string title, string message)
     {
         ErrorMessageView view = new()

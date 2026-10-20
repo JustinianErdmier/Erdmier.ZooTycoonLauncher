@@ -796,7 +796,7 @@ Three entry points share one slice (`AddInstallationCommand`):
 1. **Auto-locate at startup** — the `IInstallationLocator` walks: persisted last-known path → hard-coded `Program Files [(x86)]\Microsoft Games\Zoo Tycoon` → registry value-name  
    variants under `HKLM\SOFTWARE\Microsoft\Microsoft Games\Zoo Tycoon\1.0`. First directory containing `zoo.exe` wins. The locator returns `LocatedDirectory | NotFound`. The Ref  
    launcher's locator code informed this design; the new implementation is written fresh.
-2. **Manual from the Installation Manager dialogue** — user clicks `Add`.
+2. **Manual from the Installation Manager dialogue** — user clicks `Add…`.
 3. **Manual from the No Game Installation Found state** — user clicks `Add Installation`.
 
 `AddInstallationCommand` opens the **Add Installation** dialogue directly (the prototype rejected the earlier picker-first flow as un-Windows-95). The dialogue exposes:
@@ -827,15 +827,15 @@ On a successful save operation:
 
 #### 7.2.2 Installation Manager dialogue
 
-A modal hosting a three-column, headered `DataGrid` (`Name`, `Path`, `Status`) and a right-side action panel (`Add`, `Info`, `Edit`, `Delete`, gap, `Fix`).
+A modal hosting a three-column, headered `DataGrid` (`Name`, `Path`, `Status`) and a right-side action panel (`Add…`, `Info`, `Edit…`, `Delete`, gap, `Fix…`).
 
 - **Sort order.** The default installation pins to the top with its `Name` rendered **bold** and a ` · default` suffix; remaining rows sort alphabetically case-insensitive.  
   Implementation: an `IComparer<InstallationGridRowModel>` so the grid stays simple.
 - **Status column.** `InstallationValidity.DisplayName` rendered in `Valid → Green`, others `Red`.
 - **Action enablement.**
-    - `Add` always enabled.
-    - `Info`, `Edit`, `Delete` require a selected row.
-    - `Fix` requires a selected row whose validity is not `Valid`.
+    - `Add…` always enabled.
+    - `Info`, `Edit…`, `Delete` require a selected row.
+    - `Fix…` requires a selected row whose validity is not `Valid`.
 
 Changes propagate via `IMessenger.Send(InstallationChangedMessage | InstallationAddedMessage | InstallationDeletedMessage | DefaultInstallationChangedMessage)`. Subscribers: the  
 Installation Manager dialogue's grid, the main window's tab content, the picker's grid (the `OpenGameInstallation` state).
@@ -992,7 +992,7 @@ All three set `HasIni = true` on the row on success.
 
 The tab is cleared and replaced with a single group box labelled **Corrupted INI**, explaining the launcher cannot read or write the file. Three buttons:
 
-- **Restore Previous Version** → opens the Historical dialogue in a special `CorruptedSource` mode. Differences from the normal undo flow:
+- **Restore Previous Version** → opens the Restore Previous INI dialogue in a special `CorruptedSource` mode. Differences from the normal restore flow:
     - Tooltips suppress the `Current:` line.
     - Restore does **not** copy `Current` rows into `Historical` (those values may be the very corruption we're trying to escape); the chosen snapshot is written straight to  
       `Current` and to disk.
@@ -1159,7 +1159,7 @@ source of truth — and the next synchronise adopts it as `Manual` drift, since 
 
 Crash recovery scenarios are catalogued in §7.7.
 
-For a future Restore in `CorruptedSource` mode (§7.6) — not part of this slice — step 6 builds the document from the *historical* snapshot's `StructureBlob` rather than the  
+For a future Restore in `CorruptedSource` mode (§7.5) — not part of this slice — step 6 builds the document from the *historical* snapshot's `StructureBlob` rather than the  
 on-disk text, and step 5 (the `LauncherGui` archive of `Current`) is skipped, since we don't want to archive the corrupted `Current`.
 
 ### 8.3 Scenarios lock/unlock encoding
@@ -1417,7 +1417,7 @@ that owns both label and input is what carries `ToolTip.Tip` so the whole row tr
 ### 9.6 Picker (Open Game Installation)
 
 The picker is **not a modal dialogue** — it is the `OpenGameInstallation` main-window state described in §9.1. Same data shape as the Installation Manager (Name / Path / Status),  
-but with `Open` (default) replacing the row of management actions, plus `Add…` and `Manage…` buttons that open the Add Installation and Installation Manager dialogues.
+but with `Open` (default) replacing the row of management actions, plus `Add…`, `Info` and `Manage…` buttons that open the Add Installation and Installation Manager dialogues.
 There is no separate "switch installation" picker in the MVP; switching is done from the Installation Manager (double-click a row, or select + `Open`).
 
 ### 9.7 Restore Previous INI dialogue
@@ -1436,7 +1436,7 @@ the dialogue now focuses on **comparing snapshots to current**:
   followed by those keys. It does not change the change count or `Restore`'s enablement.
 - **Footer:** `Restore` (default; disabled when the diff is empty), `Cancel`. Both `Cancel` and the title-bar close are disabled while a restore runs.
 
-The history is loaded before the window shows, so the dialogue has no visible loading state; a load error is shown in place of the grid with `Restore` disabled.
+The history is loaded before the window shows, so the dialogue has no visible loading state; a load error is shown as a line above the (empty) grid with `Restore` disabled.
 
 The diff is computed by comparing the effective values (`IniKeySpec.EffectiveValue`) of every user-setting key and emitting rows where they disagree (kind-aware comparison —
 `Bool` `true` / `1` are equivalent; `NullableInt` empty `==` empty). The same function decides what the dialogue shows and what a restore writes, so *N changes* on screen is
@@ -1564,7 +1564,10 @@ Slice handlers with fakes for every Infrastructure interface.
   alphabetically-first; removing the last installation nulls the default.
 - `LaunchGameHandler` — three-branch `LaunchGameOutcome`: `Started` (process started, `LastPlayedUtc` set, `CloseAfterGameLaunch` snapshot carried back); `Drifted` (re-verification
   failed, no launch attempted, caller re-enters boot); `StartFailed` (`Process.Start` rejected, `FailureMessage` carried back for the launch-error window).
-- `RestoreSnapshotCommand` — historical archiving order matches §8.2; `CorruptedSource` mode skips the archive and emits from the historical blob.
+- `GetIniHistoryQuery` — synchronises before reading; `Historical` snapshots newest first, then `Original`; `Δ keys` per entry.
+- `RestoreIniSnapshotCommand` — archives `Current` as `LauncherGui` and writes only the differing user settings; leaves game-managed and absent keys alone; restores an invalid
+  stored value as the default; is a no-op when nothing differs; returns `Ini.SnapshotNotFound`; rolls back on write failure; swallows a post-write store failure; reconciles
+  external drift first.
 
 ### 11.3 `Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration`
 
@@ -1710,7 +1713,7 @@ Planned phases (§13.3, §13.4), permanent non-goals (§3.2) and risks (§14.5) 
 | DW-04 | The `[scenario]` section of the INI Config tab (§5.4, §7.8), after the Phase 0 scenarios spike (§13.1).                                                                                                                                                                                                                                                                   | INI Config core spec                                  |
 | DW-05 | The General tab keeps its boot-time Cannot Play / "could not read `zoo.ini`" message after a later INI-tab retry succeeds; it should recover without a reopen.                                                                                                                                                                                                            | PR #6 (ruling R10)                                    |
 | DW-06 | Open an installation from the Installation Manager (an **Open** button and row double-click), and File → Open Installation… as the Manager focused on Open (§9.10). The Manager footer already promises "Double-click a row to open", which does nothing yet.                                                                                                             | PR #4, PR #5                                          |
-| DW-07 | Deleting the last installation while the picker shows leaves an empty picker. With the *No Installation* startup preference, `BootHandler` returns the picker even when no installations exist; it should fall through to auto-locate and No Game Installation Found. The picker's Manage bypasses the main window, so the main window never reboots after those changes. | PR #4, PR #5                                          |
+| DW-07 | Deleting the last installation while the picker shows leaves an empty picker. With the *No Installation* startup preference, `BootHandler` returns the picker even when no installations exist; it should fall through to auto-locate and No Game Installation Found. The picker's `Manage…` bypasses the main window, so the main window never reboots after those changes. | PR #4, PR #5                                          |
 | DW-09 | The status bar's display cell is hard-coded as "Display: 1920 × 1080" (`MainWindowViewModel.cs:321`, a `TODO`). Source it from the screen-modes work (§7.9).                                                                                                                                                                                                              | Code `TODO`; maintainer's note 4                      |
 | DW-10 | The "Auto-locate trail" group box on No Game Installation Found is static markup (`NoGameInstallationFoundView.axaml:41`, a `TODO`). `BootResult` could carry the whole `LocatedDirectory` record (path plus every checked location and its status) instead of the path alone.                                                                                            | Code `TODO`; maintainer's note 2                      |
 | DW-11 | The "Your System" group box on Ready to Play is static markup, added from the mock-up after this SDD was written. It is unspecified, and feasibility needs research before a spec.                                                                                                                                                                                        | Maintainer's note 5                                   |

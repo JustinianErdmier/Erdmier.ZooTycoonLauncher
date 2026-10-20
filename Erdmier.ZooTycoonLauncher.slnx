@@ -7,6 +7,10 @@
         <File Path="Directory.Packages.props" />
     </Folder>
     <Folder Name="/Docs/" />
+    <Folder Name="/Docs/Ledgers/" />
+    <Folder Name="/Docs/Ledgers/Epic-1-MVP/">
+        <File Path="Docs/Ledgers/Epic-1-MVP/milestone-9-ledger.md" />
+    </Folder>
     <Folder Name="/Docs/Plans/" />
     <Folder Name="/Docs/Plans/Epic-1-MVP/">
         <File Path="Docs/Plans/Epic-1-MVP/milestone-1-foundations-and-scaffolding.md" />
@@ -80,6 +84,7 @@
         <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/NoGameInstallationFoundStateWithNoCandidateFound.png" />
         <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/OpenGameInstallationState.png" />
         <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/ReadyToPlayState.png" />
+        <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/RestorePreviousIniDialogue.png" />
     </Folder>
     <Folder Name="/Source/">
         <Project Path="Source/Erdmier.ZooTycoonLauncher.Domain/Erdmier.ZooTycoonLauncher.Domain.csproj" />

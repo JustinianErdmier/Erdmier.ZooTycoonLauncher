@@ -421,7 +421,7 @@ success, the existing error dialogue on failure). Footer: the `Undo` button beco
 - [x] **Step 2: Run to verify they fail** — Desktop tests filtered `IniEditorViewModelTests` → fail.
 - [x] **Step 3: Implement.**
 - [x] **Step 4: Run to verify they pass** — Desktop test project passes; Desktop builds.
-- [ ] **Step 5: Drive it in the app** — `dotnet run --project Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj` against a
+- [x] **Step 5: Drive it in the app** — `dotnet run --project Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj` against a
   `SampleInstallations/` copy: save twice, open `Restore previous…`, check the newest row is selected, restore, confirm `zoo.ini` and the editor follow; try
   `Restore defaults` then `Reset`. Screenshot the dialogue to `Docs/UserInterfaceDesign/ImplementationScreenshots/RestorePreviousIniDialogue.png` and register it in the
   `.slnx`. Close the app.
@@ -473,6 +473,6 @@ Info history entries. Rename the INI Config Core stub *3. Revert* heading to *3.
 
 ## Final verification
 
-- [ ] `dotnet clean Erdmier.ZooTycoonLauncher.slnx; dotnet build Erdmier.ZooTycoonLauncher.slnx` → 0 warnings, 0 errors.
-- [ ] `dotnet test Erdmier.ZooTycoonLauncher.slnx` → all pass.
-- [ ] The app runs, and every Review Focus line holds when driven by hand.
+- [x] `dotnet clean Erdmier.ZooTycoonLauncher.slnx; dotnet build Erdmier.ZooTycoonLauncher.slnx` → 0 warnings, 0 errors.
+- [x] `dotnet test Erdmier.ZooTycoonLauncher.slnx` → all pass.
+- [x] The app runs, and every Review Focus line holds when driven by hand.

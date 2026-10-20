@@ -12,7 +12,7 @@ public sealed class InstallationDbContextFactory : IInstallationDbContextFactory
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="locations">Path locations.</param>
-    /// <param name="fileSystem">File-system abstraction (only used for delete; EF Core owns its own IO for read/write).</param>
+    /// <param name="fileSystem">File-system abstraction (used for delete and the existence check in <c>OpenExistingAsync</c>; EF Core owns its own IO for read/write).</param>
     public InstallationDbContextFactory(IAppStorageLocations locations, IFileSystem fileSystem)
     {
         _locations  = locations;

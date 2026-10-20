@@ -97,7 +97,7 @@ public sealed class IniWritePipeline
 
             try
             {
-                IniReconciliation reconciliation = await _reconciler.ReconcileAsync(transaction, content.Text, nowUtc, cancellationToken);
+                IniReconciliation reconciliation = await IniLoadSteps.ReconcileAsync(transaction, _reconciler, _logger, installation, content.Text, nowUtc, cancellationToken);
 
                 ErrorOr<IReadOnlyDictionary<IniKeyId, string>> selection = await selectEdits(transaction, reconciliation.Values, cancellationToken);
 

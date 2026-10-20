@@ -173,6 +173,29 @@ public sealed class RestoreIniSnapshotHandlerTests
 
         result.FirstError.Code.ShouldBe(expected: "Ini.WriteFailed");
 
+        // The archive is rolled back: nothing is committed or recorded, and disposing the transaction uncommitted discards it.
+        await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+        await _transaction.DidNotReceive().UpdateCurrentAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<IniValueChange>>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
+        await _transaction.Received(requiredNumberOfCalls: 1).DisposeAsync();
+    }
+
+    [ Fact ]
+    public async Task Restore_RecordFailsAfterWrite_IsSwallowedAndSucceeds()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        Guid snapshotId = SnapshotHolds(IniTestData.Sample.Replace(oldValue: "screenwidth=800", newValue: "screenwidth=1024"));
+
+        _transaction.UpdateCurrentAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<IniValueChange>>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+                    .ThrowsAsync(new InvalidOperationException(message: "database is locked"));
+
+        ErrorOr<IniConfigResult> result = await RestoreAsync(snapshotId);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Values[ScreenWidth].ShouldBe(expected: "1024");
+        result.Value.FileLastWriteUtc.ShouldBe(NewLastWrite);
+        _written.ShouldNotBeNull();
+
         await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
     }
 

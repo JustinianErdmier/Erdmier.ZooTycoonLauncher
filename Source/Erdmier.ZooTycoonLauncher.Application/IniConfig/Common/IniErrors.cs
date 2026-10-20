@@ -31,5 +31,8 @@ public static class IniErrors
     /// <summary>The snapshot chosen for restoring no longer exists.</summary>
     /// <param name="snapshotId">The missing snapshot id.</param>
     /// <returns>A not-found error coded <c>Ini.SnapshotNotFound</c>.</returns>
-    public static Error SnapshotNotFound(Guid snapshotId) => Error.NotFound(code: "Ini.SnapshotNotFound", "The selected version of zoo.ini no longer exists.");
+    public static Error SnapshotNotFound(Guid snapshotId)
+        => Error.NotFound(code: "Ini.SnapshotNotFound",
+                          description: "The selected version of zoo.ini no longer exists.",
+                          metadata: new Dictionary<string, object> { [ "SnapshotId" ] = snapshotId });
 }

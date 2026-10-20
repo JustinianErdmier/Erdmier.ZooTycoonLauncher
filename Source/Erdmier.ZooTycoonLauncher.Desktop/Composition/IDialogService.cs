@@ -51,6 +51,11 @@ public interface IDialogService
     /// <returns><see langword="true" /> only when the user answers Yes; No, or closing the prompt from its title bar, answers <see langword="false" />.</returns>
     Task<bool> ShowConfirmationAsync(string title, string message);
 
+    /// <summary>Opens the modal Restore Previous INI dialogue for the given installation.</summary>
+    /// <param name="installationId">The installation whose <c>zoo.ini</c> history to show.</param>
+    /// <returns>The new configuration after a restore; <see langword="null" /> when the user cancelled or nothing was restored.</returns>
+    Task<IniConfigResult?> ShowRestorePreviousIniAsync(Guid installationId);
+
     /// <summary>Shows a modal error message box owned by the active window.</summary>
     /// <param name="title">The window title.</param>
     /// <param name="message">The message, shown verbatim.</param>

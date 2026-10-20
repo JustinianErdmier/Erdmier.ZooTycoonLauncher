@@ -268,6 +268,30 @@ internal sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
+    public async Task<IniConfigResult?> ShowRestorePreviousIniAsync(Guid installationId)
+    {
+        Window? owner = ResolveOwner();
+
+        if (owner is null)
+        {
+            return null;
+        }
+
+        RestorePreviousIniDialogViewModel vm = _services.GetRequiredService<RestorePreviousIniDialogViewModel>();
+
+        await vm.InitialiseAsync(installationId);
+
+        RestorePreviousIniDialogView view = new()
+        {
+            DataContext = vm
+        };
+
+        await view.ShowDialog(owner);
+
+        return vm.Result;
+    }
+
+    /// <inheritdoc />
     public async Task ShowErrorAsync(string title, string message)
     {
         ErrorMessageView view = new()

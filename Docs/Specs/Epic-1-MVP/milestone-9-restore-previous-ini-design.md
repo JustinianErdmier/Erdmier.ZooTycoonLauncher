@@ -222,7 +222,7 @@ A new `RestorePreviousIniDialogViewModel` + `RestorePreviousIniDialogView` pair 
   their current values:* followed by the keys as `[section]/key`, comma-separated and wrapping. It does not change the change count or `Restore`'s enablement.
 - **Footer** — `Restore` (default; disabled when no row is selected or the diff is empty) and `Cancel`.
 
-Loading: the dialogue sends `GetIniHistoryQuery` when it opens; while loading, the grid is empty and both buttons except `Cancel` are disabled. A query error is shown in
+Loading: the dialogue sends `GetIniHistoryQuery` when it opens. The history loads before the window opens. A query error is shown in
 the dialogue (as the Info dialogue shows `ErrorMessage`) and `Restore` stays disabled.
 
 `Restore`: show the C7 confirmation; on `Yes`, send `RestoreIniSnapshotCommand` with the dialogue busy (buttons disabled); on success, close the dialogue returning the

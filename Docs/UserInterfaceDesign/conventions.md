@@ -167,32 +167,38 @@ Used by the Status / Display / INI status / Fix-EXE / Fix-INI / Auto-locate-trai
 
 ### 4.1 Icon vocabulary
 
-The icon set is the prototype's `assets/icons/` directory, lowercase-dash names. ICO files are **not yet committed to the repo** — they will be added as part of the Phase 1 Desktop assembly task. Until then, treat the table below as the contract; views can stub with the `question.ico` placeholder.
+The icons are the Windows 95 set committed under `Source/Erdmier.ZooTycoonLauncher.Desktop/Assets/Win95Icons/`, referenced from XAML as
+`/Assets/Win95Icons/<name>` (an `Image Source=` or a window `Icon=`). The file name carries the artwork's native size (`ok32.gif`, `foldercatalog16.ico`), but the
+`Height` / `Width` on the `Image` decide the rendered size. The launcher's own mark lives in `Assets/BrandIcons/` and `Assets/Images/`. The table maps each site to the
+file its view uses today; a site whose view does not exist yet is marked *(not built)* and has no file yet.
 
-| Site                                                  | Icon                               | Notes                                  |
-|-------------------------------------------------------|------------------------------------|----------------------------------------|
-| Title-bar — launcher                                  | `appmark.svg` (vector, app-owned)  | Abstract green play-cell; not an ICO   |
-| Ready · Status group box                              | `check.ico`                        | "Ready to Play" check                  |
-| Ready · Display group box                             | `mystify.ico`                      | Reused in Cannot Play (muted)          |
-| Looking · Status group box                            | `search.ico`                       |                                        |
-| Cannot Play · Status group box                        | `warning.ico`                      |                                        |
-| Cannot Play · Display group box                       | `mystify.ico`                      | Same as Ready, group is muted          |
-| No Installation · Status group box                    | `critical.ico`                     |                                        |
-| Open Picker · Status group box                        | `folder-catalog.ico`               |                                        |
-| Installation Manager · title bar                      | `folder-catalog.ico`               |                                        |
-| Add / Edit Installation · title bar + body            | `folder-catalog.ico`               | 16 px title, 32 px body                |
-| Delete Installation · title bar + body                | `warning.ico`                      |                                        |
-| Settings · title bar                                  | `controls.ico`                     |                                        |
-| About · title bar                                     | `info.ico`                         | Body keeps the `appmark` logo          |
-| Restore Previous INI · title bar                      | `sheets-docs.ico`                  |                                        |
-| Installation Info · title bar / body                  | `folder-catalog.ico` / `info.ico`  |                                        |
-| Fix Installation · title bar                          | `warning.ico`                      |                                        |
-| Fix EXE / Fix INI group boxes — valid state           | `mail-check.ico`                   |                                        |
-| Fix EXE / Fix INI group boxes — invalid state         | `mail-cross.ico`                   |                                        |
-| INI tab placeholder (disabled)                        | *(no icon)*                        | Muted helper text only                 |
-| INI tab — No INI sub-state                            | `warning.ico`                      |                                        |
+| Site                                                          | Icon                                                   | Notes                                                    |
+|---------------------------------------------------------------|--------------------------------------------------------|----------------------------------------------------------|
+| Main window and the small prompts · title bar                 | `BrandIcons/ZTL_Title-Icon.png`                        | App-owned mark; also the Confirmation, Error and Save prompts |
+| Play · General tab · Status group box, can play               | `ok32.gif`                                             |                                                          |
+| Play · General tab · Status group box, cannot play            | `warning32.gif`                                        |                                                          |
+| Play · General tab · Display group box                        | `mystify16.ico`                                        | Drawn at 32 px                                           |
+| Play · General tab · Your System group box                    | `mycomputer16.ico`                                     | Drawn at 32 px                                           |
+| Play · General tab · ready / not-ready line                   | `ok16.gif` / `error32.gif`                             | Both drawn at 16 px                                      |
+| Looking for Zoo Tycoon                                        | `searchcomputer16.ico`                                 | Drawn at 32 px                                           |
+| No Game Installation Found                                    | `error32.gif`                                          |                                                          |
+| Open Game Installation                                        | `foldercatalog16.ico`                                  | Drawn at 32 px                                           |
+| Installation Manager · title bar                              | `installationoncomputer16.ico`                         |                                                          |
+| Add / Edit Installation · title bar + body                    | `foldercatalog16.ico`                                  |                                                          |
+| Installation form · error line                                | `cancel16.gif`                                         |                                                          |
+| Delete Installation · title bar + body                        | `warning32.gif`                                        |                                                          |
+| Installation Info · title bar / body                          | `foldercatalog16.ico` / `information32.gif`            |                                                          |
+| Fix Installation · title bar                                  | `warning32.gif`                                        |                                                          |
+| Fix EXE / Fix INI group boxes · valid / invalid               | `ok32.gif` / `error32.gif`                             |                                                          |
+| Restore Previous INI · title bar                              | `sheetsanddocuments32.ico`                             |                                                          |
+| Confirmation and Save-changes prompts · body                  | `warning32.gif`                                        |                                                          |
+| Error message · body                                          | `error32.gif`                                          |                                                          |
+| Launch error · body                                           | `cancel32.gif`                                         |                                                          |
+| INI tab · No INI sub-state                                    | `warning32.gif`                                        |                                                          |
+| INI tab placeholder (disabled)                                | *(no icon)*                                            | Muted helper text only                                   |
+| Settings · title bar *(not built)*                            | `controls32.ico`                                       | File committed, no view yet                              |
+| About · title bar *(not built)*                               | *(none chosen)*                                        | No view yet; body keeps the app logo                     |
 
-Phase 1 task: copy `assets/icons/*.ico` from the prototype into `Source/Erdmier.ZooTycoonLauncher.Desktop/Assets/Icons/`, register them as Avalonia assets, and expose them through `IIconSource` (or whatever the composition root chooses to call it). Until then, every view that names an icon by this table is forward-compatible — only the resolver is missing.
 
 ---
 

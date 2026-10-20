@@ -33,7 +33,7 @@ public sealed class IniSnapshotComparerTests
 
         IniSnapshotComparison result = IniSnapshotComparer.Compare(current, snapshot);
 
-        result.Rows.ShouldBe([ new IniDiffRow(new IniKeyId("user", "screenwidth"), Current: "1920", Snapshot: "1024") ]);
+        result.Rows.ShouldBe([ new IniDiffRow(new IniKeyId(Section: "user", Key: "screenwidth"), Current: "1920", Snapshot: "1024") ]);
     }
 
     [ Fact ]
@@ -45,7 +45,7 @@ public sealed class IniSnapshotComparerTests
         IniSnapshotComparison result = IniSnapshotComparer.Compare(current, snapshot);
 
         result.Rows.ShouldBeEmpty();
-        result.KeptKeys.ShouldBe([ new IniKeyId("UI", "tooltipDelay") ]);
+        result.KeptKeys.ShouldBe([ new IniKeyId(Section: "UI", Key: "tooltipDelay") ]);
     }
 
     [ Fact ]
@@ -56,7 +56,7 @@ public sealed class IniSnapshotComparerTests
 
         IniSnapshotComparison result = IniSnapshotComparer.Compare(current, snapshot);
 
-        result.Rows.ShouldBe([ new IniDiffRow(new IniKeyId("user", "screenwidth"), Current: null, Snapshot: "800") ]);
+        result.Rows.ShouldBe([ new IniDiffRow(new IniKeyId(Section: "user", Key: "screenwidth"), Current: null, Snapshot: "800") ]);
     }
 
     [ Fact ]
@@ -88,7 +88,7 @@ public sealed class IniSnapshotComparerTests
 
         IniSnapshotComparison result = IniSnapshotComparer.Compare(current, snapshot);
 
-        result.Rows.Select(row => row.Id).ShouldBe([ new IniKeyId("user", "screenwidth"), new IniKeyId("UI", "tooltipDelay") ]);
+        result.Rows.Select(row => row.Id).ShouldBe([ new IniKeyId(Section: "user", Key: "screenwidth"), new IniKeyId(Section: "UI", Key: "tooltipDelay") ]);
     }
 
     [ Fact ]
@@ -99,6 +99,6 @@ public sealed class IniSnapshotComparerTests
 
         IReadOnlyDictionary<IniKeyId, string?> values = IniSnapshotComparer.ValuesOf(snapshot);
 
-        values[new IniKeyId("user", "screenwidth")].ShouldBe("1024");
+        values[new IniKeyId(Section: "user", Key: "screenwidth")].ShouldBe("1024");
     }
 }

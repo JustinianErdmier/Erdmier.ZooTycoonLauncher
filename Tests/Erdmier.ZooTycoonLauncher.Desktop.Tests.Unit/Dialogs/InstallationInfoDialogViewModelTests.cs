@@ -34,7 +34,7 @@ public sealed class InstallationInfoDialogViewModelTests
     [ Fact ]
     public async Task HistoryEntries_Zero_ReadsZeroSnapshots()
     {
-        InstallationInfoDialogViewModel viewModel = await LoadedAsync(0);
+        InstallationInfoDialogViewModel viewModel = await LoadedAsync(count: 0);
 
         viewModel.HistoryEntriesText.ShouldBe(expected: "0 snapshots");
     }
@@ -42,7 +42,7 @@ public sealed class InstallationInfoDialogViewModelTests
     [ Fact ]
     public async Task HistoryEntries_One_ReadsOneSnapshot()
     {
-        InstallationInfoDialogViewModel viewModel = await LoadedAsync(1);
+        InstallationInfoDialogViewModel viewModel = await LoadedAsync(count: 1);
 
         viewModel.HistoryEntriesText.ShouldBe(expected: "1 snapshot");
     }
@@ -50,7 +50,7 @@ public sealed class InstallationInfoDialogViewModelTests
     [ Fact ]
     public async Task HistoryEntries_Many_ReadsTheCount()
     {
-        InstallationInfoDialogViewModel viewModel = await LoadedAsync(7);
+        InstallationInfoDialogViewModel viewModel = await LoadedAsync(count: 7);
 
         viewModel.HistoryEntriesText.ShouldBe(expected: "7 snapshots");
     }
@@ -71,7 +71,7 @@ public sealed class InstallationInfoDialogViewModelTests
         _mediator.Send(Arg.Any<GetInstallationByIdQuery>(), Arg.Any<CancellationToken>())
                  .Returns(new ValueTask<ErrorOr<InstallationSummary>>(Summary()));
         _mediator.Send(Arg.Any<GetIniHistoryCountQuery>(), Arg.Any<CancellationToken>())
-                 .Returns<ValueTask<ErrorOr<int>>>(_ => throw new InvalidOperationException("boom"));
+                 .Returns<ValueTask<ErrorOr<int>>>(_ => throw new InvalidOperationException(message: "boom"));
 
         InstallationInfoDialogViewModel viewModel = new(_mediator, NullLogger<InstallationInfoDialogViewModel>.Instance);
 

@@ -240,7 +240,20 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
         try
         {
-            ErrorOr<IniConfigResult> result = await _mediator.Send(new GetIniConfigQuery(_installationId), cancellationToken);
+            await ReloadCoreAsync(_mediator, cancellationToken);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    // The reload itself, without touching IsBusy, so a caller that already holds the busy flag (Restore previous) can reuse it.
+    private async Task ReloadCoreAsync(IMediator mediator, CancellationToken cancellationToken)
+    {
+        try
+        {
+            ErrorOr<IniConfigResult> result = await mediator.Send(new GetIniConfigQuery(_installationId), cancellationToken);
 
             if (result.IsError)
             {
@@ -254,10 +267,6 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             await _dialogs.ShowErrorAsync(title: "Cannot Reload zoo.ini", $"zoo.ini could not be reloaded: {ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
         }
     }
 
@@ -287,16 +296,35 @@ public sealed partial class IniEditorViewModel : ViewModelBase
             }
         }
 
-        IniConfigResult? restored = await _dialogs.ShowRestorePreviousIniAsync(_installationId);
-
-        if (restored is not null)
+        if (_mediator is not { } mediator)
         {
-            Load(restored);
-
             return;
         }
 
-        await ReloadAsync(cancellationToken);
+        // Busy from here until the final load, so the form cannot be edited (and then overwritten by the load) while the history or the dialogue is open.
+        IsBusy = true;
+
+        try
+        {
+            IniConfigResult? restored = await _dialogs.ShowRestorePreviousIniAsync(_installationId);
+
+            if (restored is not null)
+            {
+                Load(restored);
+
+                return;
+            }
+
+            await ReloadCoreAsync(mediator, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await _dialogs.ShowErrorAsync(title: "Cannot Restore zoo.ini", $"Restore Previous INI could not be opened: {ex.Message}");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private bool CanRestorePrevious() => !IsBusy && _mediator is not null && HistoricalCount > 0;

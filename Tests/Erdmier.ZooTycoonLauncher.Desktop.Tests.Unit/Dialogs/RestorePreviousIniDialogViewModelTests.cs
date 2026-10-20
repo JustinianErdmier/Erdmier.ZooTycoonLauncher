@@ -250,4 +250,56 @@ public sealed class RestorePreviousIniDialogViewModelTests
         viewModel.Rows.ShouldBeEmpty();
         viewModel.RestoreCommand.CanExecute(parameter: null).ShouldBeFalse();
     }
+
+    [ Fact ]
+    public async Task Initialise_QueryFails_HasError()
+    {
+        _mediator.Send(Arg.Any<GetIniHistoryQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniHistoryResult>>(Error.NotFound(code: "Installation.NotFound", description: "Installation missing.")));
+
+        RestorePreviousIniDialogViewModel viewModel = CreateViewModel();
+
+        viewModel.HasError.ShouldBeFalse();
+
+        await viewModel.InitialiseAsync(InstallationId);
+
+        viewModel.HasError.ShouldBeTrue();
+        viewModel.HasNoDifferences.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task Initialise_QueryThrows_SetsErrorMessage()
+    {
+        _mediator.Send(Arg.Any<GetIniHistoryQuery>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniHistoryResult>>>(_ => throw new IOException("boom"));
+
+        RestorePreviousIniDialogViewModel viewModel = CreateViewModel();
+
+        await viewModel.InitialiseAsync(InstallationId);
+
+        viewModel.ErrorMessage.ShouldBe(expected: "Restore Previous INI could not load the history of zoo.ini: boom");
+        viewModel.HasError.ShouldBeTrue();
+        viewModel.Rows.ShouldBeEmpty();
+        viewModel.RestoreCommand.CanExecute(parameter: null).ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task Restore_Throws_ShowsTheErrorAndStaysOpen()
+    {
+        RestorePreviousIniDialogViewModel viewModel = await LoadedAsync();
+
+        int closes = 0;
+
+        viewModel.CloseRequested += (_, _) => closes++;
+        _dialogs.ShowConfirmationAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
+        _mediator.Send(Arg.Any<RestoreIniSnapshotCommand>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniConfigResult>>>(_ => throw new IOException("boom"));
+
+        await viewModel.RestoreCommand.ExecuteAsync(parameter: null);
+
+        await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync(title: "Cannot Restore zoo.ini", message: "zoo.ini could not be restored: boom");
+        viewModel.Result.ShouldBeNull();
+        closes.ShouldBe(expected: 0);
+        viewModel.IsBusy.ShouldBeFalse();
+    }
 }

@@ -119,6 +119,42 @@ public sealed class IniEditorViewModelTests
     }
 
     [ Fact ]
+    public async Task RestorePrevious_DialogueThrows_ShowsAnError()
+    {
+        IniEditorViewModel editor = CreateEditorWithHistory();
+
+        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>()).Returns<Task<IniConfigResult?>>(_ => throw new IOException("boom"));
+
+        await editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync(title: "Cannot Restore zoo.ini", message: "Restore Previous INI could not be opened: boom");
+        editor.IsBusy.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task RestorePrevious_WhileDialogueOpen_EditorIsBusy()
+    {
+        IniEditorViewModel editor = CreateEditorWithHistory();
+
+        TaskCompletionSource<IniConfigResult?> open = new();
+
+        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>()).Returns(open.Task);
+
+        Task running = editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        editor.IsBusy.ShouldBeTrue();
+        editor.ResetCommand.CanExecute(parameter: null).ShouldBeFalse();
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
+
+        open.SetResult(IniEditorTestData.ResultWithHistory(historicalCount: 3, ("user", "screenwidth", "640")));
+
+        await running;
+
+        editor.IsBusy.ShouldBeFalse();
+        editor.HistoricalCount.ShouldBe(expected: 3);
+    }
+
+    [ Fact ]
     public void Constructor_BuildsTheSevenSectionsSelectsTheFirstAndLoadsValues()
     {
         IniEditorViewModel editor = CreateEditor();

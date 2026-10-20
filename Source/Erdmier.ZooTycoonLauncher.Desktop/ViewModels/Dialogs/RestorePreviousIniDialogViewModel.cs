@@ -39,7 +39,11 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
 
     /// <summary>The load error, or <see langword="null" /> when the history loaded.</summary>
     [ ObservableProperty ]
+    [ NotifyPropertyChangedFor(nameof(HasError)) ]
     public partial string? ErrorMessage { get; set; }
+
+    /// <summary>Whether the history failed to load; the caption and the difference area are hidden then.</summary>
+    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
     /// <summary>Whether the selected snapshot differs from the current values in no setting.</summary>
     public bool HasNoDifferences => SelectedRow is not null && DiffRows.Count == 0;
@@ -91,7 +95,19 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
             return;
         }
 
-        ErrorOr<IniHistoryResult> history = await _mediator.Send(new GetIniHistoryQuery(installationId), cancellationToken);
+        ErrorOr<IniHistoryResult> history;
+
+        try
+        {
+            history = await _mediator.Send(new GetIniHistoryQuery(installationId), cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            ErrorMessage = $"Restore Previous INI could not load the history of zoo.ini: {ex.Message}";
+            Rows         = [ ];
+
+            return;
+        }
 
         if (history.IsError)
         {
@@ -152,6 +168,10 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
             IsBusy = false;
 
             CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await _dialogs.ShowErrorAsync(title: "Cannot Restore zoo.ini", $"zoo.ini could not be restored: {ex.Message}");
         }
         finally
         {

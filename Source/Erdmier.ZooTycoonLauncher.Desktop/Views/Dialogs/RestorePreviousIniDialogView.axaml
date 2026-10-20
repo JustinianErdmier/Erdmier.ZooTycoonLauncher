@@ -15,8 +15,10 @@
                 Orientation="Vertical"
                 Spacing="8">
         <TextBlock Opacity="0.6"
-                   Text="Pick a previous version of zoo.ini to restore. The current version is archived to history before the restore is applied."
-                   TextWrapping="Wrap" />
+                   TextWrapping="Wrap">
+            <Run Text="Pick a previous version of " /><Run FontFamily="Lucida Console, Courier New, monospace"
+                                                           Text="zoo.ini" /><Run Text=" to restore. The current version is archived to history before the restore is applied." />
+        </TextBlock>
 
         <TextBlock Foreground="Red"
                    IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
@@ -33,6 +35,13 @@
                   ItemsSource="{Binding Rows}"
                   SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
                   SelectionMode="Single">
+            <DataGrid.Styles>
+                <Style Selector="DataGridColumnHeader">
+                    <Setter Property="HorizontalContentAlignment"
+                            Value="Stretch" />
+                </Style>
+            </DataGrid.Styles>
+
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Captured"
                                         Width="45*">
@@ -51,8 +60,13 @@
                                     Header="Trigger"
                                     Width="30*" />
 
-                <DataGridTemplateColumn Header="Δ keys"
-                                        Width="25*">
+                <DataGridTemplateColumn Width="25*">
+                    <DataGridTemplateColumn.Header>
+                        <TextBlock HorizontalAlignment="Right"
+                                   Margin="4 0"
+                                   Text="Δ keys" />
+                    </DataGridTemplateColumn.Header>
+
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate DataType="models:IniHistoryRow">
                             <TextBlock FontFamily="Consolas"
@@ -67,7 +81,8 @@
         </DataGrid>
 
         <!-- Caption row -->
-        <Grid ColumnDefinitions="*, Auto">
+        <Grid ColumnDefinitions="*, Auto"
+              IsVisible="{Binding !HasError}">
             <TextBlock FontSize="11"
                        Opacity="0.6"
                        Text="Diff: values from the selected snapshot replace the current ones on restore." />
@@ -78,69 +93,70 @@
                        Text="{Binding ChangeCountText}" />
         </Grid>
 
-        <!-- Differences of the selected snapshot -->
-        <Panel Height="140">
-            <DataGrid AutoGenerateColumns="False"
-                      CanUserReorderColumns="False"
-                      CanUserResizeColumns="True"
-                      CanUserSortColumns="False"
-                      FontSize="11"
-                      IsReadOnly="True"
-                      IsVisible="{Binding !HasNoDifferences}"
-                      ItemsSource="{Binding DiffRows}"
-                      SelectionMode="Single">
-                <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="Key"
-                                            Width="45*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate DataType="models:IniHistoryDiffRow">
-                                <TextBlock FontFamily="Consolas"
-                                           Margin="4 0"
-                                           VerticalAlignment="Center">
-                                    <Run Foreground="Gray"
-                                         Text="{Binding SectionText}" /><Run Text="/" /><Run Text="{Binding KeyText}" />
-                                </TextBlock>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+        <!-- Differences of the selected snapshot: a header row and a scrolling list in a sunken frame, so the rows are not selectable -->
+        <ClassicBorderDecorator Background="White"
+                                BorderStyle="Sunken"
+                                BorderThickness="2"
+                                Height="140"
+                                IsVisible="{Binding !HasError}">
+            <Panel>
+                <Grid IsVisible="{Binding !HasNoDifferences}"
+                      RowDefinitions="Auto, *">
+                    <Border Background="Silver"
+                            BorderBrush="Gray"
+                            BorderThickness="0 0 0 1">
+                        <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
+                              Margin="6 3"
+                              TextElement.FontSize="11">
+                            <TextBlock Text="Key" />
 
-                    <DataGridTemplateColumn Header="Current"
-                                            Width="27.5*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate DataType="models:IniHistoryDiffRow">
-                                <TextBlock FontFamily="Consolas"
-                                           Foreground="Maroon"
-                                           Margin="4 0"
-                                           Text="{Binding CurrentText}"
-                                           VerticalAlignment="Center" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                            <TextBlock Grid.Column="1"
+                                       Text="Current" />
 
-                    <DataGridTemplateColumn Header="Snapshot"
-                                            Width="27.5*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate DataType="models:IniHistoryDiffRow">
-                                <TextBlock FontFamily="Consolas"
-                                           Foreground="Navy"
-                                           Margin="4 0"
-                                           Text="{Binding SnapshotText}"
-                                           VerticalAlignment="Center" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                            <TextBlock Grid.Column="2"
+                                       Text="Snapshot" />
+                        </Grid>
+                    </Border>
 
-            <TextBlock FontStyle="Italic"
-                       HorizontalAlignment="Center"
-                       IsVisible="{Binding HasNoDifferences}"
-                       Margin="14"
-                       Opacity="0.6"
-                       Text="No differences — this snapshot matches the current state."
-                       TextAlignment="Center"
-                       VerticalAlignment="Top" />
-        </Panel>
+                    <ScrollViewer Grid.Row="1"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding DiffRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:IniHistoryDiffRow">
+                                    <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
+                                          Margin="6 2"
+                                          TextElement.FontFamily="Consolas"
+                                          TextElement.FontSize="11">
+                                        <TextBlock>
+                                            <Run Foreground="Gray"
+                                                 Text="{Binding SectionText}" /><Run Text="/" /><Run Text="{Binding KeyText}" />
+                                        </TextBlock>
+
+                                        <TextBlock Foreground="Maroon"
+                                                   Grid.Column="1"
+                                                   Text="{Binding CurrentText}" />
+
+                                        <TextBlock Foreground="Navy"
+                                                   Grid.Column="2"
+                                                   Text="{Binding SnapshotText}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+
+                <TextBlock FontStyle="Italic"
+                           HorizontalAlignment="Center"
+                           IsVisible="{Binding HasNoDifferences}"
+                           Margin="14"
+                           Opacity="0.6"
+                           Text="No differences — this snapshot matches the current state."
+                           TextAlignment="Center"
+                           VerticalAlignment="Top" />
+            </Panel>
+        </ClassicBorderDecorator>
 
         <TextBlock FontSize="11"
                    Foreground="Maroon"

@@ -82,7 +82,7 @@ Rules (spec §4, C1, C3, C4, C8): consider only `ZooIniDefaults.Keys` with `Role
 `!spec.AreEquivalent(spec.EffectiveValue(current), spec.EffectiveValue(snapshot))`. Order rows and kept keys by `ZooIniDefaults.Sections` index, then by position in
 `ZooIniDefaults.Keys`.
 
-- [ ] **Step 1: Write the failing tests** — in `IniSnapshotComparerTests` (`public sealed class`, namespace `…Domain.Tests.Unit.IniSnapshots`), with a helper
+- [x] **Step 1: Write the failing tests** — in `IniSnapshotComparerTests` (`public sealed class`, namespace `…Domain.Tests.Unit.IniSnapshots`), with a helper
   `Map(params (string Section, string Key, string? Value)[])`:
   - `Compare_EqualMaps_HasNoRowsOrKeptKeys`
   - `Compare_GameManagedDifference_IsIgnored` — `lastWindowX` differs → `Rows.ShouldBeEmpty()`.
@@ -94,14 +94,14 @@ Rules (spec §4, C1, C3, C4, C8): consider only `ZooIniDefaults.Keys` with `Role
   - `Compare_OrdersRowsBySectionThenRegistryOrder` — differences in `[UI]` and `[user]` → `[user]` rows first.
   - `ValuesOf_MapsSectionAndKeyCaseInsensitively` — an `IniValue { Section = "USER", Key = "ScreenWidth", Value = "1024" }` is found under `new IniKeyId("user", "screenwidth")`.
 
-- [ ] **Step 2: Run to verify they fail** — compile failure from:
+- [x] **Step 2: Run to verify they fail** — compile failure from:
 
   ```powershell
   dotnet test Tests/Erdmier.ZooTycoonLauncher.Domain.Tests.Unit/Erdmier.ZooTycoonLauncher.Domain.Tests.Unit.csproj --filter "FullyQualifiedName~IniSnapshotComparerTests"
   ```
-- [ ] **Step 3: Implement** the three types in `Domain/IniSnapshots/` per the rules above.
-- [ ] **Step 4: Run to verify they pass** — same command → all pass; then the whole Domain test project passes.
-- [ ] **Step 5: Commit** — `feat(✨): compare INI snapshots by effective user-setting values`
+- [x] **Step 3: Implement** the three types in `Domain/IniSnapshots/` per the rules above.
+- [x] **Step 4: Run to verify they pass** — same command → all pass; then the whole Domain test project passes.
+- [x] **Step 5: Commit** — `feat(✨): compare INI snapshots by effective user-setting values`
 
 ---
 
@@ -124,7 +124,7 @@ Rules (spec §4, C1, C3, C4, C8): consider only `ZooIniDefaults.Keys` with `Role
 - Produces on `InstallationDbContextFactory`: `internal Task<InstallationDbContext?> OpenExistingAsync(Guid installationId, CancellationToken cancellationToken)` —
   `null` when `IFileSystem.File.Exists(_locations.InstallationDatabasePath(installationId))` is false.
 
-- [ ] **Step 1: Write the failing integration tests** in `IniSnapshotRepositoryTests` (reuse its `ImportAsync()` helper; archive by calling
+- [x] **Step 1: Write the failing integration tests** in `IniSnapshotRepositoryTests` (reuse its `ImportAsync()` helper; archive by calling
   `ArchiveCurrentAsync(IniSnapshotTrigger.LauncherGui, …)` with distinct capture times):
   - `ListHistorical_ReturnsNewestFirstWithValues`
   - `GetOriginal_ReturnsTheFirstImportWithValues`
@@ -133,16 +133,16 @@ Rules (spec §4, C1, C3, C4, C8): consider only `ZooIniDefaults.Keys` with `Role
   - `RepositoryCountHistorical_MissingDatabase_ReturnsZeroAndCreatesNoFile` —
     `File.Exists(Path.Combine(_directory, $"{id}.db")).ShouldBeFalse()` after the call.
   - `RepositoryCountHistorical_ExistingDatabase_Counts`
-- [ ] **Step 2: Run to verify they fail** — compile failure from:
+- [x] **Step 2: Run to verify they fail** — compile failure from:
 
   ```powershell
   dotnet test Tests/Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration/Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration.csproj --filter "FullyQualifiedName~IniSnapshotRepositoryTests"
   ```
-- [ ] **Step 3: Implement** the interface members and their EF implementations (`Include(snapshot => snapshot.Values)`, `AsNoTracking()` on the read paths). Add the same
+- [x] **Step 3: Implement** the interface members and their EF implementations (`Include(snapshot => snapshot.Values)`, `AsNoTracking()` on the read paths). Add the same
   members to every `IIniSnapshotTransaction` / `IIniSnapshotRepository` fake or substitute helper in the Application tests if any fails to compile (NSubstitute
   substitutes need nothing).
-- [ ] **Step 4: Run to verify they pass** — same command; then the full Infrastructure and Application test projects pass.
-- [ ] **Step 5: Commit** — `feat(✨): read historical and original INI snapshots`
+- [x] **Step 4: Run to verify they pass** — same command; then the full Infrastructure and Application test projects pass.
+- [x] **Step 5: Commit** — `feat(✨): read historical and original INI snapshots`
 
 ---
 
@@ -160,12 +160,12 @@ Rules (spec §4, C1, C3, C4, C8): consider only `ZooIniDefaults.Keys` with `Role
 `LoadAsync` counts inside the transaction it already opens, before `CommitAsync` (spec C9). Save counts after its archive (or, on the no-op path, before its early
 commit) — inside the existing store-failure `try`, never after the file write.
 
-- [ ] **Step 1: Write the failing tests** — `Load_ReturnsTheHistoricalCount` (substitute `CountHistoricalAsync` returns `3` → `result.Value.HistoricalCount.ShouldBe(3)`);
+- [x] **Step 1: Write the failing tests** — `Load_ReturnsTheHistoricalCount` (substitute `CountHistoricalAsync` returns `3` → `result.Value.HistoricalCount.ShouldBe(3)`);
   `Save_ReturnsTheHistoricalCountAfterArchiving`; `Save_NoOpEdits_ReturnTheUnchangedCount`.
-- [ ] **Step 2: Run to verify they fail** — Application tests filtered to the two classes → compile failure.
-- [ ] **Step 3: Implement** the record change and fill it in both places; update every constructor call (designer and test data pass `0` unless a test needs more).
-- [ ] **Step 4: Run to verify they pass** — `dotnet test` on Application and Desktop test projects → all pass.
-- [ ] **Step 5: Commit** — `feat(✨): carry the historical snapshot count in INI results`
+- [x] **Step 2: Run to verify they fail** — Application tests filtered to the two classes → compile failure.
+- [x] **Step 3: Implement** the record change and fill it in both places; update every constructor call (designer and test data pass `0` unless a test needs more).
+- [x] **Step 4: Run to verify they pass** — `dotnet test` on Application and Desktop test projects → all pass.
+- [x] **Step 5: Commit** — `feat(✨): carry the historical snapshot count in INI results`
 
 ---
 
@@ -200,13 +200,13 @@ commit) — inside the existing store-failure `try`, never after the file write.
 returns that error (transaction disposed uncommitted); an empty edit set commits and returns the reconciled values; selector exceptions fall into the existing
 `StoreFailed` catch. Every log message, error, ordering and the swallowed post-write failure stay as they are.
 
-- [ ] **Step 1: Write the failing tests** — `IniWritePipelineTests`: `WriteAsync_SelectorError_ReturnsItAndWritesNothing`
+- [x] **Step 1: Write the failing tests** — `IniWritePipelineTests`: `WriteAsync_SelectorError_ReturnsItAndWritesNothing`
   (`_files.DidNotReceive().WriteAsync(…)`, `transaction.DidNotReceive().CommitAsync(…)`); `WriteAsync_EmptySelection_CommitsWithoutArchiving`.
   Update `SaveIniHandlerTests` construction to `new SaveIniHandler(new IniWritePipeline(…same substitutes…))` — **no assertion changes**.
-- [ ] **Step 2: Run to verify they fail** — filter `IniWritePipelineTests|SaveIniHandlerTests` → compile failure.
-- [ ] **Step 3: Implement** the delegate, the pipeline and the slimmed handler; register the pipeline.
-- [ ] **Step 4: Run to verify they pass** — the whole Application test project passes with every pre-existing `SaveIniHandlerTests` assertion untouched.
-- [ ] **Step 5: Commit** — `refactor(♻️): extract the INI write pipeline from Save`
+- [x] **Step 2: Run to verify they fail** — filter `IniWritePipelineTests|SaveIniHandlerTests` → compile failure.
+- [x] **Step 3: Implement** the delegate, the pipeline and the slimmed handler; register the pipeline.
+- [x] **Step 4: Run to verify they pass** — the whole Application test project passes with every pre-existing `SaveIniHandlerTests` assertion untouched.
+- [x] **Step 5: Commit** — `refactor(♻️): extract the INI write pipeline from Save`
 
 ---
 
@@ -231,16 +231,16 @@ History handler (spec §5.2): installation lookup → read file (`Missing` / `Re
 `IniSnapshotComparer.Compare(reconciled, IniSnapshotComparer.ValuesOf(snapshot))` → commit → result. Store exceptions → `StoreFailed`. Count handler (spec §5.5, C10):
 installation lookup → `IIniSnapshotRepository.CountHistoricalAsync(id)`; exceptions → `StoreFailed`; never reads the file, never reconciles.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
   - `History_ListsHistoricalNewestFirstThenOriginal`
   - `History_ComparesEachSnapshotAgainstTheReconciledValues` — the disk holds `screenwidth=1280` while `Current` says `800`; a snapshot holding `1280` shows no row.
   - `History_ReconcilesBeforeReading` — `Received.InOrder` reconcile → `ListHistoricalAsync`.
   - `History_UnknownInstallation_ReturnsNotFound`, `History_MissingFile_ReturnsMissing`, `History_StoreThrows_ReturnsStoreFailed`
   - `Count_ReturnsTheRepositoryCount`, `Count_NeverOpensATransaction` (`_snapshots.DidNotReceive().BeginAsync(…)`), `Count_StoreThrows_ReturnsStoreFailed`
-- [ ] **Step 2: Run to verify they fail** — filter `GetIniHistory` → compile failure.
-- [ ] **Step 3: Implement** the four types and two handlers.
-- [ ] **Step 4: Run to verify they pass** — Application test project passes.
-- [ ] **Step 5: Commit** — `feat(✨): query INI history with per-snapshot differences`
+- [x] **Step 2: Run to verify they fail** — filter `GetIniHistory` → compile failure.
+- [x] **Step 3: Implement** the four types and two handlers.
+- [x] **Step 4: Run to verify they pass** — Application test project passes.
+- [x] **Step 5: Commit** — `feat(✨): query INI history with per-snapshot differences`
 
 ---
 
@@ -260,7 +260,7 @@ installation lookup → `IIniSnapshotRepository.CountHistoricalAsync(id)`; excep
 The selector reads the snapshot by id (`null` → `SnapshotNotFound`) and returns `Compare(reconciled, ValuesOf(snapshot)).Rows` as `row.Id → row.Snapshot` (spec C8). The
 validator requires both ids non-empty.
 
-- [ ] **Step 1: Write the failing tests** (reuse `IniTestData` from the Save tests):
+- [x] **Step 1: Write the failing tests** (reuse `IniTestData` from the Save tests):
   - `Restore_FollowsTheSdd82Order` — `Received.InOrder`: `ArchiveCurrentAsync(IniSnapshotTrigger.LauncherGui, …)` → `WriteAsync` → `UpdateCurrentAsync` → `CommitAsync`.
   - `Restore_WritesOnlyTheDifferingUserSettings` — the written text changes `screenwidth` only; a differing `lastWindowX` in the snapshot is untouched.
   - `Restore_KeyMissingFromSnapshot_IsLeftInTheFile`
@@ -271,10 +271,10 @@ validator requires both ids non-empty.
   - `Restore_UnknownSnapshot_ReturnsSnapshotNotFoundAndWritesNothing`
   - `Restore_WriteFails_ReturnsWriteFailed`
   - Validator: `EmptySnapshotId_Fails`, `EmptyInstallationId_Fails`.
-- [ ] **Step 2: Run to verify they fail** — filter `RestoreIniSnapshot` → compile failure.
-- [ ] **Step 3: Implement** the command, handler (ctor `(IniWritePipeline pipeline)`), validator and error.
-- [ ] **Step 4: Run to verify they pass** — Application test project passes.
-- [ ] **Step 5: Commit** — `feat(✨): restore zoo.ini to a previous snapshot`
+- [x] **Step 2: Run to verify they fail** — filter `RestoreIniSnapshot` → compile failure.
+- [x] **Step 3: Implement** the command, handler (ctor `(IniWritePipeline pipeline)`), validator and error.
+- [x] **Step 4: Run to verify they pass** — Application test project passes.
+- [x] **Step 5: Commit** — `feat(✨): restore zoo.ini to a previous snapshot`
 
 ---
 
@@ -297,19 +297,19 @@ The Language combo (`IniLanguageFieldViewModel`, no `Id`) follows its two wrappe
 they are not, override `ResetToDefault` / `IsAtDefault` on the language field to delegate to them. Footer labels in this task: `Revert` → `Reset`; `Restore defaults` bound
 to `RestoreDefaultsCommand` (remove `IsEnabled="False"`). `Undo` is untouched until Task 10.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
   - Field: `ResetToDefault_AppliesTheSpecDefaultAndMarksDirty`; `IsAtDefault_FollowsTheControlValue`.
   - Editor: `RestoreDefaults_SetsEveryFieldToItsDefault` (every field `IsAtDefault`, `HasPendingChanges` true when the loaded values differed, and the language field's
     selection equals the option for the default `lang` / `sublang`); `RestoreDefaults_IsDisabledWhenEverythingIsAlreadyDefault`;
     `RestoreDefaults_ThenReset_ReloadsTheSavedValues` (`ResetCommand` sends `GetIniConfigQuery` and loads its result); rename existing `Revert_*` tests to `Reset_*`.
-- [ ] **Step 2: Run to verify they fail** — compile failure from:
+- [x] **Step 2: Run to verify they fail** — compile failure from:
 
   ```powershell
   dotnet test Tests/Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit/Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.csproj --filter "FullyQualifiedName~IniConfig"
   ```
-- [ ] **Step 3: Implement** the members, commands and footer bindings.
-- [ ] **Step 4: Run to verify they pass** — whole Desktop test project passes; `dotnet build Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj`.
-- [ ] **Step 5: Commit** — `feat(✨): restore INI defaults as unsaved edits and rename Revert to Reset`
+- [x] **Step 3: Implement** the members, commands and footer bindings.
+- [x] **Step 4: Run to verify they pass** — whole Desktop test project passes; `dotnet build Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj`.
+- [x] **Step 5: Commit** — `feat(✨): restore INI defaults as unsaved edits and rename Revert to Reset`
 
 ---
 
@@ -353,7 +353,7 @@ Behaviour: on load select the first row (newest, decision 6); `RestoreCommand` c
 `ShowErrorAsync("Cannot Restore zoo.ini", error.Description)` and stays open. A load error sets `ErrorMessage` and leaves `Rows` empty. `CancelCommand` raises
 `CloseRequested` with `Result` null.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
   - `Initialise_SelectsTheNewestRowAndShowsItsDiff`
   - `SelectingARow_UpdatesTheDiffCaptionAndKeptKeys`
   - `EmptyDiff_DisablesRestoreAndShowsNoDifferences`
@@ -364,11 +364,11 @@ Behaviour: on load select the first row (newest, decision 6); `RestoreCommand` c
     (`_mediator.Received(1).Send(Arg.Any<RestoreIniSnapshotCommand>(), …)`).
   - `Confirmation_MentionsKeptKeysOnlyWhenPresent`
   - `Initialise_QueryFails_SetsErrorMessageAndDisablesRestore`
-- [ ] **Step 2: Run to verify they fail** — Desktop tests filtered `RestorePreviousIniDialogViewModelTests` → compile failure.
-- [ ] **Step 3: Implement** the types, the two interface members, the no-op copies, and `ConfirmationPromptView` modelled on `SaveChangesPromptView` (title and message
+- [x] **Step 2: Run to verify they fail** — Desktop tests filtered `RestorePreviousIniDialogViewModelTests` → compile failure.
+- [x] **Step 3: Implement** the types, the two interface members, the no-op copies, and `ConfirmationPromptView` modelled on `SaveChangesPromptView` (title and message
   bound, `Yes` default, `No`), which keeps the view-model pair rule. The Restore dialogue's own view comes in Task 9.
-- [ ] **Step 4: Run to verify they pass** — Desktop test project passes; Desktop project builds.
-- [ ] **Step 5: Commit** — `feat(✨): add the Restore Previous INI dialogue view model and a confirmation prompt`
+- [x] **Step 4: Run to verify they pass** — Desktop test project passes; Desktop project builds.
+- [x] **Step 5: Commit** — `feat(✨): add the Restore Previous INI dialogue view model and a confirmation prompt`
 
 ---
 
@@ -389,9 +389,9 @@ centred message, the kept-keys line (warning styled, wrapping), and a footer `Re
 `ShowRestorePreviousIniAsync` resolves the VM from DI, `InitialiseAsync`, shows the dialogue on `ResolveOwner()` and returns `vm.Result`; `ShowConfirmationAsync` mirrors
 `ShowSaveChangesPromptAsync` with `new ConfirmationPromptViewModel(title, message)`.
 
-- [ ] **Step 1: Build** — `dotnet build Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj` → succeeds.
-- [ ] **Step 2: Run the architecture tests** — `dotnet test Tests/Erdmier.ZooTycoonLauncher.Tests.Architecture/Erdmier.ZooTycoonLauncher.Tests.Architecture.csproj` → pass.
-- [ ] **Step 3: Commit** — `feat(✨): show the Restore Previous INI dialogue`
+- [x] **Step 1: Build** — `dotnet build Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj` → succeeds.
+- [x] **Step 2: Run the architecture tests** — `dotnet test Tests/Erdmier.ZooTycoonLauncher.Tests.Architecture/Erdmier.ZooTycoonLauncher.Tests.Architecture.csproj` → pass.
+- [x] **Step 3: Commit** — `feat(✨): show the Restore Previous INI dialogue`
 
 (The dialogue is reachable only after Task 10; it is driven in the app there.)
 
@@ -413,19 +413,19 @@ Flow (spec §7.3, decision 4, C11): with pending changes, `ShowSaveChangesPrompt
 stop. Then `ShowRestorePreviousIniAsync(_installationId)`: a result → `Load(result)`; `null` → reload exactly as `ResetCommand` does (send `GetIniConfigQuery`, `Load` on
 success, the existing error dialogue on failure). Footer: the `Undo` button becomes `Restore previous…` bound to `RestorePreviousCommand`.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
   - `RestorePrevious_NoHistory_IsDisabled` / `RestorePrevious_WithHistory_IsEnabled`
   - `RestorePrevious_PendingEdits_Yes_SavesThenOpens`; `…_Yes_SaveFails_DoesNotOpen`; `…_No_DiscardsThenOpens`; `…_Cancel_KeepsEditsAndDoesNotOpen`
   - `RestorePrevious_Restored_LoadsTheReturnedResult`
   - `RestorePrevious_Cancelled_ReloadsFromGetIniConfig`
-- [ ] **Step 2: Run to verify they fail** — Desktop tests filtered `IniEditorViewModelTests` → fail.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run to verify they pass** — Desktop test project passes; Desktop builds.
+- [x] **Step 2: Run to verify they fail** — Desktop tests filtered `IniEditorViewModelTests` → fail.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run to verify they pass** — Desktop test project passes; Desktop builds.
 - [ ] **Step 5: Drive it in the app** — `dotnet run --project Source/Erdmier.ZooTycoonLauncher.Desktop/Erdmier.ZooTycoonLauncher.Desktop.csproj` against a
   `SampleInstallations/` copy: save twice, open `Restore previous…`, check the newest row is selected, restore, confirm `zoo.ini` and the editor follow; try
   `Restore defaults` then `Reset`. Screenshot the dialogue to `Docs/UserInterfaceDesign/ImplementationScreenshots/RestorePreviousIniDialogue.png` and register it in the
   `.slnx`. Close the app.
-- [ ] **Step 6: Commit** — `feat(✨): open Restore Previous INI from the editor footer`
+- [x] **Step 6: Commit** — `feat(✨): open Restore Previous INI from the editor footer`
 
 ---
 
@@ -441,11 +441,11 @@ success, the existing error dialogue on failure). Footer: the `Undo` button beco
 
 Text: `"1 snapshot"`, otherwise `"{n} snapshots"`; `"—"` when the query errors or throws. Send the count query after the summary loads successfully.
 
-- [ ] **Step 1: Write the failing tests** — `HistoryEntries_Zero_ReadsZeroSnapshots`, `…_One_ReadsOneSnapshot`, `…_Many_ReadsTheCount`, `…_QueryFails_ReadsDash`.
-- [ ] **Step 2: Run to verify they fail.**
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run to verify they pass** — Desktop test project passes.
-- [ ] **Step 5: Commit** — `feat(✨): show the INI history count in Installation Info`
+- [x] **Step 1: Write the failing tests** — `HistoryEntries_Zero_ReadsZeroSnapshots`, `…_One_ReadsOneSnapshot`, `…_Many_ReadsTheCount`, `…_QueryFails_ReadsDash`.
+- [x] **Step 2: Run to verify they fail.**
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run to verify they pass** — Desktop test project passes.
+- [x] **Step 5: Commit** — `feat(✨): show the INI history count in Installation Info`
 
 ---
 
@@ -464,10 +464,10 @@ SDD: apply spec §10 in full — §7.3.3, §7.6, §9.3 (footer), §9.4, §9.5, �
 previous…` disabled with no history; 5 `Restore defaults` then `Reset`; 6 `Restore defaults` then `Save`; 7 a snapshot with kept keys; 8 the label sweep; 9 Installation
 Info history entries. Rename the INI Config Core stub *3. Revert* heading to *3. Reset* to match.
 
-- [ ] **Step 1: Apply the label changes; build the Desktop project.**
-- [ ] **Step 2: Apply the SDD and test-plan edits; verify no prose line exceeds 180 characters** —
+- [x] **Step 1: Apply the label changes; build the Desktop project.**
+- [x] **Step 2: Apply the SDD and test-plan edits; verify no prose line exceeds 180 characters** —
   `Get-Content <file> | Where-Object { $_.Length -gt 180 -and -not $_.StartsWith('|') }` returns nothing for both files.
-- [ ] **Step 3: Commit** — `docs(📝): sweep labels onto the Win9x ellipsis rule and amend the SDD for milestone 9`
+- [x] **Step 3: Commit** — `docs(📝): sweep labels onto the Win9x ellipsis rule and amend the SDD for milestone 9`
 
 ---
 

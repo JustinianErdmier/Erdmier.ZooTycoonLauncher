@@ -72,7 +72,4 @@
         <Project Path="Tests/Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration/Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration.csproj" />
         <Project Path="Tests/Erdmier.ZooTycoonLauncher.Tests.Architecture/Erdmier.ZooTycoonLauncher.Tests.Architecture.csproj" />
     </Folder>
-    <Folder Name="/References/">
-        <Project Path="References/Erdmier.ZooTycoonLauncherRef/Erdmier.ZooTycoonLauncherRef.csproj" />
-    </Folder>
 </Solution>

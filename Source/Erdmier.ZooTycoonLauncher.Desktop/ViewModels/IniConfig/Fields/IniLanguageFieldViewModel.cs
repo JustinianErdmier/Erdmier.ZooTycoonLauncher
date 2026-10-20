@@ -10,6 +10,8 @@ public sealed class IniLanguageFieldViewModel : IniFieldViewModel
 
     private readonly IniNumberFieldViewModel _subLanguage;
 
+    private bool _writing;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="descriptor">The row's presentation.</param>
     /// <param name="language">The <c>[language]/lang</c> row.</param>
@@ -33,7 +35,10 @@ public sealed class IniLanguageFieldViewModel : IniFieldViewModel
                new IniNumberFieldViewModel(new IniFieldDescriptor(IniEditorCatalogue.LanguageId, Label: "lang", IniControlKind.Number, Hint: null, Help: "LANGID")),
                new IniNumberFieldViewModel(new IniFieldDescriptor(IniEditorCatalogue.SubLanguageId, Label: "sublang", IniControlKind.Number, Hint: null, Help: "SUBLANGID")),
                IniEditorCatalogue.Languages)
-    { }
+    {
+        _language.Load(raw: null);
+        _subLanguage.Load(raw: null);
+    }
 
     /// <summary>The curated languages.</summary>
     public IReadOnlyList<IniLanguageOption> Options { get; }
@@ -49,14 +54,25 @@ public sealed class IniLanguageFieldViewModel : IniFieldViewModel
                 return;
             }
 
-            _language.Value    = value.Lang;
-            _subLanguage.Value = value.SubLang;
+            _writing = true;
+
+            try
+            {
+                _language.Value    = value.Lang;
+                _subLanguage.Value = value.SubLang;
+            }
+            finally
+            {
+                _writing = false;
+            }
+
+            OnPropertyChanged(nameof(SelectedOption));
         }
     }
 
     private void OnSourcePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName == nameof(IniNumberFieldViewModel.Value))
+        if (!_writing && eventArgs.PropertyName == nameof(IniNumberFieldViewModel.Value))
         {
             OnPropertyChanged(nameof(SelectedOption));
         }

@@ -483,7 +483,8 @@ public sealed class IniEditorViewModelTests
     public void RestoreDefaults_SetsEveryFieldToItsDefault()
     {
         IniEditorViewModel editor = new(Guid.CreateVersion7(), _mediator, _dialogs,
-                                        IniEditorTestData.Result(("user", "screenwidth", "1024"), ("language", "lang", "12"), ("language", "sublang", "1")),
+                                        IniEditorTestData.Result(("user", "screenwidth", "1024"), (IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key, "12"),
+                                                            (IniEditorCatalogue.SubLanguageId.Section, IniEditorCatalogue.SubLanguageId.Key, "1")),
                                         NullLogger<IniEditorViewModel>.Instance);
 
         editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeTrue();

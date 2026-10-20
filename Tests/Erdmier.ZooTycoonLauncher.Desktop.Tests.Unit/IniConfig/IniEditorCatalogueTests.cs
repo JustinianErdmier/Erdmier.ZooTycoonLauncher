@@ -57,6 +57,11 @@ public sealed class IniEditorCatalogueTests
     public void Languages_AreInRange() => IniEditorCatalogue.Languages.ShouldAllBe(language => language.Lang >= 0 && language.Lang <= 65535 && language.SubLang >= 0);
 
     [ Fact ]
+    public void AiSection_FootnoteWarnsAboutRaisingTheGuestLimit()
+        => IniEditorCatalogue.Sections.Single(section => section.Section == "ai").Footnote
+                             .ShouldBe(expected: "Raising this above the stock 1,000 limit can make guest pathing thrash; values above 2,500 need a community AI patch.");
+
+    [ Fact ]
     public void UiSection_HasTheThreeSubHeaders()
         => IniEditorCatalogue.Sections.Single(section => section.Section == "UI").Groups.Select(group => group.SubHeader).ShouldBe(["Audio", "Gameplay (cash)", "Interface"]);
 }

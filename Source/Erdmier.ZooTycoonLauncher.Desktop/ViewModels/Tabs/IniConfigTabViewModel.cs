@@ -67,7 +67,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
 
     /// <summary>The editor or a placeholder.</summary>
     [ ObservableProperty ]
-    public partial ViewModelBase Content { get; set; }
+    public partial ViewModelBase Content { get; private set; }
 
     /// <summary>Whether the editor holds unsaved edits.</summary>
     public bool HasPendingChanges => _editor?.HasPendingChanges ?? false;

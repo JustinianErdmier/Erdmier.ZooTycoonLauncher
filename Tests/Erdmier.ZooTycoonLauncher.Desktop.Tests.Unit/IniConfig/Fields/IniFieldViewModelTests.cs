@@ -214,10 +214,10 @@ public sealed class IniFieldViewModelTests
     [ Fact ]
     public void LanguagePicker_DrivesAndFollowsTheTwoNumberRows()
     {
-        IniNumberFieldViewModel language    = new(Descriptor(section: "language", key: "lang"));
-        IniNumberFieldViewModel subLanguage = new(Descriptor(section: "language", key: "sublang"));
+        IniNumberFieldViewModel language    = new(Descriptor(IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key));
+        IniNumberFieldViewModel subLanguage = new(Descriptor(IniEditorCatalogue.SubLanguageId.Section, IniEditorCatalogue.SubLanguageId.Key));
 
-        IniLanguageFieldViewModel picker = new(IniEditorCatalogue.Sections.Single(s => s.Section == "language").Groups[0].Fields[0],
+        IniLanguageFieldViewModel picker = new(IniEditorCatalogue.Sections.Single(s => s.Section == IniEditorCatalogue.LanguageId.Section).Groups[0].Fields[0],
                                                language,
                                                subLanguage,
                                                IniEditorCatalogue.Languages);
@@ -239,4 +239,44 @@ public sealed class IniFieldViewModelTests
         picker.IsDirty.ShouldBeFalse();
         picker.TryGetEdit(out string? _).ShouldBeFalse();
     }
+
+    [ Fact ]
+    public void SelectedOption_Set_RaisesChangeOnceAfterBothWrites()
+    {
+        IniNumberFieldViewModel language    = new(Descriptor(IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key));
+        IniNumberFieldViewModel subLanguage = new(Descriptor(IniEditorCatalogue.SubLanguageId.Section, IniEditorCatalogue.SubLanguageId.Key));
+
+        IniLanguageFieldViewModel picker = new(IniEditorCatalogue.Sections.Single(s => s.Section == IniEditorCatalogue.LanguageId.Section).Groups[0].Fields[0],
+                                               language,
+                                               subLanguage,
+                                               IniEditorCatalogue.Languages);
+
+        language.Load(raw: "9");
+        subLanguage.Load(raw: "1");
+
+        IniLanguageOption       french = IniEditorCatalogue.Languages.Single(option => option.Label == "French (France)");
+        List<IniLanguageOption?> seen   = [];
+
+        picker.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(IniLanguageFieldViewModel.SelectedOption))
+            {
+                seen.Add(picker.SelectedOption);
+            }
+        };
+
+        picker.SelectedOption = french;
+
+        seen.Count.ShouldBe(expected: 1);
+        seen[0].ShouldBe(french);
+
+        language.Value = 99m;
+
+        seen.Count.ShouldBe(expected: 2);
+        seen[1].ShouldBeNull();
+    }
+
+    [ Fact ]
+    public void LanguageDesigner_ShowsTheDefaultSelection()
+        => new IniLanguageFieldViewModel().SelectedOption!.Label.ShouldBe(expected: "English (United States)");
 }

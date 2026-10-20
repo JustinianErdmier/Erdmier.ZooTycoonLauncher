@@ -90,7 +90,7 @@ public sealed class IniEditorViewModelTests
                  .Returns(new ValueTask<ErrorOr<IniConfigResult>>(new IniConfigResult(new Dictionary<IniKeyId, string?>
                  {
                      [new IniKeyId(Section: "user", Key: "screenwidth")] = "1024"
-                 }, IniEditorTestData.LastWrite.AddDays(1))));
+                 }, IniEditorTestData.LastWrite.AddDays(1), HistoricalCount: 0)));
 
         IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
 

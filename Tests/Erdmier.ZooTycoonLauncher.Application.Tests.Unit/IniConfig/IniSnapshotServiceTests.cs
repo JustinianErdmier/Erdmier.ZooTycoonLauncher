@@ -106,6 +106,31 @@ public sealed class IniSnapshotServiceTests
     }
 
     [ Fact ]
+    public async Task Load_ReturnsTheHistoricalCount()
+    {
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(current: null);
+
+        transaction.CountHistoricalAsync(Arg.Any<CancellationToken>())
+                   .Returns(3);
+
+        _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
+              .Returns(new IniFileContent(IniTestData.Sample, IniTestData.Now));
+
+        _snapshots.BeginAsync(_installation.Id, Arg.Any<CancellationToken>())
+                  .Returns(transaction);
+
+        ErrorOr<IniConfigResult> result = await CreateService().LoadAsync(_installation, CancellationToken.None);
+
+        result.Value.HistoricalCount.ShouldBe(3);
+
+        Received.InOrder(() =>
+        {
+            transaction.CountHistoricalAsync(Arg.Any<CancellationToken>());
+            transaction.CommitAsync(Arg.Any<CancellationToken>());
+        });
+    }
+
+    [ Fact ]
     public async Task CaptureOriginal_ImportsAndCommits()
     {
         IIniSnapshotTransaction transaction = IniTestData.Transaction(current: null);

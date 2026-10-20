@@ -29,7 +29,7 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public IniEditorViewModel()
-        : this(Guid.Empty, new NoOpDialogService(), new IniConfigResult(new Dictionary<IniKeyId, string?>(), DateTime.UtcNow))
+        : this(Guid.Empty, new NoOpDialogService(), new IniConfigResult(new Dictionary<IniKeyId, string?>(), DateTime.UtcNow, HistoricalCount: 0))
     { }
 
     // Mediator-less core (the GeneralTabViewModel pattern): the designer leaves _mediator null, which disables Save and Revert.

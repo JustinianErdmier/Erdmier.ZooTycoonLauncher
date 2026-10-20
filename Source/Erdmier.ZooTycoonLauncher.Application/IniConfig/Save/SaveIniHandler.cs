@@ -97,6 +97,7 @@ public sealed class SaveIniHandler : ICommandHandler<SaveIniCommand, ErrorOr<Ini
         {
             Dictionary<IniKeyId, string>  edits = [];
             Dictionary<IniKeyId, string?> values;
+            int                           historicalCount;
 
             try
             {
@@ -114,12 +115,16 @@ public sealed class SaveIniHandler : ICommandHandler<SaveIniCommand, ErrorOr<Ini
 
                 if (edits.Count == 0)
                 {
+                    int unchangedCount = await transaction.CountHistoricalAsync(cancellationToken);
+
                     await transaction.CommitAsync(cancellationToken);
 
-                    return new IniConfigResult(reconciliation.Values, content.LastWriteUtc);
+                    return new IniConfigResult(reconciliation.Values, content.LastWriteUtc, unchangedCount);
                 }
 
                 await transaction.ArchiveCurrentAsync(IniSnapshotTrigger.LauncherGui, nowUtc, cancellationToken);
+
+                historicalCount = await transaction.CountHistoricalAsync(cancellationToken);
 
                 values = new Dictionary<IniKeyId, string?>(reconciliation.Values);
 
@@ -181,7 +186,7 @@ public sealed class SaveIniHandler : ICommandHandler<SaveIniCommand, ErrorOr<Ini
                                   installation.Id);
             }
 
-            return new IniConfigResult(values, lastWriteUtc);
+            return new IniConfigResult(values, lastWriteUtc, historicalCount);
         }
     }
 }

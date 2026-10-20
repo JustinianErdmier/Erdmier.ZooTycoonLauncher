@@ -115,6 +115,42 @@ public sealed class SaveIniHandlerTests
     }
 
     [ Fact ]
+    public async Task Save_ReturnsTheHistoricalCountAfterArchiving()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        bool archived = false;
+
+        _transaction.ArchiveCurrentAsync(Arg.Any<IniSnapshotTrigger>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+                    .Returns(_ =>
+                    {
+                        archived = true;
+
+                        return Task.CompletedTask;
+                    });
+
+        _transaction.CountHistoricalAsync(Arg.Any<CancellationToken>())
+                    .Returns(_ => archived ? 4 : 3);
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "1024"));
+
+        result.Value.HistoricalCount.ShouldBe(4);
+    }
+
+    [ Fact ]
+    public async Task Save_NoOpEdits_ReturnTheUnchangedCount()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        _transaction.CountHistoricalAsync(Arg.Any<CancellationToken>())
+                    .Returns(3);
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "0800"));
+
+        result.Value.HistoricalCount.ShouldBe(3);
+    }
+
+    [ Fact ]
     public async Task Save_NoOpEdits_CommitWithoutWriting()
     {
         DiskHolds(IniTestData.Sample);

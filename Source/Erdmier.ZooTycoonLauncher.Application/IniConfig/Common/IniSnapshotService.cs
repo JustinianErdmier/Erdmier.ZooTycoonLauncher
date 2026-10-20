@@ -90,6 +90,8 @@ public sealed class IniSnapshotService : IIniSnapshotService
                                                                                       .UtcDateTime,
                                                                                 cancellationToken);
 
+            int historicalCount = await transaction.CountHistoricalAsync(cancellationToken);
+
             await transaction.CommitAsync(cancellationToken);
 
             if (reconciliation.Outcome != IniReconciliationOutcome.Unchanged)
@@ -100,7 +102,7 @@ public sealed class IniSnapshotService : IIniSnapshotService
                                        reconciliation.ChangedKeyCount);
             }
 
-            return new IniConfigResult(reconciliation.Values, content.LastWriteUtc);
+            return new IniConfigResult(reconciliation.Values, content.LastWriteUtc, historicalCount);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

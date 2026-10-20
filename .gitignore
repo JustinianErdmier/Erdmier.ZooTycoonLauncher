@@ -255,5 +255,6 @@ ehthumbs_vista.db
 $RECYCLE.BIN/
 *.lnk
 .claude/worktrees
+.claude/settings.local.json
 .worktrees
 SampleInstallations/

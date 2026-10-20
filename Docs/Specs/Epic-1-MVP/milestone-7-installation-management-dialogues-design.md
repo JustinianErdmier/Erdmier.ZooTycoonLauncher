@@ -135,7 +135,7 @@ invalid selection).
 
 All dialogues are `ClassicWindow` modals (`WindowStartupLocation="CenterOwner"`, `SizeToContent="Height"`, `CanResize="False"`, `ShowInTaskbar="False"`) mirroring
 `AddInstallationDialogView`'s chrome, each a view + view-model pair under `Views/Dialogs/` and `ViewModels/Dialogs/`. Layouts follow the hi-fi mock-ups in
-`docs/user-interface-design/HiFiMockupScreenshots/`, adjusted by the decisions in §2.
+`Docs/UserInterfaceDesign/HiFiMockupScreenshots/`, adjusted by the decisions in §2.
 
 ### 5.1 Shared installation form
 

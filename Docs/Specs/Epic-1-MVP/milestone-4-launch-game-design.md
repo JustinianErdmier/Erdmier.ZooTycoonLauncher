@@ -4,7 +4,7 @@
 > **Date:** 3 June 2026
 > **Author:** Justinian
 > **Status:** Draft — pending review
-> **Authoritative spec:** [2026-05-26-zoo-tycoon-launcher-design.md](./2026-05-26-zoo-tycoon-launcher-design.md) §7.10, §9.2
+> **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §7.10, §9.2
 
 ---
 

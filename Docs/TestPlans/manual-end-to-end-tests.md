@@ -48,11 +48,11 @@ in. This view is purely informational, a placeholder until a deterministic state
 
 One thing worth noting is that the substantial whitespace at the bottom, under the status bar, is not intentional and is cropped out in the following high-fidelity screenshots.
 
-![](../user-interface-design/HiFiMockupScreenshots/LookingForZooTycoonState.png)
+![](../UserInterfaceDesign/HiFiMockupScreenshots/LookingForZooTycoonState.png)
 
 #### Actual Implementation
 
-![](../user-interface-design/ImplementationScreenshots/LookingForZooTycoonState.png)
+![](../UserInterfaceDesign/ImplementationScreenshots/LookingForZooTycoonState.png)
 
 #### Alignment
 
@@ -107,11 +107,11 @@ order is more visually appealing. I didn't like having a disabled, enabled, and 
 
 #### Hi-Fi Mockup
 
-![](../user-interface-design/HiFiMockupScreenshots/OpenGameInstallationState.png)
+![](../UserInterfaceDesign/HiFiMockupScreenshots/OpenGameInstallationState.png)
 
 #### Actual Implementation
 
-![](../user-interface-design/ImplementationScreenshots/OpenGameInstallationState.png)
+![](../UserInterfaceDesign/ImplementationScreenshots/OpenGameInstallationState.png)
 
 #### Alignment
 
@@ -188,11 +188,11 @@ Add Installation dialogue.
 
 #### Hi-Fi Mockup
 
-![](../user-interface-design/HiFiMockupScreenshots/NoGameInstallationFoundState.png)
+![](../UserInterfaceDesign/HiFiMockupScreenshots/NoGameInstallationFoundState.png)
 
 #### Actual Implementation
 
-![](../user-interface-design/ImplementationScreenshots/NoGameInstallationFoundState.png)
+![](../UserInterfaceDesign/ImplementationScreenshots/NoGameInstallationFoundState.png)
 
 #### Alignment
 
@@ -255,11 +255,11 @@ structural work already described in the previous section (removing the tab cont
 
 #### Hi-Fi Mockup
 
-![](../user-interface-design/HiFiMockupScreenshots/NoGameInstallationFoundState.png)
+![](../UserInterfaceDesign/HiFiMockupScreenshots/NoGameInstallationFoundState.png)
 
 #### Actual Implementation
 
-![](../user-interface-design/ImplementationScreenshots/NoGameInstallationFoundStateWithNoCandidateFound.png)
+![](../UserInterfaceDesign/ImplementationScreenshots/NoGameInstallationFoundStateWithNoCandidateFound.png)
 
 #### Alignment
 
@@ -329,11 +329,11 @@ between the two outcomes — the tick versus the warning icon, the "Ready to Pla
 
 #### Hi-Fi Mockup
 
-![](../user-interface-design/HiFiMockupScreenshots/ReadyToPlayStateWithGameOptimisation.png)
+![](../UserInterfaceDesign/HiFiMockupScreenshots/ReadyToPlayStateWithGameOptimisation.png)
 
 #### Actual Implementation
 
-![](../user-interface-design/ImplementationScreenshots/ReadyToPlayState.png)
+![](../UserInterfaceDesign/ImplementationScreenshots/ReadyToPlayState.png)
 
 #### Alignment
 
@@ -433,11 +433,11 @@ text unmuted as well. But because that group is specifically about the _game's_ 
 
 #### Hi-Fi Mockup
 
-![](../user-interface-design/HiFiMockupScreenshots/CannotPlayState.png)
+![](../UserInterfaceDesign/HiFiMockupScreenshots/CannotPlayState.png)
 
 #### Actual Implementation
 
-![](../user-interface-design/ImplementationScreenshots/CannotPlayStateNoExe.png)
+![](../UserInterfaceDesign/ImplementationScreenshots/CannotPlayStateNoExe.png)
 
 #### Alignment
 
@@ -638,11 +638,11 @@ one — is a branch that already existed in `BootHandler.ResolveDefaultAsync` (t
 
 #### Hi-Fi Mockup
 
-![](../user-interface-design/HiFiMockupScreenshots/ReadyToPlayStateWithGameOptimisation.png)
+![](../UserInterfaceDesign/HiFiMockupScreenshots/ReadyToPlayStateWithGameOptimisation.png)
 
 #### Actual Implementation
 
-![](../user-interface-design/ImplementationScreenshots/ReadyToPlayState.png)
+![](../UserInterfaceDesign/ImplementationScreenshots/ReadyToPlayState.png)
 
 #### Alignment
 
@@ -719,11 +719,11 @@ no new work.
 
 #### Hi-Fi Mockup
 
-![](../user-interface-design/HiFiMockupScreenshots/CannotPlayState.png)
+![](../UserInterfaceDesign/HiFiMockupScreenshots/CannotPlayState.png)
 
 #### Actual Implementation
 
-![](../user-interface-design/ImplementationScreenshots/CannotPlayStateNoExe.png)
+![](../UserInterfaceDesign/ImplementationScreenshots/CannotPlayStateNoExe.png)
 
 #### Alignment
 

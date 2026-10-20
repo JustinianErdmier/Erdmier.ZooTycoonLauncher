@@ -1,5 +1,7 @@
 # Installation Grid Control Implementation Plan
 
+**Date:** 2026-07-02
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Create a shared `InstallationGridView` / `InstallationGridViewModel` control that renders the three-column installation DataGrid, wire it into the existing `OpenGameInstallationView`, and scaffold the `InstallationManagerDialog` that reuses the same control.

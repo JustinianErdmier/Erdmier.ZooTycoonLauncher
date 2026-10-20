@@ -1,5 +1,7 @@
 # Launch Game Implementation Plan
 
+**Date:** 2026-06-03
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Wire the headline use case — clicking **Launch Game** on the General tab starts `zoo.exe` with the correct working directory, persists drift detected at click-time, stamps `LastPlayedUtc`, honours `LauncherSettings.CloseAfterGameLaunch`, and shows a modeless error window when `Process.Start` fails.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** .NET 10, C# 13, Avalonia 11, CommunityToolkit.Mvvm, Mediator 2.1.7 (martinothamar), ErrorOr 2.0.1, EF Core + SQLite, xUnit, Shouldly, NSubstitute, `Microsoft.Extensions.Time.Testing.FakeTimeProvider`, NetArchTest.
 
-**Authoritative spec:** [`docs/superpowers/specs/2026-06-03-launch-game-design.md`](../specs/2026-06-03-launch-game-design.md)
+**Authoritative spec:** [`Docs/Specs/Epic-1-MVP/milestone-4-launch-game-design.md`](../../Specs/Epic-1-MVP/milestone-4-launch-game-design.md)
 
 ---
 

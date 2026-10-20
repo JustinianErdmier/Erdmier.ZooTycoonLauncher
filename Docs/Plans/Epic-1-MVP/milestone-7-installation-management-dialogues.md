@@ -1,5 +1,7 @@
 # Installation Management Dialogues Implementation Plan
 
+**Date:** 2026-09-24
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps
 > use checkbox (`- [ ]`) syntax for tracking.
 
@@ -13,8 +15,8 @@ gains four methods; the main window re-runs a pointed boot of the open installat
 **Tech Stack:** .NET 10 / C# 13, Avalonia 11.3 + Classic.Avalonia, CommunityToolkit.Mvvm (ObservableProperty, RelayCommand, IMessenger), Mediator (source-generated), ErrorOr,
 FluentValidation, EF Core + SQLite; tests: xUnit, NSubstitute, Shouldly, `Microsoft.Extensions.Time.Testing`.
 
-**Spec:** `docs/superpowers/specs/2026-09-24-installation-management-dialogues-design.md` (decisions D1–D7 are binding). The SDD
-(`docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md`) wins where anything disagrees.
+**Spec:** `Docs/Specs/Epic-1-MVP/milestone-7-installation-management-dialogues-design.md` (decisions D1–D7 are binding). The SDD
+(`Docs/Specs/1-zoo-tycoon-launcher-master-design.md`) wins where anything disagrees.
 
 ## Global Constraints
 
@@ -74,7 +76,7 @@ FluentValidation, EF Core + SQLite; tests: xUnit, NSubstitute, Shouldly, `Micros
 | Modify | `Source/…Desktop/ViewModels/Common/InstallationGridViewModel.cs`, `…/ViewModels/Boot/OpenGameInstallationViewModel.cs`, `…/ViewModels/Dialogs/InstallationManagerDialogViewModel.cs`, `…/ViewModels/MainWindowViewModel.cs` | 3 |
 | Create | `Source/…Desktop/ViewModels/Common/InstallationFormViewModel.cs`, `Source/…Desktop/Views/Common/InstallationFormView.axaml(.cs)` | 4 |
 | Modify | `Source/…Desktop/ViewModels/Dialogs/AddInstallationDialogViewModel.cs`, `Source/…Desktop/Views/Dialogs/AddInstallationDialogView.axaml`, `…/Composition/AvaloniaDialogService.cs` | 4 |
-| Modify | `docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md` (§7.2.1 + revision 1.6) | 4 |
+| Modify | `Docs/Specs/1-zoo-tycoon-launcher-master-design.md` (§7.2.1 + revision 1.6) | 4 |
 | Create | `Source/…Desktop/ViewModels/Dialogs/InstallationDialogMessages.cs` | 5 |
 | Create | `Source/…Desktop/ViewModels/Dialogs/EditInstallationDialogViewModel.cs`, `Source/…Desktop/Views/Dialogs/EditInstallationDialogView.axaml(.cs)` | 5 |
 | Create | `Source/…Desktop/ViewModels/Dialogs/InstallationInfoDialogViewModel.cs`, `Source/…Desktop/Views/Dialogs/InstallationInfoDialogView.axaml(.cs)` | 6 |
@@ -1376,7 +1378,7 @@ git commit -m "refactor(♻️): refresh installation grids from change messages
 - Modify: `Source/Erdmier.ZooTycoonLauncher.Desktop/ViewModels/Dialogs/AddInstallationDialogViewModel.cs`
 - Modify: `Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Dialogs/AddInstallationDialogView.axaml`
 - Modify: `Source/Erdmier.ZooTycoonLauncher.Desktop/Composition/AvaloniaDialogService.cs`
-- Modify: `docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md`
+- Modify: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`
 
 **Interfaces:**
 - Produces: `InstallationFormViewModel(IDialogService dialogs)` with `Name`, `Path`, `MakeDefault`, `ErrorMessage`, `IsFolderReadOnly`, `IsBrowseVisible` (default `true`),
@@ -1691,7 +1693,7 @@ In `AvaloniaDialogService.ShowAddInstallationAsync`, after `vm.PrefillPath(prefi
 
 - [ ] **Step 6: Amend SDD §7.2.1 (revision 1.6)**
 
-In `docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md`:
+In `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`:
 - Replace the bullet `    - Zero existing installations → placeholder `Main`.` with
   `    - Zero existing installations → the Name input is **pre-filled** with `Main` (an editable value, not a placeholder).`
 - In the Document-control table set **Version** to `1.6` and **Last updated** to `24 September 2026`, keeping the column alignment.
@@ -1709,7 +1711,7 @@ Run: `dotnet build Erdmier.ZooTycoonLauncher.slnx -nologo -v q` then `dotnet tes
 Expected: 0 warnings / 0 errors; 13 PASS.
 
 ```bash
-git add Source/Erdmier.ZooTycoonLauncher.Desktop docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md
+git add Source/Erdmier.ZooTycoonLauncher.Desktop Docs/Specs/1-zoo-tycoon-launcher-master-design.md
 git commit -m "feat(✨): share the installation form and pre-fill Main for the first installation"
 ```
 

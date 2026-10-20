@@ -1,5 +1,7 @@
 # INI Config Core Implementation Plan
 
+**Date:** 2026-09-24
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.
 > Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -14,8 +16,8 @@ pending-changes guard wired into the main window.
 **Tech Stack:** .NET 10, C# latest, Avalonia 11.3.14 + Classic.Avalonia 11.3.0.3, CommunityToolkit.Mvvm 8.4.2, Mediator 3.0.2 (source-generated), ErrorOr 2.1.1,
 FluentValidation 12.1.1, Ardalis.SmartEnum 8.2.0, EF Core 10.0.9 + SQLite, System.IO.Abstractions 22.1.1, xUnit + Shouldly + NSubstitute.
 
-**Spec:** [`docs/superpowers/specs/2026-09-24-ini-config-core-design.md`](../specs/2026-09-24-ini-config-core-design.md) — read it before starting any task. The SDD
-([`2026-05-26-zoo-tycoon-launcher-design.md`](../specs/2026-05-26-zoo-tycoon-launcher-design.md)) remains authoritative for anything this plan does not cover.
+**Spec:** [`Docs/Specs/Epic-1-MVP/milestone-8-ini-config-core-design.md`](../../Specs/Epic-1-MVP/milestone-8-ini-config-core-design.md) — read it before starting any task. The SDD
+([`1-zoo-tycoon-launcher-master-design.md`](../../Specs/1-zoo-tycoon-launcher-master-design.md)) remains authoritative for anything this plan does not cover.
 
 ## Global Constraints
 
@@ -7500,9 +7502,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ## Task 19: Documentation — SDD revision 1.7, conventions, manual test stubs
 
 **Files:**
-- Modify: `docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md`
-- Modify: `docs/user-interface-design/conventions.md`
-- Modify: `docs/test-plans/manual-end-to-end-tests.md`
+- Modify: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`
+- Modify: `Docs/UserInterfaceDesign/conventions.md`
+- Modify: `Docs/TestPlans/manual-end-to-end-tests.md`
 
 Every edited Markdown paragraph is hard-wrapped at 180 characters. Verify with:
 
@@ -7517,7 +7519,7 @@ $inCode = $false; $n = 0; Get-Content <file> -Encoding UTF8 | ForEach-Object { $
 Make each change below; keep the SDD's voice and British English.
 
 1. **Document control:** Version `1.7`; Last updated `24 September 2026`.
-2. **Revision history:** add a `1.7 | 24 September 2026 | Justinian |` row: "INI Config core slice (spec `2026-09-24-ini-config-core-design.md`). §5.3 replaces the typed
+2. **Revision history:** add a `1.7 | 24 September 2026 | Justinian |` row: "INI Config core slice (spec `milestone-8-ini-config-core-design.md`). §5.3 replaces the typed
    `ZooIniModel` with a key registry (`IniKeyId`, `IniKeyRole`, `IniKeySpec`, `ZooIniDefaults`); raw values are stored as found and the editor falls back to defaults at
    display time. Drift is tiered (§7.1.3, §7.7, glossary): game-managed and unrecognised changes are adopted silently; only user-setting changes archive `Current`. Save
    (§7.3.2, §8.2) re-reads `zoo.ini` and merges edits onto the on-disk text after reconciling external drift in the same transaction. §8.1 records Latin-1 byte fidelity,
@@ -7605,7 +7607,7 @@ Make each change below; keep the SDD's voice and British English.
 
 - [ ] **Step 3: Stub the manual test sections**
 
-In `docs/test-plans/manual-end-to-end-tests.md`, insert **immediately before** `# Notes & Future Tasks/Goals` (do not touch that section or any existing section) a new
+In `Docs/TestPlans/manual-end-to-end-tests.md`, insert **immediately before** `# Notes & Future Tasks/Goals` (do not touch that section or any existing section) a new
 top-level heading `# INI Config Core` with eight stub sections, numbered from 1, titled exactly:
 
 1. `First Import: an installation registered before the INI slice opens with an empty snapshot database`
@@ -7653,7 +7655,7 @@ Each stub section has only these sub-headings and prompt quotes, copied from the
 Run the 180-character check (above) on all three files; fix any line it reports. Then:
 
 ```powershell
-git add docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md docs/user-interface-design/conventions.md docs/test-plans/manual-end-to-end-tests.md
+git add Docs/Specs/1-zoo-tycoon-launcher-master-design.md Docs/UserInterfaceDesign/conventions.md Docs/TestPlans/manual-end-to-end-tests.md
 git commit -m @'
 docs(📝): amend the SDD to v1.7 for the INI Config core slice
 

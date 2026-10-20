@@ -1,5 +1,7 @@
 # Installation Lifecycle (Core) Implementation Plan
 
+**Date:** 2026-05-27
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Land the headless half of the Installation Lifecycle MVP slice (SDD §7.2 + §8.5) — every Add / Edit / Delete / Fix / Verify / Locate / Set-Default operation exposed as a Mediator command or query in the Application layer, with EF Core + filesystem implementations in Infrastructure, all unit-and-integration tested. No Desktop dialogues yet — they ship as a follow-on plan once this core is solid.

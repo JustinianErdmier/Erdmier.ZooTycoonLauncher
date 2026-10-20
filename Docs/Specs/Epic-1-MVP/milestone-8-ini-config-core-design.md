@@ -4,7 +4,7 @@
 > **Date:** 24 September 2026
 > **Author:** Justinian
 > **Status:** Approved for implementation
-> **Authoritative spec:** [2026-05-26-zoo-tycoon-launcher-design.md](./2026-05-26-zoo-tycoon-launcher-design.md) §5.3, §6.3, §7.1, §7.3, §7.7, §8.1, §8.2, §9.3
+> **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §5.3, §6.3, §7.1, §7.3, §7.7, §8.1, §8.2, §9.3
 
 ---
 
@@ -750,7 +750,7 @@ NSubstitute fakes for `IIniFileStore`, `IIniSnapshotRepository`, `IIniSnapshotTr
 Existing rules cover the slice (one type per file, no files at project roots, `Application` free of EF / Serilog / Avalonia, `Desktop` reaching `Infrastructure` only from
 `Composition`, `MainWindow.axaml` ≤ 100 lines). No new rules.
 
-### 9.6 Manual smoke (added to `docs/test-plans/manual-end-to-end-tests.md`)
+### 9.6 Manual smoke (added to `Docs/TestPlans/manual-end-to-end-tests.md`)
 
 1. **First import** — open an installation registered before this slice; the INI tab shows its values; the per-installation database now holds `Original` + `Current`.
 2. **Edit and save** — change one value per control kind; Save; `zoo.ini` differs from the previous copy only on the edited lines (`fc /b`); comments and ordering intact.

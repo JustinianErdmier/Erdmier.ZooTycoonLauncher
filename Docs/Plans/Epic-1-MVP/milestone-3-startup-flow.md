@@ -1,5 +1,7 @@
 # Startup Flow Implementation Plan
 
+**Date:** 2026-05-28
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps
 > use checkbox (`- [ ]`) syntax for tracking.
 
@@ -13,7 +15,7 @@ main-window states on startup.
 **Tech Stack:** .NET 10 / C# 13, Avalonia 11.3, CommunityToolkit.Mvvm (`[ObservableProperty]`, `[RelayCommand]`), Mediator (martinothamar), ErrorOr, NSubstitute, Shouldly, xUnit,
 FakeTimeProvider.
 
-**Spec:** `docs/superpowers/specs/2026-05-28-startup-flow-design.md`
+**Spec:** `Docs/Specs/Epic-1-MVP/milestone-3-startup-flow-design.md`
 
 ---
 

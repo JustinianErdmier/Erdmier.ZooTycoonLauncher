@@ -1,6 +1,6 @@
 # UI conventions
 
-> Companion to [SDD §9](../superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md#9-user-interface). Where §9 describes **what** each view contains, this doc fixes the recurring **how** — tokens, layout primitives, icon names, theming hooks — so an agent implementing one slice can do it without reverse-engineering the prototype.
+> Companion to [SDD §9](../Specs/1-zoo-tycoon-launcher-master-design.md#9-user-interface). Where §9 describes **what** each view contains, this doc fixes the recurring **how** — tokens, layout primitives, icon names, theming hooks — so an agent implementing one slice can do it without reverse-engineering the prototype.
 
 ---
 

@@ -1,5 +1,7 @@
 # Foundations & Scaffolding Implementation Plan
 
+**Date:** 2026-05-26
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Stand up the four-project Clean Architecture solution skeleton (`Domain`, `Application`, `Infrastructure`, `Desktop`) with their four sibling test projects, so the rest of the milestone series has somewhere to land. Pin the architectural conventions (every-VM-has-a-View, one type per file, dependency direction) with NetArchTest rules from day one. End state: the launcher boots into an empty Classic.Avalonia window, `Launcher.db` is created with EF Core migrations, Serilog writes to `%LOCALAPPDATA%\ZooTycoonLauncher\Logs\Launcher.log`, and the four test projects all run green.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** .NET 10, C# 13, Avalonia 11.3, Classic.Avalonia 11.3, CommunityToolkit.Mvvm 8.4, Mediator (martinothamar) 2.x, ErrorOr, FluentValidation, Ardalis.SmartEnum, Serilog (file sink), Microsoft.EntityFrameworkCore.Sqlite 10.x (or current stable at implementation), System.IO.Abstractions, JetBrains.Annotations. Tests: xUnit, Shouldly, NSubstitute, NetArchTest.Rules.
 
-**Reference SDD:** [`docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md`](../specs/2026-05-26-zoo-tycoon-launcher-design.md). Where this plan says "per SDD §X.Y", read the linked section for the rationale; this plan only specifies the *what* and the *how*.
+**Reference SDD:** [`Docs/Specs/1-zoo-tycoon-launcher-master-design.md`](../../Specs/1-zoo-tycoon-launcher-master-design.md). Where this plan says "per SDD §X.Y", read the linked section for the rationale; this plan only specifies the *what* and the *how*.
 
 **Reference build:** the renamed `References/Erdmier.ZooTycoonLauncherRef/` project. It's read-only inspiration — *never* `git mv` or copy-paste from it. Cite a Ref file inline only as a "for inspiration" pointer; rewrite the moral equivalent fresh.
 
@@ -239,11 +241,11 @@ Replace the contents of `Erdmier.ZooTycoonLauncher.slnx` with:
         <File Path="Directory.Build.props" />
         <File Path="Directory.Packages.props" />
     </Folder>
-    <Folder Name="/SolutionItems/docs/superpowers/specs/">
-        <File Path="docs/superpowers/specs/2026-05-26-zoo-tycoon-launcher-design.md" />
+    <Folder Name="/SolutionItems/Docs/Specs/">
+        <File Path="Docs/Specs/1-zoo-tycoon-launcher-master-design.md" />
     </Folder>
-    <Folder Name="/SolutionItems/docs/superpowers/plans/">
-        <File Path="docs/superpowers/plans/2026-05-26-foundations-and-scaffolding.md" />
+    <Folder Name="/SolutionItems/Docs/Plans/Epic-1-MVP/">
+        <File Path="Docs/Plans/Epic-1-MVP/milestone-1-foundations-and-scaffolding.md" />
     </Folder>
     <Folder Name="/Source/">
         <Project Path="Source/Erdmier.ZooTycoonLauncher.Domain/Erdmier.ZooTycoonLauncher.Domain.csproj" />
@@ -2466,7 +2468,7 @@ git commit --allow-empty -m "chore(🔧): foundations milestone complete — sol
 
 ## Plan complete
 
-Saved to `docs/superpowers/plans/2026-05-26-foundations-and-scaffolding.md`. Two execution options:
+Saved to `Docs/Plans/Epic-1-MVP/milestone-1-foundations-and-scaffolding.md`. Two execution options:
 
 1. **Subagent-Driven (recommended)** — I dispatch a fresh subagent per task, review between tasks, fast iteration.
 2. **Inline Execution** — Execute tasks in this session using executing-plans, batch execution with checkpoints.

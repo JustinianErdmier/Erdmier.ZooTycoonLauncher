@@ -23,20 +23,20 @@ public sealed class GetIniHistoryCountHandler : IQueryHandler<GetIniHistoryCount
     /// <inheritdoc />
     public async ValueTask<ErrorOr<int>> Handle(GetIniHistoryCountQuery query, CancellationToken cancellationToken)
     {
-        GameInstallation? installation = await _installations.GetByIdAsync(query.InstallationId, cancellationToken);
-
-        if (installation is null)
-        {
-            return IniErrors.InstallationNotFound(query.InstallationId);
-        }
-
         try
         {
+            GameInstallation? installation = await _installations.GetByIdAsync(query.InstallationId, cancellationToken);
+
+            if (installation is null)
+            {
+                return IniErrors.InstallationNotFound(query.InstallationId);
+            }
+
             return await _snapshots.CountHistoricalAsync(installation.Id, cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogError(ex, message: "Counting INI history failed for {InstallationId}", installation.Id);
+            _logger.LogError(ex, message: "Counting INI history failed for {InstallationId}", query.InstallationId);
 
             return IniErrors.StoreFailed(ex.Message);
         }

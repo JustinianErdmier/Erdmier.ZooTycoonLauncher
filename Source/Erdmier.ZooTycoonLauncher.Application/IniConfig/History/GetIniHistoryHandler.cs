@@ -50,40 +50,27 @@ public sealed class GetIniHistoryHandler : IQueryHandler<GetIniHistoryQuery, Err
             return IniErrors.InstallationNotFound(query.InstallationId);
         }
 
-        if (!installation.HasIni)
+        ErrorOr<IniFileContent> read = await IniLoadSteps.ReadAsync(_files, _logger, installation, cancellationToken);
+
+        if (read.IsError)
         {
-            return IniErrors.Missing(installation.Path);
+            return read.Errors;
         }
 
-        IniFileContent? content;
-
-        try
-        {
-            await _files.DeleteOrphanedTempFilesAsync(installation.Path, cancellationToken);
-
-            content = await _files.ReadAsync(installation.Path, cancellationToken);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            _logger.LogWarning(ex, message: "Reading zoo.ini failed for {InstallationId}", installation.Id);
-
-            return IniErrors.ReadFailed(ex.Message);
-        }
-
-        if (content is null)
-        {
-            return IniErrors.Missing(installation.Path);
-        }
+        IniFileContent content = read.Value;
 
         try
         {
             await using IIniSnapshotTransaction transaction = await _snapshots.BeginAsync(installation.Id, cancellationToken);
 
-            IniReconciliation reconciliation = await _reconciler.ReconcileAsync(transaction,
-                                                                                content.Text,
-                                                                                _clock.GetUtcNow()
-                                                                                      .UtcDateTime,
-                                                                                cancellationToken);
+            IniReconciliation reconciliation = await IniLoadSteps.ReconcileAsync(transaction,
+                                                                                 _reconciler,
+                                                                                 _logger,
+                                                                                 installation,
+                                                                                 content.Text,
+                                                                                 _clock.GetUtcNow()
+                                                                                       .UtcDateTime,
+                                                                                 cancellationToken);
 
             IReadOnlyList<IniSnapshot> historical = await transaction.ListHistoricalAsync(cancellationToken);
 

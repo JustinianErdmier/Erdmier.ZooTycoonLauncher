@@ -110,6 +110,18 @@ public sealed class GetIniHistoryHandlerTests
     }
 
     [ Fact ]
+    public async Task History_ReadThrows_ReturnsReadFailed()
+    {
+        _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
+              .ThrowsAsync(new IOException(message: "sharing violation"));
+
+        ErrorOr<IniHistoryResult> result = await CreateHandler().Handle(new GetIniHistoryQuery(_installation.Id), CancellationToken.None);
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.ReadFailed");
+        result.FirstError.Description.ShouldContain(expected: "sharing violation");
+    }
+
+    [ Fact ]
     public async Task History_StoreThrows_ReturnsStoreFailed()
     {
         _snapshots.BeginAsync(_installation.Id, Arg.Any<CancellationToken>())

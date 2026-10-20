@@ -16,7 +16,9 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
     private readonly IMediator? _mediator;
 
-    private IniFieldViewModel? _helpField;
+    private IniFieldViewModel? _focusedField;
+
+    private IniFieldViewModel? _hoveredField;
 
     private Task<bool>? _pendingSave;
 
@@ -218,15 +220,21 @@ public sealed partial class IniEditorViewModel : ViewModelBase
     // OnFieldPropertyChanged expects), leaving the footer's help line stuck over "● Unsaved changes"; clearing it here whenever the section changes closes that gap.
     partial void OnSelectedSectionChanged(IniSectionViewModel value)
     {
-        if (_helpField is not null)
+        // Otherwise the old row's flags stay true, and the first hover or focus on that row after switching back raises no change (its value already matches), so
+        // the footer never picks the help back up.
+        if (_hoveredField is not null)
         {
-            // Otherwise the old row's IsHelpActive stays true, and the first hover or focus on that row after switching back raises no change (its value already
-            // matches), so the footer never picks the help back up.
-            _helpField.IsHelpActive = false;
+            _hoveredField.IsHovered = false;
         }
 
-        _helpField = null;
-        ActiveHelp = null;
+        if (_focusedField is not null)
+        {
+            _focusedField.IsFocused = false;
+        }
+
+        _hoveredField = null;
+        _focusedField = null;
+        ActiveHelp    = null;
     }
 
     partial void OnFileLastWriteUtcChanged(DateTime value) => RaiseFooterChanged();
@@ -374,21 +382,21 @@ public sealed partial class IniEditorViewModel : ViewModelBase
             return;
         }
 
-        if (eventArgs.PropertyName != nameof(IniFieldViewModel.IsHelpActive))
+        if (eventArgs.PropertyName == nameof(IniFieldViewModel.IsHovered))
+        {
+            _hoveredField = field.IsHovered ? field : ReferenceEquals(_hoveredField, field) ? null : _hoveredField;
+        }
+        else if (eventArgs.PropertyName == nameof(IniFieldViewModel.IsFocused))
+        {
+            _focusedField = field.IsFocused ? field : ReferenceEquals(_focusedField, field) ? null : _focusedField;
+        }
+        else
         {
             return;
         }
 
-        if (field.IsHelpActive)
-        {
-            _helpField = field;
-            ActiveHelp = field.Help;
-        }
-        else if (ReferenceEquals(_helpField, field))
-        {
-            _helpField = null;
-            ActiveHelp = null;
-        }
+        // The hovered row's help wins; with nothing hovered the focused row's shows; with neither the footer falls back to its dirty/saved state.
+        ActiveHelp = (_hoveredField ?? _focusedField)?.Help;
     }
 
     private void RaiseDirtyChanged()

@@ -184,12 +184,12 @@ public sealed class IniEditorViewModelTests
         editor.FooterText.ShouldBe(expected: "● Unsaved changes");
         editor.SaveCommand.CanExecute(parameter: null).ShouldBeTrue();
 
-        width.IsHelpActive = true;
+        width.IsHovered = true;
 
         editor.IsFooterHelp.ShouldBeTrue();
         editor.FooterText.ShouldBe(width.Help);
 
-        width.IsHelpActive = false;
+        width.IsHovered = false;
 
         editor.FooterText.ShouldBe(expected: "● Unsaved changes");
     }
@@ -200,7 +200,7 @@ public sealed class IniEditorViewModelTests
         IniEditorViewModel      editor = CreateEditor();
         IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
 
-        width.IsHelpActive = true;
+        width.IsHovered = true;
 
         editor.IsFooterHelp.ShouldBeTrue();
 
@@ -212,17 +212,82 @@ public sealed class IniEditorViewModelTests
     }
 
     [ Fact ]
+    public void Help_PointerLeavesFocusedRow_KeepsItsHelp()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+
+        width.IsFocused = true;
+        width.IsHovered = true;
+        width.IsHovered = false;
+
+        editor.IsFooterHelp.ShouldBeTrue();
+        editor.FooterText.ShouldBe(width.Help);
+    }
+
+    [ Fact ]
+    public void Help_HoverAnotherRowWhileOneIsFocused_ShowsTheHoveredHelp()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+        IniToggleFieldViewModel drag   = IniEditorTestData.Field<IniToggleFieldViewModel>(editor, section: "advanced", key: "drag");
+
+        width.IsFocused = true;
+        drag.IsHovered  = true;
+
+        editor.FooterText.ShouldBe(drag.Help);
+
+        drag.IsHovered = false;
+
+        editor.FooterText.ShouldBe(width.Help);
+    }
+
+    [ Fact ]
+    public void Help_NeitherHoveredNorFocused_ShowsTheFooterState()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+
+        width.IsFocused = true;
+        width.IsHovered = true;
+        width.IsFocused = false;
+        width.IsHovered = false;
+
+        editor.IsFooterHelp.ShouldBeFalse();
+        editor.IsFooterSaved.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public void Help_SectionChange_ClearsHoverAndFocus()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+
+        width.IsFocused = true;
+        width.IsHovered = true;
+
+        editor.SelectedSection = editor.Sections[1];
+
+        width.IsHovered.ShouldBeFalse();
+        width.IsFocused.ShouldBeFalse();
+        editor.IsFooterHelp.ShouldBeFalse();
+
+        width.IsFocused = true;
+
+        editor.IsFooterHelp.ShouldBeTrue();
+    }
+    [ Fact ]
     public void ChangingSectionAwayAndBack_HoveringTheSameRowAgain_ShowsItsHelp()
     {
         IniEditorViewModel      editor = CreateEditor();
         IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
 
-        width.IsHelpActive = true;
+        width.IsHovered = true;
 
         editor.SelectedSection = editor.Sections[1];
         editor.SelectedSection = editor.Sections[0];
 
-        width.IsHelpActive = true;
+        width.IsHovered = true;
 
         editor.IsFooterHelp.ShouldBeTrue();
     }

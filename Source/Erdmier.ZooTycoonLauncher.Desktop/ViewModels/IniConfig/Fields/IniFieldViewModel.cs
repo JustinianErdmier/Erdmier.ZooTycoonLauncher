@@ -31,9 +31,13 @@ public abstract partial class IniFieldViewModel : ViewModelBase
     /// <summary>The help text: the row tooltip and the footer line while the row is hovered or focused.</summary>
     public string Help { get; }
 
-    /// <summary>Whether the row is hovered or holds focus; set by <c>IniSectionView</c>, observed by the editor to drive the footer help line.</summary>
+    /// <summary>Whether the pointer is over the row; set by <c>IniSectionView</c>, observed by the editor to drive the footer help line.</summary>
     [ ObservableProperty ]
-    public partial bool IsHelpActive { get; set; }
+    public partial bool IsHovered { get; set; }
+
+    /// <summary>Whether focus is within the row; set by <c>IniSectionView</c>, observed by the editor to drive the footer help line.</summary>
+    [ ObservableProperty ]
+    public partial bool IsFocused { get; set; }
 
     /// <summary>Whether the row's value differs from what was loaded.</summary>
     public virtual bool IsDirty => false;

@@ -1417,7 +1417,8 @@ that owns both label and input is what carries `ToolTip.Tip` so the whole row tr
 ### 9.6 Picker (Open Game Installation)
 
 The picker is **not a modal dialogue** — it is the `OpenGameInstallation` main-window state described in §9.1. Same data shape as the Installation Manager (Name / Path / Status),  
-but with `Open` (default) replacing the row of management actions, plus `Add…`, `Info` and `Manage…` buttons that open the Add Installation and Installation Manager dialogues.
+but with `Open` (default) replacing the row of management actions, plus `Add…`, `Info` and `Manage…` buttons that open the Add Installation, Installation Info and
+Installation Manager dialogues.
 There is no separate "switch installation" picker in the MVP; switching is done from the Installation Manager (double-click a row, or select + `Open`).
 
 ### 9.7 Restore Previous INI dialogue

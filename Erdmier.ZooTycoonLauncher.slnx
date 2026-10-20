@@ -28,6 +28,7 @@
         <File Path="Docs/Specs/Epic-1-MVP/milestone-6.1-shared-boot-view-controls-design.md" />
         <File Path="Docs/Specs/Epic-1-MVP/milestone-7-installation-management-dialogues-design.md" />
         <File Path="Docs/Specs/Epic-1-MVP/milestone-8-ini-config-core-design.md" />
+        <File Path="Docs/Specs/Epic-1-MVP/milestone-9-restore-previous-ini-design.md" />
     </Folder>
     <Folder Name="/Docs/TestPlans/">
         <File Path="Docs/TestPlans/manual-end-to-end-tests.md" />
@@ -55,6 +56,21 @@
         <File Path="Docs/UserInterfaceDesign/HiFiMockupScreenshots/RestorePreviousIniDialogueShowingDiff.png" />
         <File Path="Docs/UserInterfaceDesign/HiFiMockupScreenshots/RestorePreviousIniDialogueShowingNoDiff.png" />
         <File Path="Docs/UserInterfaceDesign/HiFiMockupScreenshots/SettingsDialogue.png" />
+    </Folder>
+    <Folder Name="/Docs/UserInterfaceDesign/HiFiPrototype/">
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/index.html" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/tweaks-panel.jsx" />
+    </Folder>
+    <Folder Name="/Docs/UserInterfaceDesign/HiFiPrototype/src/">
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/app.jsx" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/components.jsx" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/dialogs.jsx" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/icons.jsx" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/ini-config.jsx" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/main-window.jsx" />
+    </Folder>
+    <Folder Name="/Docs/UserInterfaceDesign/HiFiPrototype/styles/">
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/styles/win95.css" />
     </Folder>
     <Folder Name="/Docs/UserInterfaceDesign/ImplementationScreenshots/">
         <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/CannotPlayStateNoExe.png" />

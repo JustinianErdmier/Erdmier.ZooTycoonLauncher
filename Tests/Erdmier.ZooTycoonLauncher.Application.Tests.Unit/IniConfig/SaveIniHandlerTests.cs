@@ -311,5 +311,5 @@ public sealed class SaveIniHandlerTests
         => await CreateHandler().Handle(new SaveIniCommand(_installation.Id, edits.ToDictionary(edit => edit.Id, edit => edit.Value)), CancellationToken.None);
 
     private SaveIniHandler CreateHandler()
-        => new(new FakeTimeProvider(IniTestData.Now), _files, _installations, NullLogger<SaveIniHandler>.Instance, new IniReconciler(), _snapshots);
+        => new(new IniWritePipeline(new FakeTimeProvider(IniTestData.Now), _files, _installations, NullLogger<IniWritePipeline>.Instance, new IniReconciler(), _snapshots));
 }

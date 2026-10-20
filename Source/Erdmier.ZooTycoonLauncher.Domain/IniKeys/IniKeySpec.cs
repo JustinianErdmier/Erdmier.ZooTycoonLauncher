@@ -89,9 +89,20 @@ public sealed record IniKeySpec(IniKeyId Id, IniValueKind Kind, string? DefaultV
     /// <returns>The effective value.</returns>
     public string? EffectiveValue(string? raw) => IsValid(raw) ? raw?.Trim() : DefaultValue;
 
-    private static bool TryParseBool(string value, out bool result)
+    /// <summary>Parses a boolean INI value: the game's <c>0</c> / <c>1</c> spellings or any <see cref="bool.TryParse(string?, out bool)" /> spelling, ignoring surrounding whitespace.</summary>
+    /// <param name="value">The raw value, or <see langword="null" /> when absent.</param>
+    /// <param name="result">The parsed value; <see langword="false" /> when parsing fails.</param>
+    /// <returns><see langword="true" /> when <paramref name="value" /> is a recognised boolean spelling.</returns>
+    public static bool TryParseBool(string? value, out bool result)
     {
-        switch (value)
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            result = false;
+
+            return false;
+        }
+
+        switch (value.Trim())
         {
             case "0":
                 result = false;
@@ -104,7 +115,7 @@ public sealed record IniKeySpec(IniKeyId Id, IniValueKind Kind, string? DefaultV
                 return true;
 
             default:
-                return bool.TryParse(value, out result);
+                return bool.TryParse(value.Trim(), out result);
         }
     }
 

@@ -26,7 +26,7 @@ public static class IniErrors
     /// <summary>The installation's snapshot database failed.</summary>
     /// <param name="message">The underlying exception's message.</param>
     /// <returns>An unexpected error coded <c>Ini.StoreFailed</c>.</returns>
-    public static Error StoreFailed(string message) => Error.Unexpected(code: "Ini.StoreFailed", $"The installation's settings history could not be opened: {message}");
+    public static Error StoreFailed(string message) => Error.Unexpected(code: "Ini.StoreFailed", $"The installation's settings history could not be read or updated: {message}");
 
     /// <summary>The snapshot chosen for restoring no longer exists.</summary>
     /// <param name="snapshotId">The missing snapshot id.</param>

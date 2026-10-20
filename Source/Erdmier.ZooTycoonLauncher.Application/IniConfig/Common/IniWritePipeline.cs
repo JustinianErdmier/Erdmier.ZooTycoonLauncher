@@ -113,13 +113,13 @@ public sealed class IniWritePipeline
 
                 if (edits.Count == 0)
                 {
-                    int unchangedCount = await transaction.CountHistoricalAsync(cancellationToken);
+                    historicalCount = await transaction.CountHistoricalAsync(cancellationToken);
 
                     await transaction.CommitAsync(cancellationToken);
 
                     IniLoadSteps.LogReconciliation(_logger, installation, reconciliation);
 
-                    return new IniConfigResult(reconciliation.Values, content.LastWriteUtc, unchangedCount);
+                    return new IniConfigResult(reconciliation.Values, content.LastWriteUtc, historicalCount);
                 }
 
                 await transaction.ArchiveCurrentAsync(IniSnapshotTrigger.LauncherGui, nowUtc, cancellationToken);

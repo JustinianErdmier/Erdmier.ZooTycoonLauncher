@@ -36,9 +36,9 @@ public sealed class GetIniHistoryHandlerTests
     [ Fact ]
     public async Task History_ListsHistoricalNewestFirstThenOriginal()
     {
-        IniSnapshot newest   = Snapshot(IniSnapshotKind.Historical, IniSnapshotTrigger.Manual, IniTestData.Sample);
-        IniSnapshot older    = Snapshot(IniSnapshotKind.Historical, IniSnapshotTrigger.LauncherGui, IniTestData.Sample);
-        IniSnapshot original = Snapshot(IniSnapshotKind.Original, IniSnapshotTrigger.OriginalImport, IniTestData.Sample);
+        IniSnapshot newest   = Snapshot(IniSnapshotKind.Historical, IniSnapshotTrigger.Manual, IniTestData.Sample, IniTestData.Now.AddHours(-1));
+        IniSnapshot older    = Snapshot(IniSnapshotKind.Historical, IniSnapshotTrigger.LauncherGui, IniTestData.Sample, IniTestData.Now.AddDays(-1));
+        IniSnapshot original = Snapshot(IniSnapshotKind.Original, IniSnapshotTrigger.OriginalImport, IniTestData.Sample, IniTestData.Now.AddDays(-7));
 
         _transaction.ListHistoricalAsync(Arg.Any<CancellationToken>())
                     .Returns([ newest, older ]);
@@ -52,7 +52,9 @@ public sealed class GetIniHistoryHandlerTests
         result.Value.Entries.Select(entry => entry.SnapshotId).ShouldBe([ newest.Id, older.Id, original.Id ]);
         result.Value.Entries.Select(entry => entry.Kind).ShouldBe([ IniSnapshotKind.Historical, IniSnapshotKind.Historical, IniSnapshotKind.Original ]);
         result.Value.Entries[0].Trigger.ShouldBe(IniSnapshotTrigger.Manual);
-        result.Value.Entries[0].CapturedUtc.ShouldBe(newest.CapturedUtc);
+        result.Value.Entries.Select(entry => entry.CapturedUtc).ShouldBe([ newest.CapturedUtc, older.CapturedUtc, original.CapturedUtc ]);
+        result.Value.Entries[0].CapturedUtc.ShouldBeGreaterThan(result.Value.Entries[1].CapturedUtc);
+        result.Value.Entries[1].CapturedUtc.ShouldBeGreaterThan(result.Value.Entries[2].CapturedUtc);
     }
 
     [ Fact ]
@@ -149,13 +151,13 @@ public sealed class GetIniHistoryHandlerTests
         logger.Entries.ShouldNotContain(entry => entry.Message.Contains("reconciled"));
     }
 
-    private static IniSnapshot Snapshot(IniSnapshotKind kind, IniSnapshotTrigger trigger, string text)
+    private static IniSnapshot Snapshot(IniSnapshotKind kind, IniSnapshotTrigger trigger, string text, DateTime? capturedUtc = null)
         => new()
         {
             Id            = Guid.CreateVersion7(),
             Kind          = kind,
             Trigger       = trigger,
-            CapturedUtc   = IniTestData.Now.AddDays(-1),
+            CapturedUtc   = capturedUtc ?? IniTestData.Now.AddDays(-1),
             StructureBlob = text,
             Values        = IniTestData.CurrentSnapshot(text).Values
         };

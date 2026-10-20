@@ -236,6 +236,23 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
     }
 
     [ Fact ]
+    public async Task GetById_ReturnsTheOriginalSnapshot()
+    {
+        await ImportAsync();
+
+        await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        IniSnapshot original = (await transaction.GetOriginalAsync(CancellationToken.None))!;
+
+        IniSnapshot? found = await transaction.GetByIdAsync(original.Id, CancellationToken.None);
+
+        found.ShouldNotBeNull();
+        found.Id.ShouldBe(original.Id);
+        found.Kind.ShouldBe(IniSnapshotKind.Original);
+        found.Values.Single().Value.ShouldBe(expected: "800");
+    }
+
+    [ Fact ]
     public async Task GetById_CurrentOrUnknownId_ReturnsNull()
     {
         await ImportAsync();

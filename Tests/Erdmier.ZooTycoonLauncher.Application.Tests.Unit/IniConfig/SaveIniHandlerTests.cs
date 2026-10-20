@@ -148,6 +148,29 @@ public sealed class SaveIniHandlerTests
         ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "0800"));
 
         result.Value.HistoricalCount.ShouldBe(3);
+
+        Received.InOrder(() =>
+        {
+            _transaction.CountHistoricalAsync(Arg.Any<CancellationToken>());
+            _transaction.CommitAsync(Arg.Any<CancellationToken>());
+        });
+    }
+
+    [ Fact ]
+    public async Task Save_CountThrows_ReturnsStoreFailedAndWritesNothing()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        _transaction.CountHistoricalAsync(Arg.Any<CancellationToken>())
+                    .ThrowsAsync(new InvalidOperationException(message: "no such table"));
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "1024"));
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.StoreFailed");
+        result.FirstError.Description.ShouldContain(expected: "no such table");
+
+        await _files.DidNotReceive().WriteAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [ Fact ]

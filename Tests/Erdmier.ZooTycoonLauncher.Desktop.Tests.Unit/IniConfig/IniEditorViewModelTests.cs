@@ -37,6 +37,12 @@ public sealed class IniEditorViewModelTests
 
         await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
         await _dialogs.Received(requiredNumberOfCalls: 1).ShowRestorePreviousIniAsync(Arg.Any<Guid>());
+
+        Received.InOrder(() =>
+        {
+            _mediator.Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
+            _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>());
+        });
     }
 
     [ Fact ]
@@ -61,12 +67,26 @@ public sealed class IniEditorViewModelTests
         IniEditorViewModel editor = CreateEditorWithHistory();
         IniConfigResult    restored = IniEditorTestData.ResultWithHistory(historicalCount: 2, ("user", "screenwidth", "640"));
 
+        bool?    pendingWhenOpened = null;
+        decimal? valueWhenOpened   = null;
+
         _dialogs.ShowSaveChangesPromptAsync().Returns(SaveChangesChoice.No);
-        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>()).Returns(Task.FromResult<IniConfigResult?>(restored));
+        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>())
+                .Returns(_ =>
+                {
+                    // Observed from inside the dialogue call: the discard must already have happened, or the later Load(restored) would mask a missing DiscardChanges.
+                    pendingWhenOpened = editor.HasPendingChanges;
+                    valueWhenOpened   = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value;
+
+                    return Task.FromResult<IniConfigResult?>(restored);
+                });
 
         IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
 
         await editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        pendingWhenOpened.ShouldBe(expected: false);
+        valueWhenOpened.ShouldBe(expected: 800m);
 
         await _dialogs.Received(requiredNumberOfCalls: 1).ShowRestorePreviousIniAsync(Arg.Any<Guid>());
         await _mediator.DidNotReceive().Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
@@ -145,8 +165,14 @@ public sealed class IniEditorViewModelTests
         Task running = editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
 
         editor.IsBusy.ShouldBeTrue();
+
+        // Edit a field while the dialogue is open so Reset and Restore defaults would otherwise be enabled: only IsBusy can be what disables them.
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        editor.HasPendingChanges.ShouldBeTrue();
         editor.ResetCommand.CanExecute(parameter: null).ShouldBeFalse();
         editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
+        editor.RestorePreviousCommand.CanExecute(parameter: null).ShouldBeFalse();
 
         open.SetResult(IniEditorTestData.ResultWithHistory(historicalCount: 3, ("user", "screenwidth", "640")));
 
@@ -502,7 +528,47 @@ public sealed class IniEditorViewModelTests
     {
         IniEditorViewModel editor = CreateEditor();
 
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
+
         editor.RestoreDefaultsCommand.Execute(parameter: null);
+
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
+        editor.HasPendingChanges.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task RestoreDefaults_WhileBusy_IsDisabled()
+    {
+        IniEditorViewModel editor = new(Guid.CreateVersion7(), _mediator, _dialogs, IniEditorTestData.ResultWithHistory(historicalCount: 2, ("user", "screenwidth", "1024")),
+                                        NullLogger<IniEditorViewModel>.Instance);
+
+        TaskCompletionSource<IniConfigResult?> open = new();
+
+        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>()).Returns(open.Task);
+
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeTrue();
+
+        Task running = editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        editor.IsBusy.ShouldBeTrue();
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
+
+        open.SetResult(result: null);
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "1024")));
+
+        await running;
+
+        editor.IsBusy.ShouldBeFalse();
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public void RestoreDefaults_Designer_IsDisabled()
+    {
+        IniEditorViewModel editor = new();
+
+        // A non-default value would enable the command were a mediator present: only the designer's missing mediator disables it.
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
 
         editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
     }

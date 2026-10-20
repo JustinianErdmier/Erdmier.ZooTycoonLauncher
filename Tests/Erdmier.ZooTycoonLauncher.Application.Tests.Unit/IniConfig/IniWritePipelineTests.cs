@@ -46,6 +46,21 @@ public sealed class IniWritePipelineTests
         result.FirstError.ShouldBe(selectorError);
 
         await _files.DidNotReceive().WriteAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _transaction.DidNotReceive().ArchiveCurrentAsync(Arg.Any<IniSnapshotTrigger>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
+        await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task WriteAsync_SelectorThrows_ReturnsStoreFailed()
+    {
+        ErrorOr<IniConfigResult> result = await CreatePipeline().WriteAsync(_installation.Id,
+                                                                            (_, _, _) => throw new InvalidOperationException(message: "selector blew up"),
+                                                                            CancellationToken.None);
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.StoreFailed");
+        result.FirstError.Description.ShouldContain(expected: "selector blew up");
+
+        await _files.DidNotReceive().WriteAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
         await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
     }
 

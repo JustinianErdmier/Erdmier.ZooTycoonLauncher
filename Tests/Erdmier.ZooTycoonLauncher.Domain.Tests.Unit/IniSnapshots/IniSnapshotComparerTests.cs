@@ -92,6 +92,34 @@ public sealed class IniSnapshotComparerTests
     }
 
     [ Fact ]
+    public void Compare_KeptKeys_FollowSectionThenRegistryOrder()
+    {
+        Dictionary<IniKeyId, string?> current = Map((Section: "UI", Key: "tooltipDelay", Value: "2"),
+                                                    (Section: "user", Key: "screenheight", Value: "600"),
+                                                    (Section: "user", Key: "fullscreen", Value: "1"));
+
+        IniSnapshotComparison result = IniSnapshotComparer.Compare(current, Map());
+
+        result.KeptKeys.ShouldBe([
+                                     new IniKeyId(Section: "user", Key: "fullscreen"),
+                                     new IniKeyId(Section: "user", Key: "screenheight"),
+                                     new IniKeyId(Section: "UI", Key: "tooltipDelay")
+                                 ]);
+    }
+
+    [ Fact ]
+    public void Compare_SnapshotValuePresentButNull_ComparesAsTheDefault()
+    {
+        Dictionary<IniKeyId, string?> snapshot = Map((Section: "user", Key: "screenwidth", Value: null));
+
+        IniSnapshotComparer.Compare(Map((Section: "user", Key: "screenwidth", Value: "800")), snapshot).Rows.ShouldBeEmpty();
+
+        IniSnapshotComparison result = IniSnapshotComparer.Compare(Map((Section: "user", Key: "screenwidth", Value: "1024")), snapshot);
+
+        result.Rows.ShouldHaveSingleItem().Snapshot.ShouldBe("800");
+    }
+
+    [ Fact ]
     public void ValuesOf_MapsSectionAndKeyCaseInsensitively()
     {
         IniSnapshot snapshot = new();

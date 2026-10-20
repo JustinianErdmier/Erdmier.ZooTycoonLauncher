@@ -79,6 +79,28 @@ public sealed class IniSnapshotServiceTests
     }
 
     [ Fact ]
+    public async Task Load_CountThrows_ReturnsStoreFailed()
+    {
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(current: null);
+
+        transaction.CountHistoricalAsync(Arg.Any<CancellationToken>())
+                   .ThrowsAsync(new InvalidOperationException(message: "no such table"));
+
+        _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
+              .Returns(new IniFileContent(IniTestData.Sample, IniTestData.Now));
+
+        _snapshots.BeginAsync(_installation.Id, Arg.Any<CancellationToken>())
+                  .Returns(transaction);
+
+        ErrorOr<IniConfigResult> result = await CreateService().LoadAsync(_installation, CancellationToken.None);
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.StoreFailed");
+        result.FirstError.Description.ShouldContain(expected: "no such table");
+
+        await transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
     public async Task Load_Success_CleansOrphansFirstThenCommitsAndReturnsTheValues()
     {
         IIniSnapshotTransaction transaction = IniTestData.Transaction(current: null);

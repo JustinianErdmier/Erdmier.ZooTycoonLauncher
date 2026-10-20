@@ -31,7 +31,10 @@ internal sealed class IniSnapshotTransaction : IIniSnapshotTransaction
                          .Include(snapshot => snapshot.Values)
                          .Where(snapshot => snapshot.Kind == IniSnapshotKind.Historical)
                          .OrderByDescending(snapshot => snapshot.CapturedUtc)
-                         // Snapshots archived at the same instant (a Manual and a LauncherGui archive in one Save) fall back to their time-ordered version 7 ids.
+                         // Snapshots archived at the same instant (a Manual and a LauncherGui archive in one Save) fall back to their trigger. Trigger is stored as its
+                         // name, so ascending puts LauncherGui before Manual: a Save or Restore archives the Manual one first, so the LauncherGui one is the newer.
+                         .ThenBy(snapshot => snapshot.Trigger)
+                         // Same trigger at the same instant: the time-ordered version 7 ids decide.
                          .ThenByDescending(snapshot => snapshot.Id)
                          .ToListAsync(cancellationToken);
 

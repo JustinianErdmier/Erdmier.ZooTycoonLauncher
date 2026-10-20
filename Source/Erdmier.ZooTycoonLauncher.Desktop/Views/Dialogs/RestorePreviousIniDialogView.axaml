@@ -1,4 +1,4 @@
-<ClassicWindow xmlns="https://github.com/avaloniaui"
+﻿<ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
                xmlns:models="using:Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig"
@@ -47,7 +47,7 @@
                                         Width="45*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate DataType="models:IniHistoryRow">
-                            <TextBlock FontFamily="Consolas"
+                            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
                                        FontSize="11"
                                        Margin="4 0"
                                        Text="{Binding CapturedText}"
@@ -69,7 +69,7 @@
 
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate DataType="models:IniHistoryRow">
-                            <TextBlock FontFamily="Consolas"
+                            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
                                        HorizontalAlignment="Right"
                                        Margin="4 0"
                                        Text="{Binding DeltaText}"
@@ -102,45 +102,60 @@
             <Panel>
                 <Grid IsVisible="{Binding !HasNoDifferences}"
                       RowDefinitions="Auto, *">
+                    <!-- The header's width follows the rows' (the ItemsControl sits inside the viewport), so it stays aligned when the scrollbar shows -->
                     <Border Background="Silver"
                             BorderBrush="Gray"
                             BorderThickness="0 0 0 1">
-                        <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
-                              Margin="6 3"
-                              TextElement.FontSize="11">
-                            <TextBlock Text="Key" />
+                        <Grid HorizontalAlignment="Left"
+                              Width="{Binding Bounds.Width, ElementName=DiffItems}">
+                            <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
+                                  Margin="6 3"
+                                  TextElement.FontSize="11">
+                                <TextBlock Text="Key" />
 
-                            <TextBlock Grid.Column="1"
-                                       Text="Current" />
+                                <TextBlock Grid.Column="1"
+                                           Text="Current" />
 
-                            <TextBlock Grid.Column="2"
-                                       Text="Snapshot" />
+                                <TextBlock Grid.Column="2"
+                                           Text="Snapshot" />
+                            </Grid>
                         </Grid>
                     </Border>
 
                     <ScrollViewer Grid.Row="1"
                                   HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding DiffRows}">
+                        <ItemsControl x:Name="DiffItems"
+                                      ItemsSource="{Binding DiffRows}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="models:IniHistoryDiffRow">
-                                    <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
-                                          Margin="6 2"
-                                          TextElement.FontFamily="Consolas"
-                                          TextElement.FontSize="11">
-                                        <TextBlock>
-                                            <Run Foreground="Gray"
-                                                 Text="{Binding SectionText}" /><Run Text="/" /><Run Text="{Binding KeyText}" />
-                                        </TextBlock>
+                                    <StackPanel>
+                                        <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
+                                              Margin="6 2"
+                                              TextElement.FontFamily="Lucida Console, Courier New, monospace"
+                                              TextElement.FontSize="11">
+                                            <TextBlock>
+                                                <Run Foreground="Gray"
+                                                     Text="{Binding SectionText}" /><Run Text="/" /><Run Text="{Binding KeyText}" />
+                                            </TextBlock>
 
-                                        <TextBlock Foreground="Maroon"
-                                                   Grid.Column="1"
-                                                   Text="{Binding CurrentText}" />
+                                            <TextBlock Foreground="Maroon"
+                                                       Grid.Column="1"
+                                                       Text="{Binding CurrentText}" />
 
-                                        <TextBlock Foreground="Navy"
-                                                   Grid.Column="2"
-                                                   Text="{Binding SnapshotText}" />
-                                    </Grid>
+                                            <TextBlock Foreground="Navy"
+                                                       Grid.Column="2"
+                                                       Text="{Binding SnapshotText}" />
+                                        </Grid>
+
+                                        <!-- 1 px dotted light-grey row separator (a Border cannot be dashed in Avalonia) -->
+                                        <Line EndPoint="1,0"
+                                              Stretch="Fill"
+                                              Stroke="Gainsboro"
+                                              StrokeDashArray="1, 1"
+                                              StrokeThickness="1"
+                                              StartPoint="0,0" />
+                                    </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

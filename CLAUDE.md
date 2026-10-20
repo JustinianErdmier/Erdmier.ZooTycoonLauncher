@@ -8,9 +8,10 @@ Native Windows desktop launcher for **Zoo Tycoon (2001)**. Multi-installation di
 versioning in SQLite, scenarios management, screen-mode enumeration with ZT1 filtering, and one-click launch. Windows-only (permanently — the game is a 32-bit Windows binary from
 2001); .NET 10, C# 13, Avalonia 11.3 + Classic.Avalonia theme (Windows 95/98 aesthetic).
 
-The repository is in the middle of a **fresh-start rewrite**. The new layered architecture (`Erdmier.ZooTycoonLauncher.{Domain, Application, Infrastructure, Desktop}`) is being
-built greenfield under `Source/`; the prior single-project prototype is preserved read-only as `References/Erdmier.ZooTycoonLauncherRef/` for visual inspiration only. **Never
-copy-paste from the Ref assembly** — reimplement the moral equivalent fresh against the new conventions.
+The launcher is a **fresh-start rewrite**, built greenfield under `Source/` as a layered architecture (`Erdmier.ZooTycoonLauncher.{Domain, Application, Infrastructure,
+Desktop}`). The prior single-project prototype (the *Ref* build, `Erdmier.ZooTycoonLauncherRef`) served as read-only inspiration for the early slices and was removed from the
+repository in `8e0532b`. Where the SDD or an older plan mentions "the Ref build", it means that prototype; recover a file with `git show 8e0532b^:References/<path>` only if a
+design question genuinely needs it, and never copy-paste from it.
 
 ## Authoritative documents
 
@@ -21,8 +22,6 @@ copy-paste from the Ref assembly** — reimplement the moral equivalent fresh ag
   go" / "stop" to start.
 - **Subagent models for plan runs:** implementer subagents (including fix-round re-dispatches) run on **Sonnet**; every reviewer (per-task review, scoped re-review, final
   whole-branch review) and any advisor or escalation subagent run on **Opus**. Always pass the model explicitly when dispatching — never let a subagent inherit the session model.
-- **Reference build (read-only):** [`References/Erdmier.ZooTycoonLauncherRef/`](./References/Erdmier.ZooTycoonLauncherRef/). Cite Ref files inline as "for inspiration" when their
-  design informed the new design; rewrite, never `git mv`.
 
 ## Common commands
 
@@ -79,9 +78,8 @@ Tests/
 ├── Erdmier.ZooTycoonLauncher.Domain.Tests.Unit/
 ├── Erdmier.ZooTycoonLauncher.Application.Tests.Unit/
 ├── Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration/
+├── Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit/
 └── Erdmier.ZooTycoonLauncher.Tests.Architecture/
-References/
-└── Erdmier.ZooTycoonLauncherRef/             # Legacy single-project, read-only inspiration
 ```
 
 Dependency direction: `Desktop → Application → Domain`; `Infrastructure → Application/Domain`; `Desktop` composes `Infrastructure` only at the composition-root namespace (

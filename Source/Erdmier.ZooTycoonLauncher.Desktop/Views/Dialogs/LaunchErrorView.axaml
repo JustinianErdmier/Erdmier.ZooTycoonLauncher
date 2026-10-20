@@ -10,7 +10,7 @@
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False">
 
-    <!-- Mirror MainWindow's caption-button hiding so the Classic theme renders the title bar with only a close button (Ref: References/Erdmier.ZooTycoonLauncherRef/Views/ConfirmDialogView.axaml). -->
+    <!-- Mirror MainWindow's caption-button hiding so the Classic theme renders the title bar with only a close button (the Ref build's ConfirmDialogView did the same). -->
     <Window.Styles>
         <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
             <Setter Property="IsVisible"

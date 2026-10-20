@@ -11,10 +11,10 @@
 |--------------------------|-----------------------------------|
 | **Project**              | Zoo Tycoon Launcher               |
 | **Document**             | Software Design Document (SDD)    |
-| **Version**              | 1.7                               |
+| **Version**              | 1.8                               |
 | **Status**               | Draft for implementation          |
 | **Author**               | Justinian                         |
-| **Last updated**         | 24 September 2026                 |
+| **Last updated**         | 20 October 2026                   |
 | **Language conventions** | Standard Southern British English |
 
 ### Revision history
@@ -30,6 +30,7 @@
 | 1.5     | 23 September 2026 | Justinian | Amended §7.2.2 (Installation Manager dialogue) to match §9.4 and the implementation: the first sentence now describes the actual three-column, headered `DataGrid` (`Name`, `Path`, `Status`) instead of the old two-unheadered-column description, and the Sort-order bullet cites `InstallationGridRowModel` and the ` · default` suffix instead of the retired `InstallationRow` / `IComparer<InstallationRow>`. Rewrote §7.2.7 (retitled `Picker (Open Game Installation) — pointed boot`) to match §9.6 and the implementation: the picker is the `OpenGameInstallation` main-window state, not a modal dialogue, and selecting a row + `Open` (or double-clicking) dispatches `BootCommand` with the chosen installation's id as a *pointed boot* that re-enters the pipeline at `Verify`, bypasses the startup preference, and never writes `DefaultInstallationId`, falling back to normal resolution if the id no longer exists. A same-revision follow-up pass then finished aligning the SDD with the picker's main-window-state nature: §7.2.7's closing sentence now states plainly that no unsaved-changes guard is needed on the picker, since it only appears when no installation is active; the §7.3.2 pending-changes bullet now attributes the `IPendingChangesGuard` path to switching installations from the Installation Manager instead of the picker; the §7.2.2 subscribers list now reads "the picker's grid (the `OpenGameInstallation` state)" instead of "the picker dialogue's grid"; and the §9.2 Dialogues folder list no longer lists `Picker` (already covered by the `OpenGameInstallationView.axaml` entry under States/). All amendments in this revision were drafted by Claude during the installation-grid-control implementation run. |
 | 1.6     | 24 September 2026 | Justinian | §7.2.1: with no installations registered, the Add Installation dialogue pre-fills the Name input with `Main` (an editable value, previously described as a placeholder); the Default checkbox stays ticked and read-only; the "Placeholder rules" heading is renamed "Default-name rules" to match. §7.2.3 / §9.5: Edit Installation shares the Add form rather than duplicating it — the folder is read-only with no `Browse…` button (relocation is Fix's job, §7.2.5), and the Default checkbox is ticked and read-only when the installation is already the default. Drafted by Claude during the installation-management-dialogues slice. |
 | 1.7     | 24 September 2026 | Justinian | INI Config core slice (spec `2026-09-24-ini-config-core-design.md`). §5.3 replaces the typed `ZooIniModel` with a key registry (`IniKeyId`, `IniKeyRole`, `IniKeySpec`, `ZooIniDefaults`); raw values are stored as found and the editor falls back to defaults at display time. Drift is tiered (§7.1.3, §7.7, glossary): game-managed and unrecognised changes are adopted silently; only user-setting changes archive `Current`. Save (§7.3.2, §8.2) re-reads `zoo.ini` and merges edits onto the on-disk text after reconciling external drift in the same transaction. §8.1 records Latin-1 byte fidelity, per-line line endings, and no inline-comment parsing. §4.2 swaps `IIniReader` / `IIniWriter` for `IIniFileStore` / `IIniSnapshotRepository`. §9.2.1–§9.2.2 use one generic section view pair under `IniConfig/`. §7.4 / §7.5 defer to §9.3.1 and describe the interim placeholder. §9.3.2 sources help from the Desktop catalogue. §6.3 notes the `AddSnapshotIndexes` migration and defers `InstallationMetadata`. §11 adds `Desktop.Tests.Unit`; §14.5 adds the VirtualStore and edits-while-running risks. A same-revision follow-up pass then closed out the final review's documentation gaps: the retired `IniPresent` / `NoIniPresent` / `CorruptedIni` state names are gone from §3.1, §7.1, §7.4–§7.6, and §13, replaced by the editor / placeholder wording §9.3.1 already used; §9.3.1 and §9.3.2 pick up the reload-while-dirty rule, the corrected could-not-be-read trigger, the local-time footer, and a de-nested parenthetical; §9.2.2's Dialogues line names the Save Changes prompt and the error message dialogue; §7.3's integer row cites its actual control width; §7.3.2 and §7.10 gain the close-after-launch pending-edit exception, the `Drifted` guard, a single unsaved-changes prompt at a time, and a second Save that awaits the in-flight one instead of duplicating it; §7.2.2 documents the Installation Manager's pointed-boot reboot and its own guard; §7.7/§8.2 cover a no-effective-edits Save and the two post-reconcile/post-write store-failure rules; §4.2 lists `IIniSnapshotTransaction`; and §11 corrects its test-project count and relocates two misplaced `Desktop.Tests.Unit` bullets. Drafted by Claude during the INI Config core final review. A second same-revision pass adds §13.5, the deferred work register: every open follow-up from PRs #4–#6, the review findings parked as minor, the code `TODO`s and the maintainer's notes, each under a stable `DW` id with its origin, so none of them lives only in a pull request. §14.5 row 9 then records the confirmed read-only-installation-folder risk: the MVP will detect it and recommend a reinstall (DW-12), and V2.0.0 will try a VirtualStore copy (DW-36). |
+| 1.8     | 20 October 2026 | Justinian | The Ref build has been removed from the repository (commit `8e0532b`). §1.5 now records the removal and reads later "Ref build" mentions as design rationale; §4.2 drops the `References/` folder and the separate Ref solution file, and its tree gains the existing `Desktop.Tests.Unit` project; §4.7 and the glossary are reworded to match. |
 
   
 ---  
@@ -88,11 +89,11 @@ the rationale behind the principal decisions without prior context.
 
 ### 1.5 Relationship to the prior reference build
 
-A working, single-project prototype existed at the start of this rewrite. That build (the *Ref* assembly) has been retained in the repository under  
-`References/Erdmier.ZooTycoonLauncherRef/` for read-only inspiration; nothing in the new launcher is copy-pasted from it. The Ref build informed the design where its choices
-proved  
-sound (the line-preserving INI tokeniser, the `IFileSystem`/`IRegistryReader` abstractions, the `ZooIniDefaults` registry pattern, the `ViewLocator` convention); each is  
-reimplemented from scratch against the new layered architecture and is referenced inline where applicable.
+A working, single-project prototype existed at the start of this rewrite. That build (the *Ref* assembly, `Erdmier.ZooTycoonLauncherRef`) was kept in the repository under
+`References/` as read-only inspiration while the early slices were built, and was removed on 20 October 2026 (commit `8e0532b`; its parent still holds the files). Nothing in
+the new launcher is copy-pasted from it. The Ref build informed the design where its choices proved sound (the line-preserving INI tokeniser, the `IFileSystem` /
+`IRegistryReader` abstractions, the `ZooIniDefaults` registry pattern, the `ViewLocator` convention); each was reimplemented from scratch against the new layered architecture.
+Later sections still name the Ref build where it explains a design decision; those mentions are rationale, not pointers to files in the repository.
   
 ---  
 
@@ -217,18 +218,13 @@ Erdmier.ZooTycoonLauncher.slnx
 │   ├── Erdmier.ZooTycoonLauncher.Domain.Tests.Unit/  
 │   ├── Erdmier.ZooTycoonLauncher.Application.Tests.Unit/  
 │   ├── Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration/  
+│   ├── Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit/  
 │   └── Erdmier.ZooTycoonLauncher.Tests.Architecture/  
-└── References/  
-    └── Erdmier.ZooTycoonLauncherRef/             # Renamed legacy single-project assembly, retained for reference  
 ```
 
-A separate `Erdmier.ZooTycoonLauncherRef.slnx` opens the Ref assembly in isolation for visual lookup; the main `Erdmier.ZooTycoonLauncher.slnx` keeps the Ref project included so
-a  
-single solution opens both worlds.
-
-The root namespace for every new project is `Erdmier.ZooTycoonLauncher`. Production projects live under `Source/`; test projects under `Tests/`; the Ref assembly under  
-`References/`. Test projects follow `<Project/Assembly Name>.Tests.<Category>` where the category is `Unit`, `Integration`, `Architecture` (e.g.
-`Erdmier.ZooTycoonLauncher.Domain.Tests.Unit`); solution-spanning architecture tests attach to the root name (`Erdmier.ZooTycoonLauncher.Tests.Architecture`).
+The root namespace for every project is `Erdmier.ZooTycoonLauncher`. Production projects live under `Source/`; test projects under `Tests/`. Test projects follow
+`<Project/Assembly Name>.Tests.<Category>` where the category is `Unit`, `Integration`, `Architecture` (e.g. `Erdmier.ZooTycoonLauncher.Domain.Tests.Unit`); solution-spanning
+architecture tests attach to the root name (`Erdmier.ZooTycoonLauncher.Tests.Architecture`).
 
 Dependency direction: `Desktop → Application → Domain`, and `Infrastructure → Application/Domain`, with `Desktop` composing `Infrastructure` only at the composition root. The  
 Application layer defines interfaces (e.g. `IInstallationRepository`, `IIniSnapshotRepository`, `IIniSnapshotTransaction`, `ILauncherSettingsRepository`, `IInstallationVerifier`,  
@@ -331,9 +327,8 @@ public interface IAppStorageLocations
 }  
 ```  
 
-There is no legacy migration: greenfield rewrite, no users on the prior `launcher.config` JSON file to bring forward. The Ref assembly continues to read/write its old config
-under  
-`%APPDATA%\ZooTycoonLauncher\launcher.config` and the two coexist without crosstalk.
+There is no legacy migration: greenfield rewrite, no users on the prior `launcher.config` JSON file to bring forward. The Ref build (§1.5) kept its config at
+`%APPDATA%\ZooTycoonLauncher\launcher.config`; the new launcher neither reads nor deletes that file.
   
 ---  
 
@@ -1820,7 +1815,7 @@ an Avalonia-12 fork is not planned.
 | **Scenarios (in-game)**             | The campaign challenges shipped with ZT1, configured via the `[scenario]` section using two-letter keys.                                                      |  
 | **Display mode / screen mode**      | A `(width, height, colour depth, refresh rate, orientation)` tuple Windows reports via `EnumDisplaySettingsEx`.                                               |  
 | **ZT1-compatible mode**             | A display mode that ZT1 can actually drive — 16 bpp and within bounded resolution / refresh-rate constraints calibrated during Phase 0.                       |  
-| **Ref assembly**                    | The renamed legacy single-project launcher (`Erdmier.ZooTycoonLauncherRef`), retained under `References/` for read-only inspiration.                          |  
+| **Ref assembly**                    | The legacy single-project prototype (`Erdmier.ZooTycoonLauncherRef`), used as read-only inspiration and removed from the repository in `8e0532b` (§1.5).      |  
 | **MVP**                             | Minimum Viable Product — the Phase 1 release described in full here.                                                                                          |  
 
   

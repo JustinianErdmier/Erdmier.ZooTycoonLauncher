@@ -184,6 +184,30 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
     }
 
     [ Fact ]
+    public async Task ListHistorical_EqualTimestamps_NewestArchiveFirst()
+    {
+        await ImportAsync();
+
+        // A Save after an external edit archives a Manual snapshot and then a LauncherGui one, both stamped with the same instant.
+        foreach (IniSnapshotTrigger trigger in new[] { IniSnapshotTrigger.Manual, IniSnapshotTrigger.LauncherGui })
+        {
+            await using IIniSnapshotTransaction archiving = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+            await archiving.ArchiveCurrentAsync(trigger, Captured, CancellationToken.None);
+            await archiving.CommitAsync(CancellationToken.None);
+
+            // Version 7 ids are only ordered across milliseconds.
+            await Task.Delay(millisecondsDelay: 5);
+        }
+
+        await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        IReadOnlyList<IniSnapshot> historical = await transaction.ListHistoricalAsync(CancellationToken.None);
+
+        historical.Select(snapshot => snapshot.Trigger).ShouldBe([IniSnapshotTrigger.LauncherGui, IniSnapshotTrigger.Manual]);
+    }
+
+    [ Fact ]
     public async Task GetOriginal_ReturnsTheFirstImportWithValues()
     {
         await ImportAsync();

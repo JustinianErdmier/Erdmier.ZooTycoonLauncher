@@ -31,6 +31,8 @@ internal sealed class IniSnapshotTransaction : IIniSnapshotTransaction
                          .Include(snapshot => snapshot.Values)
                          .Where(snapshot => snapshot.Kind == IniSnapshotKind.Historical)
                          .OrderByDescending(snapshot => snapshot.CapturedUtc)
+                         // Snapshots archived at the same instant (a Manual and a LauncherGui archive in one Save) fall back to their time-ordered version 7 ids.
+                         .ThenByDescending(snapshot => snapshot.Id)
                          .ToListAsync(cancellationToken);
 
     /// <inheritdoc />

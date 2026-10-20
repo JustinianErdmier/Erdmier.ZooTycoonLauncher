@@ -28,7 +28,8 @@ public sealed class RestorePreviousIniDialogViewModelTests
             Entry(NewestUtc.AddDays(-2), IniSnapshotTrigger.OriginalImport, [ ])
         ]);
 
-    private RestorePreviousIniDialogViewModel CreateViewModel() => new(_mediator, _dialogs);
+    private RestorePreviousIniDialogViewModel CreateViewModel(ILogger<RestorePreviousIniDialogViewModel>? logger = null)
+        => new(_mediator, _dialogs, logger ?? NullLogger<RestorePreviousIniDialogViewModel>.Instance);
 
     private async Task<RestorePreviousIniDialogViewModel> LoadedAsync()
     {
@@ -281,6 +282,86 @@ public sealed class RestorePreviousIniDialogViewModelTests
         viewModel.HasError.ShouldBeTrue();
         viewModel.Rows.ShouldBeEmpty();
         viewModel.RestoreCommand.CanExecute(parameter: null).ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task Initialise_QueryThrows_LogsError()
+    {
+        RecordingLogger<RestorePreviousIniDialogViewModel> logger = new();
+
+        _mediator.Send(Arg.Any<GetIniHistoryQuery>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniHistoryResult>>>(_ => throw new IOException("boom"));
+
+        await CreateViewModel(logger).InitialiseAsync(InstallationId);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Error);
+        entry.Exception.ShouldBeOfType<IOException>();
+    }
+
+    [ Fact ]
+    public async Task Initialise_QueryFails_LogsWarning()
+    {
+        RecordingLogger<RestorePreviousIniDialogViewModel> logger = new();
+
+        _mediator.Send(Arg.Any<GetIniHistoryQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniHistoryResult>>(Error.Unexpected(code: "Ini.StoreFailed", description: "x")));
+
+        await CreateViewModel(logger).InitialiseAsync(InstallationId);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Warning);
+        entry.Exception.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public async Task Restore_Throws_LogsError()
+    {
+        RecordingLogger<RestorePreviousIniDialogViewModel> logger = new();
+
+        _mediator.Send(Arg.Any<GetIniHistoryQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniHistoryResult>>(History()));
+
+        RestorePreviousIniDialogViewModel viewModel = CreateViewModel(logger);
+
+        await viewModel.InitialiseAsync(InstallationId);
+
+        _dialogs.ShowConfirmationAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
+        _mediator.Send(Arg.Any<RestoreIniSnapshotCommand>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniConfigResult>>>(_ => throw new IOException("boom"));
+
+        await viewModel.RestoreCommand.ExecuteAsync(parameter: null);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Error);
+        entry.Exception.ShouldBeOfType<IOException>();
+    }
+
+    [ Fact ]
+    public async Task Restore_ReturnsError_LogsWarning()
+    {
+        RecordingLogger<RestorePreviousIniDialogViewModel> logger = new();
+
+        _mediator.Send(Arg.Any<GetIniHistoryQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniHistoryResult>>(History()));
+
+        RestorePreviousIniDialogViewModel viewModel = CreateViewModel(logger);
+
+        await viewModel.InitialiseAsync(InstallationId);
+
+        _dialogs.ShowConfirmationAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
+        _mediator.Send(Arg.Any<RestoreIniSnapshotCommand>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniConfigResult>>(Error.Unexpected(code: "Ini.StoreFailed", description: "x")));
+
+        await viewModel.RestoreCommand.ExecuteAsync(parameter: null);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Warning);
+        entry.Exception.ShouldBeNull();
     }
 
     [ Fact ]

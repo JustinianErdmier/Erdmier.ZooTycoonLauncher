@@ -12,6 +12,8 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
 
     private readonly IDialogService _dialogs;
 
+    private readonly ILogger<RestorePreviousIniDialogViewModel> _logger;
+
     private readonly IMediator _mediator;
 
     private Guid _installationId;
@@ -19,15 +21,17 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="dialogs">The dialogue service, used for the confirmation and error prompts.</param>
-    public RestorePreviousIniDialogViewModel(IMediator mediator, IDialogService dialogs)
+    /// <param name="logger">Logger for history-load and restore failures.</param>
+    public RestorePreviousIniDialogViewModel(IMediator mediator, IDialogService dialogs, ILogger<RestorePreviousIniDialogViewModel> logger)
     {
         _mediator = mediator;
         _dialogs  = dialogs;
+        _logger   = logger;
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public RestorePreviousIniDialogViewModel()
-        : this(null!, null!)
+        : this(null!, null!, NullLogger<RestorePreviousIniDialogViewModel>.Instance)
     { }
 
     /// <summary>Whether a user-initiated close (the title-bar button) is allowed: <see langword="false" /> while a restore is in flight. It is already <see langword="true" /> by the time <see cref="CloseRequested" /> is raised.</summary>
@@ -103,6 +107,8 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            _logger.LogError(ex, message: "Loading the INI history for installation {InstallationId} threw", installationId);
+
             ErrorMessage = $"Restore Previous INI could not load the history of zoo.ini: {ex.Message}";
             Rows         = [ ];
 
@@ -111,6 +117,8 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
 
         if (history.IsError)
         {
+            _logger.LogWarning(message: "Loading the INI history for installation {InstallationId} failed: {Error}", installationId, history.FirstError.Description);
+
             ErrorMessage = history.FirstError.Description;
             Rows         = [ ];
 
@@ -157,6 +165,8 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
 
             if (restored.IsError)
             {
+                _logger.LogWarning(message: "Restoring zoo.ini for installation {InstallationId} failed: {Error}", _installationId, restored.FirstError.Description);
+
                 await _dialogs.ShowErrorAsync(title: "Cannot Restore zoo.ini", restored.FirstError.Description);
 
                 return;
@@ -171,6 +181,8 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            _logger.LogError(ex, message: "Restoring zoo.ini for installation {InstallationId} threw", _installationId);
+
             await _dialogs.ShowErrorAsync(title: "Cannot Restore zoo.ini", $"zoo.ini could not be restored: {ex.Message}");
         }
         finally

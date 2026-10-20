@@ -6,12 +6,14 @@ public sealed class IniEditorViewModelTests
 
     private readonly IMediator _mediator = Substitute.For<IMediator>();
 
-    private IniEditorViewModel CreateEditor()
-        => new(Guid.CreateVersion7(), _mediator, _dialogs, IniEditorTestData.Result(("user", "screenwidth", "800"), ("user", "fullscreen", "1")));
+    private IniEditorViewModel CreateEditor(ILogger<IniEditorViewModel>? logger = null)
+        => new(Guid.CreateVersion7(), _mediator, _dialogs, IniEditorTestData.Result(("user", "screenwidth", "800"), ("user", "fullscreen", "1")),
+               logger ?? NullLogger<IniEditorViewModel>.Instance);
 
     private IniEditorViewModel CreateEditorWithHistory(int historicalCount = 2)
         => new(Guid.CreateVersion7(), _mediator, _dialogs,
-               IniEditorTestData.ResultWithHistory(historicalCount, ("user", "screenwidth", "800"), ("user", "fullscreen", "1")));
+               IniEditorTestData.ResultWithHistory(historicalCount, ("user", "screenwidth", "800"), ("user", "fullscreen", "1")),
+               NullLogger<IniEditorViewModel>.Instance);
 
     [ Fact ]
     public void RestorePrevious_NoHistory_IsDisabled() => CreateEditorWithHistory(historicalCount: 0).RestorePreviousCommand.CanExecute(parameter: null).ShouldBeFalse();
@@ -278,6 +280,80 @@ public sealed class IniEditorViewModelTests
     }
 
     [ Fact ]
+    public async Task Save_Throws_LogsError()
+    {
+        RecordingLogger<IniEditorViewModel> logger = new();
+        IniEditorViewModel                  editor = CreateEditor(logger);
+
+        _mediator.Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniConfigResult>>>(_ => throw new InvalidOperationException(message: "database is locked"));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.TrySaveAsync(CancellationToken.None);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Error);
+        entry.Exception.ShouldBeOfType<InvalidOperationException>();
+    }
+
+    [ Fact ]
+    public async Task Save_ReturnsError_LogsWarning()
+    {
+        RecordingLogger<IniEditorViewModel> logger = new();
+        IniEditorViewModel                  editor = CreateEditor(logger);
+
+        IniEditorTestData.ReturnsForSave(_mediator, Error.Validation(code: "Edits", description: "bad value"));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.TrySaveAsync(CancellationToken.None);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Warning);
+        entry.Exception.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public async Task Reload_Fails_LogsWarning()
+    {
+        RecordingLogger<IniEditorViewModel> logger = new();
+        IniEditorViewModel                  editor = CreateEditor(logger);
+
+        IniEditorTestData.ReturnsForGet(_mediator, Error.Unexpected(code: "Ini.StoreFailed", description: "x"));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.ResetCommand.ExecuteAsync(parameter: null);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Warning);
+        entry.Exception.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public async Task Reload_Throws_LogsError()
+    {
+        RecordingLogger<IniEditorViewModel> logger = new();
+        IniEditorViewModel                  editor = CreateEditor(logger);
+
+        _mediator.Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniConfigResult>>>(_ => throw new IOException("boom"));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.ResetCommand.ExecuteAsync(parameter: null);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Error);
+        entry.Exception.ShouldBeOfType<IOException>();
+    }
+
+    [ Fact ]
     public async Task TrySaveAsync_WhileASaveIsInFlight_AwaitsItWithoutSendingASecondCommand()
     {
         IniEditorViewModel editor = CreateEditor();
@@ -342,7 +418,8 @@ public sealed class IniEditorViewModelTests
     public void RestoreDefaults_SetsEveryFieldToItsDefault()
     {
         IniEditorViewModel editor = new(Guid.CreateVersion7(), _mediator, _dialogs,
-                                        IniEditorTestData.Result(("user", "screenwidth", "1024"), ("language", "lang", "12"), ("language", "sublang", "1")));
+                                        IniEditorTestData.Result(("user", "screenwidth", "1024"), ("language", "lang", "12"), ("language", "sublang", "1")),
+                                        NullLogger<IniEditorViewModel>.Instance);
 
         editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeTrue();
 

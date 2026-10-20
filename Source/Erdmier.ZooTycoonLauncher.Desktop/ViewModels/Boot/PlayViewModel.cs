@@ -29,16 +29,20 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
     /// <param name="dialogs">Chrome service for opening modeless dialogues.</param>
     /// <param name="mediator">The Mediator dispatcher (passed to the General tab).</param>
     /// <param name="logger">Logger for unexpected failures whilst activating the INI Config tab and whilst handling a launch outcome.</param>
+    /// <param name="iniTabLogger">Logger passed to the INI Config tab.</param>
+    /// <param name="iniEditorLogger">Logger passed on to the INI editor the tab creates.</param>
     /// <param name="iniErrorMessage">The boot's INI synchronisation error, or <see langword="null" />; shown on both tabs.</param>
-    public PlayViewModel(InstallationSummary           installation,
-                         bool                          canPlay,
-                         Func<CancellationToken, Task> rebootAsync,
-                         Func<CancellationToken, Task> openInstallationManagerAsync,
-                         IApplicationLifecycle         lifecycle,
-                         IDialogService                dialogs,
-                         IMediator                     mediator,
-                         ILogger<PlayViewModel>        logger,
-                         string?                       iniErrorMessage = null)
+    public PlayViewModel(InstallationSummary            installation,
+                         bool                           canPlay,
+                         Func<CancellationToken, Task>  rebootAsync,
+                         Func<CancellationToken, Task>  openInstallationManagerAsync,
+                         IApplicationLifecycle          lifecycle,
+                         IDialogService                 dialogs,
+                         IMediator                      mediator,
+                         ILogger<PlayViewModel>         logger,
+                         ILogger<IniConfigTabViewModel> iniTabLogger,
+                         ILogger<IniEditorViewModel>    iniEditorLogger,
+                         string?                        iniErrorMessage = null)
     {
         _rebootAsync = rebootAsync;
         _lifecycle   = lifecycle;
@@ -49,7 +53,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
         InstallationId = installation.Id;
 
         GeneralTab   = new GeneralTabViewModel(installation, canPlay, mediator, openInstallationManagerAsync, iniErrorMessage);
-        IniConfigTab = new IniConfigTabViewModel(installation, iniErrorMessage, mediator, dialogs);
+        IniConfigTab = new IniConfigTabViewModel(installation, iniErrorMessage, mediator, dialogs, iniTabLogger, iniEditorLogger);
 
         GeneralTab.LaunchOutcomeRaised += OnLaunchOutcomeRaised;
         IniConfigTab.PropertyChanged   += OnIniConfigTabPropertyChanged;

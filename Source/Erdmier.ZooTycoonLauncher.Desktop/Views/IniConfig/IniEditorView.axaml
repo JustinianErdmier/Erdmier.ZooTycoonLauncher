@@ -50,8 +50,8 @@
             <StackPanel DockPanel.Dock="Right"
                         Orientation="Horizontal"
                         Spacing="6">
-                <Button Content="Undo"
-                        IsEnabled="False"
+                <Button Command="{Binding RestorePreviousCommand}"
+                        Content="Restore previous…"
                         MinWidth="75" />
 
                 <Button Command="{Binding RestoreDefaultsCommand}"

@@ -9,6 +9,115 @@ public sealed class IniEditorViewModelTests
     private IniEditorViewModel CreateEditor()
         => new(Guid.CreateVersion7(), _mediator, _dialogs, IniEditorTestData.Result(("user", "screenwidth", "800"), ("user", "fullscreen", "1")));
 
+    private IniEditorViewModel CreateEditorWithHistory(int historicalCount = 2)
+        => new(Guid.CreateVersion7(), _mediator, _dialogs,
+               IniEditorTestData.ResultWithHistory(historicalCount, ("user", "screenwidth", "800"), ("user", "fullscreen", "1")));
+
+    [ Fact ]
+    public void RestorePrevious_NoHistory_IsDisabled() => CreateEditorWithHistory(historicalCount: 0).RestorePreviousCommand.CanExecute(parameter: null).ShouldBeFalse();
+
+    [ Fact ]
+    public void RestorePrevious_WithHistory_IsEnabled() => CreateEditorWithHistory().RestorePreviousCommand.CanExecute(parameter: null).ShouldBeTrue();
+
+    [ Fact ]
+    public async Task RestorePrevious_PendingEdits_Yes_SavesThenOpens()
+    {
+        IniEditorViewModel editor = CreateEditorWithHistory();
+
+        IniEditorTestData.ReturnsForSave(_mediator, IniEditorTestData.ResultWithHistory(historicalCount: 3, ("user", "screenwidth", "1024")));
+        _dialogs.ShowSaveChangesPromptAsync().Returns(SaveChangesChoice.Yes);
+        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>()).Returns(Task.FromResult<IniConfigResult?>(result: null));
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "1024")));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
+        await _dialogs.Received(requiredNumberOfCalls: 1).ShowRestorePreviousIniAsync(Arg.Any<Guid>());
+    }
+
+    [ Fact ]
+    public async Task RestorePrevious_PendingEdits_Yes_SaveFails_DoesNotOpen()
+    {
+        IniEditorViewModel editor = CreateEditorWithHistory();
+
+        IniEditorTestData.ReturnsForSave(_mediator, Error.Validation(code: "Edits", description: "bad"));
+        _dialogs.ShowSaveChangesPromptAsync().Returns(SaveChangesChoice.Yes);
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        await _dialogs.DidNotReceive().ShowRestorePreviousIniAsync(Arg.Any<Guid>());
+        editor.HasPendingChanges.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public async Task RestorePrevious_PendingEdits_No_DiscardsThenOpens()
+    {
+        IniEditorViewModel editor = CreateEditorWithHistory();
+        IniConfigResult    restored = IniEditorTestData.ResultWithHistory(historicalCount: 2, ("user", "screenwidth", "640"));
+
+        _dialogs.ShowSaveChangesPromptAsync().Returns(SaveChangesChoice.No);
+        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>()).Returns(Task.FromResult<IniConfigResult?>(restored));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        await _dialogs.Received(requiredNumberOfCalls: 1).ShowRestorePreviousIniAsync(Arg.Any<Guid>());
+        await _mediator.DidNotReceive().Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value.ShouldBe(expected: 640m);
+    }
+
+    [ Fact ]
+    public async Task RestorePrevious_PendingEdits_Cancel_KeepsEditsAndDoesNotOpen()
+    {
+        IniEditorViewModel editor = CreateEditorWithHistory();
+
+        _dialogs.ShowSaveChangesPromptAsync().Returns(SaveChangesChoice.Cancel);
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        await _dialogs.DidNotReceive().ShowRestorePreviousIniAsync(Arg.Any<Guid>());
+        editor.HasPendingChanges.ShouldBeTrue();
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value.ShouldBe(expected: 1024m);
+    }
+
+    [ Fact ]
+    public async Task RestorePrevious_Restored_LoadsTheReturnedResult()
+    {
+        IniEditorViewModel editor   = CreateEditorWithHistory();
+        IniConfigResult    restored = IniEditorTestData.ResultWithHistory(historicalCount: 5, ("user", "screenwidth", "640"));
+
+        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>()).Returns(Task.FromResult<IniConfigResult?>(restored));
+
+        await editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        await _dialogs.DidNotReceive().ShowSaveChangesPromptAsync();
+        await _mediator.DidNotReceive().Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>());
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value.ShouldBe(expected: 640m);
+        editor.HistoricalCount.ShouldBe(expected: 5);
+    }
+
+    [ Fact ]
+    public async Task RestorePrevious_Cancelled_ReloadsFromGetIniConfig()
+    {
+        IniEditorViewModel editor = CreateEditorWithHistory();
+
+        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>()).Returns(Task.FromResult<IniConfigResult?>(result: null));
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.ResultWithHistory(historicalCount: 4, ("user", "screenwidth", "640")));
+
+        await editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>());
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value.ShouldBe(expected: 640m);
+        editor.HistoricalCount.ShouldBe(expected: 4);
+    }
+
     [ Fact ]
     public void Constructor_BuildsTheSevenSectionsSelectsTheFirstAndLoadsValues()
     {

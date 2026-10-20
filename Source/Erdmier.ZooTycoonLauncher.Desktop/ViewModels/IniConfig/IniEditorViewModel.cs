@@ -61,11 +61,17 @@ public sealed partial class IniEditorViewModel : ViewModelBase
     [ NotifyCanExecuteChangedFor(nameof(SaveCommand)) ]
     [ NotifyCanExecuteChangedFor(nameof(ResetCommand)) ]
     [ NotifyCanExecuteChangedFor(nameof(RestoreDefaultsCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(RestorePreviousCommand)) ]
     public partial bool IsBusy { get; set; }
 
     /// <summary>The file's last-write time (UTC), shown localised in the footer.</summary>
     [ ObservableProperty ]
     public partial DateTime FileLastWriteUtc { get; set; }
+
+    /// <summary>How many historical snapshots the installation has; Restore previous is available only when this is above zero.</summary>
+    [ ObservableProperty ]
+    [ NotifyCanExecuteChangedFor(nameof(RestorePreviousCommand)) ]
+    public partial int HistoricalCount { get; set; }
 
     /// <summary>The hovered or focused row's help, or <see langword="null" />.</summary>
     [ ObservableProperty ]
@@ -97,6 +103,7 @@ public sealed partial class IniEditorViewModel : ViewModelBase
     public void Load(IniConfigResult result)
     {
         FileLastWriteUtc = result.FileLastWriteUtc;
+        HistoricalCount  = result.HistoricalCount;
 
         foreach (IniFieldViewModel field in AllFields)
         {
@@ -219,7 +226,10 @@ public sealed partial class IniEditorViewModel : ViewModelBase
     private Task SaveAsync(CancellationToken cancellationToken) => TrySaveAsync(cancellationToken);
 
     [ RelayCommand(CanExecute = nameof(CanSaveOrReset)) ]
-    private async Task ResetAsync(CancellationToken cancellationToken)
+    private Task ResetAsync(CancellationToken cancellationToken) => ReloadAsync(cancellationToken);
+
+    // Reloads the form from disk (Reset, and a cancelled Restore previous, which may have changed nothing but must not leave stale state).
+    private async Task ReloadAsync(CancellationToken cancellationToken)
     {
         if (_mediator is null)
         {
@@ -250,6 +260,46 @@ public sealed partial class IniEditorViewModel : ViewModelBase
             IsBusy = false;
         }
     }
+
+    // Opens the Restore Previous INI dialogue behind the standard unsaved-changes prompt, then reloads the editor from whatever the dialogue left on disk.
+    [ RelayCommand(CanExecute = nameof(CanRestorePrevious)) ]
+    private async Task RestorePreviousAsync(CancellationToken cancellationToken)
+    {
+        if (HasPendingChanges)
+        {
+            switch (await _dialogs.ShowSaveChangesPromptAsync())
+            {
+                case SaveChangesChoice.Yes:
+                    if (!await TrySaveAsync(cancellationToken))
+                    {
+                        return;
+                    }
+
+                    break;
+
+                case SaveChangesChoice.No:
+                    DiscardChanges();
+
+                    break;
+
+                default:
+                    return;
+            }
+        }
+
+        IniConfigResult? restored = await _dialogs.ShowRestorePreviousIniAsync(_installationId);
+
+        if (restored is not null)
+        {
+            Load(restored);
+
+            return;
+        }
+
+        await ReloadAsync(cancellationToken);
+    }
+
+    private bool CanRestorePrevious() => !IsBusy && _mediator is not null && HistoricalCount > 0;
 
     private bool CanSaveOrReset() => HasPendingChanges && !IsBusy && _mediator is not null;
 
@@ -307,6 +357,7 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         SaveCommand.NotifyCanExecuteChanged();
         ResetCommand.NotifyCanExecuteChanged();
         RestoreDefaultsCommand.NotifyCanExecuteChanged();
+        RestorePreviousCommand.NotifyCanExecuteChanged();
     }
 
     private void RaiseFooterChanged()

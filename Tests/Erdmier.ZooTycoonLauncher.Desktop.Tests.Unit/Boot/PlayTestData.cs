@@ -22,6 +22,7 @@ internal static class PlayTestData
                NullLogger<IniPlaceholderViewModel>.Instance,
                _ => Task.CompletedTask,
                iniErrorMessage,
+               writeAccess: InstallationWriteAccess.Unknown,
                initialTabIndex);
 
     // Opens the INI Config tab over a one-key file and edits that key, so the Play view holds an unsaved change.

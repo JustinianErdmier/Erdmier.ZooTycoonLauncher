@@ -3,5 +3,23 @@
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Tabs.IniConfigTabView"
              x:DataType="vm:IniConfigTabViewModel">
-    <ContentControl Content="{Binding Content}" />
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top"
+                    IsVisible="{Binding HasReadOnlyWarning}"
+                    Margin="0,0,0,6"
+                    Orientation="Horizontal"
+                    Spacing="6">
+            <Image Height="16"
+                   Source="/Assets/Win95Icons/warning32.gif"
+                   VerticalAlignment="Top"
+                   Width="16" />
+
+            <TextBlock Foreground="Maroon"
+                       MaxWidth="640"
+                       Text="{Binding ReadOnlyWarning}"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <ContentControl Content="{Binding Content}" />
+    </DockPanel>
 </UserControl>

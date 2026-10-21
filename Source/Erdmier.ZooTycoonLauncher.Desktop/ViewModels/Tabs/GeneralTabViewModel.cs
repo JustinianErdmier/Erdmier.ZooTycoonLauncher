@@ -117,6 +117,11 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     /// </summary>
     public bool IsMissingOnlyIni => HasExe && !HasIni;
 
+    /// <summary>The Cannot Play message shown when only <c>zoo.ini</c> is missing, pointing at the INI Config tab's recovery actions.</summary>
+    public string MissingIniMessage
+        => "zoo.ini is missing from this installation's directory. The game will not start without it. Use Fix to locate or recreate the file. "
+           + "Open the installation manager to try fixing the problem. Use the INI Config tab to create or locate one.";
+
     /// <summary>
     ///     <see langword="true" /> when the "Save or revert your INI changes to launch." hint should show: Cannot Play already hides the Launch button, so the hint would be
     ///     meaningless there.

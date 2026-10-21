@@ -6,7 +6,10 @@ public sealed class IniConfigTabViewModelTests
 
     private readonly IMediator _mediator = Substitute.For<IMediator>();
 
-    private IniConfigTabViewModel CreateTab(InstallationSummary installation, string? iniErrorMessage, ILogger<IniConfigTabViewModel>? logger = null)
+    private IniConfigTabViewModel CreateTab(InstallationSummary           installation,
+                                         string?                       iniErrorMessage,
+                                         ILogger<IniConfigTabViewModel>? logger      = null,
+                                         InstallationWriteAccess       writeAccess = InstallationWriteAccess.Unknown)
         => new(installation,
                iniErrorMessage,
                _mediator,
@@ -14,7 +17,38 @@ public sealed class IniConfigTabViewModelTests
                logger ?? NullLogger<IniConfigTabViewModel>.Instance,
                NullLogger<IniEditorViewModel>.Instance,
                NullLogger<IniPlaceholderViewModel>.Instance,
-               _ => Task.CompletedTask);
+               _ => Task.CompletedTask,
+               writeAccess);
+
+    [ Fact ]
+    public void ReadOnlyWarning_FolderReadOnly_ShowsTheFolderText()
+    {
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null, writeAccess: InstallationWriteAccess.FolderReadOnly);
+
+        tab.HasReadOnlyWarning.ShouldBeTrue();
+        tab.ReadOnlyWarning.ShouldBe(IniReadOnlyText.For(InstallationWriteAccess.FolderReadOnly));
+        tab.ReadOnlyWarning!.ShouldContain("folder is read-only");
+    }
+
+    [ Fact ]
+    public void ReadOnlyWarning_FileReadOnly_ShowsTheFileText()
+    {
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null, writeAccess: InstallationWriteAccess.FileReadOnly);
+
+        tab.HasReadOnlyWarning.ShouldBeTrue();
+        tab.ReadOnlyWarning!.ShouldContain("is marked read-only");
+    }
+
+    [ Theory ]
+    [ InlineData(InstallationWriteAccess.Writable) ]
+    [ InlineData(InstallationWriteAccess.Unknown) ]
+    public void ReadOnlyWarning_WritableOrUnknown_IsHidden(InstallationWriteAccess writeAccess)
+    {
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null, writeAccess: writeAccess);
+
+        tab.HasReadOnlyWarning.ShouldBeFalse();
+        tab.ReadOnlyWarning.ShouldBeNull();
+    }
 
     [ Fact ]
     public async Task NoIni_ShowsThePlaceholderAndNeverLoads()

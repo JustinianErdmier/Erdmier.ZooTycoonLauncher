@@ -35,6 +35,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
     /// <param name="iniPlaceholderLogger">Logger passed on to the No INI placeholder the tab may show.</param>
     /// <param name="reopenOnIniTabAsync">Delegate that re-boots this installation and reopens on the INI Config tab (after a successful Create / Locate).</param>
     /// <param name="iniErrorMessage">The boot's INI synchronisation error, or <see langword="null" />; shown on both tabs.</param>
+    /// <param name="writeAccess">The boot's write-access probe result, passed to the INI Config tab for its read-only warning.</param>
     /// <param name="initialTabIndex">The tab to select once the tabs are built (0 = General, <see cref="IniConfigTabIndex" /> = INI Config).</param>
     public PlayViewModel(InstallationSummary              installation,
                          bool                             canPlay,
@@ -49,6 +50,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
                          ILogger<IniPlaceholderViewModel> iniPlaceholderLogger,
                          Func<CancellationToken, Task>    reopenOnIniTabAsync,
                          string?                          iniErrorMessage = null,
+                         InstallationWriteAccess          writeAccess     = InstallationWriteAccess.Unknown,
                          int                              initialTabIndex = 0)
     {
         _rebootAsync = rebootAsync;
@@ -67,7 +69,8 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
                                                  iniTabLogger,
                                                  iniEditorLogger,
                                                  iniPlaceholderLogger,
-                                                 reopenOnIniTabAsync);
+                                                 reopenOnIniTabAsync,
+                                                 writeAccess);
 
         GeneralTab.LaunchOutcomeRaised += OnLaunchOutcomeRaised;
         IniConfigTab.PropertyChanged   += OnIniConfigTabPropertyChanged;

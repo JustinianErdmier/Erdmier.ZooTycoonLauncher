@@ -18,5 +18,11 @@
             <Setter Property="Background"
                     Value="{DynamicResource {x:Static commonControls:SystemColors.ControlBrushKey}}" />
         </Style>
+
+        <!-- A read-only NumericUpDown gets the same grey on its inner text box, whether or not the template forwards IsReadOnly to that box. -->
+        <Style Selector="NumericUpDown[IsReadOnly=True] /template/ TextBox#PART_TextBox /template/ ClassicBorderDecorator#Bd">
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static commonControls:SystemColors.ControlBrushKey}}" />
+        </Style>
     </Application.Styles>
 </Application>

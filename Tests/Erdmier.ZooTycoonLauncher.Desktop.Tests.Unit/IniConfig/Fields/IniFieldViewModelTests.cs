@@ -291,6 +291,49 @@ public sealed class IniFieldViewModelTests
     }
 
     [ Fact ]
+    public void LanguagePicker_UnlistedPair_ShowsBothCodesAndNoSelection()
+    {
+        (IniNumberFieldViewModel language, IniNumberFieldViewModel subLanguage, IniLanguageFieldViewModel picker) = LanguageRows();
+
+        language.Load(raw: "9");
+        subLanguage.Load(raw: "7");
+
+        language.IsReadOnly.ShouldBeTrue();
+        subLanguage.IsReadOnly.ShouldBeTrue();
+        language.Value.ShouldBe(expected: 9m);
+        subLanguage.Value.ShouldBe(expected: 7m);
+        picker.SelectedOption.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public void LanguagePicker_ChoosingAfterUnlistedPair_WritesBothReadOnlyRows()
+    {
+        (IniNumberFieldViewModel language, IniNumberFieldViewModel subLanguage, IniLanguageFieldViewModel picker) = LanguageRows();
+
+        language.Load(raw: "9");
+        subLanguage.Load(raw: "7");
+
+        picker.SelectedOption = IniEditorCatalogue.Languages.Single(option => option.Label == "German (Germany)");
+
+        language.Value.ShouldBe(expected: 7m);
+        subLanguage.Value.ShouldBe(expected: 1m);
+        language.IsDirty.ShouldBeTrue();
+        subLanguage.IsDirty.ShouldBeTrue();
+    }
+
+    private static (IniNumberFieldViewModel Language, IniNumberFieldViewModel SubLanguage, IniLanguageFieldViewModel Picker) LanguageRows()
+    {
+        IniNumberFieldViewModel language    = new(Descriptor(IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key));
+        IniNumberFieldViewModel subLanguage = new(Descriptor(IniEditorCatalogue.SubLanguageId.Section, IniEditorCatalogue.SubLanguageId.Key));
+
+        IniLanguageFieldViewModel picker = new(IniEditorCatalogue.Sections.Single(s => s.Section == IniEditorCatalogue.LanguageId.Section).Groups[0].Fields[0],
+                                               language,
+                                               subLanguage,
+                                               IniEditorCatalogue.Languages);
+
+        return (language, subLanguage, picker);
+    }
+    [ Fact ]
     public void SelectedOption_Set_RaisesChangeOnceAfterBothWrites()
     {
         IniNumberFieldViewModel language    = new(Descriptor(IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key));

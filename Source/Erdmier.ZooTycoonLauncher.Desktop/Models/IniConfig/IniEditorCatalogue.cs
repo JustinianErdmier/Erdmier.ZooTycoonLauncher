@@ -149,9 +149,9 @@ public static class IniEditorCatalogue
                 new(SubHeader: null,
                     [
                         new IniFieldDescriptor(Id: null, Label: "lang / sublang", IniControlKind.LanguagePicker, Hint: "Curated LANGID + SUBLANGID",
-                                               Help: "Game language. Choosing an entry sets both LANGID and SUBLANGID below; other combinations can be entered directly."),
-                        Number(LanguageId.Section, LanguageId.Key, hint: "Windows LANGID 0–65535", help: "Windows primary language identifier (LANGID)."),
-                        Number(SubLanguageId.Section, SubLanguageId.Key, hint: "Windows SUBLANGID 0–65535", help: "Windows sub-language identifier (SUBLANGID).")
+                                               Help: "Game language. Choosing an entry sets both LANGID and SUBLANGID below."),
+                        Number(LanguageId.Section, LanguageId.Key, hint: "Windows LANGID 0–65535", help: "Windows primary language identifier (LANGID). Set by the language picker above.", isReadOnly: true),
+                        Number(SubLanguageId.Section, SubLanguageId.Key, hint: "Windows SUBLANGID 0–65535", help: "Windows sub-language identifier (SUBLANGID). Set by the language picker above.", isReadOnly: true)
                     ])
             ]),
         new(Section: "Map",
@@ -184,7 +184,8 @@ public static class IniEditorCatalogue
             Options = options
         };
 
-    private static IniFieldDescriptor Number(string section, string key, string hint, string help) => new(new IniKeyId(section, key), key, IniControlKind.Number, hint, help);
+    private static IniFieldDescriptor Number(string section, string key, string hint, string help, bool isReadOnly = false)
+        => new(new IniKeyId(section, key), key, IniControlKind.Number, hint, help) { IsReadOnly = isReadOnly };
 
     private static IniFieldDescriptor Cash(string section, string key, string hint, string help)
         => new(new IniKeyId(section, key), key, IniControlKind.Number, hint, help) { IsCurrency = true };

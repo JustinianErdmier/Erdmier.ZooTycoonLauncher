@@ -5,11 +5,16 @@ public sealed partial class IniNumberFieldViewModel : IniKeyedFieldViewModel
 {
     private readonly bool _isCurrency;
 
+    private readonly bool _isReadOnly;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="descriptor">The row's presentation.</param>
     public IniNumberFieldViewModel(IniFieldDescriptor descriptor)
         : base(descriptor)
-        => _isCurrency = descriptor.IsCurrency;
+    {
+        _isCurrency = descriptor.IsCurrency;
+        _isReadOnly = descriptor.IsReadOnly;
+    }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public IniNumberFieldViewModel()
@@ -31,6 +36,9 @@ public sealed partial class IniNumberFieldViewModel : IniKeyedFieldViewModel
 
     /// <summary>The styles the box accepts when parsing typed text.</summary>
     public NumberStyles ParsingNumberStyle => _isCurrency ? IniCurrencyFormat.ParsingNumberStyle : NumberStyles.Integer;
+
+    /// <summary>Whether the box shows the number without letting the user edit it.</summary>
+    public bool IsReadOnly => _isReadOnly;
 
     /// <summary>The number shown; <see langword="null" /> when the box is empty.</summary>
     [ ObservableProperty ]

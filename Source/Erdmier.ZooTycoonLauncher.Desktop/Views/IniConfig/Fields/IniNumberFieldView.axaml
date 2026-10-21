@@ -6,10 +6,12 @@
     <NumericUpDown FormatString="{Binding FormatString}"
                    HorizontalAlignment="Left"
                    Increment="1"
+                   IsReadOnly="{Binding IsReadOnly}"
                    Maximum="{Binding Maximum}"
                    Minimum="{Binding Minimum}"
                    NumberFormat="{Binding NumberFormat}"
                    ParsingNumberStyle="{Binding ParsingNumberStyle}"
+                   ShowButtonSpinner="{Binding !IsReadOnly}"
                    Value="{Binding Value}"
                    Width="120" />
 </UserControl>

@@ -273,14 +273,14 @@ Add or tighten (spec §3.7), each as its own named test or assertion:
   dirty/saved state. Delete DW-17, DW-18, DW-27 from §13.5 and extend the revision 1.10 row to say so and to list this milestone's amendments.
 - Manual test plan: under `# Restore Previous INI`, add stub *10. Help on hover and focus* in the existing stub format.
 
-- [ ] **Step 1: Apply the edits; check wrap** —
+- [x] **Step 1: Apply the edits; check wrap** —
   `Get-Content <file> | Where-Object { $_.Length -gt 180 -and -not $_.StartsWith('|') }` returns nothing for each file.
-- [ ] **Step 2: Commit** — `docs(📝): bring the icon conventions and the SDD in line with milestone 9.1`
+- [x] **Step 2: Commit** — `docs(📝): bring the icon conventions and the SDD in line with milestone 9.1`
 
 ---
 
 ## Final verification
 
-- [ ] `dotnet clean Erdmier.ZooTycoonLauncher.slnx; dotnet build Erdmier.ZooTycoonLauncher.slnx` → 0 warnings, 0 errors.
-- [ ] `dotnet test Erdmier.ZooTycoonLauncher.slnx` → all pass.
+- [x] `dotnet clean Erdmier.ZooTycoonLauncher.slnx; dotnet build Erdmier.ZooTycoonLauncher.slnx` → 0 warnings, 0 errors.
+- [x] `dotnet test Erdmier.ZooTycoonLauncher.slnx` → all pass.
 - [ ] The dialogue polish and the hover/focus help are checked in the running app.

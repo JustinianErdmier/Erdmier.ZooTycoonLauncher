@@ -209,8 +209,8 @@ pipeline's write-failure catch: `UnauthorizedAccessException` → probe → `Rea
   - `IDialogService.PickFileAsync(string? startPath, string title)` → `Task<string?>` (Avalonia: `OpenFilePickerAsync`, single file, filters `INI files` `*.ini`
     then `All files` `*`, suggested start folder `startPath`; title `Locate zoo.ini`).
   - `IniPlaceholderViewModel.NoIni(Guid installationId, string installationPath, IMediator mediator, IDialogService dialogs,`
-    `Func<CancellationToken, Task> reopenOnIniTabAsync, ILogger logger)` replaces the parameterless `NoIni()`; it exposes `bool HasActions` (true only for this case), `bool IsBusy`, `CreateCommand`, `LocateCommand` (both disabled
-    while busy). `Loading()` / `Unreadable(…)` unchanged (`HasActions == false`).
+    `Func<CancellationToken, Task> reopenOnIniTabAsync, ILogger logger)` replaces the parameterless `NoIni()`; it exposes `bool HasActions` (true only for this case),
+    `bool IsBusy`, `CreateCommand`, `LocateCommand` (both disabled while busy). `Loading()` / `Unreadable(…)` unchanged (`HasActions == false`).
   - `PlayViewModel`: `public const int IniConfigTabIndex = 1;` and two new trailing constructor parameters, `Func<CancellationToken, Task> reopenOnIniTabAsync` and
     `int initialTabIndex = 0` (applied after the tabs are built). `MainWindowViewModel.RunBootAsync(Guid?, CancellationToken, int initialTabIndex = 0)` passes the
     index through `RouteResult`; the reopen delegate is `ct => RunBootAsync(id, ct, PlayViewModel.IniConfigTabIndex)`.
@@ -275,7 +275,7 @@ The strip sits above the tab's content (editor, No INI box or placeholder): `war
 wrapping, visible only when `HasReadOnlyWarning`. General tab, Cannot Play with only the INI missing: append C10's sentence to the existing message.
 
 - [x] **Step 1: Write the failing tests:** `ReadOnlyWarning_FolderReadOnly_ShowsTheFolderText`; `ReadOnlyWarning_FileReadOnly_ShowsTheFileText`;
-  `ReadOnlyWarning_WritableOrUnknown_IsHidden`; `GeneralTab_MissingOnlyIni_PointsAtTheIniTab` (message contains `Use the INI Config tab to create or locate one.`).
+  `ReadOnlyWarning_WritableOrUnknown_IsHidden`; `GeneralTab_MissingOnlyIni_PointsAtTheIniTab` (message contains `Use the INI Config tab to create or locate zoo.ini.`).
 - [x] **Step 2: Run** → fail.
 - [x] **Step 3: Implement.**
 - [x] **Step 4: Run** the whole Desktop project and the Architecture project → pass.

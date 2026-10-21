@@ -74,7 +74,7 @@ These go in the ledger as rulings when the plan runs; each is cheap to reverse.
   an existing file to copy in. Any earlier values stay in history."*, buttons `Create` and `Locate…` stacked on the right. Read-only strips:
   *"This installation's folder is read-only for your account, so changes to `zoo.ini` cannot be saved. Uninstalling and reinstalling Zoo Tycoon restores normal
   write access."* and *"`zoo.ini` is marked read-only, so changes cannot be saved. Clear Read-only in the file's Properties to fix it."*
-- **C10 — The General tab points at the fix.** Cannot Play's missing-INI-only message gains a sentence: *"Use the INI Config tab to create or locate one."*
+- **C10 — The General tab points at the fix.** Cannot Play's missing-INI-only message gains a sentence: *"Use the INI Config tab to create or locate zoo.ini."*
 
 ## 5. Behaviour
 

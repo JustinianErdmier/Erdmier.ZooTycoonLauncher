@@ -979,7 +979,8 @@ A two-column grid of checkboxes, one per scenario key:
 ### 7.4 INI Config tab — No INI Present state
 
 The tab is cleared and replaced with a single group box labelled **No INI Present**, explaining that `zoo.ini` is missing and is required to play. It offers two buttons,
-`Create zoo.ini from defaults` (the default) and `Locate existing zoo.ini…` (§9.3.1). Both are disabled while either runs, and both write through the same create-then-import step:
+`Create zoo.ini from defaults` (the default) and `Locate existing zoo.ini…` (§9.3.1). Both are disabled while either runs, and while the installation has no `zoo.exe`
+(as in the Fix dialogue, §7.2.5). Both write through the same create-then-import step:
 
 - **Create zoo.ini from defaults** → `CreateDefaultIniCommand`. Renders `ZooIniDefaults`' factory values with `ZooIniDefaultDocument` (every non-null default in registry
   order, CRLF line endings, no comments, no `[scenario]` section) and writes it with a create-only write.
@@ -998,8 +999,8 @@ The shared step:
 - **Failures.** On access denied the code re-probes; when that confirms a read-only folder or file the error is `Ini.ReadOnly`,
   carrying the read-only strip's explanation (§9.3.1). Otherwise, and for any other IO failure, it is `Ini.WriteFailed` with the OS message.
 
-On success, or on `Ini.AlreadyExists`, the launcher re-boots the open installation (a pointed boot, §7.2.7) and reopens on the INI Config tab with the editor showing. Any
-other failure appears in a `Cannot Create zoo.ini` / `Cannot Copy zoo.ini` dialogue and the box stays.
+On success, on `Ini.AlreadyExists`, or when the installation has vanished (a not-found error), the launcher re-boots the open installation (a pointed boot, §7.2.7) and
+reopens on the INI Config tab with the editor showing. Any other failure appears in a `Cannot Create zoo.ini` / `Cannot Copy zoo.ini` dialogue and the box stays.
 
 > **Not built.** A third action, **Copy From Another Installation** (a selector listing the other registered installations; it would copy the chosen installation's
 > `zoo.ini`), is deferred as DW-40.
@@ -1269,7 +1270,7 @@ The five states reflect the startup state machine (§7.1). The hi-fi prototype (
   confirmation. A footer line shows `Last played: <localised UTC>` or `Never`.
 - **Cannot Play** — same overall shape as Ready to Play. The Status group box headlines the failure with a per-sub-state message keyed off `(HasExe, HasIni)` — missing EXE,
   missing INI, or missing both — and swaps the `Launch Game` slot for an `Open Installation Manager…` default button (there is no longer a separate disabled Launch Game button
-  or duplicated Fix control). The missing-INI-only message ends "Use the INI Config tab to create or locate one." The Display and Your System group boxes stay **un-muted** —
+  or duplicated Fix control). The missing-INI-only message ends "Use the INI Config tab to create or locate zoo.ini." The Display and Your System group boxes stay **un-muted** —
   detection still ran — each carrying a state-specific footnote (e.g. "Display detection succeeded, but the game cannot launch until the EXE is restored"). The
   `Last played` footer line is still shown.
 - **No Game Installation Found** — a heading explaining the auto-locate scan came up empty, an `Add Installation` default button, and an `Auto-locate trail` group box listing
@@ -1384,13 +1385,14 @@ Restore defaults and Restore previous still update both rows.
 - **Loading** — a muted "Loading `zoo.ini`…" placeholder, shown until the first load completes.
 - **No INI present** — a single `INI status` group box with a warning icon, "No INI present" headline, an explanation, and two action buttons: `Create zoo.ini from defaults`  
   (default) and `Locate existing zoo.ini…` (ellipsis: it opens a picker). Shown when `HasIni = false`. The headline is **No INI present**; the body reads "This installation
-  has no `zoo.ini` on disk. Create a fresh one from the launcher's defaults, or locate an existing file to copy in." Both buttons are disabled while one runs (§7.4).
+  has no `zoo.ini` on disk. Create a fresh one from the launcher's defaults, or locate an existing file to copy in." Both buttons are disabled while one runs, and when the
+  installation has no `zoo.exe` (§7.4).
   The other placeholder cases carry no commands.
 - **`zoo.ini` could not be read** — a warning placeholder carrying the read- or snapshot-store-failure description (§7.5's MVP note). Retried on the next tab activation,
   unless the editor already holds pending edits — a failed reload then leaves the editor on screen (never dropping unsaved work) and reports the failure via an error
   dialogue instead of swapping in this placeholder.
 
-**Read-only strip.** Above the tab's content the tab shows a warning strip — a 16 px warning icon and maroon text — when the boot's write probe
+**Read-only strip.** Above its content the tab shows a warning strip — a 16 px warning icon and maroon text — when the boot's write probe
 (§7.1.2) reported `FolderReadOnly` or `FileReadOnly`; `Writable` and `Unknown` show nothing. The text is, respectively, "This installation's folder is read-only for your
 account, so changes to `zoo.ini` cannot be saved. Uninstalling and reinstalling Zoo Tycoon restores normal write access." and "`zoo.ini` is marked read-only, so changes cannot
 be saved. Clear Read-only in the file's Properties to fix it." Save stays enabled, because a detection can be wrong; when an INI write (Save,

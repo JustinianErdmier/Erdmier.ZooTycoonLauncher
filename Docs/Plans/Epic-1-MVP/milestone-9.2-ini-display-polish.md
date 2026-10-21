@@ -75,7 +75,7 @@ this plan is silent. Background: the [milestone-9.1 ledger](../../Ledgers/Epic-1
 - Produces: on `IniNumberFieldViewModel`, `string FormatString`, `NumberFormatInfo NumberFormat` and `NumberStyles ParsingNumberStyle` — the currency trio when the
   descriptor `IsCurrency`, otherwise `"0"`, `CultureInfo.CurrentCulture.NumberFormat` and `NumberStyles.Integer` (today's behaviour).
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `IniEditorCatalogueTests.CashRows_AreCurrency`: the descriptors whose `IsCurrency` is true are exactly `[UI]/MSStartingCash`, `MSCashIncrement`, `MSMinCash`,
     `MSMaxCash`; their hints are `$0–$10,000,000`, `$100–$1,000,000`, `$0–$10,000,000`, `$0–$10,000,000`.
   - `IniFieldViewModelTests.Number_Cash_FormatsAsDollars`: under `CultureInfo.CurrentCulture = de-DE` (restore it in `finally`), a cash row's
@@ -84,11 +84,11 @@ this plan is silent. Background: the [milestone-9.1 ledger](../../Ledgers/Epic-1
   - `IniFieldViewModelTests.Number_Cash_DecimalInputWritesTheTruncatedInteger`: load `MSStartingCash` with `5000`; parse `$1,000.75` with the row's style and
     format and assign it to `Value`; `TryGetEdit(out edit)` is true and `edit` is `1000`.
   - `IniFieldViewModelTests.Number_NonCash_KeepsThePlainFormat`: `UpdateRate`'s `FormatString` is `0` and `ParsingNumberStyle` is `NumberStyles.Integer`.
-- [ ] **Step 2: Run** `--filter "FullyQualifiedName~IniEditorCatalogueTests|FullyQualifiedName~IniFieldViewModelTests"` → the new tests fail to compile or fail.
-- [ ] **Step 3: Implement** the interfaces above. In the catalogue, add a `Cash(section, key, hint, help)` factory beside `Number` that sets `IsCurrency = true`, and
+- [x] **Step 2: Run** `--filter "FullyQualifiedName~IniEditorCatalogueTests|FullyQualifiedName~IniFieldViewModelTests"` → the new tests fail to compile or fail.
+- [x] **Step 3: Implement** the interfaces above. In the catalogue, add a `Cash(section, key, hint, help)` factory beside `Number` that sets `IsCurrency = true`, and
   use it for the four rows with the new hints. In `IniNumberFieldView.axaml`, bind `FormatString`, `NumberFormat` and `ParsingNumberStyle` to the view model.
-- [ ] **Step 4: Run** the same filter, then the whole Desktop test project → pass.
-- [ ] **Step 5: Commit** — `feat(✨): show the INI cash settings as dollars`
+- [x] **Step 4: Run** the same filter, then the whole Desktop test project → pass.
+- [x] **Step 5: Commit** — `feat(✨): show the INI cash settings as dollars`
 
 ---
 
@@ -108,17 +108,17 @@ this plan is silent. Background: the [milestone-9.1 ledger](../../Ledgers/Epic-1
 `"true"` / `"false"` from `TryParseBool` (**ignore `Inverted`**); `Number` with `IsCurrency` → `IniCurrencyFormat.Format` of the parsed integer; anything else, or a
 value that does not map, → `value` unchanged.
 
-- [ ] **Step 1: Write the failing tests** in `IniDisplayTextTests` (one `[ Theory ]` or several `[ Fact ]`s):
+- [x] **Step 1: Write the failing tests** in `IniDisplayTextTests` (one `[ Theory ]` or several `[ Fact ]`s):
   `[user]/fullscreen` `1` → `Fullscreen`, `0` → `Windowed`; `[advanced]/level` `2` → `2 – Balance`; `[UI]/helpType` ` 1` → `Standard`; `[UI]/playMovie` `1` →
   `true`, `0` → `false`, `True` → `true`; `[UI]/noMenuMusic` `1` → `true`; `[UI]/MSStartingCash` `10000` → `$10,000`; `[user]/screenwidth` `800` → `800`;
   `[UI]/menuMusic` `x.mp3` → `x.mp3`; `[user]/fullscreen` `7` → `7`; an unknown `[nope]/key` `abc` → `abc`.
   In `RestorePreviousIniDialogViewModelTests`, add `Initialise_DiffShowsEditorValues`: a diff row for `[user]/fullscreen` current `1`, snapshot `0` reads
   `CurrentText: "Fullscreen"`, `SnapshotText: "Windowed"`; the existing `(not set)` assertion stays.
-- [ ] **Step 2: Run** `--filter "FullyQualifiedName~IniDisplayTextTests|FullyQualifiedName~RestorePreviousIniDialogViewModelTests"` → fail.
-- [ ] **Step 3: Implement** `TryGetField` (a dictionary built once from `Sections`) and `IniDisplayText.Format`; in `ToDiffRow`, pass both values through
+- [x] **Step 2: Run** `--filter "FullyQualifiedName~IniDisplayTextTests|FullyQualifiedName~RestorePreviousIniDialogViewModelTests"` → fail.
+- [x] **Step 3: Implement** `TryGetField` (a dictionary built once from `Sections`) and `IniDisplayText.Format`; in `ToDiffRow`, pass both values through
   `IniDisplayText.Format(row.Id, …)`, keeping `NotSet` for a null `Current`.
-- [ ] **Step 4: Run** the same filter, then the whole Desktop test project → pass.
-- [ ] **Step 5: Commit** — `feat(✨): show Restore Previous INI diff values as the editor shows them`
+- [x] **Step 4: Run** the same filter, then the whole Desktop test project → pass.
+- [x] **Step 5: Commit** — `feat(✨): show Restore Previous INI diff values as the editor shows them`
 
 ---
 
@@ -135,18 +135,18 @@ value that does not map, → `value` unchanged.
 New help copy: the picker — `Game language. Choosing an entry sets both LANGID and SUBLANGID below.`; `lang` — `Windows primary language identifier (LANGID). Set
 by the language picker above.`; `sublang` — `Windows sub-language identifier (SUBLANGID). Set by the language picker above.`
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `IniEditorCatalogueTests.OnlyTheLanguageCodes_AreReadOnly`: the descriptors with `IsReadOnly` are exactly `[language]/lang` and `[language]/sublang`.
   - `IniFieldViewModelTests.LanguagePicker_UnlistedPair_ShowsBothCodesAndNoSelection`: load `lang` `9`, `sublang` `7`; both rows are `IsReadOnly`, show `9` and `7`,
     and `SelectedOption` is null.
   - `IniFieldViewModelTests.LanguagePicker_ChoosingAfterUnlistedPair_WritesBothReadOnlyRows`: from that state, set `SelectedOption` to `German (Germany)`; the rows
     read `7` / `1` and both are dirty.
-- [ ] **Step 2: Run** `--filter "FullyQualifiedName~IniEditorCatalogueTests|FullyQualifiedName~IniFieldViewModelTests"` → fail.
-- [ ] **Step 3: Implement.** Set `IsReadOnly = true` on the two catalogue rows (and the new help copy); expose it on the number view model; in the view bind
+- [x] **Step 2: Run** `--filter "FullyQualifiedName~IniEditorCatalogueTests|FullyQualifiedName~IniFieldViewModelTests"` → fail.
+- [x] **Step 3: Implement.** Set `IsReadOnly = true` on the two catalogue rows (and the new help copy); expose it on the number view model; in the view bind
   `NumericUpDown.IsReadOnly` and set `ShowButtonSpinner` to its negation. Confirm in the running app (or by reading the Classic template) that the inner text box picks
   up `App.axaml`'s read-only grey; if it does not, extend that style's selector to cover a read-only `NumericUpDown`'s text box.
-- [ ] **Step 4: Run** the same filter, then the whole Desktop test project → pass.
-- [ ] **Step 5: Commit** — `feat(✨): make the INI language codes read-only behind the picker`
+- [x] **Step 4: Run** the same filter, then the whole Desktop test project → pass.
+- [x] **Step 5: Commit** — `feat(✨): make the INI language codes read-only behind the picker`
 
 ---
 
@@ -157,17 +157,17 @@ by the language picker above.`; `sublang` — `Windows sub-language identifier (
   `SaveChangesPromptView.axaml`
 - Modify: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`, `Docs/UserInterfaceDesign/conventions.md`
 
-- [ ] **Step 1: History headers.** In the history `DataGrid`, set `CanUserResizeColumns="False"` and, in its existing `DataGridColumnHeader` style, set
+- [x] **Step 1: History headers.** In the history `DataGrid`, set `CanUserResizeColumns="False"` and, in its existing `DataGridColumnHeader` style, set
   `IsHitTestVisible` to `False` so a click neither depresses nor resizes a header.
-- [ ] **Step 2: Titles.** `ConfirmationPromptView` and `ErrorMessageView`: `Title="{Binding Title, StringFormat='  {0}'}"`; `SaveChangesPromptView`:
+- [x] **Step 2: Titles.** `ConfirmationPromptView` and `ErrorMessageView`: `Title="{Binding Title, StringFormat='  {0}'}"`; `SaveChangesPromptView`:
   `Title="  Zoo Tycoon Launcher"`.
-- [ ] **Step 3: SDD.** §9.7 *Diff viewer*: add that cells show values as the editor does (decision 1, including the inverted-key rule) and that the snapshot grid's
+- [x] **Step 3: SDD.** §9.7 *Diff viewer*: add that cells show values as the editor does (decision 1, including the inverted-key rule) and that the snapshot grid's
   headers are inert; §9.3: add a sentence after the `[UI]` sub-header paragraph covering the cash display (decision 5) and the read-only language codes (decision 4).
   Bump to revision **1.11** (Document control *Version* and *Last updated* 21 October 2026, and a revision-history row summarising milestone 9.2).
-- [ ] **Step 4: conventions.md.** Under §4.1, after the icon table, add: every `ClassicWindow` title starts with two spaces so the text clears the title-bar icon
+- [x] **Step 4: conventions.md.** Under §4.1, after the icon table, add: every `ClassicWindow` title starts with two spaces so the text clears the title-bar icon
   (Classic.Avalonia leaves no gap), including titles bound from a view model.
-- [ ] **Step 5: Build and test.** `dotnet build Erdmier.ZooTycoonLauncher.slnx` (0 warnings), then every test project → pass. Markdown lines touched ≤ 180.
-- [ ] **Step 6: Commit** — `style(🎨): make the history headers inert and space the prompt titles; document milestone 9.2`
+- [x] **Step 5: Build and test.** `dotnet build Erdmier.ZooTycoonLauncher.slnx` (0 warnings), then every test project → pass. Markdown lines touched ≤ 180.
+- [x] **Step 6: Commit** — `style(🎨): make the history headers inert and space the prompt titles; document milestone 9.2`
 
 ---
 
@@ -175,10 +175,10 @@ by the language picker above.`; `sublang` — `Windows sub-language identifier (
 
 Run by the controller, which has desktop control; implementers do not.
 
-- [ ] **Step 1: Drive** the launcher against a sample installation: the `[UI]` cash rows read `$…` and accept `250000`; the `[language]` codes are grey with no
+- [x] **Step 1: Drive** the launcher against a sample installation: the `[UI]` cash rows read `$…` and accept `250000`; the `[language]` codes are grey with no
   spinner and change only through the picker; the Restore dialogue's diff reads `Fullscreen` / `true` / `$…`, its history headers ignore clicks; the Restore
   confirmation's title clears its icon. Close the launcher afterwards.
-- [ ] **Step 2: Refresh** `Docs/UserInterfaceDesign/ImplementationScreenshots/RestorePreviousIniDialogue.png` if the diff changed visibly.
+- [x] **Step 2: Refresh** `Docs/UserInterfaceDesign/ImplementationScreenshots/RestorePreviousIniDialogue.png` if the diff changed visibly.
 
 ## Verification
 

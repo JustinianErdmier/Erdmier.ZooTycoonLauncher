@@ -30,13 +30,22 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
     /// <param name="dialogs">Chrome service for the editor's error dialogue.</param>
     /// <param name="logger">Logger for load failures.</param>
     /// <param name="editorLogger">Logger handed to the editor this tab creates.</param>
-    public IniConfigTabViewModel(InstallationSummary            installation,
-                                 string?                        iniErrorMessage,
-                                 IMediator                      mediator,
-                                 IDialogService                 dialogs,
-                                 ILogger<IniConfigTabViewModel> logger,
-                                 ILogger<IniEditorViewModel>    editorLogger)
-        : this(installation.Id, installation.Validity.HasIni, dialogs, logger, editorLogger, InitialContent(installation.Validity.HasIni, iniErrorMessage))
+    /// <param name="placeholderLogger">Logger handed to the No INI placeholder's Create / Locate actions.</param>
+    /// <param name="reopenOnIniTabAsync">Re-boots the open installation and reopens on this tab (called after a successful Create / Locate).</param>
+    public IniConfigTabViewModel(InstallationSummary              installation,
+                                 string?                          iniErrorMessage,
+                                 IMediator                        mediator,
+                                 IDialogService                   dialogs,
+                                 ILogger<IniConfigTabViewModel>   logger,
+                                 ILogger<IniEditorViewModel>      editorLogger,
+                                 ILogger<IniPlaceholderViewModel> placeholderLogger,
+                                 Func<CancellationToken, Task>    reopenOnIniTabAsync)
+        : this(installation.Id,
+               installation.Validity.HasIni,
+               dialogs,
+               logger,
+               editorLogger,
+               InitialContent(installation, iniErrorMessage, mediator, dialogs, reopenOnIniTabAsync, placeholderLogger))
         => _mediator = mediator;
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
@@ -104,9 +113,14 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
     /// <summary>Discards the editor's edits (used by the pending-changes guard).</summary>
     public void DiscardChanges() => _editor?.DiscardChanges();
 
-    private static ViewModelBase InitialContent(bool hasIni, string? iniErrorMessage)
-        => !hasIni
-               ? IniPlaceholderViewModel.NoIni()
+    private static ViewModelBase InitialContent(InstallationSummary              installation,
+                                                string?                          iniErrorMessage,
+                                                IMediator                        mediator,
+                                                IDialogService                   dialogs,
+                                                Func<CancellationToken, Task>    reopenOnIniTabAsync,
+                                                ILogger<IniPlaceholderViewModel> placeholderLogger)
+        => !installation.Validity.HasIni
+               ? IniPlaceholderViewModel.NoIni(installation.Id, installation.Path, mediator, dialogs, reopenOnIniTabAsync, placeholderLogger)
                : iniErrorMessage is not null
                    ? IniPlaceholderViewModel.Unreadable(iniErrorMessage)
                    : IniPlaceholderViewModel.Loading();
@@ -191,6 +205,8 @@ file sealed class NoOpDialogService : IDialogService
     public Task<bool> ShowFixInstallationAsync(Guid installationId) => Task.FromResult(false);
 
     public Task<string?> PickFolderAsync(string? startPath) => Task.FromResult<string?>(result: null);
+
+    public Task<string?> PickFileAsync(string? startPath, string title) => Task.FromResult<string?>(result: null);
 
     public Task<SaveChangesChoice> ShowSaveChangesPromptAsync() => Task.FromResult(SaveChangesChoice.Cancel);
 

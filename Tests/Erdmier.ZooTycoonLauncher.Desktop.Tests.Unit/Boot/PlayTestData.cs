@@ -7,7 +7,8 @@ internal static class PlayTestData
                                        IApplicationLifecycle          lifecycle,
                                        bool                           canPlay         = true,
                                        string?                        iniErrorMessage = null,
-                                       Func<CancellationToken, Task>? rebootAsync     = null)
+                                       Func<CancellationToken, Task>? rebootAsync     = null,
+                                       int                            initialTabIndex = 0)
         => new(IniEditorTestData.Installation(),
                canPlay,
                rebootAsync ?? (_ => Task.CompletedTask),
@@ -18,7 +19,10 @@ internal static class PlayTestData
                NullLogger<PlayViewModel>.Instance,
                NullLogger<IniConfigTabViewModel>.Instance,
                NullLogger<IniEditorViewModel>.Instance,
-               iniErrorMessage);
+               NullLogger<IniPlaceholderViewModel>.Instance,
+               _ => Task.CompletedTask,
+               iniErrorMessage,
+               initialTabIndex);
 
     // Opens the INI Config tab over a one-key file and edits that key, so the Play view holds an unsaved change.
     public static async Task<PlayViewModel> CreateWithPendingEditAsync(IMediator mediator, IDialogService dialogs, IApplicationLifecycle lifecycle)

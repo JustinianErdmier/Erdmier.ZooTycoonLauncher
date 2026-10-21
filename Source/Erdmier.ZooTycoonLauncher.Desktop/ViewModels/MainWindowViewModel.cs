@@ -25,6 +25,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly ILogger<IniEditorViewModel> _iniEditorLogger;
 
+    private readonly ILogger<IniPlaceholderViewModel> _iniPlaceholderLogger;
+
     private readonly ILogger<IniConfigTabViewModel> _iniTabLogger;
 
     private readonly ILogger<PlayViewModel> _playLogger;
@@ -39,6 +41,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="playLogger">Logger passed to freshly-built <see cref="PlayViewModel" /> instances so their last-resort catches are recorded.</param>
     /// <param name="iniTabLogger">Logger passed on to the INI Config tab of each <see cref="PlayViewModel" />.</param>
     /// <param name="iniEditorLogger">Logger passed on to the INI editor of each <see cref="PlayViewModel" />.</param>
+    /// <param name="iniPlaceholderLogger">Logger passed on to the INI tab's No INI placeholder of each <see cref="PlayViewModel" />.</param>
     public MainWindowViewModel(IMediator                          mediator,
                                IApplicationLifecycle              lifecycle,
                                IDialogService                     dialogs,
@@ -47,7 +50,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                ILogger<InstallationGridViewModel> gridLogger,
                                ILogger<PlayViewModel>             playLogger,
                                ILogger<IniConfigTabViewModel>     iniTabLogger,
-                               ILogger<IniEditorViewModel>        iniEditorLogger)
+                               ILogger<IniEditorViewModel>        iniEditorLogger,
+                               ILogger<IniPlaceholderViewModel>   iniPlaceholderLogger)
     {
         _mediator   = mediator;
         _lifecycle  = lifecycle;
@@ -59,6 +63,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         _iniTabLogger    = iniTabLogger;
         _iniEditorLogger = iniEditorLogger;
+
+        _iniPlaceholderLogger = iniPlaceholderLogger;
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
@@ -250,7 +256,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         SetPickerStatusMessages();
     }
 
-    private async Task RunBootAsync(Guid? installationId, CancellationToken cancellationToken)
+    private async Task RunBootAsync(Guid? installationId, CancellationToken cancellationToken, int initialTabIndex = 0)
     {
         ActiveContent              = new LookingForZooTycoonViewModel();
         IsBooting                  = true;
@@ -274,7 +280,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 return;
             }
 
-            content = RouteResult(result.Value);
+            content = RouteResult(result.Value, initialTabIndex);
 
             if (content is OpenGameInstallationViewModel picker)
             {
@@ -369,7 +375,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private OpenGameInstallationViewModel CreatePicker()
         => new(new InstallationGridViewModel(_mediator, _messenger, _gridLogger), _dialogs, OpenInstallationAsync);
 
-    private ViewModelBase RouteResult(AppBoot.BootResult result)
+    private ViewModelBase RouteResult(AppBoot.BootResult result, int initialTabIndex)
         => result.Outcome switch
         {
             AppBoot.BootOutcome.ReadyToPlay => new PlayViewModel(result.ActiveInstallation!,
@@ -382,7 +388,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                  _playLogger,
                                                                  _iniTabLogger,
                                                                  _iniEditorLogger,
-                                                                 iniErrorMessage: result.IniErrorMessage),
+                                                                 _iniPlaceholderLogger,
+                                                                 ct => RunBootAsync(result.ActiveInstallation!.Id, ct, PlayViewModel.IniConfigTabIndex),
+                                                                 iniErrorMessage: result.IniErrorMessage,
+                                                                 initialTabIndex: initialTabIndex),
             AppBoot.BootOutcome.CannotPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                 canPlay: false,
                                                                 ct => RunBootAsync(result.ActiveInstallation!.Id, ct),
@@ -393,7 +402,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                 _playLogger,
                                                                 _iniTabLogger,
                                                                 _iniEditorLogger,
-                                                                iniErrorMessage: result.IniErrorMessage),
+                                                                _iniPlaceholderLogger,
+                                                                ct => RunBootAsync(result.ActiveInstallation!.Id, ct, PlayViewModel.IniConfigTabIndex),
+                                                                iniErrorMessage: result.IniErrorMessage,
+                                                                initialTabIndex: initialTabIndex),
             AppBoot.BootOutcome.NoGameInstallationFound => new NoGameInstallationFoundViewModel(result.LocatedCandidatePath,
                                                                                                 _dialogs,
                                                                                                 BootAsync),

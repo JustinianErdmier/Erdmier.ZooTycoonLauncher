@@ -41,6 +41,14 @@ public interface IDialogService
     /// <param name="startPath">A directory to start the picker in, when present.</param>
     Task<string?> PickFolderAsync(string? startPath);
 
+    /// <summary>
+    ///     Opens a native single-file picker (filters <c>INI files</c> then <c>All files</c>) rooted at the supplied folder and returns the chosen file's path, or
+    ///     <see langword="null" /> when the user cancels.
+    /// </summary>
+    /// <param name="startPath">A directory to start the picker in, when present.</param>
+    /// <param name="title">The picker's title.</param>
+    Task<string?> PickFileAsync(string? startPath, string title);
+
     /// <summary>Asks the Win95-style "Do you want to save the changes to <c>zoo.ini</c>?" question (SDD §7.3.2).</summary>
     /// <returns>The answer; closing the prompt from its title bar answers <see cref="SaveChangesChoice.Cancel" />.</returns>
     Task<SaveChangesChoice> ShowSaveChangesPromptAsync();

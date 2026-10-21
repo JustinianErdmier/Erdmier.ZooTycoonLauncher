@@ -7,7 +7,14 @@ public sealed class IniConfigTabViewModelTests
     private readonly IMediator _mediator = Substitute.For<IMediator>();
 
     private IniConfigTabViewModel CreateTab(InstallationSummary installation, string? iniErrorMessage, ILogger<IniConfigTabViewModel>? logger = null)
-        => new(installation, iniErrorMessage, _mediator, _dialogs, logger ?? NullLogger<IniConfigTabViewModel>.Instance, NullLogger<IniEditorViewModel>.Instance);
+        => new(installation,
+               iniErrorMessage,
+               _mediator,
+               _dialogs,
+               logger ?? NullLogger<IniConfigTabViewModel>.Instance,
+               NullLogger<IniEditorViewModel>.Instance,
+               NullLogger<IniPlaceholderViewModel>.Instance,
+               _ => Task.CompletedTask);
 
     [ Fact ]
     public async Task NoIni_ShowsThePlaceholderAndNeverLoads()
@@ -16,7 +23,10 @@ public sealed class IniConfigTabViewModelTests
 
         await tab.ActivateAsync(CancellationToken.None);
 
-        tab.Content.ShouldBeOfType<IniPlaceholderViewModel>().Headline.ShouldBe(expected: "No INI present");
+        IniPlaceholderViewModel placeholder = tab.Content.ShouldBeOfType<IniPlaceholderViewModel>();
+
+        placeholder.Headline.ShouldBe(expected: "No INI present");
+        placeholder.HasActions.ShouldBeTrue();
 
         await _mediator.DidNotReceive().Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>());
     }

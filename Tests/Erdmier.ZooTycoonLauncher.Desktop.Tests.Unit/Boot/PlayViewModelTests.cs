@@ -100,6 +100,17 @@ public sealed class PlayViewModelTests
     }
 
     [ Fact ]
+    public void InitialTabIndex_SelectsTheIniTab()
+    {
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        PlayViewModel play = PlayTestData.Create(_mediator, _dialogs, Substitute.For<IApplicationLifecycle>(), initialTabIndex: PlayViewModel.IniConfigTabIndex);
+
+        play.SelectedTabIndex.ShouldBe(PlayViewModel.IniConfigTabIndex);
+        PlayTestData.Create(_mediator, _dialogs, Substitute.For<IApplicationLifecycle>()).SelectedTabIndex.ShouldBe(expected: 0);
+    }
+
+    [ Fact ]
     public void IniErrorMessage_ReachesBothTabs()
     {
         PlayViewModel play = Create(canPlay: false, iniErrorMessage: "zoo.ini could not be read: locked");

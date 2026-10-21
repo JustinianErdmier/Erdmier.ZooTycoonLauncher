@@ -28,7 +28,7 @@
         <!-- Snapshot history, newest first -->
         <DataGrid AutoGenerateColumns="False"
                   CanUserReorderColumns="False"
-                  CanUserResizeColumns="True"
+                  CanUserResizeColumns="False"
                   CanUserSortColumns="False"
                   Height="140"
                   IsReadOnly="True"
@@ -39,6 +39,8 @@
                 <Style Selector="DataGridColumnHeader">
                     <Setter Property="HorizontalContentAlignment"
                             Value="Stretch" />
+                    <Setter Property="IsHitTestVisible"
+                            Value="False" />
                 </Style>
             </DataGrid.Styles>
 

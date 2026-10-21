@@ -18,5 +18,16 @@
             <Setter Property="Background"
                     Value="{DynamicResource {x:Static commonControls:SystemColors.ControlBrushKey}}" />
         </Style>
+
+        <!-- A read-only NumericUpDown gets the same grey on its inner text box, whether or not the template forwards IsReadOnly to that box. -->
+        <Style Selector="NumericUpDown[IsReadOnly=True] /template/ TextBox#PART_TextBox /template/ ClassicBorderDecorator#Bd">
+            <Setter Property="Background"
+                    Value="{DynamicResource {x:Static commonControls:SystemColors.ControlBrushKey}}" />
+        </Style>
+        <!-- Make the inner text box of a read-only NumericUpDown read-only too, so it cannot be typed into even if the template does not forward IsReadOnly. -->
+        <Style Selector="NumericUpDown[IsReadOnly=True] /template/ TextBox#PART_TextBox">
+            <Setter Property="IsReadOnly"
+                    Value="True" />
+        </Style>
     </Application.Styles>
 </Application>

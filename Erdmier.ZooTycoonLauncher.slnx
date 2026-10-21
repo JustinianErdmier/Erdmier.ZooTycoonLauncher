@@ -11,6 +11,7 @@
     <Folder Name="/Docs/Ledgers/Epic-1-MVP/">
         <File Path="Docs/Ledgers/Epic-1-MVP/milestone-9-ledger.md" />
         <File Path="Docs/Ledgers/Epic-1-MVP/milestone-9.1-ledger.md" />
+        <File Path="Docs/Ledgers/Epic-1-MVP/milestone-9.2-ledger.md" />
     </Folder>
     <Folder Name="/Docs/Plans/" />
     <Folder Name="/Docs/Plans/Epic-1-MVP/">
@@ -24,6 +25,7 @@
         <File Path="Docs/Plans/Epic-1-MVP/milestone-8-ini-config-core.md" />
         <File Path="Docs/Plans/Epic-1-MVP/milestone-9-restore-previous-ini.md" />
         <File Path="Docs/Plans/Epic-1-MVP/milestone-9.1-restore-previous-ini-follow-ups.md" />
+        <File Path="Docs/Plans/Epic-1-MVP/milestone-9.2-ini-display-polish.md" />
     </Folder>
     <Folder Name="/Docs/Specs/">
         <File Path="Docs/Specs/1-zoo-tycoon-launcher-master-design.md" />

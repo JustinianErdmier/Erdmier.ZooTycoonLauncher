@@ -66,10 +66,10 @@ public static class IniEditorCatalogue
                     ]),
                 new(SubHeader: "Gameplay (cash)",
                     [
-                        Number(section: "UI", key: "MSStartingCash", hint: "0–10,000,000", help: "Cash available at the start of a new game."),
-                        Number(section: "UI", key: "MSCashIncrement", hint: "100–1,000,000", help: "Denomination in which cash amounts are awarded."),
-                        Number(section: "UI", key: "MSMinCash", hint: "0–10,000,000", help: "Minimum cash the player may hold."),
-                        Number(section: "UI", key: "MSMaxCash", hint: "0–10,000,000", help: "Maximum cash the player may hold.")
+                        Cash(section: "UI", key: "MSStartingCash", hint: "$0–$10,000,000", help: "Cash available at the start of a new game."),
+                        Cash(section: "UI", key: "MSCashIncrement", hint: "$100–$1,000,000", help: "Denomination in which cash amounts are awarded."),
+                        Cash(section: "UI", key: "MSMinCash", hint: "$0–$10,000,000", help: "Minimum cash the player may hold."),
+                        Cash(section: "UI", key: "MSMaxCash", hint: "$0–$10,000,000", help: "Maximum cash the player may hold.")
                     ]),
                 new(SubHeader: "Interface",
                     [
@@ -149,9 +149,11 @@ public static class IniEditorCatalogue
                 new(SubHeader: null,
                     [
                         new IniFieldDescriptor(Id: null, Label: "lang / sublang", IniControlKind.LanguagePicker, Hint: "Curated LANGID + SUBLANGID",
-                                               Help: "Game language. Choosing an entry sets both LANGID and SUBLANGID below; other combinations can be entered directly."),
-                        Number(LanguageId.Section, LanguageId.Key, hint: "Windows LANGID 0–65535", help: "Windows primary language identifier (LANGID)."),
-                        Number(SubLanguageId.Section, SubLanguageId.Key, hint: "Windows SUBLANGID 0–65535", help: "Windows sub-language identifier (SUBLANGID).")
+                                               Help: "Game language. Choosing an entry sets both LANGID and SUBLANGID below."),
+                        Number(LanguageId.Section, LanguageId.Key, hint: "Windows LANGID 0–65535",
+                               help: "Windows primary language identifier (LANGID). Set by the language picker above.", isReadOnly: true),
+                        Number(SubLanguageId.Section, SubLanguageId.Key, hint: "Windows SUBLANGID 0–65535",
+                               help: "Windows sub-language identifier (SUBLANGID). Set by the language picker above.", isReadOnly: true)
                     ])
             ]),
         new(Section: "Map",
@@ -166,13 +168,29 @@ public static class IniEditorCatalogue
             ])
     ];
 
+    // Declared after Sections: static initialisers run in textual order.
+    private static readonly Dictionary<IniKeyId, IniFieldDescriptor> FieldsById = Sections.SelectMany(section => section.Groups)
+                                                                                          .SelectMany(group => group.Fields)
+                                                                                          .Where(field => field.Id is not null)
+                                                                                          .ToDictionary(field => field.Id!.Value);
+
+    /// <summary>Looks up the descriptor of a key.</summary>
+    /// <param name="id">The key.</param>
+    /// <param name="field">The key's descriptor when it has one.</param>
+    /// <returns><see langword="true" /> when the key has a descriptor.</returns>
+    public static bool TryGetField(IniKeyId id, [ NotNullWhen(true) ] out IniFieldDescriptor? field) => FieldsById.TryGetValue(id, out field);
+
     private static IniFieldDescriptor Choice(string section, string key, string hint, string help, IReadOnlyList<IniChoiceOption> options)
         => new(new IniKeyId(section, key), key, IniControlKind.Choice, hint, help)
         {
             Options = options
         };
 
-    private static IniFieldDescriptor Number(string section, string key, string hint, string help) => new(new IniKeyId(section, key), key, IniControlKind.Number, hint, help);
+    private static IniFieldDescriptor Number(string section, string key, string hint, string help, bool isReadOnly = false)
+        => new(new IniKeyId(section, key), key, IniControlKind.Number, hint, help) { IsReadOnly = isReadOnly };
+
+    private static IniFieldDescriptor Cash(string section, string key, string hint, string help)
+        => new(new IniKeyId(section, key), key, IniControlKind.Number, hint, help) { IsCurrency = true };
 
     private static IniFieldDescriptor Text(string section, string key, string hint, string help) => new(new IniKeyId(section, key), key, IniControlKind.Text, hint, help);
 

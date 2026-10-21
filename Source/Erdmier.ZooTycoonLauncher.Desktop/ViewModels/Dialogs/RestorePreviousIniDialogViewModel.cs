@@ -212,7 +212,10 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
                entry.Comparison.Rows.Count.ToString(DisplayCulture));
 
     private static IniHistoryDiffRow ToDiffRow(IniDiffRow row)
-        => new($"[{row.Id.Section}]", row.Id.Key, row.Current ?? NotSet, row.Snapshot);
+        => new($"[{row.Id.Section}]",
+               row.Id.Key,
+               row.Current is null ? NotSet : IniDisplayText.Format(row.Id, row.Current),
+               IniDisplayText.Format(row.Id, row.Snapshot));
 
     partial void OnSelectedRowChanged(IniHistoryRow? value)
     {

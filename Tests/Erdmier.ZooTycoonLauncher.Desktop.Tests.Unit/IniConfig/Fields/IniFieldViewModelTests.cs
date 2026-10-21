@@ -87,6 +87,57 @@ public sealed class IniFieldViewModelTests
     }
 
     [ Fact ]
+    public void Number_Cash_FormatsAsDollars()
+    {
+        CultureInfo original = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo(name: "de-DE");
+
+            IniNumberFieldViewModel row = new(Descriptor(section: "UI", key: "MSStartingCash"));
+
+            1000000m.ToString(row.FormatString, row.NumberFormat).ShouldBe(expected: "$1,000,000");
+
+            decimal.TryParse(s: "$250,000", row.ParsingNumberStyle, row.NumberFormat, out decimal fromDollars).ShouldBeTrue();
+            fromDollars.ShouldBe(expected: 250000m);
+
+            decimal.TryParse(s: "250000", row.ParsingNumberStyle, row.NumberFormat, out decimal fromPlain).ShouldBeTrue();
+            fromPlain.ShouldBe(expected: 250000m);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
+    }
+
+    [ Fact ]
+    public void Number_Cash_RejectsDecimalInput()
+    {
+        IniNumberFieldViewModel row = new(Descriptor(section: "UI", key: "MSStartingCash"));
+
+        decimal.TryParse(s: "$1,000.75", row.ParsingNumberStyle, row.NumberFormat, out decimal _).ShouldBeFalse();
+        decimal.TryParse(s: "1000.5", row.ParsingNumberStyle, row.NumberFormat, out decimal _).ShouldBeFalse();
+        decimal.TryParse(s: "-500", row.ParsingNumberStyle, row.NumberFormat, out decimal _).ShouldBeFalse();
+        decimal.TryParse(s: "(500)", row.ParsingNumberStyle, row.NumberFormat, out decimal _).ShouldBeFalse();
+
+        decimal.TryParse(s: "$1,000", row.ParsingNumberStyle, row.NumberFormat, out decimal grouped).ShouldBeTrue();
+        grouped.ShouldBe(expected: 1000m);
+
+        decimal.TryParse(s: " $250,000 ", row.ParsingNumberStyle, row.NumberFormat, out decimal padded).ShouldBeTrue();
+        padded.ShouldBe(expected: 250000m);
+    }
+
+    [ Fact ]
+    public void Number_NonCash_KeepsThePlainFormat()
+    {
+        IniNumberFieldViewModel row = new(Descriptor(section: "user", key: "UpdateRate"));
+
+        row.FormatString.ShouldBe(expected: "0");
+        row.ParsingNumberStyle.ShouldBe(NumberStyles.Integer);
+    }
+
+    [ Fact ]
     public void Number_ClearedBox_IsAnEmptyEdit()
     {
         IniNumberFieldViewModel field = new(Descriptor(section: "user", key: "screenwidth"));
@@ -214,13 +265,7 @@ public sealed class IniFieldViewModelTests
     [ Fact ]
     public void LanguagePicker_DrivesAndFollowsTheTwoNumberRows()
     {
-        IniNumberFieldViewModel language    = new(Descriptor(IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key));
-        IniNumberFieldViewModel subLanguage = new(Descriptor(IniEditorCatalogue.SubLanguageId.Section, IniEditorCatalogue.SubLanguageId.Key));
-
-        IniLanguageFieldViewModel picker = new(IniEditorCatalogue.Sections.Single(s => s.Section == IniEditorCatalogue.LanguageId.Section).Groups[0].Fields[0],
-                                               language,
-                                               subLanguage,
-                                               IniEditorCatalogue.Languages);
+        (IniNumberFieldViewModel language, IniNumberFieldViewModel subLanguage, IniLanguageFieldViewModel picker) = LanguageRows();
 
         language.Load(raw: "9");
         subLanguage.Load(raw: "1");
@@ -241,7 +286,37 @@ public sealed class IniFieldViewModelTests
     }
 
     [ Fact ]
-    public void SelectedOption_Set_RaisesChangeOnceAfterBothWrites()
+    public void LanguagePicker_UnlistedPair_ShowsBothCodesAndNoSelection()
+    {
+        (IniNumberFieldViewModel language, IniNumberFieldViewModel subLanguage, IniLanguageFieldViewModel picker) = LanguageRows();
+
+        language.Load(raw: "9");
+        subLanguage.Load(raw: "7");
+
+        language.IsReadOnly.ShouldBeTrue();
+        subLanguage.IsReadOnly.ShouldBeTrue();
+        language.Value.ShouldBe(expected: 9m);
+        subLanguage.Value.ShouldBe(expected: 7m);
+        picker.SelectedOption.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public void LanguagePicker_ChoosingAfterUnlistedPair_WritesBothReadOnlyRows()
+    {
+        (IniNumberFieldViewModel language, IniNumberFieldViewModel subLanguage, IniLanguageFieldViewModel picker) = LanguageRows();
+
+        language.Load(raw: "9");
+        subLanguage.Load(raw: "7");
+
+        picker.SelectedOption = IniEditorCatalogue.Languages.Single(option => option.Label == "German (Germany)");
+
+        language.Value.ShouldBe(expected: 7m);
+        subLanguage.Value.ShouldBe(expected: 1m);
+        language.IsDirty.ShouldBeTrue();
+        subLanguage.IsDirty.ShouldBeTrue();
+    }
+
+    private static (IniNumberFieldViewModel Language, IniNumberFieldViewModel SubLanguage, IniLanguageFieldViewModel Picker) LanguageRows()
     {
         IniNumberFieldViewModel language    = new(Descriptor(IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key));
         IniNumberFieldViewModel subLanguage = new(Descriptor(IniEditorCatalogue.SubLanguageId.Section, IniEditorCatalogue.SubLanguageId.Key));
@@ -250,6 +325,14 @@ public sealed class IniFieldViewModelTests
                                                language,
                                                subLanguage,
                                                IniEditorCatalogue.Languages);
+
+        return (language, subLanguage, picker);
+    }
+
+    [ Fact ]
+    public void SelectedOption_Set_RaisesChangeOnceAfterBothWrites()
+    {
+        (IniNumberFieldViewModel language, IniNumberFieldViewModel subLanguage, IniLanguageFieldViewModel picker) = LanguageRows();
 
         language.Load(raw: "9");
         subLanguage.Load(raw: "1");

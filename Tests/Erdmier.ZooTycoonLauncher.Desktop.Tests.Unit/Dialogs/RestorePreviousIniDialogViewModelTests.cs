@@ -64,6 +64,21 @@ public sealed class RestorePreviousIniDialogViewModelTests
     }
 
     [ Fact ]
+    public async Task Initialise_DiffShowsEditorValues()
+    {
+        _mediator.Send(Arg.Any<GetIniHistoryQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniHistoryResult>>(new IniHistoryResult([
+                     Entry(NewestUtc, IniSnapshotTrigger.Manual, [ new IniDiffRow(new IniKeyId(Section: "user", Key: "fullscreen"), Current: "1", Snapshot: "0") ])
+                 ])));
+
+        RestorePreviousIniDialogViewModel viewModel = CreateViewModel();
+
+        await viewModel.InitialiseAsync(InstallationId);
+
+        viewModel.DiffRows.Single().ShouldBe(new IniHistoryDiffRow(SectionText: "[user]", KeyText: "fullscreen", CurrentText: "Fullscreen", SnapshotText: "Windowed"));
+    }
+
+    [ Fact ]
     public async Task SelectingARow_UpdatesTheDiffCaptionAndKeptKeys()
     {
         RestorePreviousIniDialogViewModel viewModel = await LoadedAsync();

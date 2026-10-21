@@ -23,13 +23,13 @@ public sealed class FixInstallationDialogViewModelTests
         => _mediator.Send(Arg.Any<VerifyInstallationQuery>(), Arg.Any<CancellationToken>())
                     .Returns(new ValueTask<ErrorOr<VerificationResult>>(new VerificationResult(DirectoryExists: true, hasExe, hasIni)));
 
-    private async Task<FixInstallationDialogViewModel> LoadedAsync(InstallationValidity validity)
+    private async Task<FixInstallationDialogViewModel> LoadedAsync(InstallationValidity validity, ILogger<FixInstallationDialogViewModel>? logger = null)
     {
         _mediator.Send(Arg.Any<GetInstallationByIdQuery>(), Arg.Any<CancellationToken>())
                  .Returns(new ValueTask<ErrorOr<InstallationSummary>>(Summary(validity)));
         ReturnsVerification(validity.HasExe, validity.HasIni);
 
-        FixInstallationDialogViewModel viewModel = new(_mediator, _dialogs, NullLogger<FixInstallationDialogViewModel>.Instance);
+        FixInstallationDialogViewModel viewModel = new(_mediator, _dialogs, logger ?? NullLogger<FixInstallationDialogViewModel>.Instance);
 
         await viewModel.InitialiseAsync(InstallationId);
 
@@ -74,15 +74,50 @@ public sealed class FixInstallationDialogViewModelTests
     [ Fact ]
     public async Task CreateIni_Fails_ShowsInlineError()
     {
-        FixInstallationDialogViewModel viewModel = await LoadedAsync(InstallationValidity.InvalidNoIni);
+        RecordingLogger<FixInstallationDialogViewModel> logger = new();
+
+        FixInstallationDialogViewModel viewModel = await LoadedAsync(InstallationValidity.InvalidNoIni, logger);
 
         ReturnsForCreate(Error.Failure(code: "Ini.ReadOnly", description: "The folder is read-only."));
 
         await viewModel.CreateIniCommand.ExecuteAsync(parameter: null);
 
+        logger.Entries.Count(entry => entry.Level == LogLevel.Warning).ShouldBe(expected: 1);
+
         viewModel.HasIni.ShouldBeFalse();
         viewModel.HasChanges.ShouldBeFalse();
         viewModel.IniErrorMessage.ShouldBe("The folder is read-only.");
+    }
+
+    [ Fact ]
+    public async Task CreateIni_InstallationVanished_ShowsMissingAndUnloads()
+    {
+        FixInstallationDialogViewModel viewModel = await LoadedAsync(InstallationValidity.InvalidNoIni);
+
+        ReturnsForCreate(IniErrors.InstallationNotFound(InstallationId));
+
+        await viewModel.CreateIniCommand.ExecuteAsync(parameter: null);
+
+        viewModel.IsLoaded.ShouldBeFalse();
+        viewModel.ErrorMessage.ShouldBe(InstallationDialogMessages.InstallationMissing);
+        viewModel.IniErrorMessage.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public async Task CreateIni_AlreadyExistsThenReprobeFails_LogsAndShowsUnexpected()
+    {
+        RecordingLogger<FixInstallationDialogViewModel> logger = new();
+
+        FixInstallationDialogViewModel viewModel = await LoadedAsync(InstallationValidity.InvalidNoIni, logger);
+
+        ReturnsForCreate(Error.Conflict(code: IniErrors.AlreadyExistsCode, description: "zoo.ini already exists"));
+        _mediator.Send(Arg.Any<VerifyInstallationQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<VerificationResult>>(Error.Failure(code: "Verify.Failed", description: "boom")));
+
+        await viewModel.CreateIniCommand.ExecuteAsync(parameter: null);
+
+        viewModel.IniErrorMessage.ShouldBe(InstallationDialogMessages.UnexpectedFailure);
+        logger.Entries.Count(entry => entry.Level == LogLevel.Warning).ShouldBe(expected: 1);
     }
 
     [ Fact ]

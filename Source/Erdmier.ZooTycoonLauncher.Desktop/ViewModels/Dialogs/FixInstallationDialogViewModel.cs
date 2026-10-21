@@ -245,6 +245,8 @@ public sealed partial class FixInstallationDialogViewModel : ViewModelBase
 
                 if (verification.IsError)
                 {
+                    _logger.LogWarning("Cannot re-probe installation {InstallationId} after zoo.ini appeared: {Error}", _installationId, verification.FirstError.Description);
+
                     IniErrorMessage = InstallationDialogMessages.UnexpectedFailure;
 
                     return;
@@ -253,6 +255,16 @@ public sealed partial class FixInstallationDialogViewModel : ViewModelBase
                 HasExe     = verification.Value.HasExe;
                 HasIni     = verification.Value.HasIni;
                 HasChanges = true;
+
+                return;
+            }
+
+            _logger.LogWarning("Cannot repair zoo.ini for installation {InstallationId}: {Error}", _installationId, result.FirstError.Description);
+
+            if (result.FirstError.Type == ErrorType.NotFound)
+            {
+                ErrorMessage = InstallationDialogMessages.InstallationMissing;
+                IsLoaded     = false;
 
                 return;
             }

@@ -166,6 +166,18 @@ public static class IniEditorCatalogue
             ])
     ];
 
+    // Declared after Sections: static initialisers run in textual order.
+    private static readonly Dictionary<IniKeyId, IniFieldDescriptor> FieldsById = Sections.SelectMany(section => section.Groups)
+                                                                                          .SelectMany(group => group.Fields)
+                                                                                          .Where(field => field.Id is not null)
+                                                                                          .ToDictionary(field => field.Id!.Value);
+
+    /// <summary>Looks up the descriptor of a key.</summary>
+    /// <param name="id">The key.</param>
+    /// <param name="field">The key's descriptor when it has one.</param>
+    /// <returns><see langword="true" /> when the key has a descriptor.</returns>
+    public static bool TryGetField(IniKeyId id, [ NotNullWhen(true) ] out IniFieldDescriptor? field) => FieldsById.TryGetValue(id, out field);
+
     private static IniFieldDescriptor Choice(string section, string key, string hint, string help, IReadOnlyList<IniChoiceOption> options)
         => new(new IniKeyId(section, key), key, IniControlKind.Choice, hint, help)
         {

@@ -66,10 +66,10 @@ public static class IniEditorCatalogue
                     ]),
                 new(SubHeader: "Gameplay (cash)",
                     [
-                        Number(section: "UI", key: "MSStartingCash", hint: "0–10,000,000", help: "Cash available at the start of a new game."),
-                        Number(section: "UI", key: "MSCashIncrement", hint: "100–1,000,000", help: "Denomination in which cash amounts are awarded."),
-                        Number(section: "UI", key: "MSMinCash", hint: "0–10,000,000", help: "Minimum cash the player may hold."),
-                        Number(section: "UI", key: "MSMaxCash", hint: "0–10,000,000", help: "Maximum cash the player may hold.")
+                        Cash(section: "UI", key: "MSStartingCash", hint: "$0–$10,000,000", help: "Cash available at the start of a new game."),
+                        Cash(section: "UI", key: "MSCashIncrement", hint: "$100–$1,000,000", help: "Denomination in which cash amounts are awarded."),
+                        Cash(section: "UI", key: "MSMinCash", hint: "$0–$10,000,000", help: "Minimum cash the player may hold."),
+                        Cash(section: "UI", key: "MSMaxCash", hint: "$0–$10,000,000", help: "Maximum cash the player may hold.")
                     ]),
                 new(SubHeader: "Interface",
                     [
@@ -173,6 +173,9 @@ public static class IniEditorCatalogue
         };
 
     private static IniFieldDescriptor Number(string section, string key, string hint, string help) => new(new IniKeyId(section, key), key, IniControlKind.Number, hint, help);
+
+    private static IniFieldDescriptor Cash(string section, string key, string hint, string help)
+        => new(new IniKeyId(section, key), key, IniControlKind.Number, hint, help) { IsCurrency = true };
 
     private static IniFieldDescriptor Text(string section, string key, string hint, string help) => new(new IniKeyId(section, key), key, IniControlKind.Text, hint, help);
 

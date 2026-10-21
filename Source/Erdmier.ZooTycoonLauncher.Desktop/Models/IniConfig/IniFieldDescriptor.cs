@@ -14,6 +14,9 @@ public sealed record IniFieldDescriptor(IniKeyId? Id, string Label, IniControlKi
     /// <summary>Whether a toggle shows the opposite of the stored value (<c>noMenuMusic</c> reads "Play menu music").</summary>
     public bool Inverted { get; init; }
 
+    /// <summary>Whether a number row is a cash amount, shown as dollars (<c>$1,000,000</c>) rather than a plain number.</summary>
+    public bool IsCurrency { get; init; }
+
     /// <summary>The entries of a choice row.</summary>
     public IReadOnlyList<IniChoiceOption> Options { get; init; } = [];
 }

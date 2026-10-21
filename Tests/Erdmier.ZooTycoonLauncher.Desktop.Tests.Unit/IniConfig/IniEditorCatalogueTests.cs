@@ -36,6 +36,18 @@ public sealed class IniEditorCatalogueTests
         => AllFields.Where(field => field.Id is null).ShouldAllBe(field => field.Control == IniControlKind.LanguagePicker);
 
     [ Fact ]
+    public void CashRows_AreCurrency()
+    {
+        IniFieldDescriptor[] cash = AllFields.Where(field => field.IsCurrency).ToArray();
+
+        cash.Select(field => field.Id!.Value)
+            .ShouldBe([ new IniKeyId(Section: "UI", Key: "MSStartingCash"), new IniKeyId(Section: "UI", Key: "MSCashIncrement"),
+                        new IniKeyId(Section: "UI", Key: "MSMinCash"), new IniKeyId(Section: "UI", Key: "MSMaxCash") ], ignoreOrder: true);
+        cash.Select(field => field.Hint)
+            .ShouldBe([ "$0–$10,000,000", "$100–$1,000,000", "$0–$10,000,000", "$0–$10,000,000" ], ignoreOrder: true);
+    }
+
+    [ Fact ]
     public void ChoiceOptions_AreValidForTheirKey()
     {
         foreach (IniFieldDescriptor field in AllFields.Where(field => field.Control == IniControlKind.Choice))

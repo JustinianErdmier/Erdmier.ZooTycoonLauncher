@@ -87,6 +87,55 @@ public sealed class IniFieldViewModelTests
     }
 
     [ Fact ]
+    public void Number_Cash_FormatsAsDollars()
+    {
+        CultureInfo original = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo(name: "de-DE");
+
+            IniNumberFieldViewModel row = new(Descriptor(section: "UI", key: "MSStartingCash"));
+
+            1000000m.ToString(row.FormatString, row.NumberFormat).ShouldBe(expected: "$1,000,000");
+
+            decimal.TryParse(s: "$250,000", row.ParsingNumberStyle, row.NumberFormat, out decimal fromDollars).ShouldBeTrue();
+            fromDollars.ShouldBe(expected: 250000m);
+
+            decimal.TryParse(s: "250000", row.ParsingNumberStyle, row.NumberFormat, out decimal fromPlain).ShouldBeTrue();
+            fromPlain.ShouldBe(expected: 250000m);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
+    }
+
+    [ Fact ]
+    public void Number_Cash_DecimalInputWritesTheTruncatedInteger()
+    {
+        IniNumberFieldViewModel row = new(Descriptor(section: "UI", key: "MSStartingCash"));
+
+        row.Load(raw: "5000");
+
+        decimal.TryParse(s: "$1,000.75", row.ParsingNumberStyle, row.NumberFormat, out decimal parsed).ShouldBeTrue();
+
+        row.Value = parsed;
+
+        row.TryGetEdit(out string? edit).ShouldBeTrue();
+        edit.ShouldBe(expected: "1000");
+    }
+
+    [ Fact ]
+    public void Number_NonCash_KeepsThePlainFormat()
+    {
+        IniNumberFieldViewModel row = new(Descriptor(section: "user", key: "UpdateRate"));
+
+        row.FormatString.ShouldBe(expected: "0");
+        row.ParsingNumberStyle.ShouldBe(NumberStyles.Integer);
+    }
+
+    [ Fact ]
     public void Number_ClearedBox_IsAnEmptyEdit()
     {
         IniNumberFieldViewModel field = new(Descriptor(section: "user", key: "screenwidth"));

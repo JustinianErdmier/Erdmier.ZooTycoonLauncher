@@ -3,12 +3,13 @@
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig.Fields"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.Fields.IniNumberFieldView"
              x:DataType="vm:IniNumberFieldViewModel">
-    <NumericUpDown FormatString="0"
+    <NumericUpDown FormatString="{Binding FormatString}"
                    HorizontalAlignment="Left"
                    Increment="1"
                    Maximum="{Binding Maximum}"
                    Minimum="{Binding Minimum}"
-                   ParsingNumberStyle="Integer"
+                   NumberFormat="{Binding NumberFormat}"
+                   ParsingNumberStyle="{Binding ParsingNumberStyle}"
                    Value="{Binding Value}"
                    Width="120" />
 </UserControl>

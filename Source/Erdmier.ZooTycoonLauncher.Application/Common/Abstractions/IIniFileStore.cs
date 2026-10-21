@@ -16,6 +16,23 @@ public interface IIniFileStore
     /// <returns>The written file's last-write time (UTC).</returns>
     Task<DateTime> WriteAsync(string installationPath, string text, CancellationToken cancellationToken);
 
+    /// <summary>
+    ///     Creates <c>zoo.ini</c> only when it does not already exist: a temp file in the same folder, then <c>Move(overwrite: false)</c>. Other IO and access failures propagate after
+    ///     the temp file is removed.
+    /// </summary>
+    /// <param name="installationPath">The installation folder.</param>
+    /// <param name="text">The full file text.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns><see langword="true" /> when the file was created; <see langword="false" /> when <c>zoo.ini</c> already existed (nothing is changed).</returns>
+    Task<bool> TryCreateAsync(string installationPath, string text, CancellationToken cancellationToken);
+
+    /// <summary>Reads an INI file from anywhere on disk as Latin-1 text. Missing-file, IO and access failures propagate.</summary>
+    /// <param name="filePath">The file to read.</param>
+    /// <param name="maxBytes">The largest file size to accept.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The file's text, or <see langword="null" /> when the file is larger than <paramref name="maxBytes" />.</returns>
+    Task<string?> ReadExternalAsync(string filePath, long maxBytes, CancellationToken cancellationToken);
+
     /// <summary>Deletes <c>zoo.ini.tmp.*</c> files left behind by an interrupted write. Files that cannot be deleted are logged and skipped.</summary>
     /// <param name="installationPath">The installation folder.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

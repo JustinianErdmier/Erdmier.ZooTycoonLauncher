@@ -79,4 +79,46 @@ public sealed class IniFileStoreTests : IDisposable
     [ Fact ]
     public async Task DeleteOrphanedTempFiles_MissingDirectory_DoesNothing()
         => await Should.NotThrowAsync(() => _store.DeleteOrphanedTempFilesAsync(Path.Combine(_directory, path2: "missing"), CancellationToken.None));
+
+    [ Fact ]
+    public async Task TryCreate_WritesTheTextWhenAbsent()
+    {
+        bool created = await _store.TryCreateAsync(_directory, text: "[user]\r\nname=caf\u00e9\r\n", CancellationToken.None);
+
+        created.ShouldBeTrue();
+        (await File.ReadAllBytesAsync(IniPath)).ShouldBe(System.Text.Encoding.Latin1.GetBytes("[user]\r\nname=caf\u00e9\r\n"));
+        Directory.GetFiles(_directory, searchPattern: "zoo.ini.tmp.*").ShouldBeEmpty();
+    }
+
+    [ Fact ]
+    public async Task TryCreate_ExistingFile_ReturnsFalseAndKeepsIt()
+    {
+        await File.WriteAllTextAsync(IniPath, contents: "original");
+
+        bool created = await _store.TryCreateAsync(_directory, text: "replacement", CancellationToken.None);
+
+        created.ShouldBeFalse();
+        (await File.ReadAllTextAsync(IniPath)).ShouldBe(expected: "original");
+        Directory.GetFiles(_directory, searchPattern: "zoo.ini.tmp.*").ShouldBeEmpty();
+    }
+
+    [ Fact ]
+    public async Task ReadExternal_ReturnsLatin1Text()
+    {
+        string external = Path.Combine(_directory, path2: "other.ini");
+
+        await File.WriteAllBytesAsync(external, [ 0x61, 0xE9, 0x62 ]);
+
+        (await _store.ReadExternalAsync(external, maxBytes: 100, CancellationToken.None)).ShouldBe(expected: "a\u00e9b");
+    }
+
+    [ Fact ]
+    public async Task ReadExternal_OverLimit_ReturnsNull()
+    {
+        string external = Path.Combine(_directory, path2: "other.ini");
+
+        await File.WriteAllBytesAsync(external, [ 1, 2, 3, 4, 5 ]);
+
+        (await _store.ReadExternalAsync(external, maxBytes: 4, CancellationToken.None)).ShouldBeNull();
+    }
 }

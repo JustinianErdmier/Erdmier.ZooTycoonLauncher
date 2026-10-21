@@ -62,6 +62,50 @@ public sealed class IniFileStore : IIniFileStore
     }
 
     /// <inheritdoc />
+    public async Task<bool> TryCreateAsync(string installationPath, string text, CancellationToken cancellationToken)
+    {
+        string path     = _fileSystem.Path.Combine(installationPath, FileName);
+        string tempPath = _fileSystem.Path.Combine(installationPath, TempFilePrefix + Guid.NewGuid().ToString(format: "N"));
+
+        try
+        {
+            if (_fileSystem.File.Exists(path))
+            {
+                return false;
+            }
+
+            await _fileSystem.File.WriteAllBytesAsync(tempPath, Encoding.Latin1.GetBytes(text), cancellationToken);
+
+            _fileSystem.File.Move(tempPath, path, overwrite: false);
+
+            return true;
+        }
+        catch (IOException) when (_fileSystem.File.Exists(path))
+        {
+            // Lost a race with another writer: the file now exists, so there is nothing to create.
+            return false;
+        }
+        finally
+        {
+            // After a successful move the temp file is gone and this is a no-op.
+            TryDelete(tempPath);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<string?> ReadExternalAsync(string filePath, long maxBytes, CancellationToken cancellationToken)
+    {
+        if (_fileSystem.FileInfo.New(filePath).Length > maxBytes)
+        {
+            return null;
+        }
+
+        byte[] bytes = await _fileSystem.File.ReadAllBytesAsync(filePath, cancellationToken);
+
+        return bytes.LongLength > maxBytes ? null : Encoding.Latin1.GetString(bytes);
+    }
+
+    /// <inheritdoc />
     public Task DeleteOrphanedTempFilesAsync(string installationPath, CancellationToken cancellationToken)
     {
         if (!_fileSystem.Directory.Exists(installationPath))

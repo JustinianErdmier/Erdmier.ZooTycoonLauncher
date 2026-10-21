@@ -47,5 +47,17 @@ public sealed partial class IniNumberFieldViewModel : IniKeyedFieldViewModel
     protected override void ApplyValue(string? effectiveValue)
         => Value = int.TryParse(effectiveValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed) ? parsed : null;
 
-    partial void OnValueChanged(decimal? value) => NotifyValueChanged();
+    partial void OnValueChanged(decimal? value)
+    {
+        // The box can parse decimals (cash accepts $1,000.75); keep what is shown equal to what is saved. The reassignment re-enters here with the whole number and notifies.
+        if (value is { } number
+            && decimal.Truncate(number) != number)
+        {
+            Value = decimal.Truncate(number);
+
+            return;
+        }
+
+        NotifyValueChanged();
+    }
 }

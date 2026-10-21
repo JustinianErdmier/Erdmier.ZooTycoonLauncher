@@ -122,6 +122,7 @@ public sealed class IniFieldViewModelTests
 
         row.Value = parsed;
 
+        row.Value.ShouldBe(expected: 1000m);
         row.TryGetEdit(out string? edit).ShouldBeTrue();
         edit.ShouldBe(expected: "1000");
     }

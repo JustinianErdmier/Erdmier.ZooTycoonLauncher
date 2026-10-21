@@ -1351,10 +1351,10 @@ an optional muted hint sub-line (`px`, `1–60 ticks/sec`, `-10000 silent → 0 
 (Tutorial → Beginner → Intermediate → Advanced → Expert → Expansion → Unknown).
 
 The four `[UI]` cash rows (`MSStartingCash`, `MSCashIncrement`, `MSMinCash`, `MSMaxCash`) display as dollars — `$1,000,000`, always `$` with `,` grouping and no decimals,
-whatever the OS culture. Typing `250000` or `$250,000` both commit `250000`, a typed decimal is not accepted (the box reverts), and `zoo.ini` keeps the plain integer; the
-hints read `$0–$10,000,000` and `$100–$1,000,000`. `[language]/lang` and `sublang` are read-only number rows (Win9x read-only grey, no spinner): the curated language
-picker is the only way to change them, and a pair the picker does not list shows both numbers with the picker blank.
-Reset, Restore defaults and Restore previous still update both rows.
+whatever the OS culture. Typing `250000` or `$250,000` both commit `250000`; a typed fraction is dropped (`$1,000.75` commits as `$1,000`), so the box always shows what is
+saved, and `zoo.ini` keeps the plain integer. The hints read `$0–$10,000,000` and `$100–$1,000,000`. `[language]/lang` and `sublang` are read-only number rows (Win9x
+read-only grey, no spinner): the curated language picker is the only way to change them, and a pair the picker does not list shows both numbers with the picker blank. Reset,
+Restore defaults and Restore previous still update both rows.
 
 #### 9.3.1 INI Config sub-states
 

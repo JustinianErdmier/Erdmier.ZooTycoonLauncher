@@ -29,10 +29,9 @@ this plan is silent. Background: the [milestone-9.1 ledger](../../Ledgers/Epic-1
    prompts lack them today. (`LaunchErrorView` is a plain OS `Window` and is left alone.)
 4. **`lang` and `sublang` are read-only.** The curated picker is the only way to change them in the GUI. A pair the picker does not list still shows both numbers with
    the picker blank. Reset, Restore defaults and Restore previous keep updating both rows. A read-only number row hides its spinner and shows the Win9x read-only grey.
-5. **Cash displays as dollars.** `MSStartingCash`, `MSCashIncrement`, `MSMinCash` and `MSMaxCash` display as `$1,000,000` — always `$` and `,` grouping, no
-   decimals, whatever the OS culture. Typing `250000` or `$250,000` both commit `250000`; a typed decimal is rejected
-   (the box reverts). `zoo.ini` keeps the plain integer. Hints become `$0–$10,000,000` and
-   `$100–$1,000,000`.
+5. **Cash displays as dollars.** `MSStartingCash`, `MSCashIncrement`, `MSMinCash` and `MSMaxCash` display as `$1,000,000` — always `$` and `,` grouping, no decimals,
+   whatever the OS culture. Typing `250000` or `$250,000` both commit `250000`; a typed fraction is dropped (`$1,000.75` commits as `$1,000`), so the box shows what is
+   saved. `zoo.ini` keeps the plain integer. Hints become `$0–$10,000,000` and `$100–$1,000,000`.
 
 ## Global Constraints
 
@@ -53,7 +52,8 @@ this plan is silent. Background: the [milestone-9.1 ledger](../../Ledgers/Epic-1
 ## Review Focus
 
 1. **A non-English OS culture** (`de-DE`, decimal comma) — cash still reads `$1,000,000` and `$250,000` still parses. Pinned in Task 1.
-2. **A cash value typed with decimals** (`$1,000.75`) — rejected, so the box reverts and never a decimal reaches `zoo.ini`. Pinned in Task 1.
+2. **A cash value typed with decimals** (`$1,000.75`) — the fraction is dropped and `$1,000` commits, so the box shows what is saved and never a decimal reaches
+   `zoo.ini`. Pinned in Task 1.
 3. **A stored bool spelled `True` / ` 1 `, or a choice stored as ` 1`** — the diff still shows the label / `true`, not the raw text. Pinned in Task 2.
 4. **An `lang`/`sublang` pair the picker does not list** — both numbers show, the picker is blank, and the rows still cannot be typed into. Pinned in Task 3.
 5. **Choosing a picker entry after a mismatched pair loaded** — both read-only rows update and become dirty. Pinned in Task 3.
@@ -83,7 +83,7 @@ this plan is silent. Background: the [milestone-9.1 ledger](../../Ledgers/Epic-1
     `1000000m.ToString(row.FormatString, row.NumberFormat)` is `$1,000,000`; `decimal.TryParse("$250,000", row.ParsingNumberStyle, row.NumberFormat, out d)` gives
     `250000`; `"250000"` parses to the same.
   - `IniFieldViewModelTests.Number_Cash_RejectsDecimalInput`: with the row's style and format, `decimal.TryParse` is false for `$1,000.75`, `1000.5`, `-500` and
-    `(500)`, and true for `$1,000` and ` $250,000 ` (giving `1000` and `250000`).
+    `(500)`, and true for `$1,000` and ` $250,000 ` (giving `1000` and `250000`); the box keeps the last accepted value, which is why a typed fraction is dropped.
   - `IniFieldViewModelTests.Number_NonCash_KeepsThePlainFormat`: `UpdateRate`'s `FormatString` is `0` and `ParsingNumberStyle` is `NumberStyles.Integer`.
 - [x] **Step 2: Run** `--filter "FullyQualifiedName~IniEditorCatalogueTests|FullyQualifiedName~IniFieldViewModelTests"` → the new tests fail to compile or fail.
 - [x] **Step 3: Implement** the interfaces above. In the catalogue, add a `Cash(section, key, hint, help)` factory beside `Number` that sets `IsCurrency = true`, and

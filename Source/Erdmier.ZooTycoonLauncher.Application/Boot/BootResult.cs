@@ -10,4 +10,11 @@ namespace Erdmier.ZooTycoonLauncher.Application.Boot;
 /// <param name="IniErrorMessage">
 ///     Non-null when the outcome is <see cref="BootOutcome.CannotPlay" /> because synchronising <c>zoo.ini</c> failed; the user-readable error description, shown on both tabs.
 /// </param>
-public sealed record BootResult(BootOutcome Outcome, InstallationSummary? ActiveInstallation, string? LocatedCandidatePath, string? IniErrorMessage = null);
+/// <param name="WriteAccess">
+///     Whether the installation folder and <c>zoo.ini</c> can be written, probed when <c>zoo.exe</c> exists; <see cref="InstallationWriteAccess.Unknown" /> otherwise.
+/// </param>
+public sealed record BootResult(BootOutcome             Outcome,
+                                InstallationSummary?    ActiveInstallation,
+                                string?                 LocatedCandidatePath,
+                                string?                 IniErrorMessage = null,
+                                InstallationWriteAccess WriteAccess = InstallationWriteAccess.Unknown);

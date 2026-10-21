@@ -178,6 +178,35 @@ public sealed class IniWritePipelineTests
     }
 
     [ Fact ]
+    public async Task Write_AccessDenied_FileReadOnly_ReturnsReadOnly()
+    {
+        _files.WriteAsync(_installation.Path, Arg.Any<string>(), Arg.Any<CancellationToken>())
+              .ThrowsAsync(new UnauthorizedAccessException(message: "denied"));
+
+        ErrorOr<IniConfigResult> result = await CreatePipeline(probe: IniTestData.Probe(InstallationWriteAccess.FileReadOnly))
+                                              .WriteAsync(_installation.Id, SelectScreenWidth, CancellationToken.None);
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.ReadOnly");
+        result.FirstError.Description.ShouldBe(IniReadOnlyText.For(InstallationWriteAccess.FileReadOnly));
+
+        await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Write_AccessDenied_ProbeWritable_ReturnsWriteFailed()
+    {
+        _files.WriteAsync(_installation.Path, Arg.Any<string>(), Arg.Any<CancellationToken>())
+              .ThrowsAsync(new UnauthorizedAccessException(message: "denied"));
+
+        ErrorOr<IniConfigResult> result = await CreatePipeline(probe: IniTestData.Probe(InstallationWriteAccess.Writable))
+                                              .WriteAsync(_installation.Id, SelectScreenWidth, CancellationToken.None);
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.WriteFailed");
+
+        await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
     public async Task Write_DeletesOrphanedTempFilesBeforeReading()
     {
         await CreatePipeline().WriteAsync(_installation.Id, SelectScreenWidth, CancellationToken.None);
@@ -201,6 +230,6 @@ public sealed class IniWritePipelineTests
                                                                                          CancellationToken                    cancellationToken)
         => Task.FromResult<ErrorOr<IReadOnlyDictionary<IniKeyId, string>>>(new Dictionary<IniKeyId, string> { [new IniKeyId(Section: "user", Key: "screenwidth")] = "1024" });
 
-    private IniWritePipeline CreatePipeline(ILogger<IniWritePipeline>? logger = null)
-        => new(new FakeTimeProvider(IniTestData.Now), _files, _installations, logger ?? NullLogger<IniWritePipeline>.Instance, new IniReconciler(), _snapshots);
+    private IniWritePipeline CreatePipeline(ILogger<IniWritePipeline>? logger = null, IInstallationWriteProbe? probe = null)
+        => new(new FakeTimeProvider(IniTestData.Now), _files, _installations, logger ?? NullLogger<IniWritePipeline>.Instance, probe ?? IniTestData.Probe(InstallationWriteAccess.Writable), new IniReconciler(), _snapshots);
 }

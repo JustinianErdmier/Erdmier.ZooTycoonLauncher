@@ -15,6 +15,8 @@ public sealed class IniWritePipeline
 
     private readonly ILogger<IniWritePipeline> _logger;
 
+    private readonly IInstallationWriteProbe _probe;
+
     private readonly IniReconciler _reconciler;
 
     private readonly IIniSnapshotRepository _snapshots;
@@ -24,12 +26,14 @@ public sealed class IniWritePipeline
     /// <param name="files">The <c>zoo.ini</c> file store.</param>
     /// <param name="installations">Installation repository.</param>
     /// <param name="logger">Logger for read, write and snapshot-store failures.</param>
+    /// <param name="probe">Classifies an access-denied write failure.</param>
     /// <param name="reconciler">The tiered-drift reconciler.</param>
     /// <param name="snapshots">The snapshot repository.</param>
     public IniWritePipeline(TimeProvider              clock,
                             IIniFileStore             files,
                             IInstallationRepository   installations,
                             ILogger<IniWritePipeline> logger,
+                            IInstallationWriteProbe   probe,
                             IniReconciler             reconciler,
                             IIniSnapshotRepository    snapshots)
     {
@@ -37,6 +41,7 @@ public sealed class IniWritePipeline
         _files         = files;
         _installations = installations;
         _logger        = logger;
+        _probe         = probe;
         _reconciler    = reconciler;
         _snapshots     = snapshots;
     }
@@ -155,9 +160,18 @@ public sealed class IniWritePipeline
             {
                 lastWriteUtc = await _files.WriteAsync(installation.Path, text, cancellationToken);
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
                 // Returning disposes the transaction uncommitted, rolling back the archive: the file and the database both keep their previous state.
+                _logger.LogWarning(ex, message: "Writing zoo.ini was denied for {InstallationId}", installation.Id);
+
+                InstallationWriteAccess access = await _probe.ProbeAsync(installation.Path, cancellationToken);
+
+                return IniReadOnlyText.For(access) is null ? IniErrors.WriteFailed(ex.Message) : IniErrors.ReadOnly(access);
+            }
+            catch (IOException ex)
+            {
+                // As above: the transaction is disposed uncommitted.
                 _logger.LogWarning(ex, message: "Writing zoo.ini failed for {InstallationId}", installation.Id);
 
                 return IniErrors.WriteFailed(ex.Message);

@@ -45,6 +45,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -92,6 +93,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   Substitute.For<IIniSnapshotService>(),
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -144,6 +146,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -193,6 +196,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   Substitute.For<IIniSnapshotService>(),
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   clock);
 
         await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -251,6 +255,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   clock);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -315,6 +320,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   clock);
 
         await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -368,6 +374,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -427,6 +434,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -469,6 +477,7 @@ public sealed class BootHandlerTests
                                   Substitute.For<IInstallationVerifier>(),
                                   locator,
                                   Substitute.For<IIniSnapshotService>(),
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -504,6 +513,7 @@ public sealed class BootHandlerTests
                                   Substitute.For<IInstallationVerifier>(),
                                   locator,
                                   Substitute.For<IIniSnapshotService>(),
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -534,6 +544,7 @@ public sealed class BootHandlerTests
                                   Substitute.For<IInstallationVerifier>(),
                                   locator,
                                   Substitute.For<IIniSnapshotService>(),
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -563,6 +574,7 @@ public sealed class BootHandlerTests
                                   Substitute.For<IInstallationVerifier>(),
                                   Substitute.For<IInstallationLocator>(),
                                   Substitute.For<IIniSnapshotService>(),
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -627,6 +639,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -692,6 +705,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
@@ -746,6 +760,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(requestedId), CancellationToken.None);
@@ -794,6 +809,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   Substitute.For<IIniSnapshotService>(),
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(requestedId), CancellationToken.None);
@@ -830,6 +846,7 @@ public sealed class BootHandlerTests
                                   Substitute.For<IInstallationVerifier>(),
                                   Substitute.For<IInstallationLocator>(),
                                   Substitute.For<IIniSnapshotService>(),
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(requestedId), CancellationToken.None);
@@ -891,6 +908,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(requestedId), CancellationToken.None);
@@ -947,6 +965,7 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
                                   clock);
 
         await handler.Handle(new BootCommand(requestedId), CancellationToken.None);
@@ -991,7 +1010,7 @@ public sealed class BootHandlerTests
 
         IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
 
-        BootHandler handler = new(settings, installations, verifier, Substitute.For<IInstallationLocator>(), snapshots, TimeProvider.System);
+        BootHandler handler = new(settings, installations, verifier, Substitute.For<IInstallationLocator>(), snapshots, IniTestData.Probe(InstallationWriteAccess.Writable), TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -1040,11 +1059,94 @@ public sealed class BootHandlerTests
         snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
                  .Returns(Error.Failure(code: "Ini.ReadFailed", description: "zoo.ini could not be read: locked"));
 
-        BootHandler handler = new(settings, installations, verifier, Substitute.For<IInstallationLocator>(), snapshots, TimeProvider.System);
+        BootHandler handler = new(settings, installations, verifier, Substitute.For<IInstallationLocator>(), snapshots, IniTestData.Probe(InstallationWriteAccess.Writable), TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
         result.Value.Outcome.ShouldBe(BootOutcome.CannotPlay);
         result.Value.IniErrorMessage.ShouldBe(expected: "zoo.ini could not be read: locked");
+    }
+
+    [ Fact ]
+    public async Task Boot_ReadyToPlay_CarriesTheProbeResult()
+    {
+        (BootHandler handler, IInstallationWriteProbe probe) = CreateProbedHandler(hasExe: true, hasIni: true, InstallationWriteAccess.FolderReadOnly);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
+
+        result.Value.Outcome.ShouldBe(BootOutcome.ReadyToPlay);
+        result.Value.WriteAccess.ShouldBe(InstallationWriteAccess.FolderReadOnly);
+
+        await probe.Received(requiredNumberOfCalls: 1).ProbeAsync(@"C:\ZT", Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Boot_NoIni_StillProbes()
+    {
+        (BootHandler handler, IInstallationWriteProbe probe) = CreateProbedHandler(hasExe: true, hasIni: false, InstallationWriteAccess.Writable);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
+
+        result.Value.Outcome.ShouldBe(BootOutcome.CannotPlay);
+        result.Value.WriteAccess.ShouldBe(InstallationWriteAccess.Writable);
+
+        await probe.Received(requiredNumberOfCalls: 1).ProbeAsync(@"C:\ZT", Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Boot_NoExe_DoesNotProbe()
+    {
+        (BootHandler handler, IInstallationWriteProbe probe) = CreateProbedHandler(hasExe: false, hasIni: true, InstallationWriteAccess.FolderReadOnly);
+
+        ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
+
+        result.Value.Outcome.ShouldBe(BootOutcome.CannotPlay);
+        result.Value.WriteAccess.ShouldBe(InstallationWriteAccess.Unknown);
+
+        await probe.DidNotReceive().ProbeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    private static (BootHandler Handler, IInstallationWriteProbe Probe) CreateProbedHandler(bool hasExe, bool hasIni, InstallationWriteAccess access)
+    {
+        Guid id = Guid.CreateVersion7();
+
+        ILauncherSettingsRepository settings = Substitute.For<ILauncherSettingsRepository>();
+
+        settings.GetAsync(Arg.Any<CancellationToken>())
+                .Returns(new LauncherSettings
+                {
+                    DefaultInstallationId = id
+                });
+
+        GameInstallation row = new()
+        {
+            Id       = id,
+            Name     = "Main",
+            Path     = @"C:\ZT",
+            HasExe   = hasExe,
+            HasIni   = hasIni,
+            AddedUtc = DateTime.UtcNow
+        };
+
+        IInstallationRepository installations = Substitute.For<IInstallationRepository>();
+
+        installations.GetByIdAsync(id, Arg.Any<CancellationToken>())
+                     .Returns(row);
+
+        IInstallationVerifier verifier = Substitute.For<IInstallationVerifier>();
+
+        verifier.VerifyAsync(row.Path, Arg.Any<CancellationToken>())
+                .Returns(new VerificationResult(DirectoryExists: true, hasExe, hasIni));
+
+        IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
+
+        snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
+                 .Returns(Result.Success);
+
+        IInstallationWriteProbe probe = IniTestData.Probe(access);
+
+        BootHandler handler = new(settings, installations, verifier, Substitute.For<IInstallationLocator>(), snapshots, probe, TimeProvider.System);
+
+        return (handler, probe);
     }
 }

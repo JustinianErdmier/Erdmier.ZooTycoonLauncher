@@ -172,32 +172,32 @@ The icons are the Windows 95 set committed under `Source/Erdmier.ZooTycoonLaunch
 `Height` / `Width` on the `Image` decide the rendered size. The launcher's own mark lives in `Assets/BrandIcons/` and `Assets/Images/`. The table maps each site to the
 file its view uses today; a site whose view does not exist yet is marked *(not built)* and has no file yet.
 
-| Site                                                          | Icon                                                   | Notes                                                    |
-|---------------------------------------------------------------|--------------------------------------------------------|----------------------------------------------------------|
-| Main window and the small prompts · title bar                 | `BrandIcons/ZTL_Title-Icon.png`                        | App-owned mark; also the Confirmation, Error and Save prompts |
-| Play · General tab · Status group box, can play               | `ok32.gif`                                             |                                                          |
-| Play · General tab · Status group box, cannot play            | `warning32.gif`                                        |                                                          |
-| Play · General tab · Display group box                        | `mystify16.ico`                                        | Drawn at 32 px                                           |
-| Play · General tab · Your System group box                    | `mycomputer16.ico`                                     | Drawn at 32 px                                           |
-| Play · General tab · ready / not-ready line                   | `ok16.gif` / `error32.gif`                             | Both drawn at 16 px                                      |
-| Looking for Zoo Tycoon                                        | `searchcomputer16.ico`                                 | Drawn at 32 px                                           |
-| No Game Installation Found                                    | `error32.gif`                                          |                                                          |
-| Open Game Installation                                        | `foldercatalog16.ico`                                  | Drawn at 32 px                                           |
-| Installation Manager · title bar                              | `installationoncomputer16.ico`                         |                                                          |
-| Add / Edit Installation · title bar + body                    | `foldercatalog16.ico`                                  |                                                          |
-| Installation form · error line                                | `cancel16.gif`                                         |                                                          |
-| Delete Installation · title bar + body                        | `warning32.gif`                                        |                                                          |
-| Installation Info · title bar / body                          | `foldercatalog16.ico` / `information32.gif`            |                                                          |
-| Fix Installation · title bar                                  | `warning32.gif`                                        |                                                          |
-| Fix EXE / Fix INI group boxes · valid / invalid               | `ok32.gif` / `error32.gif`                             |                                                          |
-| Restore Previous INI · title bar                              | `sheetsanddocuments32.ico`                             |                                                          |
-| Confirmation and Save-changes prompts · body                  | `warning32.gif`                                        |                                                          |
-| Error message · body                                          | `error32.gif`                                          |                                                          |
-| Launch error · body                                           | `cancel32.gif`                                         |                                                          |
-| INI tab · No INI sub-state                                    | `warning32.gif`                                        |                                                          |
-| INI tab placeholder (disabled)                                | *(no icon)*                                            | Muted helper text only                                   |
-| Settings · title bar *(not built)*                            | `controls32.ico`                                       | File committed, no view yet                              |
-| About · title bar *(not built)*                               | *(none chosen)*                                        | No view yet; body keeps the app logo                     |
+| Site                                               | Icon                                        | Notes                                                         |
+|----------------------------------------------------|---------------------------------------------|---------------------------------------------------------------|
+| Main window and the small prompts · title bar      | `BrandIcons/ZTL_Title-Icon.png`             | App-owned mark; also the Confirmation, Error and Save prompts |
+| Play · General tab · Status group box, can play    | `ok32.gif`                                  |                                                               |
+| Play · General tab · Status group box, cannot play | `warning32.gif`                             |                                                               |
+| Play · General tab · Display group box             | `mystify16.ico`                             | Drawn at 32 px                                                |
+| Play · General tab · Your System group box         | `mycomputer16.ico`                          | Drawn at 32 px                                                |
+| Play · General tab · ready / not-ready line        | `ok16.gif` / `error32.gif`                  | Both drawn at 16 px                                           |
+| Looking for Zoo Tycoon                             | `searchcomputer16.ico`                      | Drawn at 32 px                                                |
+| No Game Installation Found                         | `error32.gif`                               |                                                               |
+| Open Game Installation                             | `foldercatalog16.ico`                       | Drawn at 32 px                                                |
+| Installation Manager · title bar                   | `installationoncomputer16.ico`              |                                                               |
+| Add / Edit Installation · title bar + body         | `foldercatalog16.ico`                       |                                                               |
+| Installation form · error line                     | `cancel16.gif`                              |                                                               |
+| Delete Installation · title bar + body             | `warning32.gif`                             |                                                               |
+| Installation Info · title bar / body               | `foldercatalog16.ico` / `information32.gif` |                                                               |
+| Fix Installation · title bar                       | `warning32.gif`                             |                                                               |
+| Fix EXE / Fix INI group boxes · valid / invalid    | `ok32.gif` / `error32.gif`                  |                                                               |
+| Restore Previous INI · title bar                   | `sheetsanddocuments32.ico`                  |                                                               |
+| Confirmation and Save-changes prompts · body       | `warning32.gif`                             |                                                               |
+| Error message · body                               | `error32.gif`                               |                                                               |
+| Launch error · body                                | `cancel32.gif`                              |                                                               |
+| INI tab · No INI sub-state                         | `warning32.gif`                             |                                                               |
+| INI tab placeholder (disabled)                     | *(no icon)*                                 | Muted helper text only                                        |
+| Settings · title bar *(not built)*                 | `controls32.ico`                            | File committed, no view yet                                   |
+| About · title bar *(not built)*                    | *(none chosen)*                             | No view yet; body keeps the app logo                          |
 
 
 ---

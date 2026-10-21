@@ -1376,8 +1376,8 @@ The prototype evaluated a dedicated help group box at the bottom of the tab (Ref
 selected by the user, is **hover + status**:
 
 - **Hover the row** → an OS-level tooltip displays the full description from the Desktop catalogue (`IniEditorCatalogue`, rewritten from the Ref build's tooltips).
-- **Hover/focus the row** → the editor's footer status label switches from the dirty-state indicator to a short italicised one-liner derived from the same prose. Once the cursor  
-  leaves the row, the footer reverts to its dirty / saved indicator (`● Unsaved changes` in maroon-bold, or `All changes saved · Last write: <local time>` in muted grey).
+- **Hover/focus the row** → the editor's footer status label switches from the dirty-state indicator to a short italicised one-liner derived from the same prose. When no row
+  is hovered or focused, the footer reverts to its dirty / saved indicator (`● Unsaved changes` in maroon-bold, or `All changes saved · Last write: <local time>` in muted grey).
 
 The row's pointer sets the field's `IsHovered` and its focus sets `IsFocused`; the editor footer shows the hovered row's help, else the focused
 row's, else the dirty / saved state. `IIniHelpRegistry` and `IStatusBarSink` are not used.

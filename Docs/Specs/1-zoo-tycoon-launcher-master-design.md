@@ -1351,9 +1351,10 @@ an optional muted hint sub-line (`px`, `1–60 ticks/sec`, `-10000 silent → 0 
 (Tutorial → Beginner → Intermediate → Advanced → Expert → Expansion → Unknown).
 
 The four `[UI]` cash rows (`MSStartingCash`, `MSCashIncrement`, `MSMinCash`, `MSMaxCash`) display as dollars — `$1,000,000`, always `$` with `,` grouping and no decimals,
-whatever the OS culture. Typing `250000` or `$250,000` both commit `250000`, a typed decimal is truncated, and `zoo.ini` keeps the plain integer; the hints read
-`$0–$10,000,000` and `$100–$1,000,000`. `[language]/lang` and `sublang` are read-only number rows (Win9x read-only grey, no spinner): the curated language picker is the only way
-to change them, and a pair the picker does not list shows both numbers with the picker blank. Reset, Restore defaults and Restore previous still update both rows.
+whatever the OS culture. Typing `250000` or `$250,000` both commit `250000`, a typed decimal is not accepted (the box reverts), and `zoo.ini` keeps the plain integer; the
+hints read `$0–$10,000,000` and `$100–$1,000,000`. `[language]/lang` and `sublang` are read-only number rows (Win9x read-only grey, no spinner): the curated language
+picker is the only way to change them, and a pair the picker does not list shows both numbers with the picker blank.
+Reset, Restore defaults and Restore previous still update both rows.
 
 #### 9.3.1 INI Config sub-states
 
@@ -1436,14 +1437,15 @@ the dialogue now focuses on **comparing snapshots to current**:
 
 - **Snapshot grid.** Three columns — `Captured` (local time, `d MMM yyyy HH:mm`; stored UTC), `Trigger` (`OriginalImport` / `LauncherGui` / `Manual`, shown as the raw enum
   name), `Δ keys` (count). `Historical` snapshots are listed newest first, then the `Original` snapshot as the last row. The newest snapshot is selected on open and its diff
-  shown. No `Note` column — the prototype's earlier "auto-generated note" idea was scoped out (no AI in the launcher).
+  shown. No `Note` column — the prototype's earlier "auto-generated note" idea was scoped out (no AI in the launcher). The grid's headers are inert — they can be neither
+  clicked nor resized.
 - **Diff viewer.** A scrolling table with three columns — `Key` (`[section]/keyname`), `Current`, `Snapshot` — one row per **user-setting** key whose effective value differs
   between current and the selected snapshot (game-managed keys and `[scenario]` are never listed or restored). A key `Current` has but the snapshot lacks is not a row; a key
   the snapshot has but `Current` lacks is a row whose `Current` cell reads "(not set)". Header text labels the columns so any colour treatment is supplementary, not
   required. When the diff is empty, the panel shows a centred message: *"No differences — this snapshot matches the current state."*
   Each `Current` and `Snapshot` cell shows the value as the editor row does: a choice by its option label, a check-box key as `true` / `false` (the key's own value, so the
-  inverted `[UI]/noMenuMusic` reads `true` when the INI holds `1`), a cash key as dollars, and anything else verbatim; `(not set)` is unchanged. The snapshot grid's headers are
-  inert — they can be neither clicked nor resized.
+  inverted `[UI]/noMenuMusic` reads `true` when the INI holds `1`), a cash key as dollars, and anything else verbatim; `(not set)` is unchanged. A value the formatter cannot map —
+  for example `fullscreen=7` — is shown verbatim.
 - **Kept-keys note.** When the selected snapshot lacks keys that `Current` has, a warning line under the diff reads *"Not in this snapshot, so they keep their current values:"*
   followed by those keys. It does not change the change count or `Restore`'s enablement.
 - **Footer:** `Restore` (default; disabled when the diff is empty), `Cancel`. Both `Cancel` and the title-bar close are disabled while a restore runs.

@@ -9,8 +9,8 @@ public static class IniCurrencyFormat
     /// <summary>The number format that renders and parses the dollar sign and the grouping separator the same way on every machine.</summary>
     public static NumberFormatInfo NumberFormat { get; } = CreateNumberFormat();
 
-    /// <summary>The styles accepted when parsing typed cash: an optional dollar sign and grouping separators.</summary>
-    public const NumberStyles ParsingNumberStyle = NumberStyles.Currency;
+    /// <summary>The styles accepted when parsing typed cash: an optional dollar sign, grouping separators and surrounding spaces; no decimals or sign.</summary>
+    public const NumberStyles ParsingNumberStyle = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowCurrencySymbol | NumberStyles.AllowThousands;
 
     /// <summary>Formats a whole-dollar amount.</summary>
     /// <param name="value">The amount.</param>

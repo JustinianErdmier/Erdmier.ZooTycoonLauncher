@@ -150,8 +150,10 @@ public static class IniEditorCatalogue
                     [
                         new IniFieldDescriptor(Id: null, Label: "lang / sublang", IniControlKind.LanguagePicker, Hint: "Curated LANGID + SUBLANGID",
                                                Help: "Game language. Choosing an entry sets both LANGID and SUBLANGID below."),
-                        Number(LanguageId.Section, LanguageId.Key, hint: "Windows LANGID 0–65535", help: "Windows primary language identifier (LANGID). Set by the language picker above.", isReadOnly: true),
-                        Number(SubLanguageId.Section, SubLanguageId.Key, hint: "Windows SUBLANGID 0–65535", help: "Windows sub-language identifier (SUBLANGID). Set by the language picker above.", isReadOnly: true)
+                        Number(LanguageId.Section, LanguageId.Key, hint: "Windows LANGID 0–65535",
+                               help: "Windows primary language identifier (LANGID). Set by the language picker above.", isReadOnly: true),
+                        Number(SubLanguageId.Section, SubLanguageId.Key, hint: "Windows SUBLANGID 0–65535",
+                               help: "Windows sub-language identifier (SUBLANGID). Set by the language picker above.", isReadOnly: true)
                     ])
             ]),
         new(Section: "Map",

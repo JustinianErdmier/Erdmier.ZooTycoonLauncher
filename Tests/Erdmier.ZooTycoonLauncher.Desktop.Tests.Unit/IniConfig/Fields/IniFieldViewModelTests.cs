@@ -112,19 +112,20 @@ public sealed class IniFieldViewModelTests
     }
 
     [ Fact ]
-    public void Number_Cash_DecimalInputWritesTheTruncatedInteger()
+    public void Number_Cash_RejectsDecimalInput()
     {
         IniNumberFieldViewModel row = new(Descriptor(section: "UI", key: "MSStartingCash"));
 
-        row.Load(raw: "5000");
+        decimal.TryParse(s: "$1,000.75", row.ParsingNumberStyle, row.NumberFormat, out decimal _).ShouldBeFalse();
+        decimal.TryParse(s: "1000.5", row.ParsingNumberStyle, row.NumberFormat, out decimal _).ShouldBeFalse();
+        decimal.TryParse(s: "-500", row.ParsingNumberStyle, row.NumberFormat, out decimal _).ShouldBeFalse();
+        decimal.TryParse(s: "(500)", row.ParsingNumberStyle, row.NumberFormat, out decimal _).ShouldBeFalse();
 
-        decimal.TryParse(s: "$1,000.75", row.ParsingNumberStyle, row.NumberFormat, out decimal parsed).ShouldBeTrue();
+        decimal.TryParse(s: "$1,000", row.ParsingNumberStyle, row.NumberFormat, out decimal grouped).ShouldBeTrue();
+        grouped.ShouldBe(expected: 1000m);
 
-        row.Value = parsed;
-
-        row.Value.ShouldBe(expected: 1000m);
-        row.TryGetEdit(out string? edit).ShouldBeTrue();
-        edit.ShouldBe(expected: "1000");
+        decimal.TryParse(s: " $250,000 ", row.ParsingNumberStyle, row.NumberFormat, out decimal padded).ShouldBeTrue();
+        padded.ShouldBe(expected: 250000m);
     }
 
     [ Fact ]
@@ -264,13 +265,7 @@ public sealed class IniFieldViewModelTests
     [ Fact ]
     public void LanguagePicker_DrivesAndFollowsTheTwoNumberRows()
     {
-        IniNumberFieldViewModel language    = new(Descriptor(IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key));
-        IniNumberFieldViewModel subLanguage = new(Descriptor(IniEditorCatalogue.SubLanguageId.Section, IniEditorCatalogue.SubLanguageId.Key));
-
-        IniLanguageFieldViewModel picker = new(IniEditorCatalogue.Sections.Single(s => s.Section == IniEditorCatalogue.LanguageId.Section).Groups[0].Fields[0],
-                                               language,
-                                               subLanguage,
-                                               IniEditorCatalogue.Languages);
+        (IniNumberFieldViewModel language, IniNumberFieldViewModel subLanguage, IniLanguageFieldViewModel picker) = LanguageRows();
 
         language.Load(raw: "9");
         subLanguage.Load(raw: "1");
@@ -337,13 +332,7 @@ public sealed class IniFieldViewModelTests
     [ Fact ]
     public void SelectedOption_Set_RaisesChangeOnceAfterBothWrites()
     {
-        IniNumberFieldViewModel language    = new(Descriptor(IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key));
-        IniNumberFieldViewModel subLanguage = new(Descriptor(IniEditorCatalogue.SubLanguageId.Section, IniEditorCatalogue.SubLanguageId.Key));
-
-        IniLanguageFieldViewModel picker = new(IniEditorCatalogue.Sections.Single(s => s.Section == IniEditorCatalogue.LanguageId.Section).Groups[0].Fields[0],
-                                               language,
-                                               subLanguage,
-                                               IniEditorCatalogue.Languages);
+        (IniNumberFieldViewModel language, IniNumberFieldViewModel subLanguage, IniLanguageFieldViewModel picker) = LanguageRows();
 
         language.Load(raw: "9");
         subLanguage.Load(raw: "1");

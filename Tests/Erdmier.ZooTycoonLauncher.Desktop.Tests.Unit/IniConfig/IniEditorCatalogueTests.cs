@@ -46,11 +46,10 @@ public sealed class IniEditorCatalogueTests
     {
         IniFieldDescriptor[] cash = AllFields.Where(field => field.IsCurrency).ToArray();
 
-        cash.Select(field => field.Id!.Value)
-            .ShouldBe([ new IniKeyId(Section: "UI", Key: "MSStartingCash"), new IniKeyId(Section: "UI", Key: "MSCashIncrement"),
-                        new IniKeyId(Section: "UI", Key: "MSMinCash"), new IniKeyId(Section: "UI", Key: "MSMaxCash") ], ignoreOrder: true);
-        cash.Select(field => field.Hint)
-            .ShouldBe([ "$0–$10,000,000", "$100–$1,000,000", "$0–$10,000,000", "$0–$10,000,000" ], ignoreOrder: true);
+        cash.Select(field => (field.Id!.Value, field.Hint))
+            .ShouldBe([ (new IniKeyId(Section: "UI", Key: "MSStartingCash"), "$0–$10,000,000"), (new IniKeyId(Section: "UI", Key: "MSCashIncrement"), "$100–$1,000,000"),
+                        (new IniKeyId(Section: "UI", Key: "MSMinCash"), "$0–$10,000,000"), (new IniKeyId(Section: "UI", Key: "MSMaxCash"), "$0–$10,000,000") ],
+                      ignoreOrder: true);
     }
 
     [ Fact ]

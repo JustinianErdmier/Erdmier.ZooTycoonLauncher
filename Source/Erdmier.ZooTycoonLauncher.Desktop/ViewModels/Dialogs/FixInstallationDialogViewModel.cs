@@ -2,8 +2,8 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
 /// <summary>
 ///     View model for the Fix Installation modal (SDD §7.2.5, §9.5). Re-probes the installation folder on open, and lets the user relocate an installation whose
-///     <c>zoo.exe</c> is missing. INI repair (Create) is deferred to the INI Config slice, so the INI box reports status only. <see cref="HasChanges" /> tells the
-///     caller whether anything was persisted — a relocation, or drift found by the re-probe.
+///     <c>zoo.exe</c> is missing, and create or locate a missing <c>zoo.ini</c> once the executable is present. <see cref="HasChanges" /> tells the
+///     caller whether anything was persisted — a relocation, an INI repair, or drift found by the re-probe.
 /// </summary>
 public sealed partial class FixInstallationDialogViewModel : ViewModelBase
 {
@@ -41,26 +41,38 @@ public sealed partial class FixInstallationDialogViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial string? ExeErrorMessage { get; set; }
 
+    /// <summary>The most recent Create or Locate… INI error, shown inside the Fix INI box.</summary>
+    [ ObservableProperty ]
+    public partial string? IniErrorMessage { get; set; }
+
     /// <summary><see langword="true" /> when anything was persisted whilst the dialogue was open. Read by the dialogue service once the window closes.</summary>
     public bool HasChanges { get; private set; }
 
     /// <summary><see langword="true" /> when <c>zoo.exe</c> is present in the installation folder.</summary>
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(LocateCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(CreateIniCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(LocateIniCommand)) ]
     public partial bool HasExe { get; set; }
 
     /// <summary><see langword="true" /> when <c>zoo.ini</c> is present in the installation folder.</summary>
     [ ObservableProperty ]
+    [ NotifyCanExecuteChangedFor(nameof(CreateIniCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(LocateIniCommand)) ]
     public partial bool HasIni { get; set; }
 
-    /// <summary><see langword="true" /> while a relocation is in flight.</summary>
+    /// <summary><see langword="true" /> while a relocation or INI repair is in flight.</summary>
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(LocateCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(CreateIniCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(LocateIniCommand)) ]
     public partial bool IsBusy { get; set; }
 
     /// <summary><see langword="true" /> once the installation has loaded and been re-probed.</summary>
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(LocateCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(CreateIniCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(LocateIniCommand)) ]
     public partial bool IsLoaded { get; set; }
 
     /// <summary>
@@ -90,7 +102,7 @@ public sealed partial class FixInstallationDialogViewModel : ViewModelBase
                 return;
             }
 
-            ErrorOr<VerificationResult> verification = await _mediator.Send(new VerifyInstallationQuery(installationId), cancellationToken);
+            ErrorOr<VerificationResult> verification = await VerifyAsync(installationId, cancellationToken);
 
             if (verification.IsError)
             {
@@ -178,6 +190,91 @@ public sealed partial class FixInstallationDialogViewModel : ViewModelBase
             IsBusy = false;
         }
     }
+
+    [ RelayCommand(CanExecute = nameof(CanExecuteIniAction)) ]
+    private Task CreateIniAsync(CancellationToken cancellationToken)
+        => RunIniActionAsync(() => _mediator.Send(new CreateDefaultIniCommand(_installationId), cancellationToken).AsTask());
+
+    [ RelayCommand(CanExecute = nameof(CanExecuteIniAction)) ]
+    private async Task LocateIniAsync(CancellationToken cancellationToken)
+    {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_mediator is null
+            || _dialogs is null)
+        {
+            return;
+        }
+
+        string? source = await _dialogs.PickFileAsync(_path, title: "Locate zoo.ini");
+
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            return;
+        }
+
+        await RunIniActionAsync(() => _mediator.Send(new LocateIniCommand(_installationId, source), cancellationToken).AsTask());
+    }
+
+    private async Task RunIniActionAsync(Func<Task<ErrorOr<IniRecoveryResult>>> send)
+    {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_mediator is null)
+        {
+            return;
+        }
+
+        IsBusy          = true;
+        IniErrorMessage = null;
+
+        try
+        {
+            ErrorOr<IniRecoveryResult> result = await send();
+
+            if (!result.IsError)
+            {
+                HasIni     = result.Value.Validity.HasIni;
+                HasChanges = true;
+
+                return;
+            }
+
+            if (result.FirstError.Code == IniErrors.AlreadyExistsCode)
+            {
+                // The file appeared in the meantime: re-probe so the group picks it up, exactly as the initial load does.
+                ErrorOr<VerificationResult> verification = await VerifyAsync(_installationId, CancellationToken.None);
+
+                if (verification.IsError)
+                {
+                    IniErrorMessage = InstallationDialogMessages.UnexpectedFailure;
+
+                    return;
+                }
+
+                HasExe     = verification.Value.HasExe;
+                HasIni     = verification.Value.HasIni;
+                HasChanges = true;
+
+                return;
+            }
+
+            IniErrorMessage = result.FirstError.Description;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to create or locate zoo.ini for installation {InstallationId}.", _installationId);
+
+            IniErrorMessage = InstallationDialogMessages.UnexpectedFailure;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private Task<ErrorOr<VerificationResult>> VerifyAsync(Guid installationId, CancellationToken cancellationToken)
+        => _mediator.Send(new VerifyInstallationQuery(installationId), cancellationToken).AsTask();
+
+    private bool CanExecuteIniAction() => IsLoaded && HasExe && !HasIni && !IsBusy;
 
     [ RelayCommand ]
     private void Ok() => CloseRequested?.Invoke(this, EventArgs.Empty);

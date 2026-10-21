@@ -24,6 +24,7 @@ global using Erdmier.ZooTycoonLauncher.Application.Common.Extensions;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Messaging;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Models;
 global using Erdmier.ZooTycoonLauncher.Application.Game.Launch;
+global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Common;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Get;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.History;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Recovery;

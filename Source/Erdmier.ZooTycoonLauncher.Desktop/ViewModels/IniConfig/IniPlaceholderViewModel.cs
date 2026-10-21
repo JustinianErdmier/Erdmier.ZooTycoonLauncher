@@ -132,7 +132,7 @@ public sealed partial class IniPlaceholderViewModel : ViewModelBase
             ErrorOr<IniRecoveryResult> result = await send();
 
             if (!result.IsError
-                || result.FirstError.Code == "Ini.AlreadyExists")
+                || result.FirstError.Code == IniErrors.AlreadyExistsCode)
             {
                 await _reopenOnIniTabAsync!(cancellationToken);
 

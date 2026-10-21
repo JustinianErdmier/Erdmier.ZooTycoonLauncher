@@ -102,11 +102,18 @@
                        VerticalAlignment="Top"
                        Width="32" />
 
-                <Button DockPanel.Dock="Right"
-                        Content="Create"
-                        IsEnabled="False"
-                        MinWidth="75"
-                        VerticalAlignment="Top" />
+                <StackPanel DockPanel.Dock="Right"
+                            Orientation="Vertical"
+                            Spacing="6"
+                            VerticalAlignment="Top">
+                    <Button Command="{Binding CreateIniCommand}"
+                            Content="Create"
+                            MinWidth="75" />
+
+                    <Button Command="{Binding LocateIniCommand}"
+                            Content="Locate…"
+                            MinWidth="75" />
+                </StackPanel>
 
                 <StackPanel Orientation="Vertical"
                             Spacing="4">
@@ -128,7 +135,13 @@
                         <TextBlock Foreground="DarkGoldenrod"
                                    Text="No INI found" />
                         <TextBlock Opacity="0.6"
-                                   Text="INI repair arrives with the INI Config slice."
+                                   TextWrapping="Wrap">
+                            <Run Text="Create a fresh " /><Run FontFamily="Consolas"
+                                                              Text="zoo.ini" /><Run Text=" from the launcher's defaults, or locate an existing file to copy in. Any earlier values stay in history." />
+                        </TextBlock>
+                        <TextBlock Foreground="Maroon"
+                                   IsVisible="{Binding IniErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                   Text="{Binding IniErrorMessage}"
                                    TextWrapping="Wrap" />
                     </StackPanel>
                 </StackPanel>

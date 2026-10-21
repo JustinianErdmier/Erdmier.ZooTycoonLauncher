@@ -45,7 +45,7 @@ public sealed class IniPlaceholderViewModelTests
     [ Fact ]
     public async Task Create_AlreadyExists_ReopensOnTheIniTab()
     {
-        ReturnsForCreate(Error.Conflict(code: "Ini.AlreadyExists", description: "zoo.ini already exists"));
+        ReturnsForCreate(Error.Conflict(code: IniErrors.AlreadyExistsCode, description: "zoo.ini already exists"));
 
         await Create().CreateCommand.ExecuteAsync(parameter: null);
 

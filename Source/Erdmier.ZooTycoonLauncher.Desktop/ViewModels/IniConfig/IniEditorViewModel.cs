@@ -439,6 +439,8 @@ file sealed class NoOpDialogService : IDialogService
 
     public Task<string?> PickFolderAsync(string? startPath) => Task.FromResult<string?>(result: null);
 
+    public Task<string?> PickFileAsync(string? startPath, string title) => Task.FromResult<string?>(result: null);
+
     public Task<SaveChangesChoice> ShowSaveChangesPromptAsync() => Task.FromResult(SaveChangesChoice.Cancel);
 
     public Task<bool> ShowConfirmationAsync(string title, string message) => Task.FromResult(false);

@@ -189,5 +189,6 @@ public sealed class MainWindowViewModelGuardTests
                NullLogger<InstallationGridViewModel>.Instance,
                NullLogger<PlayViewModel>.Instance,
                NullLogger<IniConfigTabViewModel>.Instance,
-               NullLogger<IniEditorViewModel>.Instance);
+               NullLogger<IniEditorViewModel>.Instance,
+               NullLogger<IniPlaceholderViewModel>.Instance);
 }

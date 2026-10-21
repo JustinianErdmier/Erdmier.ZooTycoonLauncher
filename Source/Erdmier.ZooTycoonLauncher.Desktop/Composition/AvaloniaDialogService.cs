@@ -228,6 +228,53 @@ internal sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
+    public async Task<string?> PickFileAsync(string? startPath, string title)
+    {
+        Window? owner = ResolveOwner();
+
+        if (owner is null)
+        {
+            return null;
+        }
+
+        FilePickerOpenOptions options = new()
+        {
+            AllowMultiple = false,
+            Title         = title,
+            FileTypeFilter =
+            [
+                new FilePickerFileType("INI files")
+                {
+                    Patterns = [ "*.ini" ]
+                },
+                new FilePickerFileType("All files")
+                {
+                    Patterns = [ "*" ]
+                }
+            ]
+        };
+
+        if (!string.IsNullOrWhiteSpace(startPath))
+        {
+            try
+            {
+                options.SuggestedStartLocation = await owner.StorageProvider.TryGetFolderFromPathAsync(startPath);
+            }
+            catch (Exception)
+            {
+                // Suggested start is best-effort; fall back to the picker's default.
+            }
+        }
+
+        IReadOnlyList<IStorageFile> chosen = await owner.StorageProvider.OpenFilePickerAsync(options);
+
+        return chosen.Count == 0
+                   ? null
+                   : chosen[index: 0]
+                       .TryGetLocalPath();
+    }
+
+    /// <inheritdoc />
     public async Task<SaveChangesChoice> ShowSaveChangesPromptAsync()
     {
         Window? owner = ResolveOwner();

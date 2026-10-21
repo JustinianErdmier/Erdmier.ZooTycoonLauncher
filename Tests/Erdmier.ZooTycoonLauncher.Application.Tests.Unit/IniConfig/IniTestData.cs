@@ -19,6 +19,16 @@ internal static class IniTestData
 
     public static string Text(params string[] lines) => string.Join(separator: "\r\n", lines) + "\r\n";
 
+    public static IInstallationWriteProbe Probe(InstallationWriteAccess access)
+    {
+        IInstallationWriteProbe probe = Substitute.For<IInstallationWriteProbe>();
+
+        probe.ProbeAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+             .Returns(access);
+
+        return probe;
+    }
+
     public static IniSnapshot Snapshot(string text, IniSnapshotKind? kind = null)
     {
         Guid id = Guid.CreateVersion7();

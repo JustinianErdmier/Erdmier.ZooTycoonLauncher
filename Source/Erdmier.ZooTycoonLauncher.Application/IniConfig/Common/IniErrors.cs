@@ -3,6 +3,9 @@ namespace Erdmier.ZooTycoonLauncher.Application.IniConfig.Common;
 /// <summary>The expected failures of the INI Config slice. Descriptions are user-readable because the Desktop layer shows them verbatim.</summary>
 public static class IniErrors
 {
+    /// <summary>The code carried by <see cref="AlreadyExists" />, for callers that treat that failure as a cue to re-probe rather than as an error.</summary>
+    public const string AlreadyExistsCode = "Ini.AlreadyExists";
+
     /// <summary>The installation id does not resolve to a row.</summary>
     /// <param name="installationId">The missing id.</param>
     /// <returns>A not-found error coded <c>Installation.NotFound</c>.</returns>
@@ -27,6 +30,24 @@ public static class IniErrors
     /// <param name="message">The underlying exception's message.</param>
     /// <returns>An unexpected error coded <c>Ini.StoreFailed</c>.</returns>
     public static Error StoreFailed(string message) => Error.Unexpected(code: "Ini.StoreFailed", $"The installation's settings history could not be read or updated: {message}");
+
+    /// <summary><c>zoo.ini</c> appeared before Create or Locate could write it, so nothing was written.</summary>
+    /// <param name="installationPath">The installation folder.</param>
+    /// <returns>A conflict coded <c>Ini.AlreadyExists</c>.</returns>
+    public static Error AlreadyExists(string installationPath) => Error.Conflict(code: AlreadyExistsCode, $"zoo.ini already exists in \"{installationPath}\", so nothing was written.");
+
+    /// <summary>The chosen file does not look like a Zoo Tycoon <c>zoo.ini</c>.</summary>
+    /// <param name="sourcePath">The chosen file's path; only its file name is shown.</param>
+    /// <returns>A validation error coded <c>Ini.NotAnIni</c>.</returns>
+    public static Error NotAnIni(string sourcePath) => Error.Validation(code: "Ini.NotAnIni", $"\"{Path.GetFileName(sourcePath)}\" does not look like a Zoo Tycoon zoo.ini.");
+
+    /// <summary>Writing <c>zoo.ini</c> was denied because the folder or the file is read-only.</summary>
+    /// <param name="access">The probed write access; must be <see cref="InstallationWriteAccess.FolderReadOnly" /> or <see cref="InstallationWriteAccess.FileReadOnly" />.</param>
+    /// <returns>A failure coded <c>Ini.ReadOnly</c> carrying the read-only explanation.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="access" /> is <see cref="InstallationWriteAccess.Writable" /> or <see cref="InstallationWriteAccess.Unknown" />.</exception>
+    public static Error ReadOnly(InstallationWriteAccess access)
+        => Error.Failure(code: "Ini.ReadOnly",
+                         IniReadOnlyText.For(access) ?? throw new ArgumentOutOfRangeException(nameof(access), access, message: "Only a read-only access has an explanation."));
 
     /// <summary>The snapshot chosen for restoring no longer exists.</summary>
     /// <param name="snapshotId">The missing snapshot id.</param>

@@ -11,7 +11,7 @@
 |--------------------------|-----------------------------------|
 | **Project**              | Zoo Tycoon Launcher               |
 | **Document**             | Software Design Document (SDD)    |
-| **Version**              | 1.11                              |
+| **Version**              | 1.12                              |
 | **Status**               | Draft for implementation          |
 | **Author**               | Justinian                         |
 | **Last updated**         | 21 October 2026                   |
@@ -34,6 +34,7 @@
 | 1.9     | 20 October 2026   | Justinian | The blanket no-ellipses-on-buttons rule is retired in favour of the Win9x guideline: a button or menu item that needs more input before it can complete carries an ellipsis. §9.3 and §9.5 drop their no-ellipsis sentences. §13.5.1 adds DW-37 (rename Settings to Options) and DW-38 (watch `zoo.ini` for changes in real time). Milestone 9 (spec `milestone-9-restore-previous-ini-design.md`): §7.3.3 is retitled *Restore previous button* and §7.6 *Restore Previous INI dialogue* (restore steps restated over the §8.2 ordering: user settings only, effective values, absent keys untouched, shared Save pipeline, `HistoricalCount`); §9.3 footer becomes `Restore previous…` / `Restore defaults` / `Save` / `Reset` (`Revert` and `Undo` retired); §9.4, §9.5 and §9.6 take the Win9x ellipsis labels (`Add…`, `Edit…`, `Fix…`, `Locate…`, `Manage…`) and Installation Info counts history entries; §9.7 shows `Captured` in local time with `Original` last, newest selected on open, the kept-keys note and user settings only; §13.5.1 deletes DW-02, DW-03 and DW-08, which this milestone delivers. |
 | 1.10    | 20 October 2026   | Justinian | Milestone 9.1 (Restore Previous INI follow-ups). §13.5.1 adds DW-39: the dark-theme work left over from milestone 9 belongs to the Settings + theming slice's sweep of every view, not to piecemeal INI changes. The row's pointer sets the field's `IsHovered` and focus sets `IsFocused` (§9.3.2); the INI tab, editor and Restore dialogue log failures; the Restore dialogue loads its history before opening. Deletes DW-17, DW-18 and DW-27 from §13.5. A Save also deletes orphan temp files before reading (§7.7, §8.2); conventions §3.3 follows §9.3.2. |
 | 1.11    | 21 October 2026   | Justinian | Milestone 9.2 (INI display polish). §9.3 describes the dollar display of the four `[UI]` cash rows and the read-only `lang` / `sublang` rows behind the curated picker; §9.7 describes diff cells that read as the editor shows them (labels, `true` / `false`, dollars) and inert history headers. Every `ClassicWindow` title starts with two spaces (conventions §4.1). |
+| 1.12    | 21 October 2026   | Justinian | Milestone 10 (INI recovery and read-only detection; spec `milestone-10-ini-recovery-and-read-only-detection-design.md`). §7.4 describes the two recovery actions as built (`CreateDefaultIniCommand`, `LocateIniCommand`: create-only write, first import or `Manual` archive of a surviving `Current`, `Ini.AlreadyExists` / `Ini.NotAnIni` / `Ini.ReadOnly`); §7.2.5, §9.3.1 and §9.5 give the Fix INI group and the No INI box their `Create` / `Locate…` buttons and add the INI tab's read-only strip; §7.1.2 Verify runs the write probe (`Writable`, `FolderReadOnly`, `FileReadOnly`, `Unknown`); §9.1 Cannot Play points at the INI Config tab; §14.5 row 9's MVP mitigation is implemented. §13.5.1 deletes DW-01 and DW-12, which this milestone delivers, and adds DW-40 (Copy From Another Installation). |
 
   
 ---  
@@ -176,9 +177,9 @@ a 32-bit Windows executable from 2001; Avalonia's cross-platform UI capability i
    tiered rule: a changed user setting archives the prior `Current` to `Historical` before adopting the file's values; game-managed and unrecognised changes are adopted  
    silently, with no archive.
 9. **Historical restore.** The `Restore previous…` button on the INI tab opens a dialogue listing every prior version (timestamped) and lets the user restore any of them.
-10. **INI Config tab** that hosts either the editor or a placeholder — Loading, No INI, or could-not-be-read — based on the installation's state, with dedicated recovery
-    actions planned for the No INI and could-not-be-read placeholders. A missing `zoo.ini` resolves the main window to **Cannot Play** with the Launch Game button disabled —
-    the launcher will not start the game without a parsed INI.
+10. **INI Config tab** that hosts either the editor or a placeholder — Loading, No INI, or could-not-be-read — based on the installation's state, with `Create` and `Locate`
+    recovery actions on the No INI placeholder (the could-not-be-read placeholder has none yet). A missing `zoo.ini` resolves the main window to **Cannot Play** with the
+    Launch Game button disabled — the launcher will not start the game without a parsed INI.
 11. **Scenarios section** within the INI tab with verified key→scenario→tier mapping (Phase 0 research) rendered as a checkbox grid.
 12. **Screen modes panel** on the General tab showing the total available display modes and the ZT1-compatible subset, with a research-driven filter predicate (Phase 0).
 13. **Launch Game** kicks the game off as a child process with the correct working directory and respects the `CloseAfterGameLaunch` setting.
@@ -729,6 +730,10 @@ stateDiagram
     - In this scope, "candidate" refers to a Game Installation row that has one of the respective fields set.
 - **Verify** candidate:
     - Check if the directory exists, `zoo.exe` is present (drives `HasExe`), `zoo.ini` is present (drives `HasIni`), and persist any change to the row, including `ModifiedUtc`".
+    - **Write probe.** When `zoo.exe` is present, `IInstallationWriteProbe` also tests whether the folder accepts writes: it creates and deletes a throwaway
+      `zoo.ini.tmp.<guid>` file (the pattern Save's orphan cleanup already removes) and reads `zoo.ini`'s Read-only attribute. The result is `Writable`, `FolderReadOnly`
+      (the create is denied), `FileReadOnly` (`zoo.ini` carries the Read-only attribute) or `Unknown` (any other failure; the launcher says nothing). The probe never fails
+      the boot; the boot result carries the outcome to the INI tab (§9.3.1).
     - In this scope, "candidate" refers to any game installation path, whether it was already registered, being added, or discovered by the auto-locate process.
 - **ParseIni**:
     - Runs only when the installation has `HasExe = true`.
@@ -881,9 +886,11 @@ Enabled only when validity is not `Valid`. Per-validity flow:
 
 - **`InvalidNoExe`** → folder picker rooted at current `Path`. If the chosen folder contains `zoo.exe`, update `Path`, recompute `HasExe` / `HasIni`, set `ModifiedUtc = now`. If  
   still no `zoo.exe`, surface a non-blocking error in the dialogue.
-- **`InvalidNoIni`** → three options identical to the **No INI Present** group box ([Section 7.4](#74-ini-config-tab--no-ini-present-state)): `Create Default`, `Locate Manually`,  
-  `Copy From Another Installation`. Successful fix writes `Original` and `Current` snapshots.
-- **`InvalidNoExeOrIni`** → relocation prompt first; if the new folder contains `zoo.exe` but no `zoo.ini`, the dialogue advances to the No-INI options without closing.
+- **`InvalidNoIni`** → the *Fix INI* group offers the same two actions as the **No INI Present** group box ([Section 7.4](#74-ini-config-tab--no-ini-present-state)):
+  `Create` and `Locate…`. They share the INI tab's commands; a successful fix writes `Original` and `Current` snapshots (or archives a surviving `Current`, §7.4), the group
+  flips to *INI present*, and closing the dialogue re-boots the installation. A failure shows inline in maroon and leaves the group in place. Copy From Another Installation
+  is not offered (DW-40).
+- **`InvalidNoExeOrIni`** → relocation prompt first; the *Fix INI* buttons stay disabled until `zoo.exe` is found, then offer the same two actions without closing.
 
 On dialogue close, the row's status re-evaluates and the grid refreshes.
 
@@ -971,21 +978,32 @@ A two-column grid of checkboxes, one per scenario key:
 
 ### 7.4 INI Config tab — No INI Present state
 
-> **MVP note.** §9.3.1 supersedes this section's button list: the No INI Present box offers `Create zoo.ini from defaults` and `Locate existing zoo.ini`; Copy From Another
-> Installation is not in the MVP. Until the INI recovery slice lands, the tab shows a message-only placeholder.
+The tab is cleared and replaced with a single group box labelled **No INI Present**, explaining that `zoo.ini` is missing and is required to play. It offers two buttons,
+`Create zoo.ini from defaults` (the default) and `Locate existing zoo.ini…` (§9.3.1). Both are disabled while either runs, and while the installation has no `zoo.exe`
+(as in the Fix dialogue, §7.2.5). Both write through the same create-then-import step:
 
-The tab is cleared and replaced with a single group box labelled **No INI Present**, explaining that `zoo.ini` is missing and is required to play. Three buttons, in order, with
-the  
-third disabled when only one installation is registered:
+- **Create zoo.ini from defaults** → `CreateDefaultIniCommand`. Renders `ZooIniDefaults`' factory values with `ZooIniDefaultDocument` (every non-null default in registry
+  order, CRLF line endings, no comments, no `[scenario]` section) and writes it with a create-only write.
+- **Locate existing zoo.ini…** → `LocateIniCommand`. Opens a file picker (`IDialogService.PickFileAsync`, filtered to `*.ini` with an *All files* fallback, starting in the
+  installation folder); cancelling does nothing. The chosen file must be at most 1 MiB and contain a recognised section header (otherwise `Ini.NotAnIni`; unreadable gives
+  `Ini.ReadFailed`). It is copied unchanged (byte-identical, Latin-1) and the source is left untouched.
 
-- **Create Default** → `CreateDefaultIniCommand`. Writes a `zoo.ini` populated from `ZooIniDefaults`' factory values, then runs the standard first-ever parse path (write  
-  `Original` + `Current` snapshots, `Source = OriginalImport`). Refreshes the tab into the editor.
-- **Locate Manually** → `LocateIniCommand`. Opens a file picker filtered to `*.ini`. On choose, copies the source to the installation's directory as `zoo.ini` and runs first-ever  
-  parse.
-- **Copy From Another Installation** → `CopyIniFromInstallationCommand`. Opens a selector listing the other registered installations with their names + paths; on confirm, copies  
-  the chosen installation's `zoo.ini` to this installation's directory and runs first-ever parse.
+The shared step:
 
-All three set `HasIni = true` on the row on success.
+- **Create-only write.** Temp file, then `File.Move(overwrite: false)`; it never overwrites. If `zoo.ini` appeared in the meantime the action fails with `Ini.AlreadyExists`
+  and the window re-verifies as after success.
+- **Row.** Sets `HasIni = true` and publishes `InstallationChangedMessage`.
+- **Snapshots.** Runs the standard synchronise. With no `Current` snapshot this is the first import (`Original` + `Current`, `Source = OriginalImport`). If a `Current`
+  survives from an earlier `zoo.ini`, the new file is ordinary drift: `Current` is archived as `Manual`, the new values are adopted and `Original` is kept, so the user's old
+  settings stay restorable from history (§7.6). A snapshot-store failure after the write is logged and swallowed (§8.2): the file stands and the next open imports it.
+- **Failures.** On access denied the code re-probes; when that confirms a read-only folder or file the error is `Ini.ReadOnly`,
+  carrying the read-only strip's explanation (§9.3.1). Otherwise, and for any other IO failure, it is `Ini.WriteFailed` with the OS message.
+
+On success, on `Ini.AlreadyExists`, or when the installation has vanished (a not-found error), the launcher re-boots the open installation (a pointed boot, §7.2.7) and
+reopens on the INI Config tab with the editor showing. Any other failure appears in a `Cannot Create zoo.ini` / `Cannot Copy zoo.ini` dialogue and the box stays.
+
+> **Not built.** A third action, **Copy From Another Installation** (a selector listing the other registered installations; it would copy the chosen installation's
+> `zoo.ini`), is deferred as DW-40.
 
 ### 7.5 INI Config tab — Corrupted INI state
 
@@ -1000,7 +1018,7 @@ The tab is cleared and replaced with a single group box labelled **Corrupted INI
       `Current` and to disk.
 - **Restore Defaults** → `ResetIniToDefaultsCommand`. Deletes `zoo.ini`, clears the `Current` rows for the installation, writes a fresh default `zoo.ini`, repopulates `Current`  
   from defaults (`Source = OriginalImport`). `Original` is **not** touched — it keeps representing the very first parsed state for audit purposes.
-- **Copy From Another Installation** → identical to §7.4; disabled when only one installation is registered.
+- **Copy From Another Installation** → as deferred in §7.4 (DW-40); disabled when only one installation is registered.
 
 After any successful action the window re-enters `ResolvingPreference` (so the main window can move from `CannotPlay` to `ReadyToPlay`) and the tab swaps back to the editor.
 
@@ -1027,7 +1045,8 @@ operation, so the editor can enable `Restore previous…` without a further quer
 
 ### 7.7 Atomic INI write and crash recovery
 
-Every INI write — Save, Restore, Create Default, Restore Defaults — follows the §8.2 ordering. Crash residue scenarios and their recovery:
+Every INI write — Save, Restore, Restore Defaults — follows the §8.2 ordering; Create and Locate use §7.4's create-only write, then the
+standard synchronise. Crash residue scenarios and their recovery:
 
 | Crash point                                 | Residue                                                 | Recovery on next open                                                                                                                                                                                                                                                                         |  
 |---------------------------------------------|---------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|  
@@ -1138,7 +1157,8 @@ ending.
 
 ### 8.2 Atomic write ordering
 
-Every INI write — Save, Restore, Create Default, Restore Defaults — follows this ordering inside a single EF transaction on the per-installation database:
+Every INI write — Save, Restore, Restore Defaults — follows this ordering inside a single EF transaction on the per-installation database. Create and Locate do not: they
+use §7.4's create-only write, outside any transaction, then update the row and run the standard synchronise.
 
 ```text  
 1. Read zoo.ini from disk.
@@ -1250,8 +1270,9 @@ The five states reflect the startup state machine (§7.1). The hi-fi prototype (
   confirmation. A footer line shows `Last played: <localised UTC>` or `Never`.
 - **Cannot Play** — same overall shape as Ready to Play. The Status group box headlines the failure with a per-sub-state message keyed off `(HasExe, HasIni)` — missing EXE,
   missing INI, or missing both — and swaps the `Launch Game` slot for an `Open Installation Manager…` default button (there is no longer a separate disabled Launch Game button
-  or duplicated Fix control). The Display and Your System group boxes stay **un-muted** — detection still ran — each carrying a state-specific footnote (e.g. "Display detection
-  succeeded, but the game cannot launch until the EXE is restored"). The `Last played` footer line is still shown.
+  or duplicated Fix control). The missing-INI-only message ends "Use the INI Config tab to create or locate zoo.ini." The Display and Your System group boxes stay **un-muted** —
+  detection still ran — each carrying a state-specific footnote (e.g. "Display detection succeeded, but the game cannot launch until the EXE is restored"). The
+  `Last played` footer line is still shown.
 - **No Game Installation Found** — a heading explaining the auto-locate scan came up empty, an `Add Installation` default button, and an `Auto-locate trail` group box listing
   the probed locations and the reason each failed. When the locator did surface a candidate path (the search succeeded but the user has never registered the directory), it is
   pre-filled into the Add Installation dialogue when the user clicks the button.
@@ -1363,10 +1384,20 @@ Restore defaults and Restore previous still update both rows.
 - **Editor** — the `IniEditorViewModel` described above. Shown once the installation's `zoo.ini` has loaded successfully.
 - **Loading** — a muted "Loading `zoo.ini`…" placeholder, shown until the first load completes.
 - **No INI present** — a single `INI status` group box with a warning icon, "No INI present" headline, an explanation, and two action buttons: `Create zoo.ini from defaults`  
-  (default) and `Locate existing zoo.ini`. Shown when `HasIni = false`. Until the INI recovery slice lands, this is a message-only placeholder (no buttons).
+  (default) and `Locate existing zoo.ini…` (ellipsis: it opens a picker). Shown when `HasIni = false`. The headline is **No INI present**; the body reads "This installation
+  has no `zoo.ini` on disk. Create a fresh one from the launcher's defaults, or locate an existing file to copy in." Both buttons are disabled while one runs, and when the
+  installation has no `zoo.exe` (§7.4).
+  The other placeholder cases carry no commands.
 - **`zoo.ini` could not be read** — a warning placeholder carrying the read- or snapshot-store-failure description (§7.5's MVP note). Retried on the next tab activation,
   unless the editor already holds pending edits — a failed reload then leaves the editor on screen (never dropping unsaved work) and reports the failure via an error
   dialogue instead of swapping in this placeholder.
+
+**Read-only strip.** Above its content the tab shows a warning strip — a 16 px warning icon and maroon text — when the boot's write probe
+(§7.1.2) reported `FolderReadOnly` or `FileReadOnly`; `Writable` and `Unknown` show nothing. The text is, respectively, "This installation's folder is read-only for your
+account, so changes to `zoo.ini` cannot be saved. Uninstalling and reinstalling Zoo Tycoon restores normal write access." and "`zoo.ini` is marked read-only, so changes cannot
+be saved. Clear Read-only in the file's Properties to fix it." Save stays enabled, because a detection can be wrong; when an INI write (Save,
+Restore, Restore defaults, Create, Locate) then fails with access denied, a re-probe that confirms a read-only folder or file returns `Ini.ReadOnly` carrying the same text
+instead of the OS message; otherwise the error is `Ini.WriteFailed` with the OS message.
 
 There is also a **disabled placeholder** outside `IniConfigTabViewModel.Content` — a muted centred message: *"INI editing becomes available once an installation is open and its  
 `zoo.ini` has been parsed."* Rendered when the tab itself is disabled (Looking / NoInstall / OpenPicker); having the placeholder behind the disabled tab keeps the panel from  
@@ -1419,7 +1450,10 @@ that owns both label and input is what carries `ToolTip.Tip` so the whole row tr
   `History entries` count (the stored `Historical` snapshots, read without synchronising: `24 snapshots`, `1 snapshot`, `0 snapshots`, or "—" when the read fails).
   `Close` default button.
 - **Fix Installation** — `ClassicWindow` modal. Two group boxes (`Fix EXE`, `Fix INI`); each has a status indicator (file present / missing), an explanation, and a
-  `Locate…` / `Create` action button disabled when the file is already present. `OK` default dismisses; the row's validity re-evaluates on close.
+  `Locate…` / `Create` action button disabled when the file is already present. `OK` default dismisses; the row's validity re-evaluates on close. The *Fix INI* group, when
+  `zoo.ini` is missing, headlines **No INI found** and reads "Create a fresh `zoo.ini` from the launcher's defaults, or locate an existing file to copy in. Any earlier values
+  stay in history.", with `Create` and `Locate…` stacked on the right. Both are enabled only when `zoo.exe` is present and `zoo.ini` is not (and not while one runs), run
+  the commands of §7.4, show a failure inline in maroon, and flip the group to *INI present* on success.
 - **Delete Installation** — `ClassicWindow` confirmation modal. If the row being deleted is the default, the body names the installation that will be promoted to default in its
   place (`<name> will be promoted to default`). Buttons: `Delete`, `Cancel` (default).
 
@@ -1672,8 +1706,8 @@ will be written.
   delete rule), Installation Manager dialogue (DataGrid + actions), Installation Info dialogue.
 - **Startup flow.** Boot pipeline + state machine, Looking for Zoo Tycoon / Ready to Play / Cannot Play / No Game Installation Found / Open Game Installation wireframes wired to  
   states, last-opened / last-played timestamping.
-- **INI Config tab.** The editor (split layout, eight sections, hover + status help — §9.3.2), the No INI placeholder, Restore Previous INI dialogue with inline diff (  
-  §9.7), tooltip parity fix, atomic save with snapshot archiving.
+- **INI Config tab.** The editor (split layout, eight sections, hover + status help — §9.3.2), the No INI placeholder with its recovery actions (§7.4), the read-only
+  strip (§9.3.1), Restore Previous INI dialogue with inline diff (§9.7), tooltip parity fix, atomic save with snapshot archiving.
 - **Screen modes on the General tab.** Available modes count, ZT1-compatible modes count, resolution dropdown sourced from the filtered list.
 - **Launch Game.** Process start with working-directory and arguments matched to the Ref launcher; `CloseAfterGameLaunch` honoured.
 - **Settings + theming.** Settings dialogue (§9.8) covers `LauncherStartupPreference`, `CloseAfterGameLaunch`, and `LauncherTheme` (System / Light / Dark — §9.11). Theme applies  
@@ -1723,7 +1757,6 @@ Planned phases (§13.3, §13.4), permanent non-goals (§3.2) and risks (§14.5) 
 
 | ID    | Item                                                                                                                                                                                                                                                                                                                                                                      | Origin                                                |
 |-------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
-| DW-01 | No-INI recovery actions (§7.4: Create Default, Locate Manually, Copy From Another). The Fix dialogue's INI **Create** button is still hard-disabled.                                                                                                                                                                                                                      | PR #5, PR #6                                          |
 | DW-04 | The `[scenario]` section of the INI Config tab (§5.4, §7.8), after the Phase 0 scenarios spike (§13.1).                                                                                                                                                                                                                                                                   | INI Config core spec                                  |
 | DW-05 | The General tab keeps its boot-time Cannot Play / "could not read `zoo.ini`" message after a later INI-tab retry succeeds; it should recover without a reopen.                                                                                                                                                                                                            | PR #6 (ruling R10)                                    |
 | DW-06 | Open an installation from the Installation Manager (an **Open** button and row double-click), and File → Open Installation… as the Manager focused on Open (§9.10). The Manager footer already promises "Double-click a row to open", which does nothing yet.                                                                                                             | PR #4, PR #5                                          |
@@ -1731,11 +1764,11 @@ Planned phases (§13.3, §13.4), permanent non-goals (§3.2) and risks (§14.5) 
 | DW-09 | The status bar's display cell is hard-coded as "Display: 1920 × 1080" (`MainWindowViewModel.cs:321`, a `TODO`). Source it from the screen-modes work (§7.9).                                                                                                                                                                                                              | Code `TODO`; maintainer's note 4                      |
 | DW-10 | The "Auto-locate trail" group box on No Game Installation Found is static markup (`NoGameInstallationFoundView.axaml:41`, a `TODO`). `BootResult` could carry the whole `LocatedDirectory` record (path plus every checked location and its status) instead of the path alone.                                                                                            | Code `TODO`; maintainer's note 2                      |
 | DW-11 | The "Your System" group box on Ready to Play is static markup, added from the mock-up after this SDD was written. It is unspecified, and feasibility needs research before a spec.                                                                                                                                                                                        | Maintainer's note 5                                   |
-| DW-12 | **MVP, later slice.** Detect a read-only installation folder when an installation opens. Today the first Save simply fails with "access denied". Instead, explain the cause (the folder grants ordinary users read-only access) and recommend the fix: uninstall and reinstall the game, which restores the installer's normal write access. See §14.5 row 9.             | Maintainer, 24 Sept 2026 (observed on a real install) |
 | DW-36 | **V2.0.0.** Experiment with, then implement, a VirtualStore copy of `zoo.ini` as the fix for read-only installs, with no reinstall. First prove with a hand-made copy that `zoo.exe`, run without admin rights, reads the VirtualStore file before the launcher depends on it. See §14.5 row 9.                                                                           | Maintainer, 24 Sept 2026                              |
 | DW-37 | Rename **Settings** to **Options**, per the Win9x standard commands ("Settings: do not use as a command; use Options instead"): the File menu item becomes `Options…` (it opens a dialogue that collects input) and the §9.8 dialogue is titled `Options`. Whether the `Settings*` view-model, view and command type names follow is the slice's call; the `LauncherSettings` table and entity keep their names. | Maintainer, 20 Oct 2026 |
 | DW-38 | Consider watching `zoo.ini` for changes in real time (for example a `FileSystemWatcher` on the open installation's folder), so edits made outside the launcher — by hand or by the game on exit — reach `Current` and the INI editor as they happen instead of at the next open, Save, Reset or restore. Needs a policy for changes arriving while the editor holds unsaved edits, and debouncing for the game's whole-file rewrites (§14.5). | Maintainer, 20 Oct 2026 |
 | DW-39 | **Settings + theming slice (§9.8, §9.11, §13.2).** The conventions' colour tokens do not exist yet: there are no Light / Dark theme dictionaries, `App.axaml` pins the Classic variant, and nothing reads `LauncherSettings.Theme`. When the slice lands, its `DynamicResource` sweep must cover every view that uses literal colours — including the INI views milestone 9 added: the Restore Previous INI dialogue (`Maroon` / `Navy` / `Gray` / `Silver` / `White` / `Red`) and the INI editor footer (`Maroon` dirty label) — so the planned no-literal-colours architecture test can be switched on. | Milestone 9.1 scoping, 20 Oct 2026 |
+| DW-40 | **Copy From Another Installation.** The third No-INI recovery action (§7.4): a selector listing the other registered installations with their names and paths; on confirm it copies the chosen installation's `zoo.ini` here and imports it as Create and Locate do. Disabled when only one installation is registered; the Fix dialogue's *Fix INI* group would gain it too (§7.2.5). | Milestone 10 spec, 21 Oct 2026 |
 
 #### 13.5.2 Robustness
 
@@ -1820,7 +1853,7 @@ an Avalonia-12 fork is not planned.
 | 6  | Carried-over library licences/versions     | Assumption       | Re-verify "confirm" entries in §4.6 at implementation.                                                                                                                                                                                                                                                                                                                                                                      |  
 | 7  | Antivirus / SmartScreen flagging           | Risk (mitigated) | The launcher itself is a signed-on-build-machine binary; ZT1 launch failures due to AV are surfaced as a non-blocking error.                                                                                                                                                                                                                                                                                                |  
 | 8  | Out-of-band INI edits between sessions     | Risk (mitigated) | Tiered drift detection (§2.2, §7.1.3, §7.7) archives `Current` → `Historical` for changed user settings before adopting the on-disk values; game-managed and unrecognised changes are adopted silently.                                                                                                                                                                                                                     |  
-| 9  | Read-only installation folder              | Risk (confirmed) | Observed 24 Sept 2026. One install's folder gave ordinary users read-only access, so every Save failed with "access denied" (the launcher and Zookini alike; only admin rights worked). Reinstalling restored the installer's normal write access, after which saves succeeded. MVP: detect and explain, recommending a reinstall (DW-12). V2.0.0: a VirtualStore copy as the fix, after proving the game reads it (DW-36). |  
+| 9  | Read-only installation folder              | Risk (confirmed) | Observed 24 Sept 2026. One install's folder gave ordinary users read-only access, so every Save failed with "access denied" (the launcher and Zookini alike; only admin rights worked). Reinstalling restored the installer's normal write access, after which saves succeeded. MVP (implemented, milestone 10): the boot's write probe (§7.1.2) detects it and the INI tab's strip explains it, recommending a reinstall (a read-only attribute on `zoo.ini` gets its own advice). V2.0.0: a VirtualStore copy as the fix, after proving the game reads it (DW-36). |  
 | 10 | Edits saved while ZT1 is running           | Risk (accepted)  | The game may overwrite them on exit; the next activation shows what it wrote, and the launcher's version is archived as `Manual` drift.                                                                                                                                                                                                                                                                                     |  
 
   

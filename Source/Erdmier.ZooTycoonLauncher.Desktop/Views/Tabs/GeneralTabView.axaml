@@ -114,7 +114,7 @@
 
                     <TextBlock Foreground="Gray"
                                IsVisible="{Binding IsMissingOnlyIni}"
-                               Text="zoo.ini is missing from this installation's directory. The game will not start without it. Use Fix to locate or recreate the file. Open the installation manager to try fixing the problem."
+                               Text="{Binding MissingIniMessage}"
                                TextWrapping="Wrap" />
 
                     <TextBlock Foreground="Gray"

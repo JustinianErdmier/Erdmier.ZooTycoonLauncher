@@ -14,6 +14,8 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
 
     private readonly IInstallationLocator _locator;
 
+    private readonly IInstallationWriteProbe _probe;
+
     private readonly ILauncherSettingsRepository _settings;
 
     private readonly IInstallationVerifier _verifier;
@@ -24,12 +26,14 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
     /// <param name="verifier">File-system verifier.</param>
     /// <param name="locator">Registry and path locator.</param>
     /// <param name="iniSnapshots">INI snapshot service.</param>
+    /// <param name="probe">Probes whether the installation folder and <c>zoo.ini</c> can be written.</param>
     /// <param name="clock">Time provider for UTC timestamps.</param>
     public BootHandler(ILauncherSettingsRepository settings,
                        IInstallationRepository     installations,
                        IInstallationVerifier       verifier,
                        IInstallationLocator        locator,
                        IIniSnapshotService         iniSnapshots,
+                       IInstallationWriteProbe     probe,
                        TimeProvider                clock)
     {
         _settings      = settings;
@@ -37,6 +41,7 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
         _verifier      = verifier;
         _locator       = locator;
         _iniSnapshots  = iniSnapshots;
+        _probe         = probe;
         _clock         = clock;
     }
 
@@ -146,18 +151,21 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
             await _installations.UpdateAsync(row, cancellationToken);
         }
 
+        // Probed once per verification, and only when the game binary exists: without it there is nothing to play or configure, so the answer would go unused.
+        InstallationWriteAccess writeAccess = result.HasExe ? await _probe.ProbeAsync(row.Path, cancellationToken) : InstallationWriteAccess.Unknown;
+
         if (!result.HasExe
             || !result.HasIni)
         {
             // No EXE or no INI: the game cannot launch (SDD §7.1.2). Synchronisation is skipped — there is nothing to parse without zoo.ini.
-            return new BootResult(BootOutcome.CannotPlay, Project(row, settings), LocatedCandidatePath: null);
+            return new BootResult(BootOutcome.CannotPlay, Project(row, settings), LocatedCandidatePath: null, WriteAccess: writeAccess);
         }
 
         ErrorOr<Success> syncResult = await _iniSnapshots.SynchroniseAsync(row, cancellationToken);
 
         if (syncResult.IsError)
         {
-            return new BootResult(BootOutcome.CannotPlay, Project(row, settings), LocatedCandidatePath: null, syncResult.FirstError.Description);
+            return new BootResult(BootOutcome.CannotPlay, Project(row, settings), LocatedCandidatePath: null, syncResult.FirstError.Description, writeAccess);
         }
 
         row.LastOpenedUtc = _clock.GetUtcNow()
@@ -165,7 +173,7 @@ public sealed class BootHandler : ICommandHandler<BootCommand, ErrorOr<BootResul
 
         await _installations.UpdateAsync(row, cancellationToken);
 
-        return new BootResult(BootOutcome.ReadyToPlay, Project(row, settings), LocatedCandidatePath: null);
+        return new BootResult(BootOutcome.ReadyToPlay, Project(row, settings), LocatedCandidatePath: null, WriteAccess: writeAccess);
     }
 
     private static InstallationSummary Project(GameInstallation row, LauncherSettings settings)

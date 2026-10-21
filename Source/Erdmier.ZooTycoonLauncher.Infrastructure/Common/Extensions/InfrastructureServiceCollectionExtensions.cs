@@ -53,6 +53,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddSingleton<IRegistryReader, WindowsRegistryReader>();
         services.AddSingleton<IInstallationVerifier, InstallationVerifier>();
+        services.AddSingleton<IInstallationWriteProbe, InstallationWriteProbe>();
         services.AddSingleton<IInstallationLocator, InstallationLocator>();
         services.AddSingleton<IProcessLauncher, WindowsProcessLauncher>();
 

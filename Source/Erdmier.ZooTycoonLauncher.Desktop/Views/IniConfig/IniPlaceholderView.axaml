@@ -21,9 +21,31 @@
                            Text="{Binding Headline}" />
 
                 <TextBlock Foreground="Gray"
-                           IsVisible="{Binding HasBody}"
+                           IsVisible="{Binding ShowPlainBody}"
                            Text="{Binding Body}"
                            TextWrapping="Wrap" />
+
+                <!-- The No INI body (spec C9): same wording as the view model's Body, with zoo.ini in the monospace used elsewhere on the tab. -->
+                <TextBlock Foreground="Gray"
+                           IsVisible="{Binding HasActions}"
+                           TextWrapping="Wrap">
+                    <Run Text="This installation has no " /><Run FontFamily="Lucida Console, Courier New, monospace"
+                                                                 Text="zoo.ini" /><Run Text=" on disk. Create a fresh one from the launcher's defaults, or locate an existing file to copy in." />
+                </TextBlock>
+
+                <StackPanel IsVisible="{Binding HasActions}"
+                            Margin="0 8 0 0"
+                            Orientation="Horizontal"
+                            Spacing="6">
+                    <Button Command="{Binding CreateCommand}"
+                            Content="Create zoo.ini from defaults"
+                            IsDefault="True"
+                            MinWidth="75" />
+
+                    <Button Command="{Binding LocateCommand}"
+                            Content="Locate existing zoo.ini…"
+                            MinWidth="75" />
+                </StackPanel>
             </StackPanel>
         </DockPanel>
     </controls:GroupBox>

@@ -30,14 +30,29 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
     /// <param name="dialogs">Chrome service for the editor's error dialogue.</param>
     /// <param name="logger">Logger for load failures.</param>
     /// <param name="editorLogger">Logger handed to the editor this tab creates.</param>
-    public IniConfigTabViewModel(InstallationSummary            installation,
-                                 string?                        iniErrorMessage,
-                                 IMediator                      mediator,
-                                 IDialogService                 dialogs,
-                                 ILogger<IniConfigTabViewModel> logger,
-                                 ILogger<IniEditorViewModel>    editorLogger)
-        : this(installation.Id, installation.Validity.HasIni, dialogs, logger, editorLogger, InitialContent(installation.Validity.HasIni, iniErrorMessage))
-        => _mediator = mediator;
+    /// <param name="placeholderLogger">Logger handed to the No INI placeholder's Create / Locate actions.</param>
+    /// <param name="reopenOnIniTabAsync">Re-boots the open installation and reopens on this tab (called after a successful Create / Locate).</param>
+    /// <param name="writeAccess">The boot's write-access probe result; a read-only result shows the warning strip above the tab's content.</param>
+    public IniConfigTabViewModel(InstallationSummary              installation,
+                                 string?                          iniErrorMessage,
+                                 IMediator                        mediator,
+                                 IDialogService                   dialogs,
+                                 ILogger<IniConfigTabViewModel>   logger,
+                                 ILogger<IniEditorViewModel>      editorLogger,
+                                 ILogger<IniPlaceholderViewModel> placeholderLogger,
+                                 Func<CancellationToken, Task>    reopenOnIniTabAsync,
+                                 InstallationWriteAccess          writeAccess)
+        : this(installation.Id,
+               installation.Validity.HasIni,
+               dialogs,
+               logger,
+               editorLogger,
+               InitialContent(installation, iniErrorMessage, mediator, dialogs, reopenOnIniTabAsync, placeholderLogger))
+    {
+        _mediator = mediator;
+
+        ReadOnlyWarning = IniReadOnlyText.For(writeAccess);
+    }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public IniConfigTabViewModel()
@@ -68,6 +83,12 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
     /// <summary>The editor or a placeholder.</summary>
     [ ObservableProperty ]
     public partial ViewModelBase Content { get; private set; }
+
+    /// <summary>The read-only warning shown above the tab's content, or <see langword="null" /> when the installation is writable or its access is unknown.</summary>
+    public string? ReadOnlyWarning { get; }
+
+    /// <summary><see langword="true" /> when <see cref="ReadOnlyWarning" /> has text to show.</summary>
+    public bool HasReadOnlyWarning => ReadOnlyWarning is not null;
 
     /// <summary>Whether the editor holds unsaved edits.</summary>
     public bool HasPendingChanges => _editor?.HasPendingChanges ?? false;
@@ -104,9 +125,14 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
     /// <summary>Discards the editor's edits (used by the pending-changes guard).</summary>
     public void DiscardChanges() => _editor?.DiscardChanges();
 
-    private static ViewModelBase InitialContent(bool hasIni, string? iniErrorMessage)
-        => !hasIni
-               ? IniPlaceholderViewModel.NoIni()
+    private static ViewModelBase InitialContent(InstallationSummary              installation,
+                                                string?                          iniErrorMessage,
+                                                IMediator                        mediator,
+                                                IDialogService                   dialogs,
+                                                Func<CancellationToken, Task>    reopenOnIniTabAsync,
+                                                ILogger<IniPlaceholderViewModel> placeholderLogger)
+        => !installation.Validity.HasIni
+               ? IniPlaceholderViewModel.NoIni(installation.Id, installation.Path, installation.Validity.HasExe, mediator, dialogs, reopenOnIniTabAsync, placeholderLogger)
                : iniErrorMessage is not null
                    ? IniPlaceholderViewModel.Unreadable(iniErrorMessage)
                    : IniPlaceholderViewModel.Loading();
@@ -191,6 +217,8 @@ file sealed class NoOpDialogService : IDialogService
     public Task<bool> ShowFixInstallationAsync(Guid installationId) => Task.FromResult(false);
 
     public Task<string?> PickFolderAsync(string? startPath) => Task.FromResult<string?>(result: null);
+
+    public Task<string?> PickFileAsync(string? startPath, string title) => Task.FromResult<string?>(result: null);
 
     public Task<SaveChangesChoice> ShowSaveChangesPromptAsync() => Task.FromResult(SaveChangesChoice.Cancel);
 

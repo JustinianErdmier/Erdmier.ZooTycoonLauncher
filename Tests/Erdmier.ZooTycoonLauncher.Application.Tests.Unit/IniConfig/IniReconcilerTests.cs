@@ -127,4 +127,21 @@ public sealed class IniReconcilerTests
                                              IniTestData.Now,
                                              Arg.Any<CancellationToken>());
     }
+
+    [ Fact ]
+    public async Task Synchronise_FileReplacingAnEarlierOne_KeepsOriginal_ArchivesCurrentAsManual()
+    {
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
+        string                  disk        = IniTestData.Text("[user]", "fullscreen=0", "screenwidth=1024");
+
+        IniReconciliation result = await _reconciler.ReconcileAsync(transaction, disk, IniTestData.Now, CancellationToken.None);
+
+        result.Outcome.ShouldBe(IniReconciliationOutcome.ArchivedAndAdopted);
+
+        await transaction.Received(requiredNumberOfCalls: 1)
+                         .ArchiveCurrentAsync(IniSnapshotTrigger.Manual, IniTestData.Now, Arg.Any<CancellationToken>());
+
+        await transaction.DidNotReceiveWithAnyArgs()
+                         .AddAsync(default!, default);
+    }
 }

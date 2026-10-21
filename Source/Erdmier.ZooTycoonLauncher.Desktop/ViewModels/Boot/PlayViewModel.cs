@@ -8,7 +8,8 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 /// </summary>
 public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
 {
-    private const int IniConfigTabIndex = 1;
+    /// <summary>The <see cref="SelectedTabIndex" /> of the INI Config tab.</summary>
+    public const int IniConfigTabIndex = 1;
 
     private readonly IDialogService _dialogs;
 
@@ -31,18 +32,26 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
     /// <param name="logger">Logger for unexpected failures whilst activating the INI Config tab and whilst handling a launch outcome.</param>
     /// <param name="iniTabLogger">Logger passed to the INI Config tab.</param>
     /// <param name="iniEditorLogger">Logger passed on to the INI editor the tab creates.</param>
+    /// <param name="iniPlaceholderLogger">Logger passed on to the No INI placeholder the tab may show.</param>
+    /// <param name="reopenOnIniTabAsync">Delegate that re-boots this installation and reopens on the INI Config tab (after a successful Create / Locate).</param>
     /// <param name="iniErrorMessage">The boot's INI synchronisation error, or <see langword="null" />; shown on both tabs.</param>
-    public PlayViewModel(InstallationSummary            installation,
-                         bool                           canPlay,
-                         Func<CancellationToken, Task>  rebootAsync,
-                         Func<CancellationToken, Task>  openInstallationManagerAsync,
-                         IApplicationLifecycle          lifecycle,
-                         IDialogService                 dialogs,
-                         IMediator                      mediator,
-                         ILogger<PlayViewModel>         logger,
-                         ILogger<IniConfigTabViewModel> iniTabLogger,
-                         ILogger<IniEditorViewModel>    iniEditorLogger,
-                         string?                        iniErrorMessage = null)
+    /// <param name="writeAccess">The boot's write-access probe result, passed to the INI Config tab for its read-only warning.</param>
+    /// <param name="initialTabIndex">The tab to select once the tabs are built (0 = General, <see cref="IniConfigTabIndex" /> = INI Config).</param>
+    public PlayViewModel(InstallationSummary              installation,
+                         bool                             canPlay,
+                         Func<CancellationToken, Task>    rebootAsync,
+                         Func<CancellationToken, Task>    openInstallationManagerAsync,
+                         IApplicationLifecycle            lifecycle,
+                         IDialogService                   dialogs,
+                         IMediator                        mediator,
+                         ILogger<PlayViewModel>           logger,
+                         ILogger<IniConfigTabViewModel>   iniTabLogger,
+                         ILogger<IniEditorViewModel>      iniEditorLogger,
+                         ILogger<IniPlaceholderViewModel> iniPlaceholderLogger,
+                         Func<CancellationToken, Task>    reopenOnIniTabAsync,
+                         string?                          iniErrorMessage = null,
+                         InstallationWriteAccess          writeAccess     = InstallationWriteAccess.Unknown,
+                         int                              initialTabIndex = 0)
     {
         _rebootAsync = rebootAsync;
         _lifecycle   = lifecycle;
@@ -53,10 +62,20 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
         InstallationId = installation.Id;
 
         GeneralTab   = new GeneralTabViewModel(installation, canPlay, mediator, openInstallationManagerAsync, iniErrorMessage);
-        IniConfigTab = new IniConfigTabViewModel(installation, iniErrorMessage, mediator, dialogs, iniTabLogger, iniEditorLogger);
+        IniConfigTab = new IniConfigTabViewModel(installation,
+                                                 iniErrorMessage,
+                                                 mediator,
+                                                 dialogs,
+                                                 iniTabLogger,
+                                                 iniEditorLogger,
+                                                 iniPlaceholderLogger,
+                                                 reopenOnIniTabAsync,
+                                                 writeAccess);
 
         GeneralTab.LaunchOutcomeRaised += OnLaunchOutcomeRaised;
         IniConfigTab.PropertyChanged   += OnIniConfigTabPropertyChanged;
+
+        SelectedTabIndex = initialTabIndex;
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
@@ -248,6 +267,8 @@ file sealed class NoOpDialogService : IDialogService
     public Task<bool> ShowFixInstallationAsync(Guid installationId) => Task.FromResult(false);
 
     public Task<string?> PickFolderAsync(string? startPath) => Task.FromResult<string?>(result: null);
+
+    public Task<string?> PickFileAsync(string? startPath, string title) => Task.FromResult<string?>(result: null);
 
     public Task<SaveChangesChoice> ShowSaveChangesPromptAsync() => Task.FromResult(SaveChangesChoice.Cancel);
 

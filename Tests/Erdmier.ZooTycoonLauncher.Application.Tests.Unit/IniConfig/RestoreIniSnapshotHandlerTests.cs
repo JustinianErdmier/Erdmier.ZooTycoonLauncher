@@ -242,7 +242,13 @@ public sealed class RestoreIniSnapshotHandlerTests
 
     private async Task<ErrorOr<IniConfigResult>> RestoreAsync(Guid snapshotId)
     {
-        IniWritePipeline pipeline = new(new FakeTimeProvider(IniTestData.Now), _files, _installations, NullLogger<IniWritePipeline>.Instance, new IniReconciler(), _snapshots);
+        IniWritePipeline pipeline = new(new FakeTimeProvider(IniTestData.Now),
+                                        _files,
+                                        _installations,
+                                        NullLogger<IniWritePipeline>.Instance,
+                                        IniTestData.Probe(InstallationWriteAccess.Writable),
+                                        new IniReconciler(),
+                                        _snapshots);
 
         return await new RestoreIniSnapshotHandler(pipeline).Handle(new RestoreIniSnapshotCommand(_installation.Id, snapshotId), CancellationToken.None);
     }

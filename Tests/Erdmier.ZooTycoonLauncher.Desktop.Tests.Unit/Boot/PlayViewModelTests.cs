@@ -100,6 +100,34 @@ public sealed class PlayViewModelTests
     }
 
     [ Fact ]
+    public void InitialTabIndex_Default_SelectsTheGeneralTab()
+        => PlayTestData.Create(_mediator, _dialogs, Substitute.For<IApplicationLifecycle>()).SelectedTabIndex.ShouldBe(expected: 0);
+
+    [ Fact ]
+    public async Task InitialTabIndex_IniConfigTab_SelectsItAndLoadsTheEditor()
+    {
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        PlayViewModel play = PlayTestData.Create(_mediator, _dialogs, Substitute.For<IApplicationLifecycle>(), initialTabIndex: PlayViewModel.IniConfigTabIndex);
+
+        play.SelectedTabIndex.ShouldBe(PlayViewModel.IniConfigTabIndex);
+
+        await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public void WriteAccess_ReachesTheIniTabWarning()
+    {
+        PlayViewModel play = PlayTestData.Create(_mediator,
+                                                 _dialogs,
+                                                 Substitute.For<IApplicationLifecycle>(),
+                                                 writeAccess: InstallationWriteAccess.FolderReadOnly);
+
+        play.IniConfigTab.HasReadOnlyWarning.ShouldBeTrue();
+        play.IniConfigTab.ReadOnlyWarning.ShouldBe(IniReadOnlyText.For(InstallationWriteAccess.FolderReadOnly));
+    }
+
+    [ Fact ]
     public void IniErrorMessage_ReachesBothTabs()
     {
         PlayViewModel play = Create(canPlay: false, iniErrorMessage: "zoo.ini could not be read: locked");

@@ -197,6 +197,7 @@ file its view uses today; a site whose view does not exist yet is marked *(not b
 | Error message · body                               | `error32.gif`                               |                                                               |
 | Launch error · body                                | `cancel32.gif`                              |                                                               |
 | INI tab · No INI sub-state                         | `warning32.gif`                             |                                                               |
+| INI tab · read-only strip                          | `warning32.gif`                             | Drawn at 16 px                                                |
 | INI tab placeholder (disabled)                     | *(no icon)*                                 | Muted helper text only                                        |
 | Settings · title bar *(not built)*                 | `controls32.ico`                            | File committed, no view yet                                   |
 | About · title bar *(not built)*                    | *(none chosen)*                             | No view yet; body keeps the app logo                          |

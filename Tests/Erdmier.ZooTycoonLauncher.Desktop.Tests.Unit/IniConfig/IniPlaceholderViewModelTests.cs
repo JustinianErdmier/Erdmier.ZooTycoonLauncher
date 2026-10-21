@@ -10,9 +10,10 @@ public sealed class IniPlaceholderViewModelTests
 
     private int _reopened;
 
-    private IniPlaceholderViewModel Create(ILogger<IniPlaceholderViewModel>? logger = null)
+    private IniPlaceholderViewModel Create(ILogger<IniPlaceholderViewModel>? logger = null, bool hasExe = true)
         => IniPlaceholderViewModel.NoIni(InstallationId,
                                          installationPath: @"C:\ZT",
+                                         hasExe,
                                          _mediator,
                                          _dialogs,
                                          _ =>
@@ -46,6 +47,17 @@ public sealed class IniPlaceholderViewModelTests
     public async Task Create_AlreadyExists_ReopensOnTheIniTab()
     {
         ReturnsForCreate(Error.Conflict(code: IniErrors.AlreadyExistsCode, description: "zoo.ini already exists"));
+
+        await Create().CreateCommand.ExecuteAsync(parameter: null);
+
+        _reopened.ShouldBe(expected: 1);
+        await _dialogs.DidNotReceive().ShowErrorAsync(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [ Fact ]
+    public async Task Create_NotFound_ReopensOnTheIniTab()
+    {
+        ReturnsForCreate(IniErrors.InstallationNotFound(InstallationId));
 
         await Create().CreateCommand.ExecuteAsync(parameter: null);
 
@@ -120,6 +132,29 @@ public sealed class IniPlaceholderViewModelTests
 
         await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync(title: "Cannot Copy zoo.ini", message: "That file is not a zoo.ini.");
         _reopened.ShouldBe(expected: 0);
+    }
+
+    [ Fact ]
+    public async Task Locate_Throws_ShowsTheCopyMessageAndStays()
+    {
+        _dialogs.PickFileAsync(Arg.Any<string?>(), Arg.Any<string>()).Returns(Task.FromResult<string?>(@"D:\Backup\zoo.ini"));
+
+        _mediator.Send(Arg.Any<LocateIniCommand>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniRecoveryResult>>>(_ => throw new InvalidOperationException("boom"));
+
+        await Create().LocateCommand.ExecuteAsync(parameter: null);
+
+        _reopened.ShouldBe(expected: 0);
+        await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync(title: "Cannot Copy zoo.ini", message: "zoo.ini could not be copied: boom");
+    }
+
+    [ Fact ]
+    public void Commands_DisabledWithoutExe()
+    {
+        IniPlaceholderViewModel placeholder = Create(hasExe: false);
+
+        placeholder.CreateCommand.CanExecute(parameter: null).ShouldBeFalse();
+        placeholder.LocateCommand.CanExecute(parameter: null).ShouldBeFalse();
     }
 
     [ Fact ]

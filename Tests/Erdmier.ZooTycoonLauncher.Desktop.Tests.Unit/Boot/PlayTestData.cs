@@ -8,7 +8,8 @@ internal static class PlayTestData
                                        bool                           canPlay         = true,
                                        string?                        iniErrorMessage = null,
                                        Func<CancellationToken, Task>? rebootAsync     = null,
-                                       int                            initialTabIndex = 0)
+                                       int                            initialTabIndex = 0,
+                                       InstallationWriteAccess        writeAccess     = InstallationWriteAccess.Unknown)
         => new(IniEditorTestData.Installation(),
                canPlay,
                rebootAsync ?? (_ => Task.CompletedTask),
@@ -22,7 +23,7 @@ internal static class PlayTestData
                NullLogger<IniPlaceholderViewModel>.Instance,
                _ => Task.CompletedTask,
                iniErrorMessage,
-               writeAccess: InstallationWriteAccess.Unknown,
+               writeAccess,
                initialTabIndex);
 
     // Opens the INI Config tab over a one-key file and edits that key, so the Play view holds an unsaved change.

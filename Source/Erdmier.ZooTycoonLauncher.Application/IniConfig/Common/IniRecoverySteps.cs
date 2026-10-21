@@ -2,7 +2,7 @@ namespace Erdmier.ZooTycoonLauncher.Application.IniConfig.Common;
 
 /// <summary>
 ///     The steps Create and Locate share (milestone 10 spec, §5.1): a create-only write of <c>zoo.ini</c>, then the row update, the change message and the snapshot import.
-///     A snapshot failure after the file exists is logged and swallowed, as in SDD §8.2.
+///     A row-update or snapshot failure after the file exists is logged and swallowed, as in SDD §8.2.
 /// </summary>
 public sealed class IniRecoverySteps
 {
@@ -81,9 +81,16 @@ public sealed class IniRecoverySteps
         row.ModifiedUtc = _clock.GetUtcNow()
                                 .UtcDateTime;
 
-        await _installations.UpdateAsync(row, cancellationToken);
+        try
+        {
+            await _installations.UpdateAsync(row, cancellationToken);
 
-        _events.Publish(new InstallationChangedMessage(row.Id));
+            _events.Publish(new InstallationChangedMessage(row.Id));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, message: "zoo.ini was created for {InstallationId} but its installation row could not be updated", row.Id);
+        }
 
         try
         {

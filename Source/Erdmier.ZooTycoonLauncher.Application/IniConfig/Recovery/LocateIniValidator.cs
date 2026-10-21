@@ -11,7 +11,7 @@ public sealed class LocateIniValidator : AbstractValidator<LocateIniCommand>
             .WithMessage(errorMessage: "An installation must be specified.");
 
         RuleFor(command => command.SourcePath)
-            .Must(path => !string.IsNullOrWhiteSpace(path) && Path.IsPathRooted(path))
+            .Must(path => !string.IsNullOrWhiteSpace(path) && Path.IsPathFullyQualified(path))
             .WithMessage(errorMessage: "Choose a file to copy.");
     }
 }

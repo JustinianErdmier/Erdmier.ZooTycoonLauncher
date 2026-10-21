@@ -146,13 +146,14 @@ public sealed class BootHandlerTests
                                   verifier,
                                   Substitute.For<IInstallationLocator>(),
                                   snapshots,
-                                  IniTestData.Probe(InstallationWriteAccess.Writable),
+                                  IniTestData.Probe(InstallationWriteAccess.FolderReadOnly),
                                   TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
         result.IsError.ShouldBeFalse();
         result.Value.Outcome.ShouldBe(BootOutcome.CannotPlay);
+        result.Value.WriteAccess.ShouldBe(InstallationWriteAccess.FolderReadOnly);
     }
 
     [ Fact ]
@@ -1010,7 +1011,13 @@ public sealed class BootHandlerTests
 
         IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
 
-        BootHandler handler = new(settings, installations, verifier, Substitute.For<IInstallationLocator>(), snapshots, IniTestData.Probe(InstallationWriteAccess.Writable), TimeProvider.System);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
+                                  TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 
@@ -1059,7 +1066,13 @@ public sealed class BootHandlerTests
         snapshots.SynchroniseAsync(row, Arg.Any<CancellationToken>())
                  .Returns(Error.Failure(code: "Ini.ReadFailed", description: "zoo.ini could not be read: locked"));
 
-        BootHandler handler = new(settings, installations, verifier, Substitute.For<IInstallationLocator>(), snapshots, IniTestData.Probe(InstallationWriteAccess.Writable), TimeProvider.System);
+        BootHandler handler = new(settings,
+                                  installations,
+                                  verifier,
+                                  Substitute.For<IInstallationLocator>(),
+                                  snapshots,
+                                  IniTestData.Probe(InstallationWriteAccess.Writable),
+                                  TimeProvider.System);
 
         ErrorOr<BootResult> result = await handler.Handle(new BootCommand(), CancellationToken.None);
 

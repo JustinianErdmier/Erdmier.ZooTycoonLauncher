@@ -143,4 +143,5 @@ public sealed class IniReconcilerTests
 
         await transaction.DidNotReceiveWithAnyArgs()
                          .AddAsync(default!, default);
-    }}
+    }
+}

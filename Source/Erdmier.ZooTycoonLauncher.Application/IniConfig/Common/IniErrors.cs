@@ -44,7 +44,10 @@ public static class IniErrors
     /// <summary>Writing <c>zoo.ini</c> was denied because the folder or the file is read-only.</summary>
     /// <param name="access">The probed write access; must be <see cref="InstallationWriteAccess.FolderReadOnly" /> or <see cref="InstallationWriteAccess.FileReadOnly" />.</param>
     /// <returns>A failure coded <c>Ini.ReadOnly</c> carrying the read-only explanation.</returns>
-    public static Error ReadOnly(InstallationWriteAccess access) => Error.Failure(code: "Ini.ReadOnly", IniReadOnlyText.For(access)!);
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="access" /> is <see cref="InstallationWriteAccess.Writable" /> or <see cref="InstallationWriteAccess.Unknown" />.</exception>
+    public static Error ReadOnly(InstallationWriteAccess access)
+        => Error.Failure(code: "Ini.ReadOnly",
+                         IniReadOnlyText.For(access) ?? throw new ArgumentOutOfRangeException(nameof(access), access, message: "Only a read-only access has an explanation."));
 
     /// <summary>The snapshot chosen for restoring no longer exists.</summary>
     /// <param name="snapshotId">The missing snapshot id.</param>

@@ -61,9 +61,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _gridLogger = gridLogger;
         _playLogger = playLogger;
 
-        _iniTabLogger    = iniTabLogger;
-        _iniEditorLogger = iniEditorLogger;
-
+        _iniTabLogger         = iniTabLogger;
+        _iniEditorLogger      = iniEditorLogger;
         _iniPlaceholderLogger = iniPlaceholderLogger;
     }
 

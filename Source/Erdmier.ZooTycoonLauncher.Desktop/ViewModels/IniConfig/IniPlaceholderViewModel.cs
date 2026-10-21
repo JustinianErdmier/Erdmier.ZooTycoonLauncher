@@ -9,6 +9,8 @@ public sealed partial class IniPlaceholderViewModel : ViewModelBase
 
     private readonly IDialogService? _dialogs;
 
+    private readonly bool _hasExe;
+
     private readonly Guid _installationId;
 
     private readonly string _installationPath = string.Empty;
@@ -39,6 +41,7 @@ public sealed partial class IniPlaceholderViewModel : ViewModelBase
 
     private IniPlaceholderViewModel(Guid                          installationId,
                                     string                        installationPath,
+                                    bool                          hasExe,
                                     IMediator                     mediator,
                                     IDialogService                dialogs,
                                     Func<CancellationToken, Task> reopenOnIniTabAsync,
@@ -47,6 +50,7 @@ public sealed partial class IniPlaceholderViewModel : ViewModelBase
     {
         _installationId      = installationId;
         _installationPath    = installationPath;
+        _hasExe              = hasExe;
         _mediator            = mediator;
         _dialogs             = dialogs;
         _reopenOnIniTabAsync = reopenOnIniTabAsync;
@@ -86,6 +90,7 @@ public sealed partial class IniPlaceholderViewModel : ViewModelBase
     /// <summary>Shown when the installation has no <c>zoo.ini</c>; offers to create one from defaults or to locate an existing file.</summary>
     /// <param name="installationId">The open installation.</param>
     /// <param name="installationPath">The installation folder, where the file picker starts.</param>
+    /// <param name="hasExe">Whether the installation has <c>zoo.exe</c>; both actions are disabled without it, as in the Fix dialogue.</param>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="dialogs">Chrome service for the file picker and error dialogue.</param>
     /// <param name="reopenOnIniTabAsync">Re-boots the open installation and reopens on the INI Config tab (called after a successful action).</param>
@@ -93,22 +98,23 @@ public sealed partial class IniPlaceholderViewModel : ViewModelBase
     /// <returns>The placeholder.</returns>
     public static IniPlaceholderViewModel NoIni(Guid                             installationId,
                                                 string                           installationPath,
+                                                bool                             hasExe,
                                                 IMediator                        mediator,
                                                 IDialogService                   dialogs,
                                                 Func<CancellationToken, Task>    reopenOnIniTabAsync,
                                                 ILogger<IniPlaceholderViewModel> logger)
-        => new(installationId, installationPath, mediator, dialogs, reopenOnIniTabAsync, logger);
+        => new(installationId, installationPath, hasExe, mediator, dialogs, reopenOnIniTabAsync, logger);
 
     /// <summary>Shown when <c>zoo.ini</c> or its settings history could not be read.</summary>
     /// <param name="message">The error description.</param>
     /// <returns>The placeholder.</returns>
     public static IniPlaceholderViewModel Unreadable(string message) => new(headline: "zoo.ini could not be read", message, showWarningIcon: true);
 
-    private bool CanRecover() => !IsBusy && _mediator is not null;
+    private bool CanRecover() => !IsBusy && _hasExe && _mediator is not null;
 
     [ RelayCommand(CanExecute = nameof(CanRecover)) ]
     private Task CreateAsync(CancellationToken cancellationToken)
-        => RunAsync(errorTitle: "Cannot Create zoo.ini", () => _mediator!.Send(new CreateDefaultIniCommand(_installationId), cancellationToken).AsTask(), cancellationToken);
+        => RunAsync(errorTitle: "Cannot Create zoo.ini", failureVerb: "created", () => _mediator!.Send(new CreateDefaultIniCommand(_installationId), cancellationToken).AsTask(), cancellationToken);
 
     [ RelayCommand(CanExecute = nameof(CanRecover)) ]
     private async Task LocateAsync(CancellationToken cancellationToken)
@@ -120,10 +126,10 @@ public sealed partial class IniPlaceholderViewModel : ViewModelBase
             return;
         }
 
-        await RunAsync(errorTitle: "Cannot Copy zoo.ini", () => _mediator!.Send(new LocateIniCommand(_installationId, source), cancellationToken).AsTask(), cancellationToken);
+        await RunAsync(errorTitle: "Cannot Copy zoo.ini", failureVerb: "copied", () => _mediator!.Send(new LocateIniCommand(_installationId, source), cancellationToken).AsTask(), cancellationToken);
     }
 
-    private async Task RunAsync(string errorTitle, Func<Task<ErrorOr<IniRecoveryResult>>> send, CancellationToken cancellationToken)
+    private async Task RunAsync(string errorTitle, string failureVerb, Func<Task<ErrorOr<IniRecoveryResult>>> send, CancellationToken cancellationToken)
     {
         IsBusy = true;
 
@@ -132,7 +138,8 @@ public sealed partial class IniPlaceholderViewModel : ViewModelBase
             ErrorOr<IniRecoveryResult> result = await send();
 
             if (!result.IsError
-                || result.FirstError.Code == IniErrors.AlreadyExistsCode)
+                || result.FirstError.Code == IniErrors.AlreadyExistsCode
+                || result.FirstError.Type == ErrorType.NotFound)
             {
                 await _reopenOnIniTabAsync!(cancellationToken);
 
@@ -147,7 +154,7 @@ public sealed partial class IniPlaceholderViewModel : ViewModelBase
         {
             _logger!.LogError(ex, message: "{Title} for installation {InstallationId} failed unexpectedly", errorTitle, _installationId);
 
-            await _dialogs!.ShowErrorAsync(errorTitle, $"zoo.ini could not be created: {ex.Message}");
+            await _dialogs!.ShowErrorAsync(errorTitle, $"zoo.ini could not be {failureVerb}: {ex.Message}");
         }
         finally
         {

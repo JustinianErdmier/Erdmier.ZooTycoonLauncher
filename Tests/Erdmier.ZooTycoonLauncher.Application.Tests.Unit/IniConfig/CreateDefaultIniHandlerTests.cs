@@ -95,6 +95,8 @@ public sealed class CreateDefaultIniHandlerTests
         result.FirstError.Code.ShouldBe(expected: "Ini.ReadOnly");
         result.FirstError.Description.ShouldBe(IniReadOnlyText.For(InstallationWriteAccess.FolderReadOnly));
         _installation.HasIni.ShouldBeFalse();
+
+        await AssertNothingRecordedAsync();
     }
 
     [ Fact ]
@@ -122,6 +124,8 @@ public sealed class CreateDefaultIniHandlerTests
 
         result.FirstError.Code.ShouldBe(expected: "Ini.WriteFailed");
         _installation.HasIni.ShouldBeFalse();
+
+        await AssertNothingRecordedAsync();
     }
 
     [ Fact ]
@@ -150,6 +154,21 @@ public sealed class CreateDefaultIniHandlerTests
     }
 
     [ Fact ]
+    public async Task Create_RowUpdateFails_StillSucceeds_AndLogsError()
+    {
+        _installations.UpdateAsync(Arg.Any<GameInstallation>(), Arg.Any<CancellationToken>())
+                      .Throws(new InvalidOperationException("locked"));
+
+        ErrorOr<IniRecoveryResult> result = await Handle();
+
+        result.IsError.ShouldBeFalse();
+        _logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error);
+
+        await _snapshots.Received(requiredNumberOfCalls: 1)
+                        .SynchroniseAsync(_installation, Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
     public async Task Create_UnknownInstallation_ReturnsNotFound()
     {
         ErrorOr<IniRecoveryResult> result = await CreateHandler().Handle(new CreateDefaultIniCommand(Guid.CreateVersion7()), CancellationToken.None);
@@ -158,6 +177,18 @@ public sealed class CreateDefaultIniHandlerTests
 
         await _files.DidNotReceiveWithAnyArgs()
                     .TryCreateAsync(default!, default!, default);
+    }
+
+    private async Task AssertNothingRecordedAsync()
+    {
+        await _installations.DidNotReceiveWithAnyArgs()
+                            .UpdateAsync(default!, default);
+
+        _events.DidNotReceiveWithAnyArgs()
+               .Publish(default(InstallationChangedMessage)!);
+
+        await _snapshots.DidNotReceiveWithAnyArgs()
+                        .SynchroniseAsync(default!, default);
     }
 
     private CreateDefaultIniHandler CreateHandler()

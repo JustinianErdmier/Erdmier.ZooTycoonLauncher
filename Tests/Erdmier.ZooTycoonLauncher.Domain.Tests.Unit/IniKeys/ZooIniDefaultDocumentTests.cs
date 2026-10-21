@@ -7,7 +7,7 @@ public sealed class ZooIniDefaultDocumentTests
     {
         IniKeySpec first = ZooIniDefaults.Keys[0];
 
-        ZooIniDefaultDocument.Render().ShouldStartWith($"[user]\r\n{first.Id.Key}={first.DefaultValue}\r\n");
+        ZooIniDefaultDocument.Render().ShouldStartWith(expected: $"[user]\r\n{first.Id.Key}={first.DefaultValue}\r\n");
     }
 
     [ Fact ]
@@ -15,9 +15,9 @@ public sealed class ZooIniDefaultDocumentTests
     {
         string text = ZooIniDefaultDocument.Render();
 
-        text.Replace(oldValue: "\r\n", newValue: string.Empty).ShouldNotContain("\n");
-        text.ShouldEndWith("\r\n");
-        text.ShouldContain("\r\n\r\n[UI]\r\n");
+        text.Replace(oldValue: "\r\n", newValue: string.Empty).ShouldNotContain(expected: "\n");
+        text.ShouldEndWith(expected: "\r\n");
+        text.ShouldContain(expected: "\r\n\r\n[UI]\r\n");
     }
 
     [ Fact ]
@@ -25,11 +25,11 @@ public sealed class ZooIniDefaultDocumentTests
     {
         string text = ZooIniDefaultDocument.Render();
 
-        text.ShouldNotContain("lastfile=");
-        text.ShouldNotContain("lastWindowX=");
-        text.ShouldNotContain("progresscalls=");
-        text.ShouldContain("showUserEntityWarning=0");
-        text.ShouldContain("startedFirstTutorial=0");
+        text.ShouldNotContain(expected: "lastfile=");
+        text.ShouldNotContain(expected: "lastWindowX=");
+        text.ShouldNotContain(expected: "progresscalls=");
+        text.ShouldContain(expected: "showUserEntityWarning=0");
+        text.ShouldContain(expected: "startedFirstTutorial=0");
     }
 
     [ Fact ]
@@ -44,5 +44,5 @@ public sealed class ZooIniDefaultDocumentTests
     }
 
     [ Fact ]
-    public void Render_HasNoScenarioSection() => ZooIniDefaultDocument.Render().ShouldNotContain("[scenario]");
+    public void Render_HasNoScenarioSection() => ZooIniDefaultDocument.Render().ShouldNotContain(expected: "[scenario]");
 }

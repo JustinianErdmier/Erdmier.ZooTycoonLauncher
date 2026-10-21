@@ -16,6 +16,7 @@ public sealed class LocateIniValidatorTests
     [ InlineData("   ") ]
     [ InlineData(@"zoo.ini") ]
     [ InlineData(@"..\zoo.ini") ]
+    [ InlineData(@"C:zoo.ini") ]
     public void Validate_EmptyOrRelativePath_Fails(string path)
         => _validator.Validate(new LocateIniCommand(Guid.CreateVersion7(), path)).Errors.ShouldContain(error => error.ErrorMessage == "Choose a file to copy.");
 }

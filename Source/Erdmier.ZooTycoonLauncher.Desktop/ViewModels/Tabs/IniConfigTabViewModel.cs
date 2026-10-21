@@ -132,7 +132,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
                                                 Func<CancellationToken, Task>    reopenOnIniTabAsync,
                                                 ILogger<IniPlaceholderViewModel> placeholderLogger)
         => !installation.Validity.HasIni
-               ? IniPlaceholderViewModel.NoIni(installation.Id, installation.Path, mediator, dialogs, reopenOnIniTabAsync, placeholderLogger)
+               ? IniPlaceholderViewModel.NoIni(installation.Id, installation.Path, installation.Validity.HasExe, mediator, dialogs, reopenOnIniTabAsync, placeholderLogger)
                : iniErrorMessage is not null
                    ? IniPlaceholderViewModel.Unreadable(iniErrorMessage)
                    : IniPlaceholderViewModel.Loading();

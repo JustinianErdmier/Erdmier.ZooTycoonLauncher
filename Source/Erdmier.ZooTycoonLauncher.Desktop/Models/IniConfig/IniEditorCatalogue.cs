@@ -120,7 +120,7 @@ public static class IniEditorCatalogue
             ]),
         new(Section: "ai",
             Descriptor: "AI behaviour limits",
-            Footnote: "Raising this above the stock 1,000 limit can make guest pathing thrash on the original engine; values above 2,500 need a community AI patch.",
+            Footnote: "Raising this above the stock 1,000 limit can make guest pathing thrash; values above 2,500 need a community AI patch.",
             [
                 new(SubHeader: null,
                     [
@@ -142,7 +142,7 @@ public static class IniEditorCatalogue
                         Toggle(section: "debug", key: "sendDebugger", caption: "OutputDebugString", help: "Send the game's log to an attached debugger.")
                     ])
             ]),
-        new(Section: "language",
+        new(Section: LanguageId.Section,
             Descriptor: "Windows LANGID / SUBLANGID",
             Footnote: null,
             [
@@ -150,8 +150,8 @@ public static class IniEditorCatalogue
                     [
                         new IniFieldDescriptor(Id: null, Label: "lang / sublang", IniControlKind.LanguagePicker, Hint: "Curated LANGID + SUBLANGID",
                                                Help: "Game language. Choosing an entry sets both LANGID and SUBLANGID below; other combinations can be entered directly."),
-                        Number(section: "language", key: "lang", hint: "Windows LANGID 0–65535", help: "Windows primary language identifier (LANGID)."),
-                        Number(section: "language", key: "sublang", hint: "Windows SUBLANGID 0–65535", help: "Windows sub-language identifier (SUBLANGID).")
+                        Number(LanguageId.Section, LanguageId.Key, hint: "Windows LANGID 0–65535", help: "Windows primary language identifier (LANGID)."),
+                        Number(SubLanguageId.Section, SubLanguageId.Key, hint: "Windows SUBLANGID 0–65535", help: "Windows sub-language identifier (SUBLANGID).")
                     ])
             ]),
         new(Section: "Map",

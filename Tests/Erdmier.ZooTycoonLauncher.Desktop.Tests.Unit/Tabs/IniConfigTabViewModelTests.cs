@@ -6,10 +6,13 @@ public sealed class IniConfigTabViewModelTests
 
     private readonly IMediator _mediator = Substitute.For<IMediator>();
 
+    private IniConfigTabViewModel CreateTab(InstallationSummary installation, string? iniErrorMessage, ILogger<IniConfigTabViewModel>? logger = null)
+        => new(installation, iniErrorMessage, _mediator, _dialogs, logger ?? NullLogger<IniConfigTabViewModel>.Instance, NullLogger<IniEditorViewModel>.Instance);
+
     [ Fact ]
     public async Task NoIni_ShowsThePlaceholderAndNeverLoads()
     {
-        IniConfigTabViewModel tab = new(IniEditorTestData.Installation(hasIni: false), iniErrorMessage: null, _mediator, _dialogs);
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(hasIni: false), iniErrorMessage: null);
 
         await tab.ActivateAsync(CancellationToken.None);
 
@@ -21,7 +24,7 @@ public sealed class IniConfigTabViewModelTests
     [ Fact ]
     public async Task IniErrorMessage_ShowsUnreadableThenRetriesOnActivation()
     {
-        IniConfigTabViewModel tab = new(IniEditorTestData.Installation(), iniErrorMessage: "zoo.ini could not be read: locked", _mediator, _dialogs);
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: "zoo.ini could not be read: locked");
 
         tab.Content.ShouldBeOfType<IniPlaceholderViewModel>().Body.ShouldBe(expected: "zoo.ini could not be read: locked");
 
@@ -35,7 +38,7 @@ public sealed class IniConfigTabViewModelTests
     [ Fact ]
     public async Task Fresh_ShowsLoadingThenTheEditor()
     {
-        IniConfigTabViewModel tab = new(IniEditorTestData.Installation(), iniErrorMessage: null, _mediator, _dialogs);
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
 
         tab.Content.ShouldBeOfType<IniPlaceholderViewModel>().Headline.ShouldBe(expected: "Loading zoo.ini…");
 
@@ -49,19 +52,19 @@ public sealed class IniConfigTabViewModelTests
     [ Fact ]
     public async Task FailedLoad_ShowsUnreadableWithTheDescription()
     {
-        IniConfigTabViewModel tab = new(IniEditorTestData.Installation(), iniErrorMessage: null, _mediator, _dialogs);
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
 
-        IniEditorTestData.ReturnsForGet(_mediator, Error.Unexpected(code: "Ini.StoreFailed", description: "The installation's settings history could not be opened: x"));
+        IniEditorTestData.ReturnsForGet(_mediator, Error.Unexpected(code: "Ini.StoreFailed", description: "The installation's settings history could not be read or updated: x"));
 
         await tab.ActivateAsync(CancellationToken.None);
 
-        tab.Content.ShouldBeOfType<IniPlaceholderViewModel>().Body.ShouldBe(expected: "The installation's settings history could not be opened: x");
+        tab.Content.ShouldBeOfType<IniPlaceholderViewModel>().Body.ShouldBe(expected: "The installation's settings history could not be read or updated: x");
     }
 
     [ Fact ]
     public async Task ActivationWhileDirty_DoesNotReload()
     {
-        IniConfigTabViewModel tab = new(IniEditorTestData.Installation(), iniErrorMessage: null, _mediator, _dialogs);
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
 
         IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
 
@@ -78,7 +81,7 @@ public sealed class IniConfigTabViewModelTests
     [ Fact ]
     public async Task ConcurrentActivation_LoadsOnceAndCreatesOneEditor()
     {
-        IniConfigTabViewModel                        tab     = new(IniEditorTestData.Installation(), iniErrorMessage: null, _mediator, _dialogs);
+        IniConfigTabViewModel                        tab     = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
         TaskCompletionSource<ErrorOr<IniConfigResult>> pending = new();
 
         _mediator.Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>())
@@ -87,20 +90,99 @@ public sealed class IniConfigTabViewModelTests
         Task first  = tab.ActivateAsync(CancellationToken.None);
         Task second = tab.ActivateAsync(CancellationToken.None);
 
-        second.ShouldBeSameAs(first);
-
         pending.SetResult(IniEditorTestData.Result(("user", "screenwidth", "800")));
 
-        await first;
+        await Task.WhenAll(first, second);
 
         await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>());
         tab.Content.ShouldBeOfType<IniEditorViewModel>();
     }
 
     [ Fact ]
+    public async Task ConcurrentActivation_FirstCallerCancels_SecondStillLoads()
+    {
+        IniConfigTabViewModel                          tab     = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
+        TaskCompletionSource<ErrorOr<IniConfigResult>> pending = new();
+        using CancellationTokenSource                  cts     = new();
+
+        _mediator.Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(call => new ValueTask<ErrorOr<IniConfigResult>>(pending.Task.WaitAsync(call.Arg<CancellationToken>())));
+
+        Task first  = tab.ActivateAsync(cts.Token);
+        Task second = tab.ActivateAsync(CancellationToken.None);
+
+        await cts.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => first);
+
+        pending.SetResult(IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        await second;
+
+        tab.Content.ShouldBeOfType<IniEditorViewModel>();
+    }
+
+    [ Fact ]
+    public async Task ConcurrentActivation_SecondCallerCancels_LoadContinues()
+    {
+        IniConfigTabViewModel                          tab     = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
+        TaskCompletionSource<ErrorOr<IniConfigResult>> pending = new();
+        using CancellationTokenSource                  cts     = new();
+
+        _mediator.Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniConfigResult>>(pending.Task));
+
+        Task first  = tab.ActivateAsync(CancellationToken.None);
+        Task second = tab.ActivateAsync(cts.Token);
+
+        await cts.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => second);
+
+        pending.SetResult(IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        await first;
+
+        tab.Content.ShouldBeOfType<IniEditorViewModel>();
+    }
+
+    [ Fact ]
+    public async Task Activate_LoadThrows_LogsError()
+    {
+        RecordingLogger<IniConfigTabViewModel> logger = new();
+        IniConfigTabViewModel                  tab    = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null, logger);
+
+        _mediator.Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniConfigResult>>>(_ => throw new IOException("boom"));
+
+        await tab.ActivateAsync(CancellationToken.None);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Error);
+        entry.Exception.ShouldBeOfType<IOException>();
+    }
+
+    [ Fact ]
+    public async Task Activate_LoadReturnsError_LogsWarning()
+    {
+        RecordingLogger<IniConfigTabViewModel> logger = new();
+        IniConfigTabViewModel                  tab    = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null, logger);
+
+        IniEditorTestData.ReturnsForGet(_mediator, Error.Unexpected(code: "Ini.StoreFailed", description: "x"));
+
+        await tab.ActivateAsync(CancellationToken.None);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Warning);
+        entry.Exception.ShouldBeNull();
+    }
+
+    [ Fact ]
     public async Task HasPendingChanges_IsForwardedWithANotification()
     {
-        IniConfigTabViewModel tab     = new(IniEditorTestData.Installation(), iniErrorMessage: null, _mediator, _dialogs);
+        IniConfigTabViewModel tab     = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
         List<string?>         changes = [];
 
         IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
@@ -120,13 +202,13 @@ public sealed class IniConfigTabViewModelTests
 
     [ Fact ]
     public async Task SaveAsync_WithoutAnEditor_HasNothingToSave()
-        => (await new IniConfigTabViewModel(IniEditorTestData.Installation(hasIni: false), iniErrorMessage: null, _mediator, _dialogs).SaveAsync(CancellationToken.None))
+        => (await CreateTab(IniEditorTestData.Installation(hasIni: false), iniErrorMessage: null).SaveAsync(CancellationToken.None))
            .ShouldBeTrue();
 
     [ Fact ]
     public async Task ReloadFailsWhileDirty_KeepsTheEditorAndReportsTheError()
     {
-        IniConfigTabViewModel tab = new(IniEditorTestData.Installation(), iniErrorMessage: null, _mediator, _dialogs);
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
 
         IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
 
@@ -141,7 +223,7 @@ public sealed class IniConfigTabViewModelTests
 
         IniEditorTestData.Field<IniNumberFieldViewModel>((IniEditorViewModel)tab.Content, section: "user", key: "screenwidth").Value = 1024m;
 
-        pending.SetResult(Error.Unexpected(code: "Ini.StoreFailed", description: "The installation's settings history could not be opened: x"));
+        pending.SetResult(Error.Unexpected(code: "Ini.StoreFailed", description: "The installation's settings history could not be read or updated: x"));
 
         await reload;
 
@@ -149,13 +231,13 @@ public sealed class IniConfigTabViewModelTests
         tab.HasPendingChanges.ShouldBeTrue();
 
         await _dialogs.Received(requiredNumberOfCalls: 1)
-                      .ShowErrorAsync(title: "Cannot Reload zoo.ini", message: "The installation's settings history could not be opened: x");
+                      .ShowErrorAsync(title: "Cannot Reload zoo.ini", message: "The installation's settings history could not be read or updated: x");
     }
 
     [ Fact ]
     public async Task ReloadThrowsWhileDirty_KeepsTheEditorAndReportsTheError()
     {
-        IniConfigTabViewModel tab = new(IniEditorTestData.Installation(), iniErrorMessage: null, _mediator, _dialogs);
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
 
         IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
 

@@ -56,7 +56,7 @@ public interface IDialogService
     /// <returns>The new configuration after a restore; <see langword="null" /> when the user cancelled or nothing was restored.</returns>
     Task<IniConfigResult?> ShowRestorePreviousIniAsync(Guid installationId);
 
-    /// <summary>Shows a modal error message box owned by the active window.</summary>
+    /// <summary>Shows a modal error message box owned by the active window. With no owner window, shows a non-modal box and returns without waiting.</summary>
     /// <param name="title">The window title.</param>
     /// <param name="message">The message, shown verbatim.</param>
     Task ShowErrorAsync(string title, string message);

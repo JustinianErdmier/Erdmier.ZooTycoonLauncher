@@ -35,14 +35,7 @@ public sealed partial class IniToggleFieldViewModel : IniKeyedFieldViewModel
     protected override string CurrentRaw => IsChecked != Inverted ? "1" : "0";
 
     /// <inheritdoc />
-    protected override void ApplyValue(string? effectiveValue) => IsChecked = IsTrue(effectiveValue) != Inverted;
+    protected override void ApplyValue(string? effectiveValue) => IsChecked = (IniKeySpec.TryParseBool(effectiveValue, out bool parsed) && parsed) != Inverted;
 
     partial void OnIsCheckedChanged(bool value) => NotifyValueChanged();
-
-    private static bool IsTrue(string? value)
-    {
-        string? trimmed = value?.Trim();
-
-        return trimmed == "1" || (bool.TryParse(trimmed, out bool parsed) && parsed);
-    }
 }

@@ -24,7 +24,7 @@ public sealed class SaveIniHandlerTests
 
     private readonly IIniSnapshotRepository _snapshots = Substitute.For<IIniSnapshotRepository>();
 
-    private IIniSnapshotTransaction _transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+    private IIniSnapshotTransaction _transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
 
     private string? _written;
 
@@ -148,6 +148,29 @@ public sealed class SaveIniHandlerTests
         ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "0800"));
 
         result.Value.HistoricalCount.ShouldBe(3);
+
+        Received.InOrder(() =>
+        {
+            _transaction.CountHistoricalAsync(Arg.Any<CancellationToken>());
+            _transaction.CommitAsync(Arg.Any<CancellationToken>());
+        });
+    }
+
+    [ Fact ]
+    public async Task Save_CountThrows_ReturnsStoreFailedAndWritesNothing()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        _transaction.CountHistoricalAsync(Arg.Any<CancellationToken>())
+                    .ThrowsAsync(new InvalidOperationException(message: "no such table"));
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "1024"));
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.StoreFailed");
+        result.FirstError.Description.ShouldContain(expected: "no such table");
+
+        await _files.DidNotReceive().WriteAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
     }
 
     [ Fact ]
@@ -188,6 +211,19 @@ public sealed class SaveIniHandlerTests
         // DrawRate is missing from [user], so it is inserted after that section's last key (lastfile=…).
         _written.ShouldBe(IniTestData.Sample.Replace(oldValue: "Zoo M\u00FCller.zoo\r\n", newValue: "Zoo M\u00FCller.zoo\r\nDrawRate=30\r\n"));
         result.Value.Values[new IniKeyId(Section: "user", Key: "DrawRate")].ShouldBe(expected: "30");
+    }
+
+    [ Fact ]
+    public async Task Save_HasIniFalseButFilePresent_Succeeds()
+    {
+        _installation.HasIni = false;
+
+        DiskHolds(IniTestData.Sample);
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "1024"));
+
+        result.IsError.ShouldBeFalse();
+        result.Value.Values[ScreenWidth].ShouldBe(expected: "1024");
     }
 
     [ Fact ]

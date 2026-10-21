@@ -66,6 +66,21 @@ public sealed class InstallationInfoDialogViewModelTests
     }
 
     [ Fact ]
+    public async Task HistoryEntries_SummaryFails_DoesNotQueryTheCount()
+    {
+        _mediator.Send(Arg.Any<GetInstallationByIdQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<InstallationSummary>>(Error.NotFound(code: "Installation.NotFound")));
+
+        InstallationInfoDialogViewModel viewModel = new(_mediator, NullLogger<InstallationInfoDialogViewModel>.Instance);
+
+        await viewModel.InitialiseAsync(InstallationId);
+
+        viewModel.ErrorMessage.ShouldNotBeNull();
+
+        await _mediator.DidNotReceive().Send(Arg.Any<GetIniHistoryCountQuery>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
     public async Task HistoryEntries_QueryThrows_ReadsDash()
     {
         _mediator.Send(Arg.Any<GetInstallationByIdQuery>(), Arg.Any<CancellationToken>())

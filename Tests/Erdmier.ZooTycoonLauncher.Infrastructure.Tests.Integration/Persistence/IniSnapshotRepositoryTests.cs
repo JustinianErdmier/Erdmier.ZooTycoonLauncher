@@ -188,16 +188,13 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
     {
         await ImportAsync();
 
-        // A Save after an external edit archives a Manual snapshot and then a LauncherGui one, both stamped with the same instant.
-        foreach (IniSnapshotTrigger trigger in new[] { IniSnapshotTrigger.Manual, IniSnapshotTrigger.LauncherGui })
+        // Two historical snapshots, inserted directly, share one capture instant (as a Save after an external edit would archive a Manual snapshot and then a
+        // LauncherGui one). The ids are explicit, with the Manual one larger, so only the trigger can put the LauncherGui archive first.
+        await using (IIniSnapshotTransaction archiving = await _repository.BeginAsync(_installationId, CancellationToken.None))
         {
-            await using IIniSnapshotTransaction archiving = await _repository.BeginAsync(_installationId, CancellationToken.None);
-
-            await archiving.ArchiveCurrentAsync(trigger, Captured, CancellationToken.None);
+            await archiving.AddAsync(Snapshot(IniSnapshotKind.Historical, IniSnapshotTrigger.Manual, Guid.Parse(input: "00000000-0000-0000-0000-000000000002")), CancellationToken.None);
+            await archiving.AddAsync(Snapshot(IniSnapshotKind.Historical, IniSnapshotTrigger.LauncherGui, Guid.Parse(input: "00000000-0000-0000-0000-000000000001")), CancellationToken.None);
             await archiving.CommitAsync(CancellationToken.None);
-
-            // Version 7 ids are only ordered across milliseconds.
-            await Task.Delay(millisecondsDelay: 5);
         }
 
         await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
@@ -235,6 +232,23 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
 
         found.ShouldNotBeNull();
         found.Id.ShouldBe(historical.Id);
+        found.Values.Single().Value.ShouldBe(expected: "800");
+    }
+
+    [ Fact ]
+    public async Task GetById_ReturnsTheOriginalSnapshot()
+    {
+        await ImportAsync();
+
+        await using IIniSnapshotTransaction transaction = await _repository.BeginAsync(_installationId, CancellationToken.None);
+
+        IniSnapshot original = (await transaction.GetOriginalAsync(CancellationToken.None))!;
+
+        IniSnapshot? found = await transaction.GetByIdAsync(original.Id, CancellationToken.None);
+
+        found.ShouldNotBeNull();
+        found.Id.ShouldBe(original.Id);
+        found.Kind.ShouldBe(IniSnapshotKind.Original);
         found.Values.Single().Value.ShouldBe(expected: "800");
     }
 
@@ -303,9 +317,10 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
     }
 
     private static IniSnapshot Snapshot(IniSnapshotKind kind, params (string Section, string Key, string Value)[] extraValues)
-    {
-        Guid id = Guid.CreateVersion7();
+        => Snapshot(kind, IniSnapshotTrigger.OriginalImport, Guid.CreateVersion7(), extraValues);
 
+    private static IniSnapshot Snapshot(IniSnapshotKind kind, IniSnapshotTrigger trigger, Guid id, params (string Section, string Key, string Value)[] extraValues)
+    {
         List<IniValue> values =
         [
             new() { SnapshotId = id, Section = "user", Key = "screenwidth", Value = "800", ValueKind = IniValueKind.Int, Source = IniValueSource.OriginalImport }
@@ -325,7 +340,7 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
         {
             Id            = id,
             Kind          = kind,
-            Trigger       = IniSnapshotTrigger.OriginalImport,
+            Trigger       = trigger,
             CapturedUtc   = Captured,
             StructureBlob = "[user]\r\nscreenwidth=800\r\n",
             Values        = values

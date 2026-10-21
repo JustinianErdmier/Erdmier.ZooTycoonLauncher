@@ -9,9 +9,13 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
 {
     private readonly IDialogService _dialogs;
 
+    private readonly ILogger<IniEditorViewModel> _editorLogger;
+
     private readonly bool _hasIni;
 
     private readonly Guid _installationId;
+
+    private readonly ILogger<IniConfigTabViewModel> _logger;
 
     private readonly IMediator? _mediator;
 
@@ -24,34 +28,56 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
     /// <param name="iniErrorMessage">The boot's INI synchronisation error, or <see langword="null" />.</param>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="dialogs">Chrome service for the editor's error dialogue.</param>
-    public IniConfigTabViewModel(InstallationSummary installation, string? iniErrorMessage, IMediator mediator, IDialogService dialogs)
-        : this(installation.Id, installation.Validity.HasIni, dialogs, InitialContent(installation.Validity.HasIni, iniErrorMessage))
+    /// <param name="logger">Logger for load failures.</param>
+    /// <param name="editorLogger">Logger handed to the editor this tab creates.</param>
+    public IniConfigTabViewModel(InstallationSummary            installation,
+                                 string?                        iniErrorMessage,
+                                 IMediator                      mediator,
+                                 IDialogService                 dialogs,
+                                 ILogger<IniConfigTabViewModel> logger,
+                                 ILogger<IniEditorViewModel>    editorLogger)
+        : this(installation.Id, installation.Validity.HasIni, dialogs, logger, editorLogger, InitialContent(installation.Validity.HasIni, iniErrorMessage))
         => _mediator = mediator;
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public IniConfigTabViewModel()
-        : this(Guid.Empty, hasIni: true, new NoOpDialogService(), new IniEditorViewModel())
+        : this(Guid.Empty,
+               hasIni: true,
+               new NoOpDialogService(),
+               NullLogger<IniConfigTabViewModel>.Instance,
+               NullLogger<IniEditorViewModel>.Instance,
+               new IniEditorViewModel())
     { }
 
-    private IniConfigTabViewModel(Guid installationId, bool hasIni, IDialogService dialogs, ViewModelBase content)
+    private IniConfigTabViewModel(Guid                           installationId,
+                                  bool                           hasIni,
+                                  IDialogService                 dialogs,
+                                  ILogger<IniConfigTabViewModel> logger,
+                                  ILogger<IniEditorViewModel>    editorLogger,
+                                  ViewModelBase                  content)
     {
         _installationId = installationId;
         _hasIni         = hasIni;
         _dialogs        = dialogs;
+        _logger         = logger;
+        _editorLogger   = editorLogger;
 
         Content = content;
     }
 
     /// <summary>The editor or a placeholder.</summary>
     [ ObservableProperty ]
-    public partial ViewModelBase Content { get; set; }
+    public partial ViewModelBase Content { get; private set; }
 
     /// <summary>Whether the editor holds unsaved edits.</summary>
     public bool HasPendingChanges => _editor?.HasPendingChanges ?? false;
 
-    /// <summary>Loads (or reloads) from disk when the tab becomes selected. Skipped when there is no INI or edits are pending; concurrent calls share one load.</summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The in-flight load, or a completed task when skipped.</returns>
+    /// <summary>
+    ///     Loads (or reloads) from disk when the tab becomes selected. Skipped (a completed task is returned) when the installation has no INI, when edits are pending, or when
+    ///     there is no mediator (the designer). Concurrent calls share one load, which no caller can cancel; each caller's token cancels only its own wait.
+    /// </summary>
+    /// <param name="cancellationToken">Cancels this caller's wait for the load, not the load itself.</param>
+    /// <returns>A task that completes with the shared load, or a completed task when skipped.</returns>
     public Task ActivateAsync(CancellationToken cancellationToken)
     {
         if (!_hasIni
@@ -61,14 +87,13 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
             return Task.CompletedTask;
         }
 
-        if (_activation is { IsCompleted: false })
+        if (_activation is not { IsCompleted: false })
         {
-            return _activation;
+            // The load is shared, so it must not carry the first caller's token: that caller cancelling would fail every later caller's wait.
+            _activation = LoadAsync(_mediator, CancellationToken.None);
         }
 
-        _activation = LoadAsync(_mediator, cancellationToken);
-
-        return _activation;
+        return _activation.WaitAsync(cancellationToken);
     }
 
     /// <summary>Saves the editor's edits (used by the pending-changes guard).</summary>
@@ -94,6 +119,8 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
 
             if (result.IsError)
             {
+                _logger.LogWarning(message: "The INI Config tab could not load zoo.ini for installation {InstallationId}: {Error}", _installationId, result.FirstError.Description);
+
                 await ReportUnreadableAsync(placeholderMessage: result.FirstError.Description, dialogDescription: result.FirstError.Description);
 
                 return;
@@ -101,7 +128,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
 
             if (_editor is null)
             {
-                _editor = new IniEditorViewModel(_installationId, mediator, _dialogs, result.Value);
+                _editor = new IniEditorViewModel(_installationId, mediator, _dialogs, result.Value, _editorLogger);
 
                 _editor.PropertyChanged += OnEditorPropertyChanged;
             }
@@ -115,6 +142,8 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            _logger.LogError(ex, message: "The INI Config tab failed to load zoo.ini for installation {InstallationId}", _installationId);
+
             await ReportUnreadableAsync(placeholderMessage: ex.Message, dialogDescription: $"zoo.ini could not be reloaded: {ex.Message}");
         }
     }

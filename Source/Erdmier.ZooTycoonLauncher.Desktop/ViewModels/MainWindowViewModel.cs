@@ -23,6 +23,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IMessenger _messenger;
 
+    private readonly ILogger<IniEditorViewModel> _iniEditorLogger;
+
+    private readonly ILogger<IniConfigTabViewModel> _iniTabLogger;
+
     private readonly ILogger<PlayViewModel> _playLogger;
 
     /// <summary>Initialises a new instance.</summary>
@@ -33,13 +37,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="logger">Logger for unexpected boot-dispatch and picker-initialisation failures.</param>
     /// <param name="gridLogger">Logger passed to freshly-built picker grids so their message-driven reload failures are recorded.</param>
     /// <param name="playLogger">Logger passed to freshly-built <see cref="PlayViewModel" /> instances so their last-resort catches are recorded.</param>
+    /// <param name="iniTabLogger">Logger passed on to the INI Config tab of each <see cref="PlayViewModel" />.</param>
+    /// <param name="iniEditorLogger">Logger passed on to the INI editor of each <see cref="PlayViewModel" />.</param>
     public MainWindowViewModel(IMediator                          mediator,
                                IApplicationLifecycle              lifecycle,
                                IDialogService                     dialogs,
                                IMessenger                         messenger,
                                ILogger<MainWindowViewModel>       logger,
                                ILogger<InstallationGridViewModel> gridLogger,
-                               ILogger<PlayViewModel>             playLogger)
+                               ILogger<PlayViewModel>             playLogger,
+                               ILogger<IniConfigTabViewModel>     iniTabLogger,
+                               ILogger<IniEditorViewModel>        iniEditorLogger)
     {
         _mediator   = mediator;
         _lifecycle  = lifecycle;
@@ -48,6 +56,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _logger     = logger;
         _gridLogger = gridLogger;
         _playLogger = playLogger;
+
+        _iniTabLogger    = iniTabLogger;
+        _iniEditorLogger = iniEditorLogger;
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
@@ -369,6 +380,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                  _dialogs,
                                                                  _mediator,
                                                                  _playLogger,
+                                                                 _iniTabLogger,
+                                                                 _iniEditorLogger,
                                                                  iniErrorMessage: result.IniErrorMessage),
             AppBoot.BootOutcome.CannotPlay => new PlayViewModel(result.ActiveInstallation!,
                                                                 canPlay: false,
@@ -378,6 +391,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                 _dialogs,
                                                                 _mediator,
                                                                 _playLogger,
+                                                                _iniTabLogger,
+                                                                _iniEditorLogger,
                                                                 iniErrorMessage: result.IniErrorMessage),
             AppBoot.BootOutcome.NoGameInstallationFound => new NoGameInstallationFoundViewModel(result.LocatedCandidatePath,
                                                                                                 _dialogs,

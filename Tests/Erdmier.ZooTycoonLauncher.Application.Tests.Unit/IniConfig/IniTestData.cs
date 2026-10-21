@@ -19,14 +19,14 @@ internal static class IniTestData
 
     public static string Text(params string[] lines) => string.Join(separator: "\r\n", lines) + "\r\n";
 
-    public static IniSnapshot CurrentSnapshot(string text)
+    public static IniSnapshot Snapshot(string text, IniSnapshotKind? kind = null)
     {
         Guid id = Guid.CreateVersion7();
 
         return new IniSnapshot
         {
             Id            = id,
-            Kind          = IniSnapshotKind.Current,
+            Kind          = kind ?? IniSnapshotKind.Current,
             Trigger       = IniSnapshotTrigger.OriginalImport,
             CapturedUtc   = new DateTime(year: 2026, month: 1, day: 1, hour: 0, minute: 0, second: 0, DateTimeKind.Utc),
             StructureBlob = text,

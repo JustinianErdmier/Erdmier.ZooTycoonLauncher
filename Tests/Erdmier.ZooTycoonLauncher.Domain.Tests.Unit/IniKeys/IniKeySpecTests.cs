@@ -107,4 +107,20 @@ public sealed class IniKeySpecTests
         NullableIntSpec.EffectiveValue(raw: null).ShouldBeNull();
         NullableStrSpec.EffectiveValue(raw: null).ShouldBeNull();
     }
+
+    [ Theory ]
+    [ InlineData("1", true, true) ]
+    [ InlineData(" 0 ", true, false) ]
+    [ InlineData("true", true, true) ]
+    [ InlineData("False", true, false) ]
+    [ InlineData("2", false, false) ]
+    [ InlineData(null, false, false) ]
+    [ InlineData("", false, false) ]
+    public void TryParseBool_ParsesZeroOneAndBooleanSpellings(string? value, bool expectedParsed, bool expectedResult)
+    {
+        bool parsed = IniKeySpec.TryParseBool(value, out bool result);
+
+        parsed.ShouldBe(expectedParsed);
+        result.ShouldBe(expectedResult);
+    }
 }

@@ -24,7 +24,7 @@ public sealed class RestoreIniSnapshotHandlerTests
 
     private readonly IIniSnapshotRepository _snapshots = Substitute.For<IIniSnapshotRepository>();
 
-    private readonly IIniSnapshotTransaction _transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+    private readonly IIniSnapshotTransaction _transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
 
     private string? _written;
 
@@ -155,8 +155,35 @@ public sealed class RestoreIniSnapshotHandlerTests
 
         result.FirstError.Code.ShouldBe(expected: "Ini.SnapshotNotFound");
 
+        await _transaction.DidNotReceive().ArchiveCurrentAsync(Arg.Any<IniSnapshotTrigger>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
         await _files.DidNotReceive().WriteAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
         await _transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Restore_ReturnsTheHistoricalCount()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        Guid snapshotId = SnapshotHolds(IniTestData.Sample.Replace(oldValue: "screenwidth=800", newValue: "screenwidth=1024"));
+
+        bool archived = false;
+
+        _transaction.ArchiveCurrentAsync(Arg.Any<IniSnapshotTrigger>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+                    .Returns(_ =>
+                    {
+                        archived = true;
+
+                        return Task.CompletedTask;
+                    });
+
+        _transaction.CountHistoricalAsync(Arg.Any<CancellationToken>())
+                    .Returns(_ => archived ? 6 : 5);
+
+        ErrorOr<IniConfigResult> result = await RestoreAsync(snapshotId);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.HistoricalCount.ShouldBe(6);
     }
 
     [ Fact ]
@@ -205,7 +232,7 @@ public sealed class RestoreIniSnapshotHandlerTests
 
     private Guid SnapshotHolds(string text)
     {
-        IniSnapshot snapshot = IniTestData.CurrentSnapshot(text);
+        IniSnapshot snapshot = IniTestData.Snapshot(text, IniSnapshotKind.Historical);
 
         _transaction.GetByIdAsync(snapshot.Id, Arg.Any<CancellationToken>())
                     .Returns(snapshot);

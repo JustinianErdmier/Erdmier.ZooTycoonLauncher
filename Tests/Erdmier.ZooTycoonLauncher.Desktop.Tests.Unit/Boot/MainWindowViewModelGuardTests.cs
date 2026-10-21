@@ -187,5 +187,7 @@ public sealed class MainWindowViewModelGuardTests
                new WeakReferenceMessenger(),
                NullLogger<MainWindowViewModel>.Instance,
                NullLogger<InstallationGridViewModel>.Instance,
-               NullLogger<PlayViewModel>.Instance);
+               NullLogger<PlayViewModel>.Instance,
+               NullLogger<IniConfigTabViewModel>.Instance,
+               NullLogger<IniEditorViewModel>.Instance);
 }

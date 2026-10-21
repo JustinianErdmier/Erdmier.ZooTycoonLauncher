@@ -23,6 +23,26 @@ public sealed class ZooIniDefaultsTests
     public void Keys_DefaultsAreValidUnderTheirOwnSpec() => ZooIniDefaults.Keys.Where(spec => spec.DefaultValue is not null).ShouldAllBe(spec => spec.IsValid(spec.DefaultValue));
 
     [ Fact ]
+    public void EveryUserSetting_HasANonNullDefault()
+    {
+        List<IniKeySpec> userSettings = ZooIniDefaults.Keys.Where(spec => spec.Role == IniKeyRole.UserSetting).ToList();
+
+        userSettings.ShouldNotBeEmpty();
+        userSettings.ShouldAllBe(spec => spec.DefaultValue != null);
+    }
+
+    [ Fact ]
+    public void Registry_IsAlreadyOrderedBySection()
+    {
+        // IniSnapshotComparer orders by section index then registry position. No pair of keys has a registry order that disagrees with the section order (the registry is
+        // declared section by section), so this pins that property: should a key ever be declared out of section order, the comparer's two-level sort starts to matter.
+        List<int> sectionIndexes = ZooIniDefaults.Keys.Select(spec => ZooIniDefaults.Sections.ToList().FindIndex(section => string.Equals(section, spec.Id.Section, StringComparison.OrdinalIgnoreCase)))
+                                                 .ToList();
+
+        sectionIndexes.ShouldBe(sectionIndexes.Order().ToList());
+    }
+
+    [ Fact ]
     public void Keys_MinNeverExceedsMax() => ZooIniDefaults.Keys.Where(spec => spec.Min is not null && spec.Max is not null).ShouldAllBe(spec => spec.Min <= spec.Max);
 
     [ Theory ]

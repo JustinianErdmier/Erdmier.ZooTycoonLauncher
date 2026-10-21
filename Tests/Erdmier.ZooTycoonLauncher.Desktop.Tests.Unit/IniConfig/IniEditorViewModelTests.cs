@@ -6,12 +6,14 @@ public sealed class IniEditorViewModelTests
 
     private readonly IMediator _mediator = Substitute.For<IMediator>();
 
-    private IniEditorViewModel CreateEditor()
-        => new(Guid.CreateVersion7(), _mediator, _dialogs, IniEditorTestData.Result(("user", "screenwidth", "800"), ("user", "fullscreen", "1")));
+    private IniEditorViewModel CreateEditor(ILogger<IniEditorViewModel>? logger = null)
+        => new(Guid.CreateVersion7(), _mediator, _dialogs, IniEditorTestData.Result(("user", "screenwidth", "800"), ("user", "fullscreen", "1")),
+               logger ?? NullLogger<IniEditorViewModel>.Instance);
 
     private IniEditorViewModel CreateEditorWithHistory(int historicalCount = 2)
         => new(Guid.CreateVersion7(), _mediator, _dialogs,
-               IniEditorTestData.ResultWithHistory(historicalCount, ("user", "screenwidth", "800"), ("user", "fullscreen", "1")));
+               IniEditorTestData.ResultWithHistory(historicalCount, ("user", "screenwidth", "800"), ("user", "fullscreen", "1")),
+               NullLogger<IniEditorViewModel>.Instance);
 
     [ Fact ]
     public void RestorePrevious_NoHistory_IsDisabled() => CreateEditorWithHistory(historicalCount: 0).RestorePreviousCommand.CanExecute(parameter: null).ShouldBeFalse();
@@ -35,6 +37,12 @@ public sealed class IniEditorViewModelTests
 
         await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
         await _dialogs.Received(requiredNumberOfCalls: 1).ShowRestorePreviousIniAsync(Arg.Any<Guid>());
+
+        Received.InOrder(() =>
+        {
+            _mediator.Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
+            _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>());
+        });
     }
 
     [ Fact ]
@@ -59,12 +67,26 @@ public sealed class IniEditorViewModelTests
         IniEditorViewModel editor = CreateEditorWithHistory();
         IniConfigResult    restored = IniEditorTestData.ResultWithHistory(historicalCount: 2, ("user", "screenwidth", "640"));
 
+        bool?    pendingWhenOpened = null;
+        decimal? valueWhenOpened   = null;
+
         _dialogs.ShowSaveChangesPromptAsync().Returns(SaveChangesChoice.No);
-        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>()).Returns(Task.FromResult<IniConfigResult?>(restored));
+        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>())
+                .Returns(_ =>
+                {
+                    // Observed from inside the dialogue call: the discard must already have happened, or the later Load(restored) would mask a missing DiscardChanges.
+                    pendingWhenOpened = editor.HasPendingChanges;
+                    valueWhenOpened   = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value;
+
+                    return Task.FromResult<IniConfigResult?>(restored);
+                });
 
         IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
 
         await editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        pendingWhenOpened.ShouldBe(expected: false);
+        valueWhenOpened.ShouldBe(expected: 800m);
 
         await _dialogs.Received(requiredNumberOfCalls: 1).ShowRestorePreviousIniAsync(Arg.Any<Guid>());
         await _mediator.DidNotReceive().Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
@@ -143,8 +165,14 @@ public sealed class IniEditorViewModelTests
         Task running = editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
 
         editor.IsBusy.ShouldBeTrue();
+
+        // Edit a field while the dialogue is open so Reset and Restore defaults would otherwise be enabled: only IsBusy can be what disables them.
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        editor.HasPendingChanges.ShouldBeTrue();
         editor.ResetCommand.CanExecute(parameter: null).ShouldBeFalse();
         editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
+        editor.RestorePreviousCommand.CanExecute(parameter: null).ShouldBeFalse();
 
         open.SetResult(IniEditorTestData.ResultWithHistory(historicalCount: 3, ("user", "screenwidth", "640")));
 
@@ -182,12 +210,12 @@ public sealed class IniEditorViewModelTests
         editor.FooterText.ShouldBe(expected: "● Unsaved changes");
         editor.SaveCommand.CanExecute(parameter: null).ShouldBeTrue();
 
-        width.IsHelpActive = true;
+        width.IsHovered = true;
 
         editor.IsFooterHelp.ShouldBeTrue();
         editor.FooterText.ShouldBe(width.Help);
 
-        width.IsHelpActive = false;
+        width.IsHovered = false;
 
         editor.FooterText.ShouldBe(expected: "● Unsaved changes");
     }
@@ -198,7 +226,7 @@ public sealed class IniEditorViewModelTests
         IniEditorViewModel      editor = CreateEditor();
         IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
 
-        width.IsHelpActive = true;
+        width.IsHovered = true;
 
         editor.IsFooterHelp.ShouldBeTrue();
 
@@ -210,17 +238,83 @@ public sealed class IniEditorViewModelTests
     }
 
     [ Fact ]
+    public void Help_PointerLeavesFocusedRow_KeepsItsHelp()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+
+        width.IsFocused = true;
+        width.IsHovered = true;
+        width.IsHovered = false;
+
+        editor.IsFooterHelp.ShouldBeTrue();
+        editor.FooterText.ShouldBe(width.Help);
+    }
+
+    [ Fact ]
+    public void Help_HoverAnotherRowWhileOneIsFocused_ShowsTheHoveredHelp()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+        IniToggleFieldViewModel drag   = IniEditorTestData.Field<IniToggleFieldViewModel>(editor, section: "advanced", key: "drag");
+
+        width.IsFocused = true;
+        drag.IsHovered  = true;
+
+        editor.FooterText.ShouldBe(drag.Help);
+
+        drag.IsHovered = false;
+
+        editor.FooterText.ShouldBe(width.Help);
+    }
+
+    [ Fact ]
+    public void Help_NeitherHoveredNorFocused_ShowsTheFooterState()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+
+        width.IsFocused = true;
+        width.IsHovered = true;
+        width.IsFocused = false;
+        width.IsHovered = false;
+
+        editor.IsFooterHelp.ShouldBeFalse();
+        editor.IsFooterSaved.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public void Help_SectionChange_ClearsHoverAndFocus()
+    {
+        IniEditorViewModel      editor = CreateEditor();
+        IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+
+        width.IsFocused = true;
+        width.IsHovered = true;
+
+        editor.SelectedSection = editor.Sections[1];
+
+        width.IsHovered.ShouldBeFalse();
+        width.IsFocused.ShouldBeFalse();
+        editor.IsFooterHelp.ShouldBeFalse();
+
+        width.IsFocused = true;
+
+        editor.IsFooterHelp.ShouldBeTrue();
+    }
+
+    [ Fact ]
     public void ChangingSectionAwayAndBack_HoveringTheSameRowAgain_ShowsItsHelp()
     {
         IniEditorViewModel      editor = CreateEditor();
         IniNumberFieldViewModel width  = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
 
-        width.IsHelpActive = true;
+        width.IsHovered = true;
 
         editor.SelectedSection = editor.Sections[1];
         editor.SelectedSection = editor.Sections[0];
 
-        width.IsHelpActive = true;
+        width.IsHovered = true;
 
         editor.IsFooterHelp.ShouldBeTrue();
     }
@@ -275,6 +369,80 @@ public sealed class IniEditorViewModelTests
 
         await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync(title: "Cannot Save zoo.ini", message: "zoo.ini could not be saved: database is locked");
         editor.IsBusy.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task Save_Throws_LogsError()
+    {
+        RecordingLogger<IniEditorViewModel> logger = new();
+        IniEditorViewModel                  editor = CreateEditor(logger);
+
+        _mediator.Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniConfigResult>>>(_ => throw new InvalidOperationException(message: "database is locked"));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.TrySaveAsync(CancellationToken.None);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Error);
+        entry.Exception.ShouldBeOfType<InvalidOperationException>();
+    }
+
+    [ Fact ]
+    public async Task Save_ReturnsError_LogsWarning()
+    {
+        RecordingLogger<IniEditorViewModel> logger = new();
+        IniEditorViewModel                  editor = CreateEditor(logger);
+
+        IniEditorTestData.ReturnsForSave(_mediator, Error.Validation(code: "Edits", description: "bad value"));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.TrySaveAsync(CancellationToken.None);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Warning);
+        entry.Exception.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public async Task Reload_Fails_LogsWarning()
+    {
+        RecordingLogger<IniEditorViewModel> logger = new();
+        IniEditorViewModel                  editor = CreateEditor(logger);
+
+        IniEditorTestData.ReturnsForGet(_mediator, Error.Unexpected(code: "Ini.StoreFailed", description: "x"));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.ResetCommand.ExecuteAsync(parameter: null);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Warning);
+        entry.Exception.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public async Task Reload_Throws_LogsError()
+    {
+        RecordingLogger<IniEditorViewModel> logger = new();
+        IniEditorViewModel                  editor = CreateEditor(logger);
+
+        _mediator.Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<IniConfigResult>>>(_ => throw new IOException("boom"));
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        await editor.ResetCommand.ExecuteAsync(parameter: null);
+
+        RecordingLogEntry entry = logger.Entries.ShouldHaveSingleItem();
+
+        entry.Level.ShouldBe(LogLevel.Error);
+        entry.Exception.ShouldBeOfType<IOException>();
     }
 
     [ Fact ]
@@ -342,7 +510,9 @@ public sealed class IniEditorViewModelTests
     public void RestoreDefaults_SetsEveryFieldToItsDefault()
     {
         IniEditorViewModel editor = new(Guid.CreateVersion7(), _mediator, _dialogs,
-                                        IniEditorTestData.Result(("user", "screenwidth", "1024"), ("language", "lang", "12"), ("language", "sublang", "1")));
+                                        IniEditorTestData.Result(("user", "screenwidth", "1024"), (IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key, "12"),
+                                                            (IniEditorCatalogue.SubLanguageId.Section, IniEditorCatalogue.SubLanguageId.Key, "1")),
+                                        NullLogger<IniEditorViewModel>.Instance);
 
         editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeTrue();
 
@@ -359,7 +529,49 @@ public sealed class IniEditorViewModelTests
     {
         IniEditorViewModel editor = CreateEditor();
 
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
+
         editor.RestoreDefaultsCommand.Execute(parameter: null);
+
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
+        editor.HasPendingChanges.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task RestoreDefaults_WhileBusy_IsDisabled()
+    {
+        IniEditorViewModel editor = new(Guid.CreateVersion7(), _mediator, _dialogs, IniEditorTestData.ResultWithHistory(historicalCount: 2, ("user", "screenwidth", "1024")),
+                                        NullLogger<IniEditorViewModel>.Instance);
+
+        TaskCompletionSource<IniConfigResult?> open = new();
+
+        _dialogs.ShowRestorePreviousIniAsync(Arg.Any<Guid>()).Returns(open.Task);
+
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeTrue();
+
+        Task running = editor.RestorePreviousCommand.ExecuteAsync(parameter: null);
+
+        editor.IsBusy.ShouldBeTrue();
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
+
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "1024")));
+
+        open.SetResult(result: null);
+
+        await running;
+
+        await _dialogs.DidNotReceive().ShowErrorAsync(Arg.Any<string>(), Arg.Any<string>());
+        editor.IsBusy.ShouldBeFalse();
+        editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public void RestoreDefaults_Designer_IsDisabled()
+    {
+        IniEditorViewModel editor = new();
+
+        // A non-default value would enable the command were a mediator present: only the designer's missing mediator disables it.
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
 
         editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
     }

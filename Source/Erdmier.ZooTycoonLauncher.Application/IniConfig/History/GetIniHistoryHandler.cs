@@ -65,8 +65,6 @@ public sealed class GetIniHistoryHandler : IQueryHandler<GetIniHistoryQuery, Err
 
             IniReconciliation reconciliation = await IniLoadSteps.ReconcileAsync(transaction,
                                                                                  _reconciler,
-                                                                                 _logger,
-                                                                                 installation,
                                                                                  content.Text,
                                                                                  _clock.GetUtcNow()
                                                                                        .UtcDateTime,
@@ -77,6 +75,8 @@ public sealed class GetIniHistoryHandler : IQueryHandler<GetIniHistoryQuery, Err
             IniSnapshot? original = await transaction.GetOriginalAsync(cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
+
+            IniLoadSteps.LogReconciliation(_logger, installation, reconciliation);
 
             List<IniHistoryEntry> entries = historical.Select(snapshot => ToEntry(snapshot, reconciliation.Values))
                                                       .ToList();

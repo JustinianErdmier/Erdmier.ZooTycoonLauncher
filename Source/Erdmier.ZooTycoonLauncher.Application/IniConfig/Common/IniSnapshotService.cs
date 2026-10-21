@@ -70,8 +70,6 @@ public sealed class IniSnapshotService : IIniSnapshotService
 
             IniReconciliation reconciliation = await IniLoadSteps.ReconcileAsync(transaction,
                                                                                  _reconciler,
-                                                                                 _logger,
-                                                                                 installation,
                                                                                  content.Text,
                                                                                  _clock.GetUtcNow()
                                                                                        .UtcDateTime,
@@ -80,6 +78,8 @@ public sealed class IniSnapshotService : IIniSnapshotService
             int historicalCount = await transaction.CountHistoricalAsync(cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
+
+            IniLoadSteps.LogReconciliation(_logger, installation, reconciliation);
 
             return new IniConfigResult(reconciliation.Values, content.LastWriteUtc, historicalCount);
         }

@@ -16,8 +16,8 @@ public sealed class IniSnapshotServiceTests
 
     private readonly IIniSnapshotRepository _snapshots = Substitute.For<IIniSnapshotRepository>();
 
-    private IniSnapshotService CreateService()
-        => new(new FakeTimeProvider(IniTestData.Now), _files, NullLogger<IniSnapshotService>.Instance, new IniReconciler(), _snapshots);
+    private IniSnapshotService CreateService(ILogger<IniSnapshotService>? logger = null)
+        => new(new FakeTimeProvider(IniTestData.Now), _files, logger ?? NullLogger<IniSnapshotService>.Instance, new IniReconciler(), _snapshots);
 
     [ Fact ]
     public async Task Synchronise_NoIni_IsANoOp()
@@ -79,6 +79,28 @@ public sealed class IniSnapshotServiceTests
     }
 
     [ Fact ]
+    public async Task Load_CountThrows_ReturnsStoreFailed()
+    {
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(current: null);
+
+        transaction.CountHistoricalAsync(Arg.Any<CancellationToken>())
+                   .ThrowsAsync(new InvalidOperationException(message: "no such table"));
+
+        _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
+              .Returns(new IniFileContent(IniTestData.Sample, IniTestData.Now));
+
+        _snapshots.BeginAsync(_installation.Id, Arg.Any<CancellationToken>())
+                  .Returns(transaction);
+
+        ErrorOr<IniConfigResult> result = await CreateService().LoadAsync(_installation, CancellationToken.None);
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.StoreFailed");
+        result.FirstError.Description.ShouldContain(expected: "no such table");
+
+        await transaction.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
     public async Task Load_Success_CleansOrphansFirstThenCommitsAndReturnsTheValues()
     {
         IIniSnapshotTransaction transaction = IniTestData.Transaction(current: null);
@@ -103,6 +125,51 @@ public sealed class IniSnapshotServiceTests
             transaction.AddAsync(Arg.Any<IniSnapshot>(), Arg.Any<CancellationToken>());
             transaction.CommitAsync(Arg.Any<CancellationToken>());
         });
+    }
+
+    [ Fact ]
+    public async Task Load_StoreFailsAtCommit_LogsNoReconciliation()
+    {
+        RecordingLogger<IniSnapshotService> logger      = new();
+        IIniSnapshotTransaction             transaction = IniTestData.Transaction(current: null);
+
+        transaction.CommitAsync(Arg.Any<CancellationToken>())
+                   .ThrowsAsync(new InvalidOperationException(message: "database is locked"));
+
+        _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
+              .Returns(new IniFileContent(IniTestData.Sample, IniTestData.Now));
+
+        _snapshots.BeginAsync(_installation.Id, Arg.Any<CancellationToken>())
+                  .Returns(transaction);
+
+        ErrorOr<IniConfigResult> result = await CreateService(logger).LoadAsync(_installation, CancellationToken.None);
+
+        result.FirstError.Code.ShouldBe(expected: "Ini.StoreFailed");
+        logger.Entries.ShouldNotContain(entry => entry.Message.Contains("reconciled"));
+    }
+
+    [ Fact ]
+    public async Task Load_Success_LogsReconciliationAfterCommit()
+    {
+        RecordingLogger<IniSnapshotService> logger      = new();
+        IIniSnapshotTransaction             transaction = IniTestData.Transaction(current: null);
+
+        _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
+              .Returns(new IniFileContent(IniTestData.Sample, IniTestData.Now));
+
+        _snapshots.BeginAsync(_installation.Id, Arg.Any<CancellationToken>())
+                  .Returns(transaction);
+
+        bool reconciledBeforeCommit = false;
+
+        transaction.When(t => t.CommitAsync(Arg.Any<CancellationToken>()))
+                   .Do(_ => reconciledBeforeCommit = logger.Entries.Any(entry => entry.Message.Contains("INI snapshot reconciled")));
+
+        ErrorOr<IniConfigResult> result = await CreateService(logger).LoadAsync(_installation, CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        reconciledBeforeCommit.ShouldBeFalse();
+        logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Information && entry.Message.Contains("INI snapshot reconciled"));
     }
 
     [ Fact ]

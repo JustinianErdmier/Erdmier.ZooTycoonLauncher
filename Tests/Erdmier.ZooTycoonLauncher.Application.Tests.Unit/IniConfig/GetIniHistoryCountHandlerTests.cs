@@ -35,7 +35,9 @@ public sealed class GetIniHistoryCountHandlerTests
     [ Fact ]
     public async Task Count_NeverOpensATransaction()
     {
-        await CreateHandler().Handle(new GetIniHistoryCountQuery(_installation.Id), CancellationToken.None);
+        ErrorOr<int> result = await CreateHandler().Handle(new GetIniHistoryCountQuery(_installation.Id), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
 
         await _snapshots.DidNotReceive().BeginAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }

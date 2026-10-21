@@ -1755,6 +1755,35 @@ stays responsive rather than crashing.
 
 ### Notes/Thoughts
 
+## 10. Help on hover and focus: the footer follows the pointer, then keyboard focus, then the saved state
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
 ---
 
 # Notes & Future Tasks/Goals

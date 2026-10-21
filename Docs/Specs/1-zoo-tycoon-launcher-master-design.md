@@ -11,10 +11,10 @@
 |--------------------------|-----------------------------------|
 | **Project**              | Zoo Tycoon Launcher               |
 | **Document**             | Software Design Document (SDD)    |
-| **Version**              | 1.10                              |
+| **Version**              | 1.11                              |
 | **Status**               | Draft for implementation          |
 | **Author**               | Justinian                         |
-| **Last updated**         | 20 October 2026                   |
+| **Last updated**         | 21 October 2026                   |
 | **Language conventions** | Standard Southern British English |
 
 ### Revision history
@@ -33,6 +33,7 @@
 | 1.8     | 20 October 2026   | Justinian | The Ref build has been removed from the repository (commit `8e0532b`). §1.5 now records the removal and reads later "Ref build" mentions as design rationale; §4.2 drops the `References/` folder and the separate Ref solution file, and its tree gains the existing `Desktop.Tests.Unit` project; §4.7 and the glossary are reworded to match.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | 1.9     | 20 October 2026   | Justinian | The blanket no-ellipses-on-buttons rule is retired in favour of the Win9x guideline: a button or menu item that needs more input before it can complete carries an ellipsis. §9.3 and §9.5 drop their no-ellipsis sentences. §13.5.1 adds DW-37 (rename Settings to Options) and DW-38 (watch `zoo.ini` for changes in real time). Milestone 9 (spec `milestone-9-restore-previous-ini-design.md`): §7.3.3 is retitled *Restore previous button* and §7.6 *Restore Previous INI dialogue* (restore steps restated over the §8.2 ordering: user settings only, effective values, absent keys untouched, shared Save pipeline, `HistoricalCount`); §9.3 footer becomes `Restore previous…` / `Restore defaults` / `Save` / `Reset` (`Revert` and `Undo` retired); §9.4, §9.5 and §9.6 take the Win9x ellipsis labels (`Add…`, `Edit…`, `Fix…`, `Locate…`, `Manage…`) and Installation Info counts history entries; §9.7 shows `Captured` in local time with `Original` last, newest selected on open, the kept-keys note and user settings only; §13.5.1 deletes DW-02, DW-03 and DW-08, which this milestone delivers. |
 | 1.10    | 20 October 2026   | Justinian | Milestone 9.1 (Restore Previous INI follow-ups). §13.5.1 adds DW-39: the dark-theme work left over from milestone 9 belongs to the Settings + theming slice's sweep of every view, not to piecemeal INI changes. The row's pointer sets the field's `IsHovered` and focus sets `IsFocused` (§9.3.2); the INI tab, editor and Restore dialogue log failures; the Restore dialogue loads its history before opening. Deletes DW-17, DW-18 and DW-27 from §13.5. A Save also deletes orphan temp files before reading (§7.7, §8.2); conventions §3.3 follows §9.3.2. |
+| 1.11    | 21 October 2026   | Justinian | Milestone 9.2 (INI display polish). §9.3 describes the dollar display of the four `[UI]` cash rows and the read-only `lang` / `sublang` rows behind the curated picker; §9.7 describes diff cells that read as the editor shows them (labels, `true` / `false`, dollars) and inert history headers. Every `ClassicWindow` title starts with two spaces (conventions §4.1). |
 
   
 ---  
@@ -1349,6 +1350,11 @@ The INI Config tab uses a two-pane split layout rather than the long vertically-
 an optional muted hint sub-line (`px`, `1–60 ticks/sec`, `-10000 silent → 0 full`, etc.). The `[scenario]` section organises its checkboxes by `ScenarioCampaignTier`
 (Tutorial → Beginner → Intermediate → Advanced → Expert → Expansion → Unknown).
 
+The four `[UI]` cash rows (`MSStartingCash`, `MSCashIncrement`, `MSMinCash`, `MSMaxCash`) display as dollars — `$1,000,000`, always `$` with `,` grouping and no decimals,
+whatever the OS culture. Typing `250000` or `$250,000` both commit `250000`, a typed decimal is truncated, and `zoo.ini` keeps the plain integer; the hints read
+`$0–$10,000,000` and `$100–$1,000,000`. `[language]/lang` and `sublang` are read-only number rows (Win9x read-only grey, no spinner): the curated language picker is the only way
+to change them, and a pair the picker does not list shows both numbers with the picker blank. Reset, Restore defaults and Restore previous still update both rows.
+
 #### 9.3.1 INI Config sub-states
 
 `IniConfigTabView` hosts a `ContentControl` bound to `IniConfigTabViewModel.Content` (§9.2.1), which is either the editor or one of three `IniPlaceholderViewModel` cases:
@@ -1435,6 +1441,9 @@ the dialogue now focuses on **comparing snapshots to current**:
   between current and the selected snapshot (game-managed keys and `[scenario]` are never listed or restored). A key `Current` has but the snapshot lacks is not a row; a key
   the snapshot has but `Current` lacks is a row whose `Current` cell reads "(not set)". Header text labels the columns so any colour treatment is supplementary, not
   required. When the diff is empty, the panel shows a centred message: *"No differences — this snapshot matches the current state."*
+  Each `Current` and `Snapshot` cell shows the value as the editor row does: a choice by its option label, a check-box key as `true` / `false` (the key's own value, so the
+  inverted `[UI]/noMenuMusic` reads `true` when the INI holds `1`), a cash key as dollars, and anything else verbatim; `(not set)` is unchanged. The snapshot grid's headers are
+  inert — they can be neither clicked nor resized.
 - **Kept-keys note.** When the selected snapshot lacks keys that `Current` has, a warning line under the diff reads *"Not in this snapshot, so they keep their current values:"*
   followed by those keys. It does not change the change count or `Restore`'s enablement.
 - **Footer:** `Restore` (default; disabled when the diff is empty), `Cancel`. Both `Cancel` and the title-bar close are disabled while a restore runs.

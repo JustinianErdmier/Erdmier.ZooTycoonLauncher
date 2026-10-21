@@ -200,6 +200,9 @@ file its view uses today; a site whose view does not exist yet is marked *(not b
 | Settings · title bar *(not built)*                 | `controls32.ico`                            | File committed, no view yet                                   |
 | About · title bar *(not built)*                    | *(none chosen)*                             | No view yet; body keeps the app logo                          |
 
+Every `ClassicWindow` title starts with two spaces so the text clears the title-bar icon (Classic.Avalonia leaves no gap),
+including titles bound from a view model.
+
 
 ---
 

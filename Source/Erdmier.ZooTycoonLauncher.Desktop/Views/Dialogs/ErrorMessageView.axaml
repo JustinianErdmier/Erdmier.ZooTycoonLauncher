@@ -7,7 +7,7 @@
                Icon="/Assets/BrandIcons/ZTL_Title-Icon.png"
                ShowInTaskbar="False"
                SizeToContent="Height"
-               Title="{Binding Title}"
+               Title="{Binding Title, StringFormat='  {0}'}"
                Width="420"
                WindowStartupLocation="CenterOwner">
     <ClassicWindow.Styles>

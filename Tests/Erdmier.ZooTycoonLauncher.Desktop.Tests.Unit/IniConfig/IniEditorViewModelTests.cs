@@ -302,6 +302,7 @@ public sealed class IniEditorViewModelTests
 
         editor.IsFooterHelp.ShouldBeTrue();
     }
+
     [ Fact ]
     public void ChangingSectionAwayAndBack_HoveringTheSameRowAgain_ShowsItsHelp()
     {
@@ -553,11 +554,13 @@ public sealed class IniEditorViewModelTests
         editor.IsBusy.ShouldBeTrue();
         editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeFalse();
 
-        open.SetResult(result: null);
         IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "1024")));
+
+        open.SetResult(result: null);
 
         await running;
 
+        await _dialogs.DidNotReceive().ShowErrorAsync(Arg.Any<string>(), Arg.Any<string>());
         editor.IsBusy.ShouldBeFalse();
         editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeTrue();
     }

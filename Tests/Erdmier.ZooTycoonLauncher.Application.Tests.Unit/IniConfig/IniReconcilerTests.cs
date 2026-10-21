@@ -30,7 +30,7 @@ public sealed class IniReconcilerTests
     [ Fact ]
     public async Task Reconcile_NoDriftAndIdenticalText_WritesNothing()
     {
-        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
 
         IniReconciliation result = await _reconciler.ReconcileAsync(transaction, IniTestData.Sample, IniTestData.Now, CancellationToken.None);
 
@@ -45,7 +45,7 @@ public sealed class IniReconcilerTests
     [ Fact ]
     public async Task Reconcile_GameManagedChange_AdoptsWithoutArchiving()
     {
-        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
         string                  disk        = IniTestData.Sample.Replace(oldValue: "lastWindowX=10", newValue: "lastWindowX=250");
 
         IniReconciliation result = await _reconciler.ReconcileAsync(transaction, disk, IniTestData.Now, CancellationToken.None);
@@ -68,7 +68,7 @@ public sealed class IniReconcilerTests
     [ Fact ]
     public async Task Reconcile_UserSettingChange_ArchivesAsManualThenAdopts()
     {
-        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
         string                  disk        = IniTestData.Sample.Replace(oldValue: "screenwidth=800", newValue: "screenwidth=1024");
 
         IniReconciliation result = await _reconciler.ReconcileAsync(transaction, disk, IniTestData.Now, CancellationToken.None);
@@ -87,7 +87,7 @@ public sealed class IniReconcilerTests
     [ Fact ]
     public async Task Reconcile_UserSettingChangeOfTwoKeys_ReportsTheChangedKeyCount()
     {
-        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
         string                  disk        = IniTestData.Sample.Replace(oldValue: "screenwidth=800", newValue: "screenwidth=1024")
                                                                  .Replace(oldValue: "tooltipDelay=1", newValue: "tooltipDelay=5");
 
@@ -100,7 +100,7 @@ public sealed class IniReconcilerTests
     [ Fact ]
     public async Task Reconcile_TextOnlyChange_UpdatesTheBlobWithNoRowChanges()
     {
-        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
         string                  disk        = IniTestData.Sample.Replace(oldValue: "ag=0", newValue: "ag=1");
 
         IniReconciliation result = await _reconciler.ReconcileAsync(transaction, disk, IniTestData.Now, CancellationToken.None);
@@ -116,7 +116,7 @@ public sealed class IniReconcilerTests
     [ Fact ]
     public async Task Reconcile_KeyRemovedFromTheFile_ProducesANullChange()
     {
-        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+        IIniSnapshotTransaction transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
         string                  disk        = IniTestData.Sample.Replace(oldValue: "lastWindowX=10\r\n", newValue: "");
 
         await _reconciler.ReconcileAsync(transaction, disk, IniTestData.Now, CancellationToken.None);

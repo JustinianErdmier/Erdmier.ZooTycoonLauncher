@@ -68,7 +68,7 @@ public sealed class IniSnapshotComparerTests
 
         IniSnapshotComparison result = IniSnapshotComparer.Compare(Map((Section: "user", Key: "screenwidth", Value: "1024")), snapshot);
 
-        result.Rows.ShouldHaveSingleItem().Snapshot.ShouldBe("800");
+        result.Rows.ShouldHaveSingleItem().Snapshot.ShouldBe(expected: "800");
     }
 
     [ Fact ]
@@ -116,7 +116,7 @@ public sealed class IniSnapshotComparerTests
 
         IniSnapshotComparison result = IniSnapshotComparer.Compare(Map((Section: "user", Key: "screenwidth", Value: "1024")), snapshot);
 
-        result.Rows.ShouldHaveSingleItem().Snapshot.ShouldBe("800");
+        result.Rows.ShouldHaveSingleItem().Snapshot.ShouldBe(expected: "800");
     }
 
     [ Fact ]
@@ -127,6 +127,6 @@ public sealed class IniSnapshotComparerTests
 
         IReadOnlyDictionary<IniKeyId, string?> values = IniSnapshotComparer.ValuesOf(snapshot);
 
-        values[new IniKeyId(Section: "user", Key: "screenwidth")].ShouldBe("1024");
+        values[new IniKeyId(Section: "user", Key: "screenwidth")].ShouldBe(expected: "1024");
     }
 }

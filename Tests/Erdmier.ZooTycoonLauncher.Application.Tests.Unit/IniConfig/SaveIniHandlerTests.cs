@@ -24,7 +24,7 @@ public sealed class SaveIniHandlerTests
 
     private readonly IIniSnapshotRepository _snapshots = Substitute.For<IIniSnapshotRepository>();
 
-    private IIniSnapshotTransaction _transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+    private IIniSnapshotTransaction _transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
 
     private string? _written;
 

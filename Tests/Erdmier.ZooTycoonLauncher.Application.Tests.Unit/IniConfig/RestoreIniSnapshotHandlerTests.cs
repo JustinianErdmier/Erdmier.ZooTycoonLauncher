@@ -24,7 +24,7 @@ public sealed class RestoreIniSnapshotHandlerTests
 
     private readonly IIniSnapshotRepository _snapshots = Substitute.For<IIniSnapshotRepository>();
 
-    private readonly IIniSnapshotTransaction _transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+    private readonly IIniSnapshotTransaction _transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
 
     private string? _written;
 
@@ -232,7 +232,7 @@ public sealed class RestoreIniSnapshotHandlerTests
 
     private Guid SnapshotHolds(string text)
     {
-        IniSnapshot snapshot = IniTestData.CurrentSnapshot(text, IniSnapshotKind.Historical);
+        IniSnapshot snapshot = IniTestData.Snapshot(text, IniSnapshotKind.Historical);
 
         _transaction.GetByIdAsync(snapshot.Id, Arg.Any<CancellationToken>())
                     .Returns(snapshot);

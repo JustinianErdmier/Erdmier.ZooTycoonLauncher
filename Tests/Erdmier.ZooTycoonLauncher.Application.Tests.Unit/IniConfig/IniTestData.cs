@@ -19,7 +19,7 @@ internal static class IniTestData
 
     public static string Text(params string[] lines) => string.Join(separator: "\r\n", lines) + "\r\n";
 
-    public static IniSnapshot CurrentSnapshot(string text, IniSnapshotKind? kind = null)
+    public static IniSnapshot Snapshot(string text, IniSnapshotKind? kind = null)
     {
         Guid id = Guid.CreateVersion7();
 

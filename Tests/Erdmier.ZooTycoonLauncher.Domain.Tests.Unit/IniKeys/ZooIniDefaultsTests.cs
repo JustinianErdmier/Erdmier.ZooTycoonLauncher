@@ -24,7 +24,12 @@ public sealed class ZooIniDefaultsTests
 
     [ Fact ]
     public void EveryUserSetting_HasANonNullDefault()
-        => ZooIniDefaults.Keys.Where(spec => spec.Role == IniKeyRole.UserSetting).ShouldAllBe(spec => spec.DefaultValue != null);
+    {
+        List<IniKeySpec> userSettings = ZooIniDefaults.Keys.Where(spec => spec.Role == IniKeyRole.UserSetting).ToList();
+
+        userSettings.ShouldNotBeEmpty();
+        userSettings.ShouldAllBe(spec => spec.DefaultValue != null);
+    }
 
     [ Fact ]
     public void Registry_IsAlreadyOrderedBySection()

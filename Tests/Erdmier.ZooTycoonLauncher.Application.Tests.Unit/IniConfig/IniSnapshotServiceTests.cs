@@ -160,9 +160,15 @@ public sealed class IniSnapshotServiceTests
         _snapshots.BeginAsync(_installation.Id, Arg.Any<CancellationToken>())
                   .Returns(transaction);
 
+        bool reconciledBeforeCommit = false;
+
+        transaction.When(t => t.CommitAsync(Arg.Any<CancellationToken>()))
+                   .Do(_ => reconciledBeforeCommit = logger.Entries.Any(entry => entry.Message.Contains("INI snapshot reconciled")));
+
         ErrorOr<IniConfigResult> result = await CreateService(logger).LoadAsync(_installation, CancellationToken.None);
 
         result.IsError.ShouldBeFalse();
+        reconciledBeforeCommit.ShouldBeFalse();
         logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Information && entry.Message.Contains("INI snapshot reconciled"));
     }
 

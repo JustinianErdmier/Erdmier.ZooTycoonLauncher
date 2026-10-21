@@ -20,7 +20,7 @@ public sealed class GetIniHistoryHandlerTests
 
     private readonly IIniSnapshotRepository _snapshots = Substitute.For<IIniSnapshotRepository>();
 
-    private readonly IIniSnapshotTransaction _transaction = IniTestData.Transaction(IniTestData.CurrentSnapshot(IniTestData.Sample));
+    private readonly IIniSnapshotTransaction _transaction = IniTestData.Transaction(IniTestData.Snapshot(IniTestData.Sample));
 
     public GetIniHistoryHandlerTests()
     {
@@ -36,9 +36,9 @@ public sealed class GetIniHistoryHandlerTests
     [ Fact ]
     public async Task History_ListsHistoricalNewestFirstThenOriginal()
     {
-        IniSnapshot newest   = Snapshot(IniSnapshotKind.Historical, IniSnapshotTrigger.Manual, IniTestData.Sample, IniTestData.Now.AddHours(-1));
-        IniSnapshot older    = Snapshot(IniSnapshotKind.Historical, IniSnapshotTrigger.LauncherGui, IniTestData.Sample, IniTestData.Now.AddDays(-1));
-        IniSnapshot original = Snapshot(IniSnapshotKind.Original, IniSnapshotTrigger.OriginalImport, IniTestData.Sample, IniTestData.Now.AddDays(-7));
+        IniSnapshot newest   = Snapshot(IniSnapshotKind.Historical, IniSnapshotTrigger.Manual, IniTestData.Sample, IniTestData.Now.AddHours(value: -1));
+        IniSnapshot older    = Snapshot(IniSnapshotKind.Historical, IniSnapshotTrigger.LauncherGui, IniTestData.Sample, IniTestData.Now.AddDays(value: -1));
+        IniSnapshot original = Snapshot(IniSnapshotKind.Original, IniSnapshotTrigger.OriginalImport, IniTestData.Sample, IniTestData.Now.AddDays(value: -7));
 
         _transaction.ListHistoricalAsync(Arg.Any<CancellationToken>())
                     .Returns([ newest, older ]);
@@ -157,14 +157,14 @@ public sealed class GetIniHistoryHandlerTests
             Id            = Guid.CreateVersion7(),
             Kind          = kind,
             Trigger       = trigger,
-            CapturedUtc   = capturedUtc ?? IniTestData.Now.AddDays(-1),
+            CapturedUtc   = capturedUtc ?? IniTestData.Now.AddDays(value: -1),
             StructureBlob = text,
-            Values        = IniTestData.CurrentSnapshot(text).Values
+            Values        = IniTestData.Snapshot(text).Values
         };
 
     private void DiskHolds(string text)
         => _files.ReadAsync(_installation.Path, Arg.Any<CancellationToken>())
-                 .Returns(new IniFileContent(text, IniTestData.Now.AddHours(-1)));
+                 .Returns(new IniFileContent(text, IniTestData.Now.AddHours(value: -1)));
 
     private GetIniHistoryHandler CreateHandler(ILogger<GetIniHistoryHandler>? logger = null)
         => new(new FakeTimeProvider(IniTestData.Now), _files, _installations, logger ?? NullLogger<GetIniHistoryHandler>.Instance, new IniReconciler(), _snapshots);

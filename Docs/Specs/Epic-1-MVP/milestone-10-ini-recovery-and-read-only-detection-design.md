@@ -92,7 +92,8 @@ the source (C3; unreadable → `Ini.ReadFailed`) → then as §5.1 from the crea
 ### 5.3 After success
 
 - **From the INI tab:** the tab is busy while the command runs (both buttons disabled); success re-boots onto the INI tab (C5); failure shows the error in a
-  `Cannot Create zoo.ini` / `Cannot Copy zoo.ini` dialogue and leaves the box in place; `Ini.AlreadyExists` also re-boots.
+  `Cannot Create zoo.ini` / `Cannot Copy zoo.ini` dialogue and leaves the box in place; `Ini.AlreadyExists` and a vanished installation (`NotFound`) also
+  re-boot. Both buttons are disabled when the installation has no `zoo.exe`, as in the Fix dialogue (added in the final fix wave).
 - **From the Fix dialogue:** the *Fix INI* group flips to *INI present*, `HasChanges` becomes true, and closing the dialogue re-boots as today. Buttons are disabled
   while `HasIni` is true or while busy. An `InvalidNoExeOrIni` installation offers the INI actions only once `zoo.exe` is found (SDD §7.2.5): before that the
   buttons are disabled.

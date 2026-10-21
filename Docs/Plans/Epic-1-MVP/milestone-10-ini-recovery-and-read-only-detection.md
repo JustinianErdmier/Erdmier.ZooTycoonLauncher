@@ -313,5 +313,5 @@ Run by the controller, which has desktop control; implementers do not.
 
 ## Verification
 
-- [ ] Clean build with 0 warnings; every test project passes.
-- [ ] Task 9 checked in the running app, or recorded in the ledger as left to the maintainer.
+- [x] Clean build with 0 warnings; every test project passes.
+- [x] Task 9 checked in the running app, or recorded in the ledger as left to the maintainer.

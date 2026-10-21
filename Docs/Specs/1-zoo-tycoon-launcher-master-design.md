@@ -995,7 +995,8 @@ The shared step:
 - **Snapshots.** Runs the standard synchronise. With no `Current` snapshot this is the first import (`Original` + `Current`, `Source = OriginalImport`). If a `Current`
   survives from an earlier `zoo.ini`, the new file is ordinary drift: `Current` is archived as `Manual`, the new values are adopted and `Original` is kept, so the user's old
   settings stay restorable from history (§7.6). A snapshot-store failure after the write is logged and swallowed (§8.2): the file stands and the next open imports it.
-- **Failures.** Access denied becomes `Ini.ReadOnly`, carrying the read-only strip's explanation (§9.3.1); any other IO failure is `Ini.WriteFailed`.
+- **Failures.** On access denied the code re-probes; when that confirms a read-only folder or file the error is `Ini.ReadOnly`,
+  carrying the read-only strip's explanation (§9.3.1). Otherwise, and for any other IO failure, it is `Ini.WriteFailed` with the OS message.
 
 On success, or on `Ini.AlreadyExists`, the launcher re-boots the open installation (a pointed boot, §7.2.7) and reopens on the INI Config tab with the editor showing. Any
 other failure appears in a `Cannot Create zoo.ini` / `Cannot Copy zoo.ini` dialogue and the box stays.
@@ -1043,7 +1044,8 @@ operation, so the editor can enable `Restore previous…` without a further quer
 
 ### 7.7 Atomic INI write and crash recovery
 
-Every INI write — Save, Restore, Create Default, Restore Defaults — follows the §8.2 ordering. Crash residue scenarios and their recovery:
+Every INI write — Save, Restore, Restore Defaults — follows the §8.2 ordering; Create and Locate use §7.4's create-only write, then the
+standard synchronise. Crash residue scenarios and their recovery:
 
 | Crash point                                 | Residue                                                 | Recovery on next open                                                                                                                                                                                                                                                                         |  
 |---------------------------------------------|---------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|  
@@ -1154,7 +1156,8 @@ ending.
 
 ### 8.2 Atomic write ordering
 
-Every INI write — Save, Restore, Create Default, Restore Defaults — follows this ordering inside a single EF transaction on the per-installation database:
+Every INI write — Save, Restore, Restore Defaults — follows this ordering inside a single EF transaction on the per-installation database. Create and Locate do not: they
+use §7.4's create-only write, outside any transaction, then update the row and run the standard synchronise.
 
 ```text  
 1. Read zoo.ini from disk.
@@ -1387,11 +1390,12 @@ Restore defaults and Restore previous still update both rows.
   unless the editor already holds pending edits — a failed reload then leaves the editor on screen (never dropping unsaved work) and reports the failure via an error
   dialogue instead of swapping in this placeholder.
 
-**Read-only strip.** Above the content (editor or No INI box) the tab shows a one-line warning strip — a 16 px warning icon and maroon text — when the boot's write probe
+**Read-only strip.** Above the tab's content the tab shows a warning strip — a 16 px warning icon and maroon text — when the boot's write probe
 (§7.1.2) reported `FolderReadOnly` or `FileReadOnly`; `Writable` and `Unknown` show nothing. The text is, respectively, "This installation's folder is read-only for your
 account, so changes to `zoo.ini` cannot be saved. Uninstalling and reinstalling Zoo Tycoon restores normal write access." and "`zoo.ini` is marked read-only, so changes cannot
-be saved. Clear Read-only in the file's Properties to fix it." Save stays enabled, because a detection can be wrong; every INI write that then fails with access denied (Save,
-Restore, Restore defaults, Create, Locate) returns `Ini.ReadOnly` carrying the same text instead of the OS message.
+be saved. Clear Read-only in the file's Properties to fix it." Save stays enabled, because a detection can be wrong; when an INI write (Save,
+Restore, Restore defaults, Create, Locate) then fails with access denied, a re-probe that confirms a read-only folder or file returns `Ini.ReadOnly` carrying the same text
+instead of the OS message; otherwise the error is `Ini.WriteFailed` with the OS message.
 
 There is also a **disabled placeholder** outside `IniConfigTabViewModel.Content` — a muted centred message: *"INI editing becomes available once an installation is open and its  
 `zoo.ini` has been parsed."* Rendered when the tab itself is disabled (Looking / NoInstall / OpenPicker); having the placeholder behind the disabled tab keeps the panel from  

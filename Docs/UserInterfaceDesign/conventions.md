@@ -127,9 +127,10 @@ Every row participates in the hover + status help affordance (SDD §9.3.2):
 1. **Tooltip.** Set `ToolTip.Tip` on the **row's parent panel** (the `Grid` itself, not the label or input). Avalonia's tooltip propagates from the hovered visual up the parent
    chain, so attaching to the panel makes the whole row trigger the tip. Tip text comes from `IniFieldDescriptor.Help` in `IniEditorCatalogue` (`Desktop/Models/IniConfig/`), not
    `IIniHelpRegistry`.
-2. **Editor footer one-liner.** The row template in `IniSectionView` sets the field's `IsHelpActive` on `PointerEntered` / `PointerExited`. The editor's own footer (not the
-   main-window status bar) shows that field's help while it is active.
-3. **Keyboard parity.** The same row template sets `IsHelpActive` on `GotFocus` / `LostFocus` for the row's input control, so tab navigation surfaces the same help line.
+2. **Editor footer one-liner.** The row template in `IniSectionView` sets the field's `IsHovered` on `PointerEntered` / `PointerExited`. The editor's own footer (not the
+   main-window status bar) shows the hovered row's help, else the focused row's, else the dirty / saved state.
+3. **Keyboard parity.** The same row template sets the field's `IsFocused` on `GotFocus` / `LostFocus` for the row's input control, so tab navigation surfaces the same help
+   line when no row is hovered.
 
 The wiring lives once in `IniSectionView`'s row template; rows never hand-roll it.
 

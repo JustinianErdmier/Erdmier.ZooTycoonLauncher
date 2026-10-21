@@ -1786,6 +1786,126 @@ stays responsive rather than crashing.
 
 ---
 
+# INI Recovery and Read-only Detection
+
+## 1. Create from defaults: an installation with no `zoo.ini` creates one from the No INI box
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 2. Locate existing: the No INI box copies a chosen `zoo.ini` in unchanged; a non-INI file is refused
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 3. Fix dialogue: the Fix INI group creates or locates `zoo.ini`, then the window re-boots on close
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 4. Read-only: a read-only folder or a read-only `zoo.ini` shows the INI tab strip, and a failed Save explains it
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+---
+
 # Notes & Future Tasks/Goals
 
 1. Abstract shared string literals used in the UI into a single constants/helper class so that everything can be easily updated in one single place and also eliminate duplication.

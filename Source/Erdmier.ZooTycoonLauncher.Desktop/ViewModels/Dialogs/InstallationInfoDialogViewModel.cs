@@ -2,7 +2,7 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
 /// <summary>
 ///     View model for the read-only Installation Info modal (SDD §7.2.6, §9.5): name, path, status, default flag, and the added / last-opened / last-played timestamps
-///     in the user's local time. History entries shows "—" until the INI Config slice writes snapshots.
+///     in the user's local time, and the count of stored Historical INI snapshots.
 /// </summary>
 public sealed partial class InstallationInfoDialogViewModel : ViewModelBase
 {
@@ -40,8 +40,9 @@ public sealed partial class InstallationInfoDialogViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial string? ErrorMessage { get; set; }
 
-    /// <summary>Always "—": INI history is not recorded until the INI Config slice.</summary>
-    public string HistoryEntriesText => NotAvailable;
+    /// <summary>The stored count of Historical INI snapshots (e.g. "1 snapshot", "3 snapshots"); "—" until loaded or when the count cannot be read.</summary>
+    [ ObservableProperty ]
+    public partial string HistoryEntriesText { get; set; } = NotAvailable;
 
     /// <summary>When the installation last became the active installation, in local time, or "—".</summary>
     [ ObservableProperty ]
@@ -99,12 +100,34 @@ public sealed partial class InstallationInfoDialogViewModel : ViewModelBase
             AddedText         = FormatTimestamp(summary.AddedUtc);
             LastOpenedText    = FormatTimestamp(summary.LastOpenedUtc);
             LastPlayedText    = FormatTimestamp(summary.LastPlayedUtc);
+
+            await LoadHistoryCountAsync(installationId, cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Failed to load installation {InstallationId} for the Info dialogue.", installationId);
 
             ErrorMessage = InstallationDialogMessages.UnexpectedFailure;
+        }
+    }
+
+    // A failed count must not hide the rest of the dialogue: the row simply stays "—".
+    private async Task LoadHistoryCountAsync(Guid installationId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            ErrorOr<int> count = await _mediator.Send(new GetIniHistoryCountQuery(installationId), cancellationToken);
+
+            if (count.IsError)
+            {
+                return;
+            }
+
+            HistoryEntriesText = count.Value == 1 ? "1 snapshot" : $"{count.Value} snapshots";
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to read the INI history count for installation {InstallationId}.", installationId);
         }
     }
 

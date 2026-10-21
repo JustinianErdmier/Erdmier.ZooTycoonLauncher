@@ -1,8 +1,13 @@
+global using System.Globalization;
+
 global using Erdmier.ZooTycoonLauncher.Application.Boot;
 global using Erdmier.ZooTycoonLauncher.Application.Common.Models;
 global using Erdmier.ZooTycoonLauncher.Application.Game.Launch;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Get;
+global using Erdmier.ZooTycoonLauncher.Application.IniConfig.History;
+global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Restore;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Save;
+global using Erdmier.ZooTycoonLauncher.Application.Installations.GetById;
 global using Erdmier.ZooTycoonLauncher.Desktop.Composition;
 global using Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig;
 global using Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.IniConfig;
@@ -15,6 +20,7 @@ global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig.Fields;
 global using Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 global using Erdmier.ZooTycoonLauncher.Domain.Installations;
 global using Erdmier.ZooTycoonLauncher.Domain.IniKeys;
+global using Erdmier.ZooTycoonLauncher.Domain.IniSnapshots;
 
 global using CommunityToolkit.Mvvm.Messaging;
 

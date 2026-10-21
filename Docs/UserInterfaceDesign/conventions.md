@@ -200,7 +200,9 @@ Phase 1 task: copy `assets/icons/*.ico` from the prototype into `Source/Erdmier.
 
 Every modal dialogue ends with a horizontal button row aligned to the right. Universal rules:
 
-- **No ellipses on button labels.** Ever. `Save`, `Cancel`, `OK`, `Close`, `Delete`, `Restore`, `Fix`, `Browse`, `Locate`, `Create`, `Add`, `Edit`, `Info`. Ellipses on **menu items** that open further dialogues are fine; ellipses on **buttons** that commit a decision are not.
+- **Ellipses follow the Win9x rule.** A button or menu item whose command needs more input before it can complete — it opens a dialogue or picker to collect
+  that input — ends with an ellipsis (`Browse…`, `Open Installation…`). Buttons that commit a decision on the spot (`Save`, `Cancel`, `OK`, `Close`, `Restore`) carry
+  none, and neither do commands that only show information or ask for a confirmation.
 - **Default button** is the rightmost in single-action footers (`OK` / `Close`), or the leftmost-of-the-confirming-pair when there's a primary-plus-cancel (`Save` `Cancel`, `Restore` `Cancel`, `Delete` `Cancel`). Render the default with `Classes="default"` (Avalonia equivalent of the prototype's `--default` outline).
 - **Gap.** `SpacingMedium` (6 px) between buttons. `SpacingDialogPad` (14 px) between the body and the footer.
 - **Width.** Buttons are `MinWidth="75"`; the `default` variant gets the same width. The "wide" `Launch Game` and `Add Installation` calls-to-action on the main-window states bump to `MinWidth="110"`.
@@ -257,7 +259,7 @@ Every brush, font, and spacing referenced from XAML uses `{DynamicResource KeyNa
 - **British English everywhere** (`Behaviour`, `Colour`, `Minimise`, `Initialise`). Don't switch a US spelling that comes from a Windows API surface (`Color`, `Initialize` on `IInitializable`).
 - **Sentence case** in labels and headings, not Title Case. `Restore previous INI`, not `Restore Previous INI` — *except* when the phrase is itself a proper noun (window titles like `Installation Manager`, `Zoo Tycoon Launcher`).
   - SDD §9 currently writes some titles in Title Case; treat the SDD's title as the canonical window title text. Body copy and inline buttons remain sentence case.
-- **No ellipses on buttons** (see §5). Menu items that open a dialogue keep their ellipsis (`Open Installation…`, `Installation Manager…`).
+- **Ellipses follow the Win9x rule** (see §5), on buttons and menu items alike (`Browse…`, `Open Installation…`, `Installation Manager…`).
 - **No periods at the end of single-sentence muted prose** unless the prose is multi-sentence. (Match the prototype.)
 - **Mono runs** for paths, INI keys, INI sections (`zoo.ini`, `zoo.exe`, `[user]`, `screenwidth`), and timestamps. Use the `FontFamilyMono` token.
 

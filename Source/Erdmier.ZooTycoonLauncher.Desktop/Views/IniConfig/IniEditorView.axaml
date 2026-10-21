@@ -50,12 +50,12 @@
             <StackPanel DockPanel.Dock="Right"
                         Orientation="Horizontal"
                         Spacing="6">
-                <Button Content="Undo"
-                        IsEnabled="False"
+                <Button Command="{Binding RestorePreviousCommand}"
+                        Content="Restore previous…"
                         MinWidth="75" />
 
-                <Button Content="Restore defaults"
-                        IsEnabled="False"
+                <Button Command="{Binding RestoreDefaultsCommand}"
+                        Content="Restore defaults"
                         MinWidth="75" />
 
                 <Button Command="{Binding SaveCommand}"
@@ -63,8 +63,8 @@
                         IsDefault="True"
                         MinWidth="75" />
 
-                <Button Command="{Binding RevertCommand}"
-                        Content="Revert"
+                <Button Command="{Binding ResetCommand}"
+                        Content="Reset"
                         MinWidth="75" />
             </StackPanel>
 

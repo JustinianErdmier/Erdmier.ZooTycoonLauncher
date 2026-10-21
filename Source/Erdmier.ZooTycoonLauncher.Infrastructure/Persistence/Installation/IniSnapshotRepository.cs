@@ -27,4 +27,20 @@ public sealed class IniSnapshotRepository : IIniSnapshotRepository
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<int> CountHistoricalAsync(Guid installationId, CancellationToken cancellationToken)
+    {
+        InstallationDbContext? context = await _factory.OpenExistingAsync(installationId, cancellationToken);
+
+        if (context is null)
+        {
+            return 0;
+        }
+
+        await using (context)
+        {
+            return await context.Snapshots.CountAsync(snapshot => snapshot.Kind == IniSnapshotKind.Historical, cancellationToken);
+        }
+    }
 }

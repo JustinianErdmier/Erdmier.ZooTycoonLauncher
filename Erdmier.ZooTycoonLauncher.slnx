@@ -7,6 +7,10 @@
         <File Path="Directory.Packages.props" />
     </Folder>
     <Folder Name="/Docs/" />
+    <Folder Name="/Docs/Ledgers/" />
+    <Folder Name="/Docs/Ledgers/Epic-1-MVP/">
+        <File Path="Docs/Ledgers/Epic-1-MVP/milestone-9-ledger.md" />
+    </Folder>
     <Folder Name="/Docs/Plans/" />
     <Folder Name="/Docs/Plans/Epic-1-MVP/">
         <File Path="Docs/Plans/Epic-1-MVP/milestone-1-foundations-and-scaffolding.md" />
@@ -17,6 +21,7 @@
         <File Path="Docs/Plans/Epic-1-MVP/milestone-6-installation-grid-control.md" />
         <File Path="Docs/Plans/Epic-1-MVP/milestone-7-installation-management-dialogues.md" />
         <File Path="Docs/Plans/Epic-1-MVP/milestone-8-ini-config-core.md" />
+        <File Path="Docs/Plans/Epic-1-MVP/milestone-9-restore-previous-ini.md" />
     </Folder>
     <Folder Name="/Docs/Specs/">
         <File Path="Docs/Specs/1-zoo-tycoon-launcher-master-design.md" />
@@ -28,6 +33,7 @@
         <File Path="Docs/Specs/Epic-1-MVP/milestone-6.1-shared-boot-view-controls-design.md" />
         <File Path="Docs/Specs/Epic-1-MVP/milestone-7-installation-management-dialogues-design.md" />
         <File Path="Docs/Specs/Epic-1-MVP/milestone-8-ini-config-core-design.md" />
+        <File Path="Docs/Specs/Epic-1-MVP/milestone-9-restore-previous-ini-design.md" />
     </Folder>
     <Folder Name="/Docs/TestPlans/">
         <File Path="Docs/TestPlans/manual-end-to-end-tests.md" />
@@ -56,6 +62,21 @@
         <File Path="Docs/UserInterfaceDesign/HiFiMockupScreenshots/RestorePreviousIniDialogueShowingNoDiff.png" />
         <File Path="Docs/UserInterfaceDesign/HiFiMockupScreenshots/SettingsDialogue.png" />
     </Folder>
+    <Folder Name="/Docs/UserInterfaceDesign/HiFiPrototype/">
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/index.html" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/tweaks-panel.jsx" />
+    </Folder>
+    <Folder Name="/Docs/UserInterfaceDesign/HiFiPrototype/src/">
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/app.jsx" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/components.jsx" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/dialogs.jsx" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/icons.jsx" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/ini-config.jsx" />
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/src/main-window.jsx" />
+    </Folder>
+    <Folder Name="/Docs/UserInterfaceDesign/HiFiPrototype/styles/">
+        <File Path="Docs/UserInterfaceDesign/HiFiPrototype/styles/win95.css" />
+    </Folder>
     <Folder Name="/Docs/UserInterfaceDesign/ImplementationScreenshots/">
         <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/CannotPlayStateNoExe.png" />
         <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/LookingForZooTycoonState.png" />
@@ -63,6 +84,7 @@
         <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/NoGameInstallationFoundStateWithNoCandidateFound.png" />
         <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/OpenGameInstallationState.png" />
         <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/ReadyToPlayState.png" />
+        <File Path="Docs/UserInterfaceDesign/ImplementationScreenshots/RestorePreviousIniDialogue.png" />
     </Folder>
     <Folder Name="/Source/">
         <Project Path="Source/Erdmier.ZooTycoonLauncher.Domain/Erdmier.ZooTycoonLauncher.Domain.csproj" />

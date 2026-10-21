@@ -1,0 +1,995 @@
+/* =========================================================================
+   ZooTycoon Launcher — Windows 95 chrome
+   Color tokens, bevels, controls. Generic 9x aesthetic, hand-rolled.
+   ========================================================================= */
+
+:root {
+  /* Neutrals */
+  --silver:        #c0c0c0;
+  --silver-light:  #dfdfdf;
+  --white:         #ffffff;
+  --gray:          #808080;
+  --gray-dark:     #404040;
+  --black:         #000000;
+
+  /* Accents */
+  --navy:          #000080;
+  --navy-bright:   #1084d0;
+  --teal:          #008080;
+  --green:         #008000;
+  --red:           #800000;
+  --red-bright:    #c00000;
+  --yellow:        #ffff80;
+
+  /* Typography */
+  --fs-base: 11px;
+  --ff-sys: "Microsoft Sans Serif", "MS Sans Serif", "W95FA", Tahoma, Geneva, sans-serif;
+  --ff-mono: "Lucida Console", "Courier New", monospace;
+}
+
+@font-face {
+  /* W95FA – William Whitehead's MIT-licensed pixel revival of MS Sans Serif.
+     Falls back to system fonts cleanly when offline. */
+  font-family: "W95FA";
+  src: url("https://unpkg.com/web95@0.0.5/fonts/w95fa.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--teal);
+  font-family: var(--ff-sys);
+  font-size: var(--fs-base);
+  color: var(--black);
+  line-height: 1.2;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  /* image-rendering: pixelated; — only on bitmap art */
+}
+
+/* Desktop backdrop with subtle dither */
+body {
+  min-height: 100vh;
+  background: var(--teal);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.03) 0 1px, transparent 1px 2px);
+  padding: 32px;
+}
+
+/* =========================================================================
+   Bevels
+   ========================================================================= */
+
+/* Raised (window, button at rest, statusbar panel) */
+.raised {
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--white) var(--black) var(--black) var(--white);
+  box-shadow:
+    inset -1px -1px 0 var(--gray),
+    inset  1px  1px 0 var(--silver-light);
+}
+
+/* Pressed/active button */
+.pressed {
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--black) var(--white) var(--white) var(--black);
+  box-shadow:
+    inset  1px  1px 0 var(--gray),
+    inset -1px -1px 0 var(--silver-light);
+}
+
+/* Sunken (textbox, listbox, status well) */
+.sunken {
+  background: var(--white);
+  border: 1px solid;
+  border-color: var(--gray) var(--white) var(--white) var(--gray);
+  box-shadow:
+    inset  1px  1px 0 var(--black),
+    inset -1px -1px 0 var(--silver-light);
+}
+
+/* Thin etched line (separators) */
+.etched {
+  border-top: 1px solid var(--gray);
+  border-bottom: 1px solid var(--white);
+  height: 0;
+  margin: 4px 0;
+}
+
+/* =========================================================================
+   Window
+   ========================================================================= */
+
+.window {
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--white) var(--black) var(--black) var(--white);
+  box-shadow:
+    inset -1px -1px 0 var(--gray),
+    inset  1px  1px 0 var(--silver-light);
+  padding: 3px;
+  display: inline-block;
+  user-select: none;
+}
+
+.window--block { display: block; }
+
+.titlebar {
+  background: var(--navy);
+  background: linear-gradient(90deg, var(--navy) 0%, var(--navy-bright) 100%);
+  color: var(--white);
+  font-weight: bold;
+  padding: 2px 2px 2px 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  cursor: default;
+}
+
+.titlebar--inactive {
+  background: linear-gradient(90deg, var(--gray) 0%, #b5b5b5 100%);
+}
+
+.titlebar__icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  image-rendering: pixelated;
+}
+
+.titlebar__text {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.titlebar__buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.titlebar__btn {
+  width: 16px;
+  height: 14px;
+  padding: 0;
+  font-family: var(--ff-sys);
+  font-size: 9px;
+  font-weight: bold;
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--white) var(--black) var(--black) var(--white);
+  box-shadow: inset -1px -1px 0 var(--gray), inset 1px 1px 0 var(--silver-light);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--black);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.titlebar__btn:active,
+.titlebar__btn--pressed {
+  border-color: var(--black) var(--white) var(--white) var(--black);
+  box-shadow: inset 1px 1px 0 var(--gray), inset -1px -1px 0 var(--silver-light);
+}
+
+/* =========================================================================
+   Menu bar
+   ========================================================================= */
+
+.menubar {
+  display: flex;
+  gap: 0;
+  padding: 1px 0;
+  background: var(--silver);
+}
+
+.menubar__item {
+  padding: 3px 8px;
+  cursor: default;
+  position: relative;
+}
+
+.menubar__item:hover,
+.menubar__item--open {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.menubar__item u {
+  text-decoration: underline;
+}
+
+.menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 180px;
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--white) var(--black) var(--black) var(--white);
+  box-shadow:
+    inset -1px -1px 0 var(--gray),
+    inset  1px  1px 0 var(--silver-light),
+    2px 2px 0 rgba(0,0,0,0.25);
+  padding: 2px;
+  z-index: 1000;
+}
+
+.menu__item {
+  padding: 3px 22px 3px 22px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  cursor: default;
+  color: var(--black);
+}
+
+.menu__item:hover {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.menu__item--disabled {
+  color: var(--gray);
+  text-shadow: 1px 1px 0 var(--white);
+}
+
+.menu__item--disabled:hover {
+  background: transparent;
+  color: var(--gray);
+}
+
+.menu__sep {
+  height: 0;
+  border-top: 1px solid var(--gray);
+  border-bottom: 1px solid var(--white);
+  margin: 3px 2px;
+}
+
+.menu__accel {
+  margin-left: auto;
+  padding-left: 24px;
+  color: inherit;
+}
+
+/* =========================================================================
+   Buttons
+   ========================================================================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 75px;
+  height: 23px;
+  padding: 0 12px;
+  font-family: var(--ff-sys);
+  font-size: var(--fs-base);
+  color: var(--black);
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--white) var(--black) var(--black) var(--white);
+  box-shadow:
+    inset -1px -1px 0 var(--gray),
+    inset  1px  1px 0 var(--silver-light);
+  cursor: default;
+  outline: none;
+  position: relative;
+}
+
+.btn:focus-visible::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px dotted var(--black);
+}
+
+.btn:active:not(:disabled),
+.btn--pressed {
+  border-color: var(--black) var(--white) var(--white) var(--black);
+  box-shadow:
+    inset  1px  1px 0 var(--gray),
+    inset -1px -1px 0 var(--silver-light);
+  padding-top: 1px;
+  padding-left: 13px;
+  padding-bottom: 0;
+  padding-right: 11px;
+}
+
+.btn:disabled {
+  color: var(--gray);
+  text-shadow: 1px 1px 0 var(--white);
+  cursor: default;
+}
+
+.btn--default {
+  border-color: var(--white) var(--black) var(--black) var(--white);
+  outline: 1px solid var(--black);
+  outline-offset: -3px;
+}
+
+.btn--sm { min-width: 60px; height: 21px; font-size: 11px; }
+.btn--xs { min-width: 0; height: 20px; padding: 0 8px; }
+.btn--icon { min-width: 0; padding: 0 4px; }
+.btn--wide { min-width: 110px; }
+
+/* =========================================================================
+   Group box (fieldset)
+   ========================================================================= */
+
+.group {
+  position: relative;
+  padding: 16px 10px 10px 10px;
+  margin-top: 8px;
+  border: 1px solid var(--gray);
+  box-shadow:
+    inset  1px  1px 0 var(--white),
+    inset -1px -1px 0 var(--white),
+    1px 1px 0 var(--white);
+  /* The classic etched look: an inner light line on top/left and bottom/right
+     wrapping a hairline gray. We approximate with double layer borders. */
+  background: var(--silver);
+}
+
+.group__label {
+  position: absolute;
+  top: -7px;
+  left: 9px;
+  padding: 0 4px;
+  background: var(--silver);
+  font-size: var(--fs-base);
+  color: var(--black);
+}
+
+/* =========================================================================
+   Form controls
+   ========================================================================= */
+
+.input,
+.textarea,
+.select {
+  font-family: var(--ff-sys);
+  font-size: var(--fs-base);
+  color: var(--black);
+  background: var(--white);
+  border: 1px solid;
+  border-color: var(--gray) var(--white) var(--white) var(--gray);
+  box-shadow:
+    inset  1px  1px 0 var(--black),
+    inset -1px -1px 0 var(--silver-light);
+  padding: 3px 4px;
+  min-height: 20px;
+  outline: none;
+}
+
+.input:focus { background: var(--white); }
+
+.input--readonly {
+  background: var(--silver);
+  color: var(--black);
+}
+
+.input--invalid {
+  background: #ffe0e0;
+}
+
+/* Checkbox */
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+  user-select: none;
+}
+
+.check__box {
+  width: 13px;
+  height: 13px;
+  background: var(--white);
+  border: 1px solid;
+  border-color: var(--gray) var(--white) var(--white) var(--gray);
+  box-shadow:
+    inset  1px  1px 0 var(--black),
+    inset -1px -1px 0 var(--silver-light);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 13px;
+  position: relative;
+}
+
+.check__box::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--black);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+
+.check input { display: none; }
+.check input:checked + .check__box::after { opacity: 1; }
+.check input:disabled + .check__box {
+  background: var(--silver);
+}
+.check input:disabled + .check__box::after { border-color: var(--gray); }
+.check input:disabled ~ .check__label {
+  color: var(--gray);
+  text-shadow: 1px 1px 0 var(--white);
+}
+
+/* Radio */
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+  user-select: none;
+}
+
+.radio__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1px solid var(--gray);
+  box-shadow:
+    inset  1px  1px 0 var(--black),
+    inset -1px -1px 0 var(--silver-light);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex: 0 0 12px;
+}
+
+.radio__dot::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--black);
+  opacity: 0;
+}
+
+.radio input { display: none; }
+.radio input:checked + .radio__dot::after { opacity: 1; }
+
+/* Select / Combobox */
+.combo {
+  display: inline-flex;
+  align-items: stretch;
+  font-family: var(--ff-sys);
+  font-size: var(--fs-base);
+  background: var(--white);
+  border: 1px solid;
+  border-color: var(--gray) var(--white) var(--white) var(--gray);
+  box-shadow:
+    inset  1px  1px 0 var(--black),
+    inset -1px -1px 0 var(--silver-light);
+  min-height: 21px;
+  position: relative;
+}
+
+.combo__value {
+  flex: 1;
+  padding: 3px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.combo__btn {
+  width: 17px;
+  background: var(--silver);
+  border-left: 1px solid var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  position: relative;
+}
+
+.combo__btn::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid var(--black);
+}
+
+.combo__btn::after {
+  /* raised inset shading */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid;
+  border-color: var(--white) var(--black) var(--black) var(--white);
+  box-shadow: inset -1px -1px 0 var(--gray), inset 1px 1px 0 var(--silver-light);
+  pointer-events: none;
+}
+
+/* Numeric updown */
+.numupdown {
+  display: inline-flex;
+  align-items: stretch;
+  font-family: var(--ff-sys);
+  font-size: var(--fs-base);
+  background: var(--white);
+  border: 1px solid;
+  border-color: var(--gray) var(--white) var(--white) var(--gray);
+  box-shadow:
+    inset  1px  1px 0 var(--black),
+    inset -1px -1px 0 var(--silver-light);
+  height: 21px;
+  width: 80px;
+}
+
+.numupdown__input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  padding: 2px 4px;
+  font-family: var(--ff-sys);
+  font-size: var(--fs-base);
+  background: var(--white);
+  text-align: right;
+  min-width: 0;
+}
+
+.numupdown__buttons {
+  display: flex;
+  flex-direction: column;
+  width: 16px;
+  flex: 0 0 16px;
+}
+
+.numupdown__btn {
+  flex: 1;
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--white) var(--black) var(--black) var(--white);
+  box-shadow: inset -1px -1px 0 var(--gray), inset 1px 1px 0 var(--silver-light);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6px;
+  color: var(--black);
+  padding: 0;
+  cursor: default;
+}
+
+.numupdown__btn::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+}
+.numupdown__btn--up::before    { border-bottom: 3px solid var(--black); }
+.numupdown__btn--down::before  { border-top:    3px solid var(--black); }
+
+/* Progress bar (segmented Win95 style) */
+.progress {
+  height: 18px;
+  padding: 2px;
+  background: var(--white);
+  border: 1px solid;
+  border-color: var(--gray) var(--white) var(--white) var(--gray);
+  box-shadow:
+    inset  1px  1px 0 var(--black),
+    inset -1px -1px 0 var(--silver-light);
+  overflow: hidden;
+}
+
+.progress__track {
+  height: 100%;
+  display: flex;
+  gap: 2px;
+}
+
+.progress__block {
+  width: 10px;
+  height: 100%;
+  background: var(--navy);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  padding: 0;
+  margin-bottom: -1px;
+  position: relative;
+  z-index: 2;
+}
+
+.tab {
+  padding: 4px 12px 5px 12px;
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--white) var(--black) var(--silver) var(--white);
+  box-shadow:
+    inset 1px 0 0 var(--silver-light),
+    inset 1px 1px 0 var(--silver-light);
+  margin-right: -1px;
+  position: relative;
+  cursor: default;
+  font-family: var(--ff-sys);
+  font-size: var(--fs-base);
+  color: var(--black);
+  border-radius: 3px 3px 0 0;
+}
+
+.tab--active {
+  z-index: 3;
+  padding-top: 5px;
+  padding-bottom: 7px;
+  margin-top: -2px;
+  margin-bottom: -2px;
+  background: var(--silver);
+}
+
+.tab-panel {
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--white) var(--black) var(--black) var(--white);
+  box-shadow:
+    inset -1px -1px 0 var(--gray),
+    inset  1px  1px 0 var(--silver-light);
+  padding: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+/* DataGrid / table */
+.grid {
+  background: var(--white);
+  border: 1px solid;
+  border-color: var(--gray) var(--white) var(--white) var(--gray);
+  box-shadow:
+    inset  1px  1px 0 var(--black),
+    inset -1px -1px 0 var(--silver-light);
+  overflow: hidden;
+}
+
+.grid table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  font-size: var(--fs-base);
+}
+
+.grid thead th {
+  text-align: left;
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--white) var(--gray) var(--gray) var(--white);
+  box-shadow:
+    inset -1px -1px 0 var(--gray-dark),
+    inset  1px  1px 0 var(--white);
+  padding: 3px 6px;
+  font-weight: normal;
+}
+
+.grid tbody td {
+  padding: 3px 6px;
+  border-bottom: 1px solid #ececec;
+}
+
+.grid tbody tr.is-selected td {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.grid tbody tr.is-selected .badge--status {
+  text-shadow: none;
+}
+
+.grid--no-rows {
+  padding: 30px;
+  text-align: center;
+  color: var(--gray);
+  background: var(--white);
+}
+
+/* Status bar */
+.statusbar {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--silver);
+}
+
+.statusbar__cell {
+  flex: 1;
+  padding: 2px 6px;
+  background: var(--silver);
+  border: 1px solid;
+  border-color: var(--gray) var(--white) var(--white) var(--gray);
+  box-shadow:
+    inset  1px  1px 0 var(--black),
+    inset -1px -1px 0 var(--silver-light);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 16px;
+}
+
+.statusbar__cell--fixed { flex: 0 0 auto; min-width: 60px; }
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--silver);
+}
+
+.toolbar__btn {
+  width: 24px;
+  height: 23px;
+  background: var(--silver);
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  padding: 0;
+}
+.toolbar__btn:hover {
+  border-color: var(--white) var(--gray) var(--gray) var(--white);
+}
+.toolbar__btn:active {
+  border-color: var(--gray) var(--white) var(--white) var(--gray);
+}
+
+.toolbar__sep {
+  width: 2px;
+  margin: 2px 2px;
+  background: linear-gradient(90deg, var(--gray) 50%, var(--white) 50%);
+  background-size: 2px 100%;
+}
+
+/* Helpers */
+.row { display: flex; align-items: center; gap: 6px; }
+.col { display: flex; flex-direction: column; gap: 6px; }
+.spacer { flex: 1; }
+.muted { color: var(--gray); }
+.mono  { font-family: var(--ff-mono); }
+.right { text-align: right; }
+.bold  { font-weight: bold; }
+.nowrap { white-space: nowrap; }
+
+/* Status badge in the management grid */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.badge--ok    { color: var(--green); font-weight: bold; }
+.badge--err   { color: var(--red-bright); font-weight: bold; }
+.badge--warn  { color: #806000; font-weight: bold; }
+
+/* Big status icon for the status panel */
+.statusicon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal overlay (for dialogs floating over the main window) */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 60px;
+  z-index: 50;
+}
+
+/* App layout helpers */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+
+.app-canvas {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.scene-label {
+  color: var(--white);
+  font-family: var(--ff-sys);
+  font-size: 11px;
+  text-align: center;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+}
+
+/* Animated marquee progress for "Looking..." state */
+@keyframes marqueeBlocks {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(60px); }
+}
+.progress__track--marquee {
+  animation: marqueeBlocks 1.2s linear infinite;
+}
+
+/* =========================================================================
+   Dark theme
+   Activated by `.theme-dark` on <body>. The strategy:
+     1. Re-point the silver/white/gray/black palette tokens so window
+        chrome, bevels, and accents flip to a cohesive Win9x-after-dark
+        scheme. White stays "the light bevel edge" (just darker than
+        white-mode); black stays "the deepest bevel edge".
+     2. Force text fills (which originally used var(--black)) and
+        input-style backgrounds (which originally used var(--white)) to
+        explicit dark-mode values so they don't collide with the bevel
+        usage of the same tokens.
+   ========================================================================= */
+
+.theme-dark {
+  --silver:        #2e2e2e;   /* primary surface — window/button bg */
+  --silver-light:  #424242;
+  --white:         #5a5a5a;   /* light bevel highlight (must be > silver) */
+  --gray:          #1a1a1a;   /* dark bevel mid                          */
+  --gray-dark:     #0a0a0a;   /* deepest shadow                          */
+  --black:         #050505;   /* outermost bevel edge                    */
+
+  /* Accents — re-saturated for dark contrast */
+  --navy:          #1f4499;
+  --navy-bright:   #3060d0;
+  --teal:          #0d3535;
+  --green:         #5cd070;
+  --red:           #d04848;
+  --red-bright:    #ff6060;
+  --yellow:        #ffe070;
+
+  /* Working colours used only by the dark-mode rules below. */
+  --dk-fg:         #e8e8e8;   /* main text                  */
+  --dk-fg-muted:   #9a9a9a;   /* muted text                 */
+  --dk-bg-input:   #1c1c1c;   /* textbox / listbox / grid   */
+  --dk-bg-input-readonly: #2e2e2e;
+  --dk-warning:    #d4a050;
+  --dk-error:      #ff7070;
+  --dk-error-strong: #ff8080;
+  --dk-info:       #6aa3ff;
+  --dk-ok:         #62d878;
+}
+
+/* Body + global text colour ---------------------------------------------- */
+.theme-dark { color: var(--dk-fg); }
+body.theme-dark { background: var(--teal); }
+
+.theme-dark .titlebar__btn,
+.theme-dark .menubar__item,
+.theme-dark .menu__item,
+.theme-dark .btn,
+.theme-dark .group > legend,
+.theme-dark .input,
+.theme-dark .input--readonly,
+.theme-dark .numupdown__btn,
+.theme-dark .tab,
+.theme-dark .grid thead th,
+.theme-dark .statusbar__cell {
+  color: var(--dk-fg);
+}
+
+/* Input-style surfaces — anything that was the "white" listbox/textbox bg */
+.theme-dark .sunken,
+.theme-dark .input,
+.theme-dark .check__box,
+.theme-dark .radio,
+.theme-dark .combo__field,
+.theme-dark .numupdown,
+.theme-dark .progress,
+.theme-dark .grid,
+.theme-dark .grid table,
+.theme-dark .grid--no-rows {
+  background: var(--dk-bg-input);
+}
+.theme-dark .input--readonly { background: var(--dk-bg-input-readonly); }
+.theme-dark .input:focus      { background: var(--dk-bg-input); }
+
+/* Muted text + disabled states ------------------------------------------- */
+.theme-dark .muted,
+.theme-dark .grid--no-rows {
+  color: var(--dk-fg-muted);
+}
+.theme-dark .btn:disabled,
+.theme-dark .menu__item--disabled,
+.theme-dark .check input:disabled ~ .check__label {
+  color: var(--dk-fg-muted);
+  text-shadow: 1px 1px 0 var(--gray);
+}
+.theme-dark .check input:disabled + .check__box::after { border-color: var(--dk-fg-muted); }
+
+/* Radio dot ------------------------------------------------------------- */
+.theme-dark .radio__dot { background: var(--dk-fg); }
+
+/* Selection highlight in lists/menus stays high-contrast ---------------- */
+.theme-dark .grid tbody tr.is-selected td,
+.theme-dark .menubar__item:hover,
+.theme-dark .menubar__item--open,
+.theme-dark .menu__item:hover {
+  background: #1f4499;
+  color: #ffffff;
+}
+
+/* Badges + status colours ----------------------------------------------- */
+.theme-dark .badge--ok   { color: var(--dk-ok); }
+.theme-dark .badge--err  { color: var(--dk-error-strong); }
+.theme-dark .badge--warn { color: var(--dk-warning); }
+
+/* Invalid input -- pink in light, deep red in dark ---------------------- */
+.theme-dark .input--invalid { background: #5a1f1f; }
+
+/* Etched separator: in dark, both edges shift to surrounding shades ----- */
+.theme-dark .etched {
+  border-top-color: #1a1a1a;
+  border-bottom-color: #5a5a5a;
+}
+
+/* Backdrop dim used by modals stays the same, but darken slightly more */
+.theme-dark .overlay { background: rgba(0,0,0,0.55); }
+
+/* Scene-label text on dark desktop --------------------------------------*/
+.theme-dark .scene-label {
+  color: #c8c8c8;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
+}
+
+/* Backdrop body image: tone down the dither lines so they read on dark */
+.theme-dark body {
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 2px);
+}
+
+/* Inline-style colour escape hatches: a small set of utility classes the
+   JSX can use to swap hardcoded reds/blues/maroons for theme-aware tones. */
+.dk-c-red   { color: var(--red-bright); }
+.dk-c-navy  { color: var(--navy-bright); }
+.dk-c-maroon{ color: var(--red); }
+.theme-dark .dk-c-red    { color: var(--dk-error-strong); }
+.theme-dark .dk-c-navy   { color: var(--dk-info); }
+.theme-dark .dk-c-maroon { color: var(--dk-error); }
+.dk-c-amber { color: #806000; }
+.theme-dark .dk-c-amber { color: var(--dk-warning); }
+.dk-c-green { color: var(--green); }
+.theme-dark .dk-c-green { color: var(--dk-ok); }
+.dk-c-dim   { color: #404040; }
+.theme-dark .dk-c-dim   { color: var(--dk-fg-muted); }
+
+/* Table header row used inside `.sunken` panels for inline tables.       */
+.dk-row-head { background: var(--silver); }
+.theme-dark .dk-row-head { background: #383838; }

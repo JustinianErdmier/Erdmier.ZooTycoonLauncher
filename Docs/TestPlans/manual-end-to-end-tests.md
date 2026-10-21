@@ -1316,7 +1316,7 @@ stays responsive rather than crashing.
 
 ### Notes/Thoughts
 
-## 3. Revert: pending edits discarded and values reloaded from disk
+## 3. Reset: pending edits discarded and values reloaded from disk
 
 ### Testing Strategy
 
@@ -1462,6 +1462,271 @@ stays responsive rather than crashing.
 ### Notes/Thoughts
 
 ## 8. Write Refused: zoo.ini read-only, Save shows the error and keeps the edits
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+---
+
+# Restore Previous INI
+
+## 1. Restore a Snapshot: the editor and zoo.ini follow the chosen version, comments and game-managed keys intact
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 2. Restore, Then Restore Back: the pre-restore version is archived and can be restored in turn
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 3. Unsaved-Changes Prompt: Restore previous… with pending edits, answered Yes / No / Cancel
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 4. No History: Restore previous… disabled on a fresh installation
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 5. Restore Defaults, Then Reset: defaults load as unsaved edits and Reset discards them
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 6. Restore Defaults, Then Save: the defaults are written to zoo.ini
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 7. Kept Keys: a snapshot that lacks keys the current file has lists them and leaves them alone
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 8. Label Sweep: Win9x ellipsis labels on the Installation Manager, picker and Fix dialogue
+
+### Testing Strategy
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
+
+## 9. Installation Info: History entries shows the stored snapshot count
 
 ### Testing Strategy
 

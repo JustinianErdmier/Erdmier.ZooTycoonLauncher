@@ -4,8 +4,10 @@ internal static class IniEditorTestData
 {
     public static readonly DateTime LastWrite = new(year: 2026, month: 5, day: 24, hour: 19, minute: 2, second: 0, DateTimeKind.Utc);
 
-    public static IniConfigResult Result(params (string Section, string Key, string? Value)[] values)
-        => new(values.ToDictionary(value => new IniKeyId(value.Section, value.Key), value => value.Value), LastWrite);
+    public static IniConfigResult Result(params (string Section, string Key, string? Value)[] values) => ResultWithHistory(historicalCount: 0, values);
+
+    public static IniConfigResult ResultWithHistory(int historicalCount, params (string Section, string Key, string? Value)[] values)
+        => new(values.ToDictionary(value => new IniKeyId(value.Section, value.Key), value => value.Value), LastWrite, historicalCount);
 
     public static T Field<T>(IniEditorViewModel editor, string section, string key)
         where T : IniFieldViewModel

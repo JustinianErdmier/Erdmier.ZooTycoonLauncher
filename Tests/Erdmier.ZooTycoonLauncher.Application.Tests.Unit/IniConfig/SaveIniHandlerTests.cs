@@ -115,6 +115,42 @@ public sealed class SaveIniHandlerTests
     }
 
     [ Fact ]
+    public async Task Save_ReturnsTheHistoricalCountAfterArchiving()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        bool archived = false;
+
+        _transaction.ArchiveCurrentAsync(Arg.Any<IniSnapshotTrigger>(), Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+                    .Returns(_ =>
+                    {
+                        archived = true;
+
+                        return Task.CompletedTask;
+                    });
+
+        _transaction.CountHistoricalAsync(Arg.Any<CancellationToken>())
+                    .Returns(_ => archived ? 4 : 3);
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "1024"));
+
+        result.Value.HistoricalCount.ShouldBe(4);
+    }
+
+    [ Fact ]
+    public async Task Save_NoOpEdits_ReturnTheUnchangedCount()
+    {
+        DiskHolds(IniTestData.Sample);
+
+        _transaction.CountHistoricalAsync(Arg.Any<CancellationToken>())
+                    .Returns(3);
+
+        ErrorOr<IniConfigResult> result = await SaveAsync((ScreenWidth, "0800"));
+
+        result.Value.HistoricalCount.ShouldBe(3);
+    }
+
+    [ Fact ]
     public async Task Save_NoOpEdits_CommitWithoutWriting()
     {
         DiskHolds(IniTestData.Sample);
@@ -275,5 +311,5 @@ public sealed class SaveIniHandlerTests
         => await CreateHandler().Handle(new SaveIniCommand(_installation.Id, edits.ToDictionary(edit => edit.Id, edit => edit.Value)), CancellationToken.None);
 
     private SaveIniHandler CreateHandler()
-        => new(new FakeTimeProvider(IniTestData.Now), _files, _installations, NullLogger<SaveIniHandler>.Instance, new IniReconciler(), _snapshots);
+        => new(new IniWritePipeline(new FakeTimeProvider(IniTestData.Now), _files, _installations, NullLogger<IniWritePipeline>.Instance, new IniReconciler(), _snapshots));
 }

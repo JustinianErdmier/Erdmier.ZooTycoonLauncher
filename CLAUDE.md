@@ -36,10 +36,12 @@ sharing the same `milestone-<N>-<feature-name>` stem. Number milestones in creat
   solution folders, which mirror the on-disk path — never under `/SolutionItems/`) and the root-level files under `/SolutionItems/`. **Whenever such a file is created,
   renamed, moved or deleted, update the `.slnx` to match** in the same commit, keeping milestone documents in milestone order. The user reads these documents through Rider's
   solution view, where an unregistered file is invisible; Rider's auto-sync is a convenience, not a guarantee.
-- **Design reference:** the Claude Design hi-fi prototype, captured in
+- **Design reference:** the Claude Design hi-fi prototype (project `743d64b3-4299-458e-a979-ed824fc52449`). Its source is imported under
+  [`Docs/UserInterfaceDesign/HiFiPrototype/`](./Docs/UserInterfaceDesign/HiFiPrototype/) — `src/dialogs.jsx`, `src/ini-config.jsx` and `src/main-window.jsx` hold
+  each screen's exact layout and copy; read them when specifying or building a view. It is also captured in
   [`Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](./Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) and the `HiFiMockupScreenshots/`
   beside it, with recurring UI patterns documented in [`Docs/UserInterfaceDesign/conventions.md`](./Docs/UserInterfaceDesign/conventions.md). The SDD (§9), not the
-  prototype, is the contract.
+  prototype, is the contract. The imported copy is a snapshot: re-import a file from the Claude Design project when the live prototype has moved on.
 - **Manual test plan:** [`Docs/TestPlans/manual-end-to-end-tests.md`](./Docs/TestPlans/manual-end-to-end-tests.md).
 
 ## Executing a plan

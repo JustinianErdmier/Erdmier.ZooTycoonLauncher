@@ -45,7 +45,7 @@
 
                 <Button DockPanel.Dock="Right"
                         Command="{Binding LocateCommand}"
-                        Content="Locate"
+                        Content="Locate…"
                         MinWidth="75"
                         VerticalAlignment="Top" />
 

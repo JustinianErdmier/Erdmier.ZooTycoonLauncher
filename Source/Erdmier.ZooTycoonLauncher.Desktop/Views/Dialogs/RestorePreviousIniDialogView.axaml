@@ -1,0 +1,181 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
+               xmlns:models="using:Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig"
+               x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.RestorePreviousIniDialogView"
+               x:DataType="vm:RestorePreviousIniDialogViewModel"
+               Icon="/Assets/Win95Icons/sheetsanddocuments32.ico"
+               Title="  Restore Previous INI"
+               Width="620"
+               SizeToContent="Height"
+               CanResize="False"
+               WindowStartupLocation="CenterOwner"
+               ShowInTaskbar="False">
+    <StackPanel Margin="12"
+                Orientation="Vertical"
+                Spacing="8">
+        <TextBlock Opacity="0.6"
+                   TextWrapping="Wrap">
+            <Run Text="Pick a previous version of " /><Run FontFamily="Lucida Console, Courier New, monospace"
+                                                           Text="zoo.ini" /><Run Text=" to restore. The current version is archived to history before the restore is applied." />
+        </TextBlock>
+
+        <TextBlock Foreground="Red"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                   Text="{Binding ErrorMessage}"
+                   TextWrapping="Wrap" />
+
+        <!-- Snapshot history, newest first -->
+        <DataGrid AutoGenerateColumns="False"
+                  CanUserReorderColumns="False"
+                  CanUserResizeColumns="True"
+                  CanUserSortColumns="False"
+                  Height="140"
+                  IsReadOnly="True"
+                  ItemsSource="{Binding Rows}"
+                  SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+                  SelectionMode="Single">
+            <DataGrid.Styles>
+                <Style Selector="DataGridColumnHeader">
+                    <Setter Property="HorizontalContentAlignment"
+                            Value="Stretch" />
+                </Style>
+            </DataGrid.Styles>
+
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Captured"
+                                        Width="45*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="models:IniHistoryRow">
+                            <TextBlock FontFamily="Consolas"
+                                       FontSize="11"
+                                       Margin="4 0"
+                                       Text="{Binding CapturedText}"
+                                       VerticalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Binding="{Binding TriggerText}"
+                                    Header="Trigger"
+                                    Width="30*" />
+
+                <DataGridTemplateColumn Width="25*">
+                    <DataGridTemplateColumn.Header>
+                        <TextBlock HorizontalAlignment="Right"
+                                   Margin="4 0"
+                                   Text="Δ keys" />
+                    </DataGridTemplateColumn.Header>
+
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="models:IniHistoryRow">
+                            <TextBlock FontFamily="Consolas"
+                                       HorizontalAlignment="Right"
+                                       Margin="4 0"
+                                       Text="{Binding DeltaText}"
+                                       VerticalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Caption row -->
+        <Grid ColumnDefinitions="*, Auto"
+              IsVisible="{Binding !HasError}">
+            <TextBlock FontSize="11"
+                       Opacity="0.6"
+                       Text="Diff: values from the selected snapshot replace the current ones on restore." />
+
+            <TextBlock Grid.Column="1"
+                       FontSize="11"
+                       Opacity="0.6"
+                       Text="{Binding ChangeCountText}" />
+        </Grid>
+
+        <!-- Differences of the selected snapshot: a header row and a scrolling list in a sunken frame, so the rows are not selectable -->
+        <ClassicBorderDecorator Background="White"
+                                BorderStyle="Sunken"
+                                BorderThickness="2"
+                                Height="140"
+                                IsVisible="{Binding !HasError}">
+            <Panel>
+                <Grid IsVisible="{Binding !HasNoDifferences}"
+                      RowDefinitions="Auto, *">
+                    <Border Background="Silver"
+                            BorderBrush="Gray"
+                            BorderThickness="0 0 0 1">
+                        <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
+                              Margin="6 3"
+                              TextElement.FontSize="11">
+                            <TextBlock Text="Key" />
+
+                            <TextBlock Grid.Column="1"
+                                       Text="Current" />
+
+                            <TextBlock Grid.Column="2"
+                                       Text="Snapshot" />
+                        </Grid>
+                    </Border>
+
+                    <ScrollViewer Grid.Row="1"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding DiffRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:IniHistoryDiffRow">
+                                    <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
+                                          Margin="6 2"
+                                          TextElement.FontFamily="Consolas"
+                                          TextElement.FontSize="11">
+                                        <TextBlock>
+                                            <Run Foreground="Gray"
+                                                 Text="{Binding SectionText}" /><Run Text="/" /><Run Text="{Binding KeyText}" />
+                                        </TextBlock>
+
+                                        <TextBlock Foreground="Maroon"
+                                                   Grid.Column="1"
+                                                   Text="{Binding CurrentText}" />
+
+                                        <TextBlock Foreground="Navy"
+                                                   Grid.Column="2"
+                                                   Text="{Binding SnapshotText}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+
+                <TextBlock FontStyle="Italic"
+                           HorizontalAlignment="Center"
+                           IsVisible="{Binding HasNoDifferences}"
+                           Margin="14"
+                           Opacity="0.6"
+                           Text="No differences — this snapshot matches the current state."
+                           TextAlignment="Center"
+                           VerticalAlignment="Top" />
+            </Panel>
+        </ClassicBorderDecorator>
+
+        <TextBlock FontSize="11"
+                   Foreground="Maroon"
+                   IsVisible="{Binding HasKeptKeys}"
+                   Text="{Binding KeptKeysText}"
+                   TextWrapping="Wrap" />
+
+        <StackPanel HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="6">
+            <Button Command="{Binding RestoreCommand}"
+                    Content="Restore"
+                    IsDefault="True"
+                    MinWidth="75" />
+
+            <Button Command="{Binding CancelCommand}"
+                    Content="Cancel"
+                    IsCancel="True"
+                    MinWidth="75" />
+        </StackPanel>
+    </StackPanel>
+</ClassicWindow>

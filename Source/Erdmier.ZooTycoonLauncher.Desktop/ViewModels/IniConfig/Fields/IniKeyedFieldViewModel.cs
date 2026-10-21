@@ -30,6 +30,9 @@ public abstract class IniKeyedFieldViewModel : IniFieldViewModel
     /// <inheritdoc />
     public override bool IsDirty => !Spec.AreEquivalent(CurrentRaw, Spec.EffectiveValue(Baseline));
 
+    /// <inheritdoc />
+    public override bool IsAtDefault => Spec.AreEquivalent(CurrentRaw, Spec.DefaultValue);
+
     /// <summary>The control's current value as INI text, or <see langword="null" /> when the control is empty.</summary>
     protected abstract string? CurrentRaw { get; }
 
@@ -45,6 +48,14 @@ public abstract class IniKeyedFieldViewModel : IniFieldViewModel
     public override void Reset()
     {
         ApplyValue(Spec.EffectiveValue(Baseline));
+
+        NotifyValueChanged();
+    }
+
+    /// <inheritdoc />
+    public override void ResetToDefault()
+    {
+        ApplyValue(Spec.DefaultValue);
 
         NotifyValueChanged();
     }

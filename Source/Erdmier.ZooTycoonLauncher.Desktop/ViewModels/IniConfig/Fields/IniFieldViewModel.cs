@@ -38,6 +38,9 @@ public abstract partial class IniFieldViewModel : ViewModelBase
     /// <summary>Whether the row's value differs from what was loaded.</summary>
     public virtual bool IsDirty => false;
 
+    /// <summary>Whether the control already shows the key's factory default; <see langword="true" /> for a derived row, which has nothing of its own to reset.</summary>
+    public virtual bool IsAtDefault => true;
+
     /// <summary>Sets the row's baseline from the loaded raw value and resets the control to it.</summary>
     /// <param name="raw">The raw value from <c>Current</c>, or <see langword="null" /> when the key is absent.</param>
     public virtual void Load(string? raw)
@@ -45,6 +48,10 @@ public abstract partial class IniFieldViewModel : ViewModelBase
 
     /// <summary>Discards the row's edit, returning the control to the baseline.</summary>
     public virtual void Reset()
+    { }
+
+    /// <summary>Sets the control to the key's factory default as an unsaved edit; the baseline is untouched.</summary>
+    public virtual void ResetToDefault()
     { }
 
     /// <summary>Returns the row's edit as a raw INI value when the row is dirty.</summary>

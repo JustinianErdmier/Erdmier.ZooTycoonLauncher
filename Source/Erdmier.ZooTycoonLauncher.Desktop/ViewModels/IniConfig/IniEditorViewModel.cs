@@ -2,7 +2,7 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig;
 
 /// <summary>
 ///     The INI Config editor (SDD §9.3): a section list, the selected section's form, and a footer whose label shows the active row's help, then the unsaved-changes marker, then
-///     the saved state. Save sends only the dirty rows; Revert reloads from disk.
+///     the saved state. Save sends only the dirty rows; Reset reloads from disk.
 /// </summary>
 public sealed partial class IniEditorViewModel : ViewModelBase
 {
@@ -29,10 +29,10 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public IniEditorViewModel()
-        : this(Guid.Empty, new NoOpDialogService(), new IniConfigResult(new Dictionary<IniKeyId, string?>(), DateTime.UtcNow))
+        : this(Guid.Empty, new NoOpDialogService(), new IniConfigResult(new Dictionary<IniKeyId, string?>(), DateTime.UtcNow, HistoricalCount: 0))
     { }
 
-    // Mediator-less core (the GeneralTabViewModel pattern): the designer leaves _mediator null, which disables Save and Revert.
+    // Mediator-less core (the GeneralTabViewModel pattern): the designer leaves _mediator null, which disables Save, Reset and Restore defaults.
     private IniEditorViewModel(Guid installationId, IDialogService dialogs, IniConfigResult initial)
     {
         _installationId = installationId;
@@ -59,12 +59,19 @@ public sealed partial class IniEditorViewModel : ViewModelBase
     /// <summary><see langword="true" /> while a save or reload is in flight; disables the pane and the footer commands.</summary>
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(SaveCommand)) ]
-    [ NotifyCanExecuteChangedFor(nameof(RevertCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(ResetCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(RestoreDefaultsCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(RestorePreviousCommand)) ]
     public partial bool IsBusy { get; set; }
 
     /// <summary>The file's last-write time (UTC), shown localised in the footer.</summary>
     [ ObservableProperty ]
     public partial DateTime FileLastWriteUtc { get; set; }
+
+    /// <summary>How many historical snapshots the installation has; Restore previous is available only when this is above zero.</summary>
+    [ ObservableProperty ]
+    [ NotifyCanExecuteChangedFor(nameof(RestorePreviousCommand)) ]
+    public partial int HistoricalCount { get; set; }
 
     /// <summary>The hovered or focused row's help, or <see langword="null" />.</summary>
     [ ObservableProperty ]
@@ -96,6 +103,7 @@ public sealed partial class IniEditorViewModel : ViewModelBase
     public void Load(IniConfigResult result)
     {
         FileLastWriteUtc = result.FileLastWriteUtc;
+        HistoricalCount  = result.HistoricalCount;
 
         foreach (IniFieldViewModel field in AllFields)
         {
@@ -139,7 +147,7 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         if (_mediator is not { } mediator
             || IsBusy)
         {
-            // IsBusy without a _pendingSave means a revert is already in flight; a save cannot safely race it, so this call reports failure without touching the mediator.
+            // IsBusy without a _pendingSave means a reset is already in flight; a save cannot safely race it, so this call reports failure without touching the mediator.
             return Task.FromResult(false);
         }
 
@@ -214,11 +222,14 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
     partial void OnFileLastWriteUtcChanged(DateTime value) => RaiseFooterChanged();
 
-    [ RelayCommand(CanExecute = nameof(CanSaveOrRevert)) ]
+    [ RelayCommand(CanExecute = nameof(CanSaveOrReset)) ]
     private Task SaveAsync(CancellationToken cancellationToken) => TrySaveAsync(cancellationToken);
 
-    [ RelayCommand(CanExecute = nameof(CanSaveOrRevert)) ]
-    private async Task RevertAsync(CancellationToken cancellationToken)
+    [ RelayCommand(CanExecute = nameof(CanSaveOrReset)) ]
+    private Task ResetAsync(CancellationToken cancellationToken) => ReloadAsync(cancellationToken);
+
+    // Reloads the form from disk (Reset, and a cancelled Restore previous, which may have changed nothing but must not leave stale state).
+    private async Task ReloadAsync(CancellationToken cancellationToken)
     {
         if (_mediator is null)
         {
@@ -229,7 +240,20 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
         try
         {
-            ErrorOr<IniConfigResult> result = await _mediator.Send(new GetIniConfigQuery(_installationId), cancellationToken);
+            await ReloadCoreAsync(_mediator, cancellationToken);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    // The reload itself, without touching IsBusy, so a caller that already holds the busy flag (Restore previous) can reuse it.
+    private async Task ReloadCoreAsync(IMediator mediator, CancellationToken cancellationToken)
+    {
+        try
+        {
+            ErrorOr<IniConfigResult> result = await mediator.Send(new GetIniConfigQuery(_installationId), cancellationToken);
 
             if (result.IsError)
             {
@@ -244,13 +268,82 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         {
             await _dialogs.ShowErrorAsync(title: "Cannot Reload zoo.ini", $"zoo.ini could not be reloaded: {ex.Message}");
         }
+    }
+
+    // Opens the Restore Previous INI dialogue behind the standard unsaved-changes prompt, then reloads the editor from whatever the dialogue left on disk.
+    [ RelayCommand(CanExecute = nameof(CanRestorePrevious)) ]
+    private async Task RestorePreviousAsync(CancellationToken cancellationToken)
+    {
+        if (HasPendingChanges)
+        {
+            switch (await _dialogs.ShowSaveChangesPromptAsync())
+            {
+                case SaveChangesChoice.Yes:
+                    if (!await TrySaveAsync(cancellationToken))
+                    {
+                        return;
+                    }
+
+                    break;
+
+                case SaveChangesChoice.No:
+                    DiscardChanges();
+
+                    break;
+
+                default:
+                    return;
+            }
+        }
+
+        if (_mediator is not { } mediator)
+        {
+            return;
+        }
+
+        // Busy from here until the final load, so the form cannot be edited (and then overwritten by the load) while the history or the dialogue is open.
+        IsBusy = true;
+
+        try
+        {
+            IniConfigResult? restored = await _dialogs.ShowRestorePreviousIniAsync(_installationId);
+
+            if (restored is not null)
+            {
+                Load(restored);
+
+                return;
+            }
+
+            await ReloadCoreAsync(mediator, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await _dialogs.ShowErrorAsync(title: "Cannot Restore zoo.ini", $"Restore Previous INI could not be opened: {ex.Message}");
+        }
         finally
         {
             IsBusy = false;
         }
     }
 
-    private bool CanSaveOrRevert() => HasPendingChanges && !IsBusy && _mediator is not null;
+    private bool CanRestorePrevious() => !IsBusy && _mediator is not null && HistoricalCount > 0;
+
+    private bool CanSaveOrReset() => HasPendingChanges && !IsBusy && _mediator is not null;
+
+    // Loads every setting's default into the form as unsaved edits; nothing is written until Save.
+    [ RelayCommand(CanExecute = nameof(CanRestoreDefaults)) ]
+    private void RestoreDefaults()
+    {
+        foreach (IniFieldViewModel field in AllFields)
+        {
+            field.ResetToDefault();
+        }
+
+        RaiseDirtyChanged();
+    }
+
+    private bool CanRestoreDefaults() => !IsBusy && _mediator is not null && AllFields.Any(field => !field.IsAtDefault);
 
     private void OnFieldPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
@@ -290,7 +383,9 @@ public sealed partial class IniEditorViewModel : ViewModelBase
         RaiseFooterChanged();
 
         SaveCommand.NotifyCanExecuteChanged();
-        RevertCommand.NotifyCanExecuteChanged();
+        ResetCommand.NotifyCanExecuteChanged();
+        RestoreDefaultsCommand.NotifyCanExecuteChanged();
+        RestorePreviousCommand.NotifyCanExecuteChanged();
     }
 
     private void RaiseFooterChanged()
@@ -322,6 +417,10 @@ file sealed class NoOpDialogService : IDialogService
     public Task<string?> PickFolderAsync(string? startPath) => Task.FromResult<string?>(result: null);
 
     public Task<SaveChangesChoice> ShowSaveChangesPromptAsync() => Task.FromResult(SaveChangesChoice.Cancel);
+
+    public Task<bool> ShowConfirmationAsync(string title, string message) => Task.FromResult(false);
+
+    public Task<IniConfigResult?> ShowRestorePreviousIniAsync(Guid installationId) => Task.FromResult<IniConfigResult?>(null);
 
     public Task ShowErrorAsync(string title, string message) => Task.CompletedTask;
 }

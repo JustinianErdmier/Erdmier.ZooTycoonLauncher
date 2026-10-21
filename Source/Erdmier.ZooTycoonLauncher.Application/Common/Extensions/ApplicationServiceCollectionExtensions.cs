@@ -20,6 +20,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
 
         services.AddSingleton<IniReconciler>();
+        services.AddScoped<IniWritePipeline>();
         services.AddScoped<IIniSnapshotService, IniSnapshotService>();
 
         return services;

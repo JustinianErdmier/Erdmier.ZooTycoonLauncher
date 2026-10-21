@@ -32,7 +32,7 @@ public sealed class GetIniConfigHandlerTests
         installations.GetByIdAsync(row.Id, Arg.Any<CancellationToken>())
                      .Returns(row);
 
-        IniConfigResult     expected  = new(new Dictionary<IniKeyId, string?>(), IniTestData.Now);
+        IniConfigResult     expected  = new(new Dictionary<IniKeyId, string?>(), IniTestData.Now, HistoricalCount: 0);
         IIniSnapshotService snapshots = Substitute.For<IIniSnapshotService>();
 
         snapshots.LoadAsync(row, Arg.Any<CancellationToken>())

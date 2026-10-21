@@ -333,6 +333,7 @@ public sealed class IniFieldViewModelTests
 
         return (language, subLanguage, picker);
     }
+
     [ Fact ]
     public void SelectedOption_Set_RaisesChangeOnceAfterBothWrites()
     {

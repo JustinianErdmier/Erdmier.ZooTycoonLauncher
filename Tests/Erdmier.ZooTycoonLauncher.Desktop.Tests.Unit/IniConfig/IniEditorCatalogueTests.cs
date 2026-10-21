@@ -40,6 +40,7 @@ public sealed class IniEditorCatalogueTests
         => AllFields.Where(field => field.IsReadOnly)
                     .Select(field => field.Id)
                     .ShouldBe([ IniEditorCatalogue.LanguageId, IniEditorCatalogue.SubLanguageId ], ignoreOrder: true);
+
     [ Fact ]
     public void CashRows_AreCurrency()
     {

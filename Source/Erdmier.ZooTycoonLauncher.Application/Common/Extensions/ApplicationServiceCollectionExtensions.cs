@@ -25,6 +25,7 @@ public static class ApplicationServiceCollectionExtensions
 
         services.AddSingleton<IniReconciler>();
         services.AddScoped<IniWritePipeline>();
+        services.AddScoped<IniRecoverySteps>();
         services.AddScoped<IIniSnapshotService, IniSnapshotService>();
 
         return services;

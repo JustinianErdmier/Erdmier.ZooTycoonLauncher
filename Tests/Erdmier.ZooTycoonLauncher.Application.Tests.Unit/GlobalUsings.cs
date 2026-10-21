@@ -21,6 +21,7 @@ global using Erdmier.ZooTycoonLauncher.Application.Game.Launch;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Common;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Get;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.History;
+global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Recovery;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Restore;
 global using Erdmier.ZooTycoonLauncher.Application.IniConfig.Save;
 global using Erdmier.ZooTycoonLauncher.Application.Tests.Unit.Common;

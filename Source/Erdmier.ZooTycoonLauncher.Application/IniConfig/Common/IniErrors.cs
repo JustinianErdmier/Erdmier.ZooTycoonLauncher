@@ -28,6 +28,21 @@ public static class IniErrors
     /// <returns>An unexpected error coded <c>Ini.StoreFailed</c>.</returns>
     public static Error StoreFailed(string message) => Error.Unexpected(code: "Ini.StoreFailed", $"The installation's settings history could not be read or updated: {message}");
 
+    /// <summary><c>zoo.ini</c> appeared before Create or Locate could write it, so nothing was written.</summary>
+    /// <param name="installationPath">The installation folder.</param>
+    /// <returns>A conflict coded <c>Ini.AlreadyExists</c>.</returns>
+    public static Error AlreadyExists(string installationPath) => Error.Conflict(code: "Ini.AlreadyExists", $"zoo.ini already exists in \"{installationPath}\", so nothing was written.");
+
+    /// <summary>The chosen file does not look like a Zoo Tycoon <c>zoo.ini</c>.</summary>
+    /// <param name="sourcePath">The chosen file's path; only its file name is shown.</param>
+    /// <returns>A validation error coded <c>Ini.NotAnIni</c>.</returns>
+    public static Error NotAnIni(string sourcePath) => Error.Validation(code: "Ini.NotAnIni", $"\"{Path.GetFileName(sourcePath)}\" does not look like a Zoo Tycoon zoo.ini.");
+
+    /// <summary>Writing <c>zoo.ini</c> was denied because the folder or the file is read-only.</summary>
+    /// <param name="access">The probed write access; must be <see cref="InstallationWriteAccess.FolderReadOnly" /> or <see cref="InstallationWriteAccess.FileReadOnly" />.</param>
+    /// <returns>A failure coded <c>Ini.ReadOnly</c> carrying the read-only explanation.</returns>
+    public static Error ReadOnly(InstallationWriteAccess access) => Error.Failure(code: "Ini.ReadOnly", IniReadOnlyText.For(access)!);
+
     /// <summary>The snapshot chosen for restoring no longer exists.</summary>
     /// <param name="snapshotId">The missing snapshot id.</param>
     /// <returns>A not-found error coded <c>Ini.SnapshotNotFound</c>.</returns>

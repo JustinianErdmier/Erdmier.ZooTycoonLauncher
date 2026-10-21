@@ -63,16 +63,16 @@ System.IO.Abstractions, xUnit 2.9 + Shouldly + NSubstitute.
 `Render()` format: for each name in `ZooIniDefaults.Sections`, `[name]` then `key=value` for that section's specs (registry order, registry key casing) whose
 `DefaultValue` is non-null; one blank line between sections; every line ends `\r\n`, including the last.
 
-- [ ] **Step 1: Write the failing tests** in `ZooIniDefaultDocumentTests`:
+- [x] **Step 1: Write the failing tests** in `ZooIniDefaultDocumentTests`:
   - `Render_StartsWithTheUserSection`: with `first = ZooIniDefaults.Keys[0]`, the text starts with `$"[user]\r\n{first.Id.Key}={first.DefaultValue}\r\n"`.
   - `Render_UsesCrlfOnly`: no `\n` without a preceding `\r`; ends with `"\r\n"`; contains `"\r\n\r\n[UI]\r\n"`.
   - `Render_OmitsKeysWithNoDefault`: contains no `lastfile=`, `lastWindowX=`, `progresscalls=`; contains `showUserEntityWarning=0` and `startedFirstTutorial=0`.
   - `Create_ExtractsEveryDefault`: `ZooIniDefaults.ExtractValues(ZooIniDefaultDocument.Create())` holds, for every spec with a non-null `DefaultValue`, that value.
   - `Render_HasNoScenarioSection`: does not contain `[scenario]`.
-- [ ] **Step 2: Run** the Domain test project with `--filter "FullyQualifiedName~ZooIniDefaultDocumentTests"` → fails to compile.
-- [ ] **Step 3: Implement** both types (XML docs cite SDD §7.4 and the spec's C1).
-- [ ] **Step 4: Run** the filter, then the whole Domain project → pass.
-- [ ] **Step 5: Commit** — `feat(✨): build a default zoo.ini from the INI registry`
+- [x] **Step 2: Run** the Domain test project with `--filter "FullyQualifiedName~ZooIniDefaultDocumentTests"` → fails to compile.
+- [x] **Step 3: Implement** both types (XML docs cite SDD §7.4 and the spec's C1).
+- [x] **Step 4: Run** the filter, then the whole Domain project → pass.
+- [x] **Step 5: Commit** — `feat(✨): build a default zoo.ini from the INI registry`
 
 ---
 
@@ -101,15 +101,15 @@ Probe algorithm (C6): if `zoo.ini` exists and has `FileAttributes.ReadOnly` → 
 content) and delete it: success → `Writable`; `UnauthorizedAccessException` → `FolderReadOnly`; any other exception → `Unknown` (log at `Debug`). A delete failure
 after a successful create is logged as a warning and does not change the result. Never throws.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `IniFileStoreTests`: `TryCreate_WritesTheTextWhenAbsent` (Latin-1 round trip incl. `é`, returns true, no `*.tmp.*` left); `TryCreate_ExistingFile_ReturnsFalseAndKeepsIt`
     (pre-existing content unchanged, no temp left); `ReadExternal_ReturnsLatin1Text`; `ReadExternal_OverLimit_ReturnsNull` (`maxBytes: 4` on a 5-byte file).
   - `InstallationWriteProbeTests` (real temp directory per test, cleaned up): `Probe_WritableFolder_IsWritable_AndLeavesNoFile`;
     `Probe_ReadOnlyIniAttribute_IsFileReadOnly` (clear the attribute in `finally`); `Probe_MissingFolder_IsUnknown`.
-- [ ] **Step 2: Run** the two filters → compile failure.
-- [ ] **Step 3: Implement** the store methods and the probe (inject `IFileSystem` and `ILogger<InstallationWriteProbe>`), and the DI registration.
-- [ ] **Step 4: Run** the filters, then the whole Infrastructure project and the Architecture project → pass.
-- [ ] **Step 5: Commit** — `feat(✨): add a create-only INI write and an installation write probe`
+- [x] **Step 2: Run** the two filters → compile failure.
+- [x] **Step 3: Implement** the store methods and the probe (inject `IFileSystem` and `ILogger<InstallationWriteProbe>`), and the DI registration.
+- [x] **Step 4: Run** the filters, then the whole Infrastructure project and the Architecture project → pass.
+- [x] **Step 5: Commit** — `feat(✨): add a create-only INI write and an installation write probe`
 
 ---
 
@@ -145,7 +145,7 @@ exception → `ReadFailed(ex.Message)`), and requires a section header whose nam
 handlers return `InstallationNotFound` for an unknown id. Validators: id not empty (`"An installation must be specified."`); `SourcePath` not empty and rooted
 (`"Choose a file to copy."`).
 
-- [ ] **Step 1: Write the failing tests** (substitutes for the store, probe, repository, snapshot service, publisher, clock, logger):
+- [x] **Step 1: Write the failing tests** (substitutes for the store, probe, repository, snapshot service, publisher, clock, logger):
   - `Create_WritesTheDefaultDocument_SetsHasIni_PublishesAndSynchronises` — `TryCreateAsync` received `ZooIniDefaultDocument.Render()`; `UpdateAsync` got
     `HasIni == true`; one `InstallationChangedMessage`; `SynchroniseAsync` called once **after** `UpdateAsync` (`Received.InOrder`); result validity `Valid` for a row
     with `HasExe`.
@@ -160,10 +160,10 @@ handlers return `InstallationNotFound` for an unknown id. Validators: id not emp
   - `Locate_NoRecognisedSection_ReturnsNotAnIni`; `Locate_EmptyFile_ReturnsNotAnIni`; `Locate_OverLimit_ReturnsNotAnIni`; `Locate_SourceUnreadable_ReturnsReadFailed`;
     in each, `TryCreateAsync` not received.
   - `LocateIniValidatorTests`: empty id, empty path, relative path each fail with the messages above; a rooted path passes.
-- [ ] **Step 2: Run** `--filter "FullyQualifiedName~CreateDefaultIni|FullyQualifiedName~LocateIni"` on the Application test project → compile failure.
-- [ ] **Step 3: Implement** the files above.
-- [ ] **Step 4: Run** the filter, then the whole Application project and the Architecture project → pass.
-- [ ] **Step 5: Commit** — `feat(✨): create or locate a missing zoo.ini`
+- [x] **Step 2: Run** `--filter "FullyQualifiedName~CreateDefaultIni|FullyQualifiedName~LocateIni"` on the Application test project → compile failure.
+- [x] **Step 3: Implement** the files above.
+- [x] **Step 4: Run** the filter, then the whole Application project and the Architecture project → pass.
+- [x] **Step 5: Commit** — `feat(✨): create or locate a missing zoo.ini`
 
 ---
 
@@ -181,15 +181,15 @@ handlers return `InstallationNotFound` for an unknown id. Validators: id not emp
 `BootHandler.VerifyAsync`: when `result.HasExe`, probe once and put the value on both the Cannot Play and Ready to Play results (not when `zoo.exe` is missing). The
 pipeline's write-failure catch: `UnauthorizedAccessException` → probe → `ReadOnly(access)` for the two read-only values, else today's `WriteFailed`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `BootHandlerTests`: `Boot_ReadyToPlay_CarriesTheProbeResult` (`FolderReadOnly`); `Boot_NoIni_StillProbes` (`CannotPlay` carries `Writable`);
     `Boot_NoExe_DoesNotProbe` (probe not received, `Unknown`).
   - `IniWritePipelineTests`: `Write_AccessDenied_FileReadOnly_ReturnsReadOnly` (code `Ini.ReadOnly`, description = `IniReadOnlyText.For(FileReadOnly)`, transaction
     rolled back as today); `Write_AccessDenied_ProbeWritable_ReturnsWriteFailed`.
-- [ ] **Step 2: Run** `--filter "FullyQualifiedName~BootHandlerTests|FullyQualifiedName~IniWritePipelineTests"` → fail.
-- [ ] **Step 3: Implement**; update every existing construction site and test fixture for the new constructor parameter (substitute returns `Writable`).
-- [ ] **Step 4: Run** the filter, then the whole Application project → pass.
-- [ ] **Step 5: Commit** — `feat(✨): detect read-only installations at boot and explain failed writes`
+- [x] **Step 2: Run** `--filter "FullyQualifiedName~BootHandlerTests|FullyQualifiedName~IniWritePipelineTests"` → fail.
+- [x] **Step 3: Implement**; update every existing construction site and test fixture for the new constructor parameter (substitute returns `Writable`).
+- [x] **Step 4: Run** the filter, then the whole Application project → pass.
+- [x] **Step 5: Commit** — `feat(✨): detect read-only installations at boot and explain failed writes`
 
 ---
 
@@ -221,16 +221,16 @@ Placeholder behaviour (spec §5.3, C9): body text and button labels from C9; `Cr
 errors → `ShowErrorAsync("Cannot Create zoo.ini" | "Cannot Copy zoo.ini", description)`, log warning, stay. Exceptions → log error, same dialogue with
 `"zoo.ini could not be created: {message}"`. The view shows the two buttons under the body (left-aligned, `Spacing="6"`, `MinWidth="75"`) only when `HasActions`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
   - `IniPlaceholderViewModelTests`: `Create_Success_ReopensOnTheIniTab`; `Create_AlreadyExists_ReopensOnTheIniTab`; `Create_Fails_ShowsErrorAndStays` (title
     `Cannot Create zoo.ini`, no reopen); `Locate_Cancelled_SendsNothing`; `Locate_Success_SendsTheChosenPathAndReopens`; `Commands_DisabledWhileBusy` (a
     never-completing send; `CanExecute` false for both); `NonNoIniCases_HaveNoActions`.
   - `PlayViewModelTests`: `InitialTabIndex_SelectsTheIniTab`.
   - `IniConfigTabViewModelTests`: the No INI content is a placeholder with `HasActions`.
-- [ ] **Step 2: Run** the Desktop filters → fail.
-- [ ] **Step 3: Implement**; update the designer constructors and every construction site.
-- [ ] **Step 4: Run** the whole Desktop project and the Architecture project → pass.
-- [ ] **Step 5: Commit** — `feat(✨): offer Create and Locate on the INI tab's No INI box`
+- [x] **Step 2: Run** the Desktop filters → fail.
+- [x] **Step 3: Implement**; update the designer constructors and every construction site.
+- [x] **Step 4: Run** the whole Desktop project and the Architecture project → pass.
+- [x] **Step 5: Commit** — `feat(✨): offer Create and Locate on the INI tab's No INI box`
 
 ---
 
@@ -250,12 +250,12 @@ path (as `InitialiseAsync` does) so the group flips to *INI present*, and sets `
 text, maroon, like `ExeErrorMessage`). View: replace the static `Create` button with a right-docked vertical `StackPanel` (`Spacing="6"`) holding `Create` and
 `Locate…`; the missing-INI text becomes C9's Fix INI copy.
 
-- [ ] **Step 1: Write the failing tests:** `CreateIni_Success_FlipsToIniPresentAndMarksChanged`; `CreateIni_AlreadyExists_Reprobes`; `CreateIni_Fails_ShowsInlineError`;
+- [x] **Step 1: Write the failing tests:** `CreateIni_Success_FlipsToIniPresentAndMarksChanged`; `CreateIni_AlreadyExists_Reprobes`; `CreateIni_Fails_ShowsInlineError`;
   `IniActions_DisabledWithoutExe` (an `InvalidNoExeOrIni` installation); `LocateIni_Cancelled_SendsNothing`.
-- [ ] **Step 2: Run** the filter → fail.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the whole Desktop project → pass.
-- [ ] **Step 5: Commit** — `feat(✨): repair a missing zoo.ini from the Fix Installation dialogue`
+- [x] **Step 2: Run** the filter → fail.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the whole Desktop project → pass.
+- [x] **Step 5: Commit** — `feat(✨): repair a missing zoo.ini from the Fix Installation dialogue`
 
 ---
 
@@ -274,12 +274,12 @@ text, maroon, like `ExeErrorMessage`). View: replace the static `Create` button 
 The strip sits above the tab's content (editor, No INI box or placeholder): `warning16`-style icon (`/Assets/Win95Icons/warning32.gif` at 16 px), maroon text,
 wrapping, visible only when `HasReadOnlyWarning`. General tab, Cannot Play with only the INI missing: append C10's sentence to the existing message.
 
-- [ ] **Step 1: Write the failing tests:** `ReadOnlyWarning_FolderReadOnly_ShowsTheFolderText`; `ReadOnlyWarning_FileReadOnly_ShowsTheFileText`;
+- [x] **Step 1: Write the failing tests:** `ReadOnlyWarning_FolderReadOnly_ShowsTheFolderText`; `ReadOnlyWarning_FileReadOnly_ShowsTheFileText`;
   `ReadOnlyWarning_WritableOrUnknown_IsHidden`; `GeneralTab_MissingOnlyIni_PointsAtTheIniTab` (message contains `Use the INI Config tab to create or locate one.`).
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the whole Desktop project and the Architecture project → pass.
-- [ ] **Step 5: Commit** — `feat(✨): warn on the INI tab when an installation is read-only`
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the whole Desktop project and the Architecture project → pass.
+- [x] **Step 5: Commit** — `feat(✨): warn on the INI tab when an installation is read-only`
 
 ---
 
@@ -289,13 +289,13 @@ wrapping, visible only when `HasReadOnlyWarning`. General tab, Cannot Play with 
 - Modify: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`, `Docs/UserInterfaceDesign/conventions.md` (§4.1 icon table: the read-only strip's icon; only if a new
   icon site exists), `Docs/TestPlans/manual-end-to-end-tests.md` (add a short "INI recovery" stub in the existing stub style)
 
-- [ ] **Step 1: SDD** per the spec's §8: §7.4 (replace the MVP note and button list with the two actions as built, C2–C4), §7.2.5 (*Fix INI* options; Copy From
+- [x] **Step 1: SDD** per the spec's §8: §7.4 (replace the MVP note and button list with the two actions as built, C2–C4), §7.2.5 (*Fix INI* options; Copy From
   Another out), §7.1.2 Verify (the write probe and its four results), §9.3.1 (No INI case: buttons, read-only strip), §9.5 (*Fix INI* group), §14.5 row 9 (MVP
   mitigation implemented), §13.5 (delete DW-01 and DW-12; add **DW-40 — Copy From Another Installation**: SDD §7.4's third action with its installation selector,
   source "Milestone 10 spec"), §13.2 if it lists the No INI placeholder as message-only. Revision **1.12** (Version, Last updated 21 October 2026 or the commit date,
   and a revision-history row in the 1.11 row's shape).
-- [ ] **Step 2: Verify** no changed prose line exceeds 180 characters (PowerShell `.Length`).
-- [ ] **Step 3: Commit** — `docs(📝): document INI recovery and read-only detection in the SDD`
+- [x] **Step 2: Verify** no changed prose line exceeds 180 characters (PowerShell `.Length`).
+- [x] **Step 3: Commit** — `docs(📝): document INI recovery and read-only detection in the SDD`
 
 ---
 
@@ -303,13 +303,13 @@ wrapping, visible only when `HasReadOnlyWarning`. General tab, Cannot Play with 
 
 Run by the controller, which has desktop control; implementers do not.
 
-- [ ] **Step 1: Prepare** a scratch copy of `SampleInstallations/Zoo Tycoon` under the session scratchpad (copy *from* the sample; never write inside it), delete
+- [x] **Step 1: Prepare** a scratch copy of `SampleInstallations/Zoo Tycoon` under the session scratchpad (copy *from* the sample; never write inside it), delete
   the copy's `zoo.ini`, and register it with the launcher's Add dialogue.
-- [ ] **Step 2: Drive** — the INI tab shows the No INI box with both buttons; Create → the window re-boots onto the INI tab with the editor and the General tab is
+- [x] **Step 2: Drive** — the INI tab shows the No INI box with both buttons; Create → the window re-boots onto the INI tab with the editor and the General tab is
   Ready to Play; delete `zoo.ini` again, reopen, Locate the sample's `zoo.ini` (read-only use) → copied, editor shows its values, history holds the archived
   `Current`; mark the copy's `zoo.ini` Read-only, reopen → the file strip shows, and Save gives the read-only message; clear the attribute. Fix dialogue: delete
   `zoo.ini`, Installation Manager → Fix → `Create` flips the group to *INI present*.
-- [ ] **Step 3: Clean up** — delete the scratch installation through the launcher, close the app, delete the scratch folder.
+- [x] **Step 3: Clean up** — delete the scratch installation through the launcher, close the app, delete the scratch folder.
 
 ## Verification
 

@@ -11,7 +11,7 @@
             <TextBlock Text="Installation Profile:" />
 
             <TextBlock Text="{Binding InstallationName}"
-                       FontWeight="Bold" />
+                       FontWeight="{StaticResource FontWeightStrong}" />
         </StackPanel>
 
         <controls:GroupBox Header="Status"
@@ -50,11 +50,11 @@
                 <StackPanel Margin="5 0 0 0"
                             Orientation="Vertical"
                             Spacing="4">
-                    <TextBlock FontWeight="Solid"
+                    <TextBlock FontWeight="{StaticResource FontWeightHeading}"
                                IsVisible="{Binding CanPlay}"
                                Text="Ready to Play" />
 
-                    <TextBlock FontWeight="Solid"
+                    <TextBlock FontWeight="{StaticResource FontWeightHeading}"
                                Foreground="{StaticResource AccentRed}"
                                IsVisible="{Binding !CanPlay}"
                                Text="Cannot Play" />
@@ -262,7 +262,7 @@
                                VerticalAlignment="Top"
                                Width="16" />
 
-                        <TextBlock FontWeight="Bold"
+                        <TextBlock FontWeight="{StaticResource FontWeightStrong}"
                                    Foreground="{StaticResource AccentGreen}"
                                    Text="zoo.exe is configured correctly." />
 
@@ -279,7 +279,7 @@
                                VerticalAlignment="Top"
                                Width="16" />
 
-                        <TextBlock FontWeight="Bold"
+                        <TextBlock FontWeight="{StaticResource FontWeightStrong}"
                                    Foreground="{StaticResource AccentRed}"
                                    Text="zoo.exe is missing." />
 

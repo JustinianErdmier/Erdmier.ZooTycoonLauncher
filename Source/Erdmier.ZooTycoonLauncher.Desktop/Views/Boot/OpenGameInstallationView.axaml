@@ -17,7 +17,7 @@
             <StackPanel Margin="5 0 0 0"
                         Orientation="Vertical"
                         Spacing="4">
-                <TextBlock FontWeight="Solid"
+                <TextBlock FontWeight="{StaticResource FontWeightHeading}"
                            Text="Open Game Installation" />
 
                 <!--TODO: The "No Installation" needs to be monospaced, and "Open" needs to be bold.-->

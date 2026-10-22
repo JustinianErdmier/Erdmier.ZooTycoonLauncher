@@ -1,0 +1,11 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- The launcher's typography, defined once. Views use {StaticResource …} for every font family, size and weight; FontStyle stays a literal. -->
+    <FontFamily x:Key="FontFamilySystem">Microsoft Sans Serif, MS Sans Serif, W95FA, Tahoma, Geneva, sans-serif</FontFamily>
+    <FontFamily x:Key="FontFamilyMono">Lucida Console, Courier New, monospace</FontFamily>
+    <x:Double x:Key="FontSizeBase">11</x:Double>
+    <x:Double x:Key="FontSizeStrong">14</x:Double>
+    <x:Double x:Key="FontSizeAboutTitle">13</x:Double>
+    <FontWeight x:Key="FontWeightStrong">Bold</FontWeight>
+    <FontWeight x:Key="FontWeightHeading">Solid</FontWeight>
+</ResourceDictionary>

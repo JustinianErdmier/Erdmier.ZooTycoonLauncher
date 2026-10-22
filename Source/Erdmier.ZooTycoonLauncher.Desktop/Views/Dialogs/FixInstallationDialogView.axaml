@@ -16,7 +16,7 @@
                 Spacing="10">
         <TextBlock Opacity="0.6"
                    TextWrapping="Wrap">
-            <Run Text="Recover an installation by locating missing files or restoring a fresh INI. The launcher never patches " /><Run FontFamily="Consolas"
+            <Run Text="Recover an installation by locating missing files or restoring a fresh INI. The launcher never patches " /><Run FontFamily="{StaticResource FontFamilyMono}"
                                                                                                                                        Text="zoo.exe" /><Run Text="." />
         </TextBlock>
 
@@ -58,7 +58,7 @@
                                    Text="EXE present" />
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
-                            <Run FontFamily="Consolas"
+                            <Run FontFamily="{StaticResource FontFamilyMono}"
                                  Text="zoo.exe" /><Run Text=" was located at the expected path." />
                         </TextBlock>
                     </StackPanel>
@@ -70,8 +70,8 @@
                                    Text="No EXE found!" />
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
-                            <Run FontFamily="Consolas"
-                                 Text="zoo.exe" /><Run Text=" is missing from this installation's directory. Browse to a folder that contains " /><Run FontFamily="Consolas"
+                            <Run FontFamily="{StaticResource FontFamilyMono}"
+                                 Text="zoo.exe" /><Run Text=" is missing from this installation's directory. Browse to a folder that contains " /><Run FontFamily="{StaticResource FontFamilyMono}"
                                                                                                                                                        Text="zoo.exe" /><Run Text="." />
                         </TextBlock>
                     </StackPanel>
@@ -124,7 +124,7 @@
                                    Text="INI present" />
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
-                            <Run FontFamily="Consolas"
+                            <Run FontFamily="{StaticResource FontFamilyMono}"
                                  Text="zoo.ini" /><Run Text=" was found in the installation folder." />
                         </TextBlock>
                     </StackPanel>
@@ -136,7 +136,7 @@
                                    Text="No INI found" />
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
-                            <Run Text="Create a fresh " /><Run FontFamily="Consolas"
+                            <Run Text="Create a fresh " /><Run FontFamily="{StaticResource FontFamilyMono}"
                                                               Text="zoo.ini" /><Run Text=" from the launcher's defaults, or locate an existing file to copy in. Any earlier values stay in history." />
                         </TextBlock>
                         <TextBlock Foreground="{StaticResource AccentMaroon}"

@@ -22,7 +22,7 @@
             <StackPanel Margin="5 0 0 0"
                         Orientation="Vertical"
                         Spacing="4">
-                <TextBlock FontWeight="Solid"
+                <TextBlock FontWeight="{StaticResource FontWeightHeading}"
                            Text="No Game Installation Found" />
 
                 <TextBlock TextWrapping="Wrap">The auto-locate searched the Windows registry, Program Files, and the previously known directory (if applicable), but did not find a zoo.exe file. Add an installation by pointing the launcher at a folder containing the game.</TextBlock>

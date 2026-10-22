@@ -26,7 +26,7 @@
                  SelectionMode="AlwaysSelected">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:IniSectionViewModel">
-                    <TextBlock FontFamily="Lucida Console, Courier New, monospace"
+                    <TextBlock FontFamily="{StaticResource FontFamilyMono}"
                                Text="{Binding Header}" />
                 </DataTemplate>
             </ListBox.ItemTemplate>
@@ -74,7 +74,7 @@
                            Text="{Binding FooterText}"
                            TextTrimming="CharacterEllipsis" />
 
-                <TextBlock FontWeight="Bold"
+                <TextBlock FontWeight="{StaticResource FontWeightStrong}"
                            Foreground="{StaticResource AccentMaroon}"
                            IsVisible="{Binding IsFooterDirty}"
                            Text="{Binding FooterText}" />

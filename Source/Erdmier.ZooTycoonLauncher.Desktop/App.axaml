@@ -12,6 +12,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Erdmier.ZooTycoonLauncher.Desktop/Styles/Colours.axaml" />
+                <ResourceInclude Source="avares://Erdmier.ZooTycoonLauncher.Desktop/Styles/Typography.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

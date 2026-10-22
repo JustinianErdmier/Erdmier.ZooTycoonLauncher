@@ -17,7 +17,7 @@
                    Width="32" />
 
             <StackPanel Spacing="4">
-                <TextBlock FontWeight="Bold"
+                <TextBlock FontWeight="{StaticResource FontWeightStrong}"
                            Text="{Binding Headline}" />
 
                 <TextBlock Foreground="{StaticResource ForegroundMuted}"
@@ -29,7 +29,7 @@
                 <TextBlock Foreground="{StaticResource ForegroundMuted}"
                            IsVisible="{Binding HasActions}"
                            TextWrapping="Wrap">
-                    <Run Text="This installation has no " /><Run FontFamily="Lucida Console, Courier New, monospace"
+                    <Run Text="This installation has no " /><Run FontFamily="{StaticResource FontFamilyMono}"
                                                                  Text="zoo.ini" /><Run Text=" on disk. Create a fresh one from the launcher's defaults, or locate an existing file to copy in." />
                 </TextBlock>
 

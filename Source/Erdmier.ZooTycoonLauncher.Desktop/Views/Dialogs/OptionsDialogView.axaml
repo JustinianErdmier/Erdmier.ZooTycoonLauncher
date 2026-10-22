@@ -55,7 +55,7 @@
                 <TextBlock Margin="20 0 0 0"
                            Opacity="0.6"
                            TextWrapping="Wrap">
-                    <Run Text="When ticked, the launcher exits as soon as " /><Run FontFamily="Consolas"
+                    <Run Text="When ticked, the launcher exits as soon as " /><Run FontFamily="{StaticResource FontFamilyMono}"
                                                                                    Text="zoo.exe" /><Run Text=" reports started." />
                 </TextBlock>
             </StackPanel>

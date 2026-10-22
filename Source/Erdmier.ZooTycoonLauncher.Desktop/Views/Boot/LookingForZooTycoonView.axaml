@@ -12,7 +12,7 @@
         <StackPanel Margin="5 0 0 0"
                     Orientation="Vertical"
                     Spacing="4">
-            <TextBlock FontWeight="Solid"
+            <TextBlock FontWeight="{StaticResource FontWeightHeading}"
                        Text="Looking for Zoo Tycoon…" />
 
             <ProgressBar HorizontalAlignment="Stretch"

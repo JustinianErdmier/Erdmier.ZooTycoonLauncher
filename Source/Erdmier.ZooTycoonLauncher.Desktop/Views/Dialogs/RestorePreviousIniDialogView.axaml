@@ -16,7 +16,7 @@
                 Spacing="8">
         <TextBlock Opacity="0.6"
                    TextWrapping="Wrap">
-            <Run Text="Pick a previous version of " /><Run FontFamily="Lucida Console, Courier New, monospace"
+            <Run Text="Pick a previous version of " /><Run FontFamily="{StaticResource FontFamilyMono}"
                                                            Text="zoo.ini" /><Run Text=" to restore. The current version is archived to history before the restore is applied." />
         </TextBlock>
 
@@ -49,8 +49,8 @@
                                         Width="45*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate DataType="models:IniHistoryRow">
-                            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
-                                       FontSize="11"
+                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                                       FontSize="{StaticResource FontSizeBase}"
                                        Margin="4 0"
                                        Text="{Binding CapturedText}"
                                        VerticalAlignment="Center" />
@@ -71,7 +71,7 @@
 
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate DataType="models:IniHistoryRow">
-                            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
+                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
                                        HorizontalAlignment="Right"
                                        Margin="4 0"
                                        Text="{Binding DeltaText}"
@@ -85,12 +85,12 @@
         <!-- Caption row -->
         <Grid ColumnDefinitions="*, Auto"
               IsVisible="{Binding !HasError}">
-            <TextBlock FontSize="11"
+            <TextBlock FontSize="{StaticResource FontSizeBase}"
                        Opacity="0.6"
                        Text="Diff: values from the selected snapshot replace the current ones on restore." />
 
             <TextBlock Grid.Column="1"
-                       FontSize="11"
+                       FontSize="{StaticResource FontSizeBase}"
                        Opacity="0.6"
                        Text="{Binding ChangeCountText}" />
         </Grid>
@@ -112,7 +112,7 @@
                               Width="{Binding Bounds.Width, ElementName=DiffItems}">
                             <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
                                   Margin="6 3"
-                                  TextElement.FontSize="11">
+                                  TextElement.FontSize="{StaticResource FontSizeBase}">
                                 <TextBlock Text="Key" />
 
                                 <TextBlock Grid.Column="1"
@@ -134,8 +134,8 @@
                                     <StackPanel>
                                         <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
                                               Margin="6 2"
-                                              TextElement.FontFamily="Lucida Console, Courier New, monospace"
-                                              TextElement.FontSize="11">
+                                              TextElement.FontFamily="{StaticResource FontFamilyMono}"
+                                              TextElement.FontSize="{StaticResource FontSizeBase}">
                                             <TextBlock>
                                                 <Run Foreground="{StaticResource ForegroundMuted}"
                                                      Text="{Binding SectionText}" /><Run Text="/" /><Run Text="{Binding KeyText}" />
@@ -176,7 +176,7 @@
             </Panel>
         </ClassicBorderDecorator>
 
-        <TextBlock FontSize="11"
+        <TextBlock FontSize="{StaticResource FontSizeBase}"
                    Foreground="{StaticResource AccentMaroon}"
                    IsVisible="{Binding HasKeptKeys}"
                    Text="{Binding KeptKeysText}"

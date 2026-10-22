@@ -44,7 +44,7 @@
                                Text="Name:" />
                     <TextBlock Grid.Column="1"
                                Grid.Row="0"
-                               FontWeight="Bold"
+                               FontWeight="{StaticResource FontWeightStrong}"
                                Text="{Binding Name}"
                                TextWrapping="Wrap" />
 
@@ -54,7 +54,7 @@
                                Text="Path:" />
                     <TextBlock Grid.Column="1"
                                Grid.Row="1"
-                               FontFamily="Consolas"
+                               FontFamily="{StaticResource FontFamilyMono}"
                                Text="{Binding Path}"
                                TextWrapping="Wrap" />
 

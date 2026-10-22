@@ -63,7 +63,7 @@
         </controls:GroupBox>
 
         <layout:UniformStack HorizontalAlignment="Right"
-                             Margin="{tokens:Space Vertical=GapLabel}"
+                             Margin="{tokens:Space Top=GapUnrelated}"
                              Spacing="{StaticResource GapRelated}">
             <Button Command="{Binding OkCommand}"
                     Content="OK"

@@ -60,7 +60,7 @@
                                Text="Cannot Play" />
 
                     <Grid ColumnDefinitions="Auto,*"
-                          ColumnSpacing="{StaticResource GapRelated}"
+                          ColumnSpacing="{StaticResource GapUnrelated}"
                           Margin="{tokens:Space Top=GapSmallest}"
                           RowDefinitions="Auto,Auto,Auto"
                           RowSpacing="{StaticResource GapSmallest}">

@@ -19,10 +19,9 @@
     <Thickness x:Key="IconBesideBodyMargin">0,0,5,0</Thickness>
     <Thickness x:Key="IconBesideMessageMargin">0,0,11,0</Thickness>
 
-    <!-- A group box measures its first control from the box's outer top edge, but Padding starts below the header, so the top padding is GroupBoxFirstControl minus the
-         header's height. GroupBoxHeaderHeight is an estimate of Classic.Avalonia's header (one 11 px text line); adjust both it and GroupBoxPadding together if a
-         screenshot shows the first control off the 18 px mark. GroupBoxPadding = left GroupBoxInset (14), top GroupBoxFirstControl (18) - GroupBoxHeaderHeight (14) = 4,
-         right GroupBoxInset (14), bottom GroupBoxBottom (11). An architecture test checks the arithmetic. -->
-    <x:Double x:Key="GroupBoxHeaderHeight">14</x:Double>
-    <Thickness x:Key="GroupBoxPadding">14,4,14,11</Thickness>
+    <!-- A group box measures its first control from the title text's top edge, but Classic.Avalonia's content area (and so Padding) starts at the frame line, which
+         sits GroupBoxHeaderHeight (6 px, measured on screen) below the title's top. GroupBoxPadding = left GroupBoxInset (14), top GroupBoxFirstControl (18) -
+         GroupBoxHeaderHeight (6) = 12, right GroupBoxInset (14), bottom GroupBoxBottom (11). An architecture test checks the arithmetic. -->
+    <x:Double x:Key="GroupBoxHeaderHeight">6</x:Double>
+    <Thickness x:Key="GroupBoxPadding">14,12,14,11</Thickness>
 </ResourceDictionary>

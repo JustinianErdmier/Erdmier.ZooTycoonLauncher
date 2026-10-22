@@ -35,7 +35,7 @@
                     Content="Open"
                     DockPanel.Dock="Right"
                     IsDefault="True"
-                    Padding="{tokens:Space Horizontal=GroupBoxInset}" />
+                    Classes="DialogButton" />
 
             <layout:UniformStack DockPanel.Dock="Left"
                                  Spacing="{StaticResource GapRelated}">

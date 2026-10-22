@@ -43,8 +43,8 @@ public sealed class SpaceExtension : MarkupExtension
     /// <summary>The token name for the bottom side.</summary>
     public string? Bottom { get; set; }
 
-    /// <summary>Resolves a token name to its value, or <see langword="null" /> when it is unknown. Defaults to the running application's resources; tests replace it.</summary>
-    public Func<string, double?>? Resolver { get; set; }
+    /// <summary>Resolves a token name to its resource, or <see langword="null" /> when no such resource exists. Defaults to the running application's resources; tests replace it.</summary>
+    public Func<string, object?>? Resolver { get; set; }
 
     /// <summary>Builds the thickness.</summary>
     /// <param name="serviceProvider">Unused.</param>
@@ -67,11 +67,16 @@ public sealed class SpaceExtension : MarkupExtension
             return 0;
         }
 
-        double? value = Resolver is not null ? Resolver(name) : FromApplication(name);
+        object? resource = Resolver is not null ? Resolver(name) : FromApplication(name);
 
-        return value ?? throw new InvalidOperationException($"Unknown spacing token '{name}'. Spacing tokens are defined in Styles/Spacing.axaml.");
+        return resource switch
+        {
+            double value => value,
+            null => throw new InvalidOperationException($"Unknown spacing token '{name}'. Spacing tokens are defined in Styles/Spacing.axaml."),
+            _ => throw new InvalidOperationException($"'{name}' is not a spacing value (it is a {resource.GetType().Name}). Spacing tokens are defined in Styles/Spacing.axaml.")
+        };
     }
 
-    private static double? FromApplication(string name)
-        => Avalonia.Application.Current is { } application && application.TryGetResource(name, theme: null, out object? value) && value is double number ? number : null;
+    private static object? FromApplication(string name)
+        => Avalonia.Application.Current is { } application && application.TryGetResource(name, theme: null, out object? value) ? value : null;
 }

@@ -64,7 +64,7 @@
 
         <ContentControl Content="{Binding ActiveContent}"
                         DockPanel.Dock="Top"
-                        Margin="{tokens:Space Horizontal=GapLabel, Vertical=GapRelated}" />
+                        Margin="{tokens:Space MarginDialog}" />
         <!--Two cells whilst booting: primary message and version number.-->
         <commonControls:StatusBar IsVisible="{Binding IsBooting}"
                                   DockPanel.Dock="Top"

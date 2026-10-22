@@ -4,16 +4,17 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.Styles;
 
 public sealed class SpaceExtensionTests
 {
-    private static readonly Dictionary<string, double> Tokens = new()
+    private static readonly Dictionary<string, object> Tokens = new()
     {
-        [ "GapLabel" ] = 5,
-        [ "GapRelated" ] = 6,
-        [ "GroupBoxInset" ] = 14,
-        [ "GroupBoxFirstControl" ] = 18
+        [ "GapLabel" ] = 5.0,
+        [ "GapRelated" ] = 6.0,
+        [ "GroupBoxInset" ] = 14.0,
+        [ "GroupBoxFirstControl" ] = 18.0,
+        [ "AccentRed" ] = "#C00000"
     };
 
     private static SpaceExtension Create(string? uniform = null)
-        => new(uniform) { Resolver = name => Tokens.TryGetValue(name, out double value) ? value : null };
+        => new(uniform) { Resolver = name => Tokens.TryGetValue(name, out object? value) ? value : null };
 
     private static Thickness Provide(SpaceExtension extension)
         => (Thickness)extension.ProvideValue(serviceProvider: null!);
@@ -45,6 +46,36 @@ public sealed class SpaceExtensionTests
         extension.Vertical = "GapRelated";
 
         Provide(extension).ShouldBe(new Thickness(horizontal: 14, vertical: 6));
+    }
+
+    [ Fact ]
+    public void Side_OverridesUniform()
+    {
+        SpaceExtension extension = Create(uniform: "GapRelated");
+
+        extension.Top = "GroupBoxFirstControl";
+
+        Provide(extension).ShouldBe(new Thickness(left: 6, top: 18, right: 6, bottom: 6));
+    }
+
+    [ Fact ]
+    public void Left_OverridesHorizontal()
+    {
+        SpaceExtension extension = Create();
+
+        extension.Horizontal = "GapRelated";
+        extension.Left = "GroupBoxInset";
+
+        Provide(extension).ShouldBe(new Thickness(left: 14, top: 0, right: 6, bottom: 0));
+    }
+
+    [ Fact ]
+    public void NonSpacingResource_ThrowsSayingSo()
+    {
+        InvalidOperationException exception = Should.Throw<InvalidOperationException>(() => Provide(Create(uniform: "AccentRed")));
+
+        exception.Message.ShouldContain("AccentRed");
+        exception.Message.ShouldContain("not a spacing value");
     }
 
     [ Fact ]

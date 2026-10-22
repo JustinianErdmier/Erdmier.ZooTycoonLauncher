@@ -32,7 +32,7 @@ the original file's. To move to an even 2 → 14 scale later, remap each token h
 | `Views/Boot/OpenGameInstallationView.axaml` | 17 | `Margin` | `5 0 0 0` | removed (icon gap moved to `IconBesideBody` on the icon) |
 | `Views/Boot/OpenGameInstallationView.axaml` | 19 | `Spacing` | `4` | `GapRelated` |
 | `Views/Boot/OpenGameInstallationView.axaml` | 32 | `HorizontalSpacing` | `8` | `GapRelated` |
-| `Views/Boot/OpenGameInstallationView.axaml` | 38 | `Padding` | `25 0` | `{tokens:Space Horizontal=GroupBoxInset}` |
+| `Views/Boot/OpenGameInstallationView.axaml` | 38 | `Padding` | `25 0` | removed (`Classes="DialogButton"` gives the 75 px minimum width) |
 | `Views/Boot/OpenGameInstallationView.axaml` | 41 | `Spacing` | `8` | `GapRelated` |
 | `Views/Boot/OpenGameInstallationView.axaml` | 44 | `Padding` | `10 0` | `{tokens:Space Horizontal=GapUnrelated}` |
 | `Views/Boot/OpenGameInstallationView.axaml` | 48 | `Padding` | `10 0` | `{tokens:Space Horizontal=GapUnrelated}` |
@@ -49,7 +49,7 @@ the original file's. To move to an even 2 → 14 scale later, remap each token h
 | `Views/Dialogs/AddInstallationDialogView.axaml` | 18 | `HorizontalSpacing` | `10` | `GapRelated` |
 | `Views/Dialogs/AddInstallationDialogView.axaml` | 25 | `Margin` | `5 0 0 0` | removed (icon gap moved to `IconBesideBody` on the icon) |
 | `Views/Dialogs/AddInstallationDialogView.axaml` | 27 | `Spacing` | `4` | `GapRelated` |
-| `Views/Dialogs/AddInstallationDialogView.axaml` | 43 | `Margin` | `0 5` | `{tokens:Space Vertical=GapLabel}` |
+| `Views/Dialogs/AddInstallationDialogView.axaml` | 43 | `Margin` | `0 5` | `{tokens:Space Top=GapUnrelated}` |
 | `Views/Dialogs/AddInstallationDialogView.axaml` | 44 | `Spacing` | `8` | `GapRelated` |
 | `Views/Dialogs/ConfirmationPromptView.axaml` | 23 | `Margin` | `14` | `{tokens:Space MarginDialog}` |
 | `Views/Dialogs/ConfirmationPromptView.axaml` | 24 | `Spacing` | `14` | `GapUnrelated` |
@@ -60,7 +60,7 @@ the original file's. To move to an even 2 → 14 scale later, remap each token h
 | `Views/Dialogs/DeleteInstallationDialogView.axaml` | 17 | `HorizontalSpacing` | `10` | `GapRelated` |
 | `Views/Dialogs/DeleteInstallationDialogView.axaml` | 24 | `Margin` | `5 0 0 0` | removed (icon gap moved to `IconBesideBody` on the icon) |
 | `Views/Dialogs/DeleteInstallationDialogView.axaml` | 26 | `Spacing` | `8` | `GapUnrelated` |
-| `Views/Dialogs/DeleteInstallationDialogView.axaml` | 54 | `Margin` | `0 5` | `{tokens:Space Vertical=GapLabel}` |
+| `Views/Dialogs/DeleteInstallationDialogView.axaml` | 54 | `Margin` | `0 5` | `{tokens:Space Top=GapUnrelated}` |
 | `Views/Dialogs/DeleteInstallationDialogView.axaml` | 55 | `Spacing` | `8` | `GapRelated` |
 | `Views/Dialogs/EditInstallationDialogView.axaml` | 15 | `Margin` | `8` | `{tokens:Space MarginDialog}` |
 | `Views/Dialogs/EditInstallationDialogView.axaml` | 17 | `Spacing` | `10` | `GapUnrelated` |
@@ -68,7 +68,7 @@ the original file's. To move to an even 2 → 14 scale later, remap each token h
 | `Views/Dialogs/EditInstallationDialogView.axaml` | 25 | `Margin` | `5 0 0 0` | removed (icon gap moved to `IconBesideBody` on the icon) |
 | `Views/Dialogs/EditInstallationDialogView.axaml` | 27 | `Spacing` | `4` | `GapRelated` |
 | `Views/Dialogs/EditInstallationDialogView.axaml` | 36 | `Margin` | `0 6 0 0` | `{tokens:Space Top=GapRelated}` |
-| `Views/Dialogs/EditInstallationDialogView.axaml` | 39 | `Margin` | `0 5` | `{tokens:Space Vertical=GapLabel}` |
+| `Views/Dialogs/EditInstallationDialogView.axaml` | 39 | `Margin` | `0 5` | `{tokens:Space Top=GapUnrelated}` |
 | `Views/Dialogs/EditInstallationDialogView.axaml` | 40 | `Spacing` | `8` | `GapRelated` |
 | `Views/Dialogs/ErrorMessageView.axaml` | 24 | `Margin` | `14` | `{tokens:Space MarginDialog}` |
 | `Views/Dialogs/ErrorMessageView.axaml` | 25 | `Spacing` | `14` | `GapUnrelated` |
@@ -93,7 +93,7 @@ the original file's. To move to an even 2 → 14 scale later, remap each token h
 | `Views/Dialogs/InstallationInfoDialogView.axaml` | 30 | `Spacing` | `6` | `GapRelated` |
 | `Views/Dialogs/InstallationInfoDialogView.axaml` | 37 | `ColumnSpacing` | `16` | `GapUnrelated` |
 | `Views/Dialogs/InstallationInfoDialogView.axaml` | 40 | `RowSpacing` | `6` | `GapRelated` |
-| `Views/Dialogs/InstallationInfoDialogView.axaml` | 116 | `Margin` | `0 5` | `{tokens:Space Vertical=GapLabel}` |
+| `Views/Dialogs/InstallationInfoDialogView.axaml` | 116 | `Margin` | `0 5` | `{tokens:Space Top=GapUnrelated}` |
 | `Views/Dialogs/InstallationManagerDialogView.axaml` | 14 | `Margin` | `8` | `{tokens:Space MarginDialog}` |
 | `Views/Dialogs/InstallationManagerDialogView.axaml` | 17 | `Margin` | `0 8 0 0` | `{tokens:Space Top=GapUnrelated}` |
 | `Views/Dialogs/InstallationManagerDialogView.axaml` | 18 | `Spacing` | `8` | `GapRelated` |
@@ -110,7 +110,7 @@ the original file's. To move to an even 2 → 14 scale later, remap each token h
 | `Views/Dialogs/OptionsDialogView.axaml` | 49 | `Padding` | `10 15` | `GroupBoxPadding` |
 | `Views/Dialogs/OptionsDialogView.axaml` | 51 | `Spacing` | `4` | `GapRelated` |
 | `Views/Dialogs/OptionsDialogView.axaml` | 55 | `Margin` | `20 0 0 0` | `{tokens:Space Left=GroupBoxInset}` |
-| `Views/Dialogs/OptionsDialogView.axaml` | 65 | `Margin` | `0 5` | `{tokens:Space Vertical=GapLabel}` |
+| `Views/Dialogs/OptionsDialogView.axaml` | 65 | `Margin` | `0 5` | `{tokens:Space Top=GapUnrelated}` |
 | `Views/Dialogs/OptionsDialogView.axaml` | 66 | `Spacing` | `8` | `GapRelated` |
 | `Views/Dialogs/RestorePreviousIniDialogView.axaml` | 14 | `Margin` | `12` | `{tokens:Space MarginDialog}` |
 | `Views/Dialogs/RestorePreviousIniDialogView.axaml` | 16 | `Spacing` | `8` | `GapUnrelated` |
@@ -143,7 +143,7 @@ the original file's. To move to an even 2 → 14 scale later, remap each token h
 | `Views/IniConfig/IniSectionView.axaml` | 39 | `Margin` | `0 2` | `{tokens:Space Vertical=GapSmallest}` |
 | `Views/IniConfig/IniSectionView.axaml` | 69 | `Margin` | `0 6 0 0` | `{tokens:Space Top=GapRelated}` |
 | `Views/MainWindow.axaml` | 37 | `Margin` | `5 1 5 2` | `{tokens:Space Left=GapLabel, Top=GapSmallest, Right=GapLabel, Bottom=GapSmallest}` |
-| `Views/MainWindow.axaml` | 66 | `Margin` | `5 6 5 8` | `{tokens:Space Horizontal=GapLabel, Vertical=GapRelated}` |
+| `Views/MainWindow.axaml` | 66 | `Margin` | `5 6 5 8` | `{tokens:Space MarginDialog}` |
 | `Views/MainWindow.axaml` | 70 | `Margin` | `0 2 0 0` | `{tokens:Space Top=GapSmallest}` |
 | `Views/MainWindow.axaml` | 83 | `Margin` | `0 2 0 0` | `{tokens:Space Top=GapSmallest}` |
 | `Views/Tabs/GeneralTabView.axaml` | 7 | `Margin` | `8` | `{tokens:Space MarginDialog}` |
@@ -153,7 +153,7 @@ the original file's. To move to an even 2 → 14 scale later, remap each token h
 | `Views/Tabs/GeneralTabView.axaml` | 19 | `HorizontalSpacing` | `10` | `GapRelated` |
 | `Views/Tabs/GeneralTabView.axaml` | 50 | `Margin` | `5 0 0 0` | removed (icon gap moved to `IconBesideBody` on the icon) |
 | `Views/Tabs/GeneralTabView.axaml` | 52 | `Spacing` | `4` | `GapRelated` |
-| `Views/Tabs/GeneralTabView.axaml` | 63 | `ColumnSpacing` | `8` | `GapRelated` |
+| `Views/Tabs/GeneralTabView.axaml` | 63 | `ColumnSpacing` | `8` | `GapUnrelated` |
 | `Views/Tabs/GeneralTabView.axaml` | 64 | `Margin` | `0 2 0 0` | `{tokens:Space Top=GapSmallest}` |
 | `Views/Tabs/GeneralTabView.axaml` | 66 | `RowSpacing` | `2` | `GapSmallest` |
 | `Views/Tabs/GeneralTabView.axaml` | 141 | `Padding` | `10 15` | `GroupBoxPadding` |
@@ -179,13 +179,13 @@ Tokens in the table are shown as written in the views: a bare name is a `{Static
   views, Add / Edit / Delete / Info dialogues, General tab, Fix, INI status) or `IconBesideMessage` (confirmation, error, launch-error and save prompts). The derived margins
   (`IconBesideBodyMargin` 5, `IconBesideMessageMargin` 11) live in `Spacing.axaml` with the arithmetic beside them.
 - **Group boxes.** Every `Padding` of `10 15`, and the Auto-locate trail's `11 15 15 12`, became `GroupBoxPadding` (left and right `GroupBoxInset` 14, bottom
-  `GroupBoxBottom` 11, top `GroupBoxFirstControl` 18 minus an estimated 14 px header = 4). The Fix dialogue's two group boxes had no padding and a `Margin="4"` on the dock
+  `GroupBoxBottom` 11, top `GroupBoxFirstControl` 18 minus the 6 px the title text rises above the frame line = 12). The Fix dialogue's two group boxes had no padding and a `Margin="4"` on the dock
   inside; the margin went and they now take `GroupBoxPadding` like every other group box.
 - **Dialogue and tab-page body margins** (`8`, `12`, `14`) became `MarginDialog`; gaps between sections and paragraphs (`8`, `10`, `14`) `GapUnrelated`; button rows, form rows and
   stacks of related controls (`4`, `5`, `6`, `8`) `GapRelated`; a label stacked over its control (`2` in the Auto-locate candidate, `8` in the Installation Profile row) `GapLabel`.
-- **Judgement calls.** Button `Padding` `25 0` (Open) and `10 0` (Add / Info / Manage) have no guideline role: they took `GroupBoxInset` and `GapUnrelated` as the nearest
-  sensible tokens. The Options explanatory text's `20 0 0 0` indent under a checkbox took `GroupBoxInset`. The `0 5` margin around each dialogue's button row became
-  `Vertical=GapLabel`. Data-grid cell margins `4 0` became `Horizontal=GapLabel`;
+- **Judgement calls.** Button `Padding` `10 0` (Add / Info / Manage) has no guideline role: it took `GapUnrelated` as the nearest sensible token; Open's `25 0` was dropped for `DialogButton`. The Options explanatory text's `20 0 0 0` indent under a checkbox took `GroupBoxInset`. The `0 5` margin around each dialogue's button row became
+  `Top=GapUnrelated` (the dialogue's `MarginDialog` gives the bottom edge). Data-grid cell margins `4 0` became `Horizontal=GapLabel`;
   the Restore diff rows' `6 3` and `6 2` became `Horizontal=GapRelated, Vertical=GapSmallest`.
-- **Main window.** The menu margin `5 1 5 2` became `Left`/`Right=GapLabel`, `Top`/`Bottom=GapSmallest`; the content margin `5 6 5 8` became `Horizontal=GapLabel, Vertical=GapRelated`
-  (the hosted tab views carry their own `MarginDialog`); the status bars' `0 2 0 0` became `Top=GapSmallest`. The window size and the INI tab's row-label width are untouched.
+- **Label-to-value column gaps** (Info `16`, General Display and System `20`, General Status `8`) all became `GapUnrelated`.
+- **Main window.** The menu margin `5 1 5 2` became `Left`/`Right=GapLabel`, `Top`/`Bottom=GapSmallest`; the content margin `5 6 5 8` became
+  `MarginDialog` (the boot views have no margin of their own, and Win9x insets the tab control the same); the status bars' `0 2 0 0` became `Top=GapSmallest`. The window size and the INI tab's row-label width are untouched.

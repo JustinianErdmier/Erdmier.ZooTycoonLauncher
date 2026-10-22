@@ -44,11 +44,20 @@ public sealed class NoLiteralSpacingTests
 
         string text = File.ReadAllText(Path.Combine(desktop, path2: "Styles", path3: "Spacing.axaml"));
 
-        double Token(string name) => double.Parse(Regex.Match(text, $@"<x:Double\s+x:Key=""{name}"">(?<v>[\d.]+)</x:Double>").Groups[ "v" ].Value, System.Globalization.CultureInfo.InvariantCulture);
+        string Capture(string pattern, string name)
+        {
+            Match match = Regex.Match(text, pattern);
 
-        double Margin(string name) => double.Parse(Regex.Match(text, $@"<Thickness\s+x:Key=""{name}"">0,0,(?<v>[\d.]+),0</Thickness>").Groups[ "v" ].Value, System.Globalization.CultureInfo.InvariantCulture);
+            return match.Success ? match.Groups[ "v" ].Value : throw new InvalidOperationException($"Spacing.axaml has no resource '{name}' in the expected form.");
+        }
 
-        double[] Padding(string name) => Regex.Match(text, $@"<Thickness\s+x:Key=""{name}"">(?<v>[^<]*)</Thickness>").Groups[ "v" ].Value.Split(',').Select(v => double.Parse(v, System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+        double Parse(string value) => double.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
+
+        double Token(string name) => Parse(Capture($@"<x:Double\s+x:Key=""{name}"">(?<v>[\d.]+)</x:Double>", name));
+
+        double Margin(string name) => Parse(Capture($@"<Thickness\s+x:Key=""{name}"">0,0,(?<v>[\d.]+),0</Thickness>", name));
+
+        double[] Padding(string name) => Capture($@"<Thickness\s+x:Key=""{name}"">(?<v>[^<]*)</Thickness>", name).Split(',').Select(Parse).ToArray();
 
         Margin("IconBesideBodyMargin").ShouldBe(Token("GapIconBody") - Token("GapRelated"));
         Margin("IconBesideMessageMargin").ShouldBe(Token("GapIconMessage") - Token("GapRelated"));

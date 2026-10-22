@@ -113,7 +113,7 @@
                         HorizontalAlignment="Right"
                         IsCancel="True"
                         IsDefault="True"
-                        Margin="{tokens:Space Vertical=GapLabel}"
+                        Margin="{tokens:Space Top=GapUnrelated}"
                         Classes="DialogButton" />
             </StackPanel>
         </DockPanel>

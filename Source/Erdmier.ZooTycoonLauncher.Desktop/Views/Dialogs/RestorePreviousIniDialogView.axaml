@@ -31,19 +31,12 @@
                   CanUserReorderColumns="False"
                   CanUserResizeColumns="False"
                   CanUserSortColumns="False"
+                  Classes="InertHeaders"
                   Height="140"
                   IsReadOnly="True"
                   ItemsSource="{Binding Rows}"
                   SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
                   SelectionMode="Single">
-            <DataGrid.Styles>
-                <Style Selector="DataGridColumnHeader">
-                    <Setter Property="HorizontalContentAlignment"
-                            Value="Stretch" />
-                    <Setter Property="IsHitTestVisible"
-                            Value="False" />
-                </Style>
-            </DataGrid.Styles>
 
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Captured"

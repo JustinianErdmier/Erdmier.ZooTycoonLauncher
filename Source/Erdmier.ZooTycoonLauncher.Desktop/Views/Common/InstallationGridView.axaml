@@ -16,9 +16,10 @@
               SelectionMode="Single"
               IsReadOnly="True"
               CanUserReorderColumns="False"
-              CanUserResizeColumns="True"
+              CanUserResizeColumns="False"
               CanUserSortColumns="False"
-              AutoGenerateColumns="False">
+              AutoGenerateColumns="False"
+              Classes="InertHeaders">
         <DataGrid.Columns>
             <DataGridTemplateColumn Header="Name"
                                     Width="*">

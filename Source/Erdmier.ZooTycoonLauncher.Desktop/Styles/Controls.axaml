@@ -41,4 +41,12 @@
         <Setter Property="FontSize"
                 Value="{StaticResource FontSizeBase}" />
     </Style>
+
+    <!-- A grid whose column headers are plain captions: sorting and reordering are off, so the headers ignore the pointer rather than pressing without effect. This also turns off column resizing, which the header itself handles; pair it with CanUserResizeColumns="False". -->
+    <Style Selector="DataGrid.InertHeaders DataGridColumnHeader">
+        <Setter Property="HorizontalContentAlignment"
+                Value="Stretch" />
+        <Setter Property="IsHitTestVisible"
+                Value="False" />
+    </Style>
 </Styles>

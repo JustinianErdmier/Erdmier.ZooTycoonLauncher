@@ -45,7 +45,7 @@ The names describe the *role*, not the colour: `LightHighlight` is "the bright b
 | `DeepShadow`              | Deeper inner shadow                              | `#404040`         |
 | `DarkShadow`              | Outermost bevel edge                             | `#000000`         |
 | `Foreground`              | Default text colour                              | `#000000`         |
-| `ForegroundMuted`         | Muted / hint text                                | `#808080`         |
+| `ForegroundMuted`         | Muted / hint text                                | `#666666`         |
 | `ForegroundDim`           | Faint label colour (Info dialogue row labels, INI sub-headers) | `#404040` |
 | `InputBackground`         | TextBox / ListBox / DataGrid background          | `#FFFFFF`         |
 | `InputBackgroundReadOnly` | Read-only input                                  | `#C0C0C0`         |

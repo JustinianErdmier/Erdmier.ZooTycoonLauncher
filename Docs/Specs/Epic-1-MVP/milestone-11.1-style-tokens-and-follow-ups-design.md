@@ -38,7 +38,7 @@ rhythm everywhere. Faded text uses one method. The four polish items milestone 1
 
 ## 3. Non-goals and anti-goals
 
-- No new UI, no new behaviour, no theme switching.
+- No new UI, no new behaviour (except the §6a follow-ups), no theme switching.
 - Not a redesign: fonts, colours and sizes keep their current look, apart from the changes this spec names (muted grey, monospace face, spacing).
 
 ## 4. Spacing tokens (Windows 9x guideline values)

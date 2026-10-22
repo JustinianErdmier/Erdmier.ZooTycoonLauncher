@@ -13,7 +13,9 @@ public sealed class ColourRegistryTests
 
     private static readonly Regex ColourAttribute = new(@"\sColor\s*=\s*""(?<hex>#[0-9A-Fa-f]{6})""");
 
-    /// <summary>Every key in the §1.1 and §1.2 tables is a key in <c>Colours.axaml</c> with the same value, and the other way round; unreadable and duplicate entries are reported.</summary>
+    /// <summary>
+    ///     Every key in the §1.1 and §1.2 tables is a key in <c>Colours.axaml</c> with the same value, and the other way round; unreadable and duplicate entries are reported.
+    /// </summary>
     [ Fact ]
     public void ConventionsTables_MatchColoursAxaml()
     {
@@ -61,7 +63,17 @@ public sealed class ColourRegistryTests
 
         Dictionary<string, string> colours = new(StringComparer.Ordinal);
 
-        foreach (Match row in TableRow.Matches(text[ start..end ]))
+        string section = text[ start..end ];
+
+        foreach (string line in section.Split('\n'))
+        {
+            if (line.StartsWith('|') && !TableRow.IsMatch(line) && !IsHeaderOrSeparator(line))
+            {
+                problems.Add($"conventions.md has a colour row without a backticked key: {line.Trim()}");
+            }
+        }
+
+        foreach (Match row in TableRow.Matches(section))
         {
             string key = row.Groups[ "key" ].Value;
 
@@ -78,6 +90,13 @@ public sealed class ColourRegistryTests
         }
 
         return colours;
+    }
+
+    private static bool IsHeaderOrSeparator(string line)
+    {
+        string firstCell = line.Split('|')[ 1 ].Trim();
+
+        return firstCell == "Key" || firstCell.All(character => character is '-' or ':');
     }
 
     private static Dictionary<string, string> ReadDefinedColours(List<string> problems)

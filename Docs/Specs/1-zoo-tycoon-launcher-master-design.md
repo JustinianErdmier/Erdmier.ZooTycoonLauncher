@@ -1506,7 +1506,8 @@ exactly *N* keys written.
 - **Game launch** — single checkbox: `Close launcher after the game starts`. Muted helper, indented under the checkbox: *"When ticked, the launcher exits as soon as `zoo.exe`
   reports started."*
 
-Footer: `OK` (default) and `Cancel`, right-aligned, `MinWidth="75"`. The dialogue loads the stored values when it opens, and `OK` stays disabled until they have loaded. `OK` saves
+Footer: `OK` (default) and `Cancel`, right-aligned, both `DialogButton` (`MinWidth="75"`). The dialogue loads the stored values when it opens, and `OK` stays disabled until they
+have loaded. `OK` saves
 both values in one `SaveLauncherOptionsCommand` and closes; `Cancel`, `Esc` and the title-bar close discard. A failed save shows `Cannot Save Options` with the error and keeps
 the dialogue open. The dialogue never touches `LauncherSettings.DefaultInstallationId`, and nothing applies live: the startup preference is read at the next start and the close
 setting at the next launch.
@@ -1657,7 +1658,8 @@ Solution-spanning rules using `NetArchTest.Rules`:
   it also covers every `*Brush` attribute, `OpacityMask`, colours written as element content and setters with an attribute between `<Setter` and `Property` / `Value`.
 - **No literal typography (milestone 11.1):** `NoLiteralTypographyTests` fails on a literal `FontFamily`, `FontSize` or `FontWeight` in any `*.axaml` outside
   `Styles/Typography.axaml`, as an attribute or a style setter.
-- **No literal spacing (milestone 11.1):** `NoLiteralSpacingTests` fails on a `Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing` or `HorizontalSpacing` that is
+- **No literal spacing (milestone 11.1):** `NoLiteralSpacingTests` fails on a `Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing`, `HorizontalSpacing` or
+  `VerticalSpacing` that is
   neither `0` nor a resource or `{tokens:Space …}`, outside `Styles/Spacing.axaml`; and `DerivedResources_MatchTheTokens` checks that each icon margin is its icon gap minus
   `GapRelated` and that `GroupBoxPadding` is built from the group-box tokens.
 - **Shared control styles (milestone 11.1):** `SharedSizeStylesTests` fails on `MinWidth="75"` or a 32 / 16 px `Image` size outside `Styles/Controls.axaml`

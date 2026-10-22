@@ -53,7 +53,9 @@ public static class XamlAttributeScanner
     }
 
     /// <summary>Replaces every XML comment with its newlines alone, so commented-out XAML is not scanned and line numbers stay correct.</summary>
-    private static string BlankComments(string text)
+    /// <param name="text">The XAML source.</param>
+    /// <returns>The source with each comment reduced to the newlines it contained.</returns>
+    public static string BlankComments(string text)
         => Regex.Replace(text, @"<!--[\s\S]*?-->", m => new string(m.Value.Where(c => c == '\n').ToArray()));
 
     private static XamlAttributeMatch ToMatch(string text, Match match)

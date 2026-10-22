@@ -24,7 +24,7 @@ This doc is opinionated, not exhaustive. It captures the things that recur **acr
 The launcher overlays a small set of named values on top of `Classic.Avalonia.Theme`. They live in four files under
 `Source/Erdmier.ZooTycoonLauncher.Desktop/Styles/`, all merged in `App.axaml`, and views reach for a key through `{StaticResource …}`:
 `Colours.axaml` (§1.1, §1.2), `Typography.axaml` (§1.3), `Spacing.axaml` (§1.4) and `Controls.axaml` (§2). A literal in a view is a defect, and an architecture test
-per group (named in each section) fails on it. The colours come first. There is one, light,
+per group (named in each section; §7 lists every colour attribute) fails on it. The colours come first. There is one, light,
 appearance, so nothing needs dynamic resolution. A literal colour in a view is a defect: the architecture test `NoLiteralColoursTests` fails on any `*.axaml` that sets
 `Foreground`, `Background`, `BorderBrush`, `Fill`, `Stroke` or `Color` to a name or `#…` instead of a key (`Transparent` is not a colour choice and stays a literal), and on
 `Brushes.` or `Colors.` in Desktop or Domain code. View models hold no brushes: a converter turns a state into a brush.
@@ -82,14 +82,15 @@ is a style rather than a token and stays a literal.
 | `FontWeightStrong`   | `Bold`                                                                   | Bold labels and values                                                      |
 | `FontWeightHeading`  | `Solid`                                                                  | The weight the state headlines use                                          |
 
-The launcher disables sub-pixel anti-aliasing on body text (`-webkit-font-smoothing: none` in the prototype; Avalonia equivalent is `TextOptions.TextRenderingMode="Alias"`
-on the root window). Mono runs always use `{StaticResource FontFamilyMono}`.
+The prototype disables font smoothing on body text (`-webkit-font-smoothing: none`); the launcher does not apply an equivalent (`TextOptions.TextRenderingMode` is not set
+anywhere). Mono runs always use `{StaticResource FontFamilyMono}`.
 
 ### 1.4 Spacings
 
 Defined in `Styles/Spacing.axaml`, in pixels. The values are Microsoft's Windows 9x layout guideline distances, which the guidelines give in dialog units (DLUs) and which
 convert here for 8 pt MS Sans Serif at 96 DPI (about 1.5 px per DLU across, 1.6 px down; a 50 × 14 DLU command button is 75 × 23 px, the `MinWidth="75"` of
-`DialogButton`). `NoLiteralSpacingTests` fails on a literal `Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing` or `HorizontalSpacing` in a view or a style setter,
+`DialogButton`). `NoLiteralSpacingTests` fails on a literal `Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing`, `HorizontalSpacing` or `VerticalSpacing` in a view or a
+style setter,
 other than `0`.
 
 | Key                    | px | Guideline (DLUs)                                                                            | Use                                                  |
@@ -117,7 +118,7 @@ arithmetic):
 - **`GroupBoxHeaderHeight`** (6) and **`GroupBoxPadding`** (`14,12,14,11`). The guideline measures a group box's first control from the top edge of the title text, but
   Classic.Avalonia's content area starts at the frame line, about 6 px below the title's top (measured on screen). The padding is therefore `GroupBoxInset` left and right,
   `GroupBoxFirstControl` minus `GroupBoxHeaderHeight` on top and `GroupBoxBottom` below, so the first control sits `GroupBoxFirstControl` under the box's top edge. The
-  Auto-locate trail, a `HeaderedContentControl` drawn as a group box, takes the same tokens by hand.
+  Auto-locate trail, a `HeaderedContentControl` drawn as a group box, takes `Padding="{StaticResource GroupBoxPadding}"`.
 
 **Writing a margin or padding.** A `Spacing` takes `{StaticResource GapRelated}`. A `Margin` or `Padding` is a `Thickness`, built from token names by the `{tokens:Space …}`
 markup extension (`Styles/SpaceExtension.cs`, `xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"`), so no per-combination resource is needed:
@@ -139,15 +140,15 @@ as plain sizes.
 Reuse these wherever you can. The shared styles live in `Styles/Controls.axaml`; views opt in through `Classes`. `SharedSizeStylesTests` fails on a view that writes
 `MinWidth="75"`, a 32 or 16 px `Width`/`Height` on an `Image`, or `Opacity="0.6"` on text, instead of using them.
 
-| Primitive                                          | Role                                                                                                                   |
-|----------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| `Button.DialogButton`                              | A dialogue push button: `MinWidth` 75, the Win95/98 minimum command-button width.                                      |
-| `Image.IconLarge` / `Image.IconSmall`              | A 32 px or 16 px icon. Each `Image` also sets `RenderOptions.BitmapInterpolationMode="None"` itself (see below).       |
-| `Image.IconBesideBody` / `Image.IconBesideMessage` | The right margin that completes `GapIconBody` or `GapIconMessage` beside the text (§1.4). Combine with `IconLarge`.    |
-| `TextBlock.MutedText`                              | Secondary text: `ForegroundMuted` at `FontSizeBase`. The one method for fading text (§7).                              |
-| `GroupBox`                                         | Bevelled fieldset with a `Header` text label (the prototype's `<GroupBox label>`). Padding is `GroupBoxPadding`.       |
-| `StatusBadge`                                      | Inline pill: `OK` (green bold), `Err` (red bold), `Warn` (amber bold), `Neutral` (foreground). Use `Variant` property. |
-| `Etched`                                           | 1-px horizontal divider with the classic two-line shadow (used in the About dialogue and between INI sub-headers).     |
+| Primitive                                          | Role                                                                                                                |
+|----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| `Button.DialogButton`                              | A dialogue push button: `MinWidth` 75, the Win95/98 minimum command-button width.                                   |
+| `Image.IconLarge` / `Image.IconSmall`              | A 32 px or 16 px icon. Each `Image` also sets `RenderOptions.BitmapInterpolationMode="None"` itself (see below).    |
+| `Image.IconBesideBody` / `Image.IconBesideMessage` | The right margin that completes `GapIconBody` or `GapIconMessage` beside the text (§1.4). Combine with `IconLarge`. |
+| `TextBlock.MutedText`                              | Secondary text: `ForegroundMuted` at `FontSizeBase`. The one method for fading text (§7).                           |
+| `GroupBox`                                         | Bevelled fieldset with a `Header` text label (the prototype's `<GroupBox label>`). Padding is `GroupBoxPadding`.    |
+| `StatusBadge` *(not built)*                        | Inline pill: `OK`, `Err`, `Warn` or `Neutral`.                                                                      |
+| `Etched` *(not built)*                             | 1-px horizontal divider with the classic two-line shadow.                                                           |
 
 Icons stay pixel-crisp (16 px art shown at 32 px is pixel-doubled, not smoothed). Avalonia 11.3 cannot style `RenderOptions.BitmapInterpolationMode`, so every icon
 `Image` sets it to `None` itself, and `Icons_DrawWithoutSmoothing` enforces that.
@@ -228,8 +229,9 @@ Used by the Status / Display / INI status / Fix-EXE / Fix-INI / Auto-locate-trai
 - **Action button(s)** sit at the right when the row is short (Ready / NoInstall — single primary action) or in a footer row below the body when there are multiple actions or the
   body is long (Cannot Play — `Fix` + `Manage Installations`).
 - **Headline colour.** Red for Cannot Play (the `AccentRed` token; the prototype draws it maroon), foreground (`Foreground`) elsewhere.
-- **Disabled group.** When the whole group needs to read as "not actionable" (Cannot Play's Display), set `Opacity="0.55"` on the `GroupBox`.
-  Don't recolour individual children — the opacity layer does the right thing. This is a disabled state, not a way to fade text; faded text uses `MutedText` (§7).
+- **Disabled group (reserved).** If a whole group ever needs to read as "not actionable", set `Opacity="0.55"` on the `GroupBox` rather than recolouring its children.
+  No view uses this today (Cannot Play leaves its Display and Your System groups un-muted, SDD §9.1). It is a disabled state, not a way to fade text; faded text uses `MutedText`
+(§7).
 
 ### 4.1 Icon vocabulary
 
@@ -279,10 +281,10 @@ Every modal dialogue ends with a horizontal button row aligned to the right. Uni
   that input — ends with an ellipsis (`Browse…`, `Open Installation…`). Buttons that commit a decision on the spot (`Save`, `Cancel`, `OK`, `Close`, `Restore`) carry
   none, and neither do commands that only show information or ask for a confirmation.
 - **Default button** is the rightmost in single-action footers (`OK` / `Close`), or the leftmost-of-the-confirming-pair when there's a primary-plus-cancel (`Save` `Cancel`,
-  `Restore` `Cancel`, `Delete` `Cancel`). Render the default with `Classes="default"` (Avalonia equivalent of the prototype's `--default` outline).
+  `Restore` `Cancel`, `Delete` `Cancel`). Mark the default with `IsDefault="True"` (the Classic theme draws the outline), as `OptionsDialogView` and `ConfirmationPromptView` do.
 - **Gap.** `GapRelated` (6 px) between buttons. `GapUnrelated` (11 px) between the body and the footer; the dialogue's own margin is `MarginDialog` (11 px).
-- **Width.** Buttons take the `DialogButton` class (`MinWidth="75"`, §2); the `default` variant gets the same width. The "wide" `Launch Game` and `Add Installation`
-  calls-to-action on the main-window states bump to `MinWidth="110"`.
+- **Width.** Buttons take the `DialogButton` class (`MinWidth="75"`, §2); the default button gets the same width. A button whose label is longer than that sizes to its
+  content.
 
 Footer order from left to right matches the natural reading order: positive action(s) first, destructive action(s) second, dismissive action last. The prototype follows this and
 so does §9.
@@ -306,7 +308,7 @@ There is no theming: the launcher has one, light, appearance, and the dark-mode 
   anything else to `AccentRed`; `ErrorToBrushConverter` maps `true` to `AccentRed` and otherwise leaves the default foreground.
 - **Guarded by a test.** `NoLiteralColoursTests` (Tests.Architecture) fails on a literal colour in a Desktop `*.axaml` and on `Brushes.` or `Colors.` in Desktop or Domain code.
 - **One way to fade text.** Muted text takes the `MutedText` class (§2) or `{StaticResource ForegroundMuted}`; it is never faded with `Opacity`.
-  `Views_DoNotFadeTextWithOpacity` (`SharedSizeStylesTests`) fails on `Opacity="0.6"`. The only `Opacity` left is §4's `0.55` on a disabled group box.
+  `Views_DoNotFadeTextWithOpacity` (`SharedSizeStylesTests`) fails on `Opacity="0.6"`. No view sets `Opacity` today; §4's `0.55` is reserved for a disabled group box.
 - **Wider than colours.** `NoLiteralColoursTests` also checks `SelectionBrush`, `CaretBrush`, `OpacityMask`, any other `*Brush` attribute, colours written as element
   content and setters with an attribute between `<Setter` and `Property` / `Value`.
 

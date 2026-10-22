@@ -27,7 +27,7 @@ public sealed class SharedSizeStylesTests
 
         foreach (string file in EnumerateViews(desktop))
         {
-            string text = File.ReadAllText(file);
+            string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
 
             foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(text, "MinWidth"))
             {
@@ -68,7 +68,7 @@ public sealed class SharedSizeStylesTests
 
         foreach (string file in EnumerateViews(desktop))
         {
-            string text = File.ReadAllText(file);
+            string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
 
             foreach ((int offset, string scope) in Scopes(text, TextElement, TextSelector))
             {
@@ -97,7 +97,7 @@ public sealed class SharedSizeStylesTests
 
         foreach (string file in EnumerateViews(desktop))
         {
-            string text = File.ReadAllText(file);
+            string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
 
             foreach (Match image in ImageElement.Matches(text))
             {

@@ -8,7 +8,8 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.Views.Layout;
 /// </remarks>
 public class UniformStack : Panel
 {
-    private static readonly StyledProperty<double> SpacingProperty = AvaloniaProperty.Register<UniformStack, double>(nameof(Spacing));
+    /// <summary>Identifies the <see cref="Spacing" /> styled property. Public so compiled XAML can set it from a resource or binding.</summary>
+    public static readonly StyledProperty<double> SpacingProperty = AvaloniaProperty.Register<UniformStack, double>(nameof(Spacing));
 
     static UniformStack()
     {
@@ -16,6 +17,7 @@ public class UniformStack : Panel
         AffectsMeasure<UniformStack>(SpacingProperty);
     }
 
+    /// <summary>The gap between adjacent visible children, in pixels.</summary>
     public double Spacing
     {
         get => GetValue(SpacingProperty);

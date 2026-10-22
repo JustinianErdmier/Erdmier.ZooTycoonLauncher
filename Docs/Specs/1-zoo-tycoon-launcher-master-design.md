@@ -11,10 +11,10 @@
 |--------------------------|-----------------------------------|
 | **Project**              | Zoo Tycoon Launcher               |
 | **Document**             | Software Design Document (SDD)    |
-| **Version**              | 1.12                              |
+| **Version**              | 1.13                              |
 | **Status**               | Draft for implementation          |
 | **Author**               | Justinian                         |
-| **Last updated**         | 21 October 2026                   |
+| **Last updated**         | 22 October 2026                   |
 | **Language conventions** | Standard Southern British English |
 
 ### Revision history
@@ -35,6 +35,7 @@
 | 1.10    | 20 October 2026   | Justinian | Milestone 9.1 (Restore Previous INI follow-ups). §13.5.1 adds DW-39: the dark-theme work left over from milestone 9 belongs to the Settings + theming slice's sweep of every view, not to piecemeal INI changes. The row's pointer sets the field's `IsHovered` and focus sets `IsFocused` (§9.3.2); the INI tab, editor and Restore dialogue log failures; the Restore dialogue loads its history before opening. Deletes DW-17, DW-18 and DW-27 from §13.5. A Save also deletes orphan temp files before reading (§7.7, §8.2); conventions §3.3 follows §9.3.2. |
 | 1.11    | 21 October 2026   | Justinian | Milestone 9.2 (INI display polish). §9.3 describes the dollar display of the four `[UI]` cash rows and the read-only `lang` / `sublang` rows behind the curated picker; §9.7 describes diff cells that read as the editor shows them (labels, `true` / `false`, dollars) and inert history headers. Every `ClassicWindow` title starts with two spaces (conventions §4.1). |
 | 1.12    | 21 October 2026   | Justinian | Milestone 10 (INI recovery and read-only detection; spec `milestone-10-ini-recovery-and-read-only-detection-design.md`). §7.4 describes the two recovery actions as built (`CreateDefaultIniCommand`, `LocateIniCommand`: create-only write, first import or `Manual` archive of a surviving `Current`, `Ini.AlreadyExists` / `Ini.NotAnIni` / `Ini.ReadOnly`); §7.2.5, §9.3.1 and §9.5 give the Fix INI group and the No INI box their `Create` / `Locate…` buttons and add the INI tab's read-only strip; §7.1.2 Verify runs the write probe (`Writable`, `FolderReadOnly`, `FileReadOnly`, `Unknown`); §9.1 Cannot Play points at the INI Config tab; §14.5 row 9's MVP mitigation is implemented. §13.5.1 deletes DW-01 and DW-12, which this milestone delivers, and adds DW-40 (Copy From Another Installation). |
+| 1.13    | 22 October 2026   | Justinian | Milestone 11 (Options dialogue and colour cleanup; spec `milestone-11-options-and-colour-cleanup-design.md`). Dark mode and themes are scrapped: §5.1 / §5.2 / §6.2 drop `LauncherSettings.Theme`, the `LauncherTheme` enum and its column, and §5.2 drops `InstallationValidity.ColourToken` (a colour is presentation, not domain); §9.11 is reduced to a removal note. §9.8 describes the Options dialogue as built (Startup and Game launch only) and §9.10 renames the File menu item to `O<u>p</u>tions…`; §9.12 and §13.2 follow. The launcher's colours are defined once in `Styles/Colours.axaml` and guarded by an architecture test (conventions §1). §13.5 deletes DW-20, DW-37 and DW-39, which this milestone delivers. |
 
   
 ---  
@@ -384,7 +385,6 @@ public sealed class LauncherSettings
         = LauncherStartupPreference.DefaultInstallation;  
     public bool CloseAfterGameLaunch { get; set; }  
     public Guid? DefaultInstallationId { get; set; }  
-    public LauncherTheme Theme { get; set; } = LauncherTheme.System;            // System | Light | Dark  
 }  
 ```  
 
@@ -413,15 +413,6 @@ public sealed class LauncherStartupPreference : SmartEnum<LauncherStartupPrefere
     public static readonly LauncherStartupPreference NoInstallation         = new("NoInstallation",         4);  
   
     private LauncherStartupPreference(string name, int id) : base(name, id) { }  
-}  
-  
-public sealed class LauncherTheme : SmartEnum<LauncherTheme>  
-{  
-    public static readonly LauncherTheme System = new("System", 1);  
-    public static readonly LauncherTheme Light  = new("Light",  2);  
-    public static readonly LauncherTheme Dark   = new("Dark",   3);  
-  
-    private LauncherTheme(string name, int id) : base(name, id) { }  
 }  
   
 public sealed class IniSnapshotKind : SmartEnum<IniSnapshotKind>  
@@ -464,18 +455,17 @@ public sealed class IniValueKind : SmartEnum<IniValueKind>
   
 public sealed class InstallationValidity : SmartEnum<InstallationValidity>  
 {  
-    public static readonly InstallationValidity Valid                   = new("Valid",                   1, "Valid",                   "Green", hasExe: true,  hasIni: true);  
-    public static readonly InstallationValidity InvalidNoExe            = new("InvalidNoExe",            2, "Invalid — No EXE",        "Red",   hasExe: false, hasIni: true);  
-    public static readonly InstallationValidity InvalidNoIni            = new("InvalidNoIni",            3, "Invalid — No INI",        "Red",   hasExe: true,  hasIni: false);  
-    public static readonly InstallationValidity InvalidNoExeOrIni       = new("InvalidNoExeOrIni",       4, "Invalid — No EXE or INI", "Red",   hasExe: false, hasIni: false);  
+    public static readonly InstallationValidity Valid                   = new("Valid",                   1, "Valid",                   hasExe: true,  hasIni: true);  
+    public static readonly InstallationValidity InvalidNoExe            = new("InvalidNoExe",            2, "Invalid — No EXE",        hasExe: false, hasIni: true);  
+    public static readonly InstallationValidity InvalidNoIni            = new("InvalidNoIni",            3, "Invalid — No INI",        hasExe: true,  hasIni: false);  
+    public static readonly InstallationValidity InvalidNoExeOrIni       = new("InvalidNoExeOrIni",       4, "Invalid — No EXE or INI", hasExe: false, hasIni: false);  
   
     public string DisplayName { get; }  
-    public string ColourToken { get; }  
     public bool   HasExe      { get; }  
     public bool   HasIni      { get; }  
   
-    private InstallationValidity(string name, int id, string displayName, string colourToken, bool hasExe, bool hasIni)  
-        : base(name, id) { DisplayName = displayName; ColourToken = colourToken; HasExe = hasExe; HasIni = hasIni; }  
+    private InstallationValidity(string name, int id, string displayName, bool hasExe, bool hasIni)  
+        : base(name, id) { DisplayName = displayName; HasExe = hasExe; HasIni = hasIni; }  
   
     public static InstallationValidity From(bool hasExe, bool hasIni) =>  
         (hasExe, hasIni) switch  
@@ -592,7 +582,6 @@ doesn't support it; the application layer enforces existence).
 |                     | `LauncherStartupPreference` | TEXT (SmartEnum) | Not null                                                                           |  
 |                     | `CloseAfterGameLaunch`      | INTEGER (bool)   | Not null, default `0`                                                              |  
 |                     | `DefaultInstallationId`     | TEXT (GUID)      | Nullable; FK → `GameInstallations.Id` `ON DELETE SET NULL` (defensive; see §7.2.4) |  
-|                     | `Theme`                     | TEXT (SmartEnum) | Not null, default `System`; one of `System` / `Light` / `Dark` (see §9.11)         |  
 | `GameInstallations` | `Id`                        | TEXT (GUID)      | PK                                                                                 |  
 |                     | `Name`                      | TEXT             | Not null, **unique**                                                               |  
 |                     | `Path`                      | TEXT             | Not null, **unique**                                                               |  
@@ -1234,8 +1223,8 @@ The locator returns `LocatedDirectory(path) | NotFound`. It never opens any dial
 The MVP UI uses **Avalonia 11 + `Classic.Avalonia`** for a Windows 95/98 aesthetic. The main window is a single `ClassicWindow` with tabs along the top (General, INI Config).
 Modal  
 dialogues use `ClassicWindow` too so they get proper title bars (a fix established in the Ref build).  
-Cross-cutting UI conventions — token registry (light/dark swatches), standard INI row layout, group-box + icon header pattern, dialogue footer rules, status-bar help wiring,  
-theming hooks, icon-name contract — live in [`Docs/UserInterfaceDesign/conventions.md`](../UserInterfaceDesign/conventions.md). When an agent implements one slice of §9,
+Cross-cutting UI conventions — colour registry, standard INI row layout, group-box + icon header pattern, dialogue footer rules, status-bar help wiring,  
+icon-name contract — live in [`Docs/UserInterfaceDesign/conventions.md`](../UserInterfaceDesign/conventions.md). When an agent implements one slice of §9,
 the  
 expected reading order is **SDD §9.x → conventions.md → glance at the prototype GIF**. Don't duplicate conventions in §9; describe screen-specific behaviour here, and point at
 the  
@@ -1244,7 +1233,8 @@ conventions doc for everything that recurs.
 The authoritative visual reference for the MVP is the **live hi-fi prototype in Claude Design** (HTML/CSS/JS; built from the Claude Design handoff bundle that produced this  
 revision of the SDD). A single screen-recording GIF at [  
 `Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](../UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) is committed to the repo as a quick reference  
-covering every state, every dialogue, the INI tab help affordance, and the dark/light theme switch. The prototype is *not* a production target — match the visual output, not its  
+covering every state, every dialogue and the INI tab help affordance (it also shows a dark/light theme switch, which the launcher does not have). The prototype is *not* a
+production target — match the visual output, not its  
 internal structure.
 
 ### 9.1 Main window and chrome
@@ -1337,7 +1327,7 @@ Desktop/
 │   ├── States/                            Layer 1  
 │   ├── Tabs/                              Layer 2  
 │   ├── IniConfig/                         IniEditorView, IniSectionView, IniPlaceholderView (+ Fields/)  
-│   └── Dialogues/                         Modal UserControls (Add, Edit, Info, Fix, Historical, Settings, Confirm, Save Changes prompt, error message)  
+│   └── Dialogues/                         Modal UserControls (Add, Edit, Info, Fix, Historical, Options, Confirm, Save Changes prompt, error message)  
 └── ViewModels/                            Mirrors Views/ exactly; every *View has a corresponding *ViewModel.  
 ```  
 
@@ -1490,17 +1480,20 @@ The diff is computed by comparing the effective values (`IniKeySpec.EffectiveVal
 `Bool` `true` / `1` are equivalent; `NullableInt` empty `==` empty). The same function decides what the dialogue shows and what a restore writes, so *N changes* on screen is
 exactly *N* keys written.
 
-### 9.8 Settings dialogue
+### 9.8 Options dialogue
 
-`ClassicWindow` modal titled `Settings`, opened from `File → Settings`. Three group boxes:
+`ClassicWindow` modal titled `  Options` (two leading spaces, conventions §4.1) with the `controls32.ico` title-bar icon, opened from `File → Options…`
+(`OptionsDialogViewModel` / `OptionsDialogView`). Two group boxes:
 
-- **Startup** — four-radio group bound to `LauncherStartupPreference`. Labels: `The default installation`, `The installation I last played`,  
-  `The installation I last opened in the launcher`, `No installation — show the picker`.
-- **Game launch** — single checkbox: `Close launcher after the game starts`. Muted helper: *"When ticked, the launcher exits as soon as `zoo.exe` reports started."*
-- **Theme** — three-radio row bound to `LauncherTheme`: `System default`, `Light`, `Dark`. Muted helper: *"Affects the launcher only; in-game appearance is unchanged."*
+- **Startup** — a muted line, *"When the launcher opens, restore:"*, then a four-radio group bound to `LauncherStartupPreference`. Labels: `The default installation`,
+  `The installation I last played`, `The installation I last opened in the launcher`, `No installation — show the picker`.
+- **Game launch** — single checkbox: `Close launcher after the game starts`. Muted helper, indented under the checkbox: *"When ticked, the launcher exits as soon as `zoo.exe`
+  reports started."*
 
-Footer: `OK` (default) writes to `LauncherSettings` via `ISettingsService` and closes; `Cancel` discards. The theme change applies live on `OK` (see §9.11) — there is no  
-application-level "reload" step.
+Footer: `OK` (default) and `Cancel`, right-aligned, `MinWidth="75"`. The dialogue loads the stored values when it opens, and `OK` stays disabled until they have loaded. `OK` saves
+both values in one `SaveLauncherOptionsCommand` and closes; `Cancel`, `Esc` and the title-bar close discard. A failed save shows `Cannot Save Options` with the error and keeps
+the dialogue open. The dialogue never touches `LauncherSettings.DefaultInstallationId`, and nothing applies live: the startup preference is read at the next start and the close
+setting at the next launch.
 
 ### 9.9 About dialogue
 
@@ -1518,7 +1511,7 @@ Two top-level menus only. Accelerators in `<u>` underscores match Win95 conventi
 |          | Installation <u>M</u>anager… | `manage`        |          | Opens the §9.4 dialogue.                                                                                                     |  
 |          | <u>C</u>lose Installation    | `close-install` |          | Disabled when no installation is open. No separator before this item.                                                        |  
 |          | —                            |                 |          |                                                                                                                              |  
-|          | <u>S</u>ettings              | `settings`      |          | Opens the §9.8 dialogue. No ellipsis (no further input solicited).                                                           |  
+|          | O<u>p</u>tions…              | `options`       |          | Opens the §9.8 dialogue. Enabled in every state after boot (the menu is hidden while booting).                               |
 |          | —                            |                 |          |                                                                                                                              |  
 |          | E<u>x</u>it                  | `exit`          | Alt+F4   |                                                                                                                              |  
 | **Help** | <u>C</u>ontents              | `help`          | F1       | Stubbed for the MVP — opens nothing but is kept so the eventual CHM/manual has a home. Surfacing it now communicates intent. |  
@@ -1527,36 +1520,18 @@ Two top-level menus only. Accelerators in `<u>` underscores match Win95 conventi
 
 `Edit` and `View` menus are not present. The toolbar from the Ref launcher is also dropped — actions belong in the menu, the tab content, and the dialogues, not in a third place.
 
-### 9.11 Theming and dark mode
+### 9.11 Theming and dark mode (removed)
 
-The launcher supports three themes selected from §9.8 and persisted on `LauncherSettings.Theme`:
-
-- **System** (default) — follows the OS-level light/dark preference at runtime. Avalonia exposes this via `Application.Current.ActualThemeVariant`; the launcher subscribes to  
-  `RequestedThemeVariant` changes and updates the active palette live.
-- **Light** — silver-on-navy Win95 palette (the prototype's default), regardless of OS.
-- **Dark** — dark-grey-on-navy palette, regardless of OS. The dark palette retains the same bevel topology (white is still "the light bevel highlight"; black is still "the
-  deepest  
-  bevel edge") but every token is re-pointed so the silver / white / gray / black quartet flips to a coherent Win9x-after-dark scheme. Accent reds, blues, greens, and ambers are  
-  re-saturated for legibility on dark surfaces.
-
-Implementation outline (Avalonia):
-
-- A `IThemeService` interface in Application owns the current `LauncherTheme`, exposes a `ThemeVariant Current { get; }`, and emits `ThemeChanged` when the resolved variant  
-  changes (whether by user choice or OS-level shift in System mode).
-- A `ResourceDictionary`-based `LauncherClassicTheme` in Desktop carries the token set and exposes Light / Dark variants. Classic.Avalonia's own theme is applied first; the  
-  launcher's tokens override the bits that need to differ between modes (colour swatches in §9.3 form rows, the maroon / navy diff colouring in §9.7, the muted greys, etc.).
-- View-level usage prefers `DynamicResource` over `StaticResource` so swatch swaps propagate without a re-render.
-- The prototype's `dk-c-*` utility classes (`dk-c-red`, `dk-c-navy`, `dk-c-maroon`, `dk-c-amber`, `dk-c-green`, `dk-c-dim`) become resource keys (`AccentRed`, `AccentNavy`, etc.)  
-  in Avalonia — each pair resolves to a different swatch under the Dark variant.
-
-The Settings dialogue's `OK` calls `IThemeService.SetTheme(LauncherTheme)`; the service writes through `ISettingsService`, recomputes the active variant, raises `ThemeChanged`.  
-Views bound through `DynamicResource` repaint immediately. The theme is read once at startup from `LauncherSettings.Theme`.
+Removed in milestone 11: the launcher has one, light, appearance. Its colours are defined once, by name, in `Styles/Colours.axaml` and used through `StaticResource`
+(conventions §1); an architecture test forbids literal colours in the Desktop views and in Desktop and Domain code. A status colour is chosen by a converter in the Desktop
+(`ValidityToBrushConverter`, `ErrorToBrushConverter`), never by the Domain or a view model.
 
 ### 9.12 Prototype reference
 
 A single screen-recording GIF — [`Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](../UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) — captures
 every  
-state, every dialogue, the INI Config tab help affordance, and the dark/light theme switch in one pass. The recording is the in-repo glance; the **live hi-fi prototype in Claude  
+state, every dialogue and the INI Config tab help affordance in one pass (its dark/light theme switch no longer exists). The recording is the in-repo glance; the
+**live hi-fi prototype in Claude  
 Design** remains the authoritative visual reference (it surfaces hover behaviour, transitions, and the help-on-hover footer affordance that a static frame can't show).
 
 Bordered boxes in the recording for action panels or metadata regions are visual boundaries only and are *not* rendered as borders in the final UI.
@@ -1710,8 +1685,8 @@ will be written.
   strip (§9.3.1), Restore Previous INI dialogue with inline diff (§9.7), tooltip parity fix, atomic save with snapshot archiving.
 - **Screen modes on the General tab.** Available modes count, ZT1-compatible modes count, resolution dropdown sourced from the filtered list.
 - **Launch Game.** Process start with working-directory and arguments matched to the Ref launcher; `CloseAfterGameLaunch` honoured.
-- **Settings + theming.** Settings dialogue (§9.8) covers `LauncherStartupPreference`, `CloseAfterGameLaunch`, and `LauncherTheme` (System / Light / Dark — §9.11). Theme applies  
-  live via `IThemeService` + `DynamicResource` swatches.
+- **Options.** Options dialogue (§9.8) covers `LauncherStartupPreference` and `CloseAfterGameLaunch`. There is no theming: the launcher has one, light, appearance with its
+  colours defined once (§9.11).
 
 ### 13.3 Phase 2 — Saves & Mods (deferred; SDD sketch only)
 
@@ -1765,9 +1740,7 @@ Planned phases (§13.3, §13.4), permanent non-goals (§3.2) and risks (§14.5) 
 | DW-10 | The "Auto-locate trail" group box on No Game Installation Found is static markup (`NoGameInstallationFoundView.axaml:41`, a `TODO`). `BootResult` could carry the whole `LocatedDirectory` record (path plus every checked location and its status) instead of the path alone.                                                                                            | Code `TODO`; maintainer's note 2                      |
 | DW-11 | The "Your System" group box on Ready to Play is static markup, added from the mock-up after this SDD was written. It is unspecified, and feasibility needs research before a spec.                                                                                                                                                                                        | Maintainer's note 5                                   |
 | DW-36 | **V2.0.0.** Experiment with, then implement, a VirtualStore copy of `zoo.ini` as the fix for read-only installs, with no reinstall. First prove with a hand-made copy that `zoo.exe`, run without admin rights, reads the VirtualStore file before the launcher depends on it. See §14.5 row 9.                                                                           | Maintainer, 24 Sept 2026                              |
-| DW-37 | Rename **Settings** to **Options**, per the Win9x standard commands ("Settings: do not use as a command; use Options instead"): the File menu item becomes `Options…` (it opens a dialogue that collects input) and the §9.8 dialogue is titled `Options`. Whether the `Settings*` view-model, view and command type names follow is the slice's call; the `LauncherSettings` table and entity keep their names. | Maintainer, 20 Oct 2026 |
 | DW-38 | Consider watching `zoo.ini` for changes in real time (for example a `FileSystemWatcher` on the open installation's folder), so edits made outside the launcher — by hand or by the game on exit — reach `Current` and the INI editor as they happen instead of at the next open, Save, Reset or restore. Needs a policy for changes arriving while the editor holds unsaved edits, and debouncing for the game's whole-file rewrites (§14.5). | Maintainer, 20 Oct 2026 |
-| DW-39 | **Settings + theming slice (§9.8, §9.11, §13.2).** The conventions' colour tokens do not exist yet: there are no Light / Dark theme dictionaries, `App.axaml` pins the Classic variant, and nothing reads `LauncherSettings.Theme`. When the slice lands, its `DynamicResource` sweep must cover every view that uses literal colours — including the INI views milestone 9 added: the Restore Previous INI dialogue (`Maroon` / `Navy` / `Gray` / `Silver` / `White` / `Red`) and the INI editor footer (`Maroon` dirty label) — so the planned no-literal-colours architecture test can be switched on. | Milestone 9.1 scoping, 20 Oct 2026 |
 | DW-40 | **Copy From Another Installation.** The third No-INI recovery action (§7.4): a selector listing the other registered installations with their names and paths; on confirm it copies the chosen installation's `zoo.ini` here and imports it as Create and Locate do. Disabled when only one installation is registered; the Fix dialogue's *Fix INI* group would gain it too (§7.2.5). | Milestone 10 spec, 21 Oct 2026 |
 
 #### 13.5.2 Robustness
@@ -1784,7 +1757,6 @@ Planned phases (§13.3, §13.4), permanent non-goals (§3.2) and risks (§14.5) 
 
 | ID    | Item                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Origin                               |
 |-------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|
-| DW-20 | The `"Green"` / `"Red"` colour tokens are bare strings across `InstallationValidity`, `ColourTokenToBrushConverter`, the grid and Info; the General tab hard-codes its foreground (`GeneralTabView.axaml:62`, a `TODO`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | PR #4; code `TODO`                   |
 | DW-21 | Installation grid: the Name cell clips without an ellipsis (`InstallationGridView.axaml:29`), and the sort is ordinal rather than culture-aware (`InstallationGridViewModel.cs:201`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | PR #4                                |
 | DW-22 | **Decision pending.** Date formats differ: Info uses en-GB `d MMM yyyy HH:mm` (which renders September as "Sept"), while the General tab uses the current culture's `dd MMMM yyyy HH:mm`. Pick one convention.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | PR #5                                |
 | DW-23 | Centralise UI string literals. The version `V1.0.0` appears three times in `MainWindow.axaml`, status messages live in each view model, and the "Cannot Reload zoo.ini" title appears three times.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Maintainer's note 1; INI task review |

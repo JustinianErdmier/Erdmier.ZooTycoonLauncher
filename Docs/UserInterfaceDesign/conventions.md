@@ -1,6 +1,7 @@
 # UI conventions
 
-> Companion to [SDD §9](../Specs/1-zoo-tycoon-launcher-master-design.md#9-user-interface). Where §9 describes **what** each view contains, this doc fixes the recurring **how** — tokens, layout primitives, icon names, theming hooks — so an agent implementing one slice can do it without reverse-engineering the prototype.
+> Companion to [SDD §9](../Specs/1-zoo-tycoon-launcher-master-design.md#9-user-interface). Where §9 describes **what** each view contains, this doc fixes the recurring
+> **how** — tokens, layout primitives and icon names — so an agent implementing one slice can do it without reverse-engineering the prototype.
 
 ---
 
@@ -11,7 +12,8 @@ When you sit down to implement a state, a tab, a dialogue, or an INI section:
 1. Read SDD §9.x for the screen you're building.
 2. Watch the relevant section of `ZooTycoonLauncherHiFiUIPrototype.gif` once.
 3. Read this doc end-to-end **the first time**. After that, jump to the named patterns by name (`Section §3 Standard INI row`, `Section §5 Dialogue footer`).
-4. Reach for **DynamicResource** keys named here. If you find yourself hard-coding a colour, an icon path, or a spacing number that isn't in this doc, stop and add it here first.
+4. Reach for the named colours and resource keys here. If you find yourself hard-coding a colour, an icon path, or a spacing number that isn't in this doc, stop and add it
+   here first.
 
 This doc is opinionated, not exhaustive. It captures the things that recur **across multiple views**. One-off affordances belong in §9.x of the SDD.
 
@@ -19,41 +21,49 @@ This doc is opinionated, not exhaustive. It captures the things that recur **acr
 
 ## 1. Token registry
 
-The launcher overlays a small set of named brushes on top of `Classic.Avalonia.Theme`. Two `ResourceDictionary` variants — `LauncherClassicTheme.Light.axaml` and `LauncherClassicTheme.Dark.axaml` — bind each key to a different swatch. Views always reach for the key via `DynamicResource`; `StaticResource` is forbidden for anything in this table because the live theme switch (§7) depends on dynamic resolution.
+The launcher overlays a small set of named brushes on top of `Classic.Avalonia.Theme`. The colours the views use are defined once, by name, in
+`Source/Erdmier.ZooTycoonLauncher.Desktop/Styles/Colours.axaml` (merged in `App.axaml`), and views reach for a key through `{StaticResource …}`. There is one, light,
+appearance, so nothing needs dynamic resolution. A literal colour in a view is a defect: the architecture test `NoLiteralColoursTests` fails on any `*.axaml` that sets
+`Foreground`, `Background`, `BorderBrush`, `Fill`, `Stroke` or `Color` to a name or `#…` instead of a key (`Transparent` is not a colour choice and stays a literal), and on
+`Brushes.` or `Colors.` in Desktop or Domain code. View models hold no brushes: a converter turns a state into a brush.
+
+`Colours.axaml` defines the keys the views use today (`Surface`, `MidShadow`, `ForegroundMuted`, `ForegroundDim`, `InputBackground`, `AccentGreen`, `AccentRed`,
+`AccentMaroon`, `AccentNavy`, `AccentAmber` and `RuleDotted`). The other keys below are reserved role names: add one to `Colours.axaml` when a view first needs it.
 
 ### 1.1 Neutrals
 
-Bevel topology is preserved between light and dark — `LightHighlight` is always "the bright bevel edge", `DarkShadow` is always "the deepest bevel edge". The names describe the *role*, not the colour.
+The names describe the *role*, not the colour: `LightHighlight` is "the bright bevel edge" and `DarkShadow` is "the deepest bevel edge".
 
-| Key                       | Role                                             | Light             | Dark              |
-|---------------------------|--------------------------------------------------|-------------------|-------------------|
-| `Surface`                 | Window / button background; the primary chrome   | `#C0C0C0` silver  | `#2E2E2E`         |
-| `SurfaceHighlight`        | Inner-light highlight on raised surfaces         | `#DFDFDF`         | `#424242`         |
-| `LightHighlight`          | Outer bright bevel edge                          | `#FFFFFF`         | `#5A5A5A`         |
-| `MidShadow`               | Mid bevel shadow                                 | `#808080`         | `#1A1A1A`         |
-| `DeepShadow`              | Deeper inner shadow                              | `#404040`         | `#0A0A0A`         |
-| `DarkShadow`              | Outermost bevel edge                             | `#000000`         | `#050505`         |
-| `Foreground`              | Default text colour                              | `#000000`         | `#E8E8E8`         |
-| `ForegroundMuted`         | Muted / hint text                                | `#808080`         | `#9A9A9A`         |
-| `ForegroundDim`           | Faint label colour (Info dialogue row labels, INI sub-headers) | `#404040` | `#9A9A9A` |
-| `InputBackground`         | TextBox / ListBox / DataGrid background          | `#FFFFFF`         | `#1C1C1C`         |
-| `InputBackgroundReadOnly` | Read-only input                                  | `#C0C0C0`         | `#2E2E2E`         |
-| `InputBackgroundInvalid`  | Validation-error input background                | `#FFE0E0`         | `#5A1F1F`         |
+| Key                       | Role                                             | Light             |
+|---------------------------|--------------------------------------------------|-------------------|
+| `Surface`                 | Window / button background; the primary chrome   | `#C0C0C0` silver  |
+| `SurfaceHighlight`        | Inner-light highlight on raised surfaces         | `#DFDFDF`         |
+| `LightHighlight`          | Outer bright bevel edge                          | `#FFFFFF`         |
+| `MidShadow`               | Mid bevel shadow                                 | `#808080`         |
+| `DeepShadow`              | Deeper inner shadow                              | `#404040`         |
+| `DarkShadow`              | Outermost bevel edge                             | `#000000`         |
+| `Foreground`              | Default text colour                              | `#000000`         |
+| `ForegroundMuted`         | Muted / hint text                                | `#808080`         |
+| `ForegroundDim`           | Faint label colour (Info dialogue row labels, INI sub-headers) | `#404040` |
+| `InputBackground`         | TextBox / ListBox / DataGrid background          | `#FFFFFF`         |
+| `InputBackgroundReadOnly` | Read-only input                                  | `#C0C0C0`         |
+| `InputBackgroundInvalid`  | Validation-error input background                | `#FFE0E0`         |
+| `RuleDotted`              | Dotted row separators (Restore dialogue)         | `#E0E0E0`         |
 
 ### 1.2 Accents
 
-These swap colour between themes but never role. Use them through their key, not by name. The light values match the prototype's hardcoded swatches; the dark values match `.theme-dark` in the prototype CSS.
+Use them through their key, not by name. The values match the prototype's hardcoded swatches.
 
-| Key            | Use                                                                          | Light       | Dark        | Replaces prototype `dk-c-*` class |
-|----------------|------------------------------------------------------------------------------|-------------|-------------|-----------------------------------|
-| `AccentNavy`   | Title-bar gradient start; key informational accent (diff "Snapshot" column)  | `#000080`   | `#3060D0`   | `dk-c-navy`                       |
-| `AccentNavyBright` | Title-bar gradient end                                                   | `#1084D0`   | `#3060D0`   | —                                 |
-| `AccentTeal`   | Desktop backdrop                                                             | `#008080`   | `#0D3535`   | —                                 |
-| `AccentGreen`  | OK / valid badge; "EXE present" / "INI present" headlines                    | `#008000`   | `#5CD070`   | `dk-c-green`                      |
-| `AccentRed`    | Strong error text ("No EXE found!", invalid-name message)                    | `#C00000`   | `#FF8080`   | `dk-c-red`                        |
-| `AccentMaroon` | "Cannot Play" heading; dirty-state ("● Unsaved changes"); diff "Current" col | `#800000`   | `#D04848`   | `dk-c-maroon`                     |
-| `AccentAmber`  | "No INI found" headline; warn-level badges                                   | `#806000`   | `#D4A050`   | `dk-c-amber`                      |
-| `AccentYellow` | Tooltip background (Classic.Avalonia default — keep as-is)                   | `#FFFF80`   | `#FFE070`   | —                                 |
+| Key            | Use                                                                          | Light       | Replaces prototype `dk-c-*` class |
+|----------------|------------------------------------------------------------------------------|-------------|-----------------------------------|
+| `AccentNavy`   | Title-bar gradient start; key informational accent (diff "Snapshot" column)  | `#000080`   | `dk-c-navy`                       |
+| `AccentNavyBright` | Title-bar gradient end                                                   | `#1084D0`   | —                                 |
+| `AccentTeal`   | Desktop backdrop                                                             | `#008080`   | —                                 |
+| `AccentGreen`  | OK / valid badge; "EXE present" / "INI present" headlines                    | `#008000`   | `dk-c-green`                      |
+| `AccentRed`    | Strong error text ("No EXE found!", invalid-name message)                    | `#C00000`   | `dk-c-red`                        |
+| `AccentMaroon` | "Cannot Play" heading; dirty-state ("● Unsaved changes"); diff "Current" col | `#800000`   | `dk-c-maroon`                     |
+| `AccentAmber`  | "No INI found" headline; warn-level badges                                   | `#806000`   | `dk-c-amber`                      |
+| `AccentYellow` | Tooltip background (Classic.Avalonia default — keep as-is)                   | `#FFFF80`   | —                                 |
 
 ### 1.3 Typography
 
@@ -165,7 +175,8 @@ Used by the Status / Display / INI status / Fix-EXE / Fix-INI / Auto-locate-trai
 - **Body column** fills the remaining width. The first line is a bold headline (14 px for the five main-window states, 11 px elsewhere). Subsequent lines are muted prose, tables, or nested controls.
 - **Action button(s)** sit at the right when the row is short (Ready / NoInstall — single primary action) or in a footer row below the body when there are multiple actions or the body is long (Cannot Play — `Fix` + `Manage Installations`).
 - **Headline colour.** Maroon for Cannot Play, foreground (`Foreground`) elsewhere. Use the `AccentMaroon` token.
-- **Muted state.** When the whole group needs to read as "not actionable" (Cannot Play's Display), set `Opacity="0.55"` on the `GroupBox`. Don't recolour individual children — the opacity layer does the right thing in both themes.
+- **Muted state.** When the whole group needs to read as "not actionable" (Cannot Play's Display), set `Opacity="0.55"` on the `GroupBox`.
+  Don't recolour individual children — the opacity layer does the right thing.
 
 ### 4.1 Icon vocabulary
 
@@ -199,7 +210,7 @@ file its view uses today; a site whose view does not exist yet is marked *(not b
 | INI tab · No INI sub-state                         | `warning32.gif`                             |                                                               |
 | INI tab · read-only strip                          | `warning32.gif`                             | Drawn at 16 px                                                |
 | INI tab placeholder (disabled)                     | *(no icon)*                                 | Muted helper text only                                        |
-| Settings · title bar *(not built)*                 | `controls32.ico`                            | File committed, no view yet                                   |
+| Options · title bar                                | `controls32.ico`                            |                                                               |
 | About · title bar *(not built)*                    | *(none chosen)*                             | No view yet; body keeps the app logo                          |
 
 Every `ClassicWindow` title starts with two spaces so the text clears the title-bar icon (Classic.Avalonia leaves no gap), including titles bound from a view model.
@@ -229,39 +240,16 @@ The INI editor's footer label carries help: the hovered or focused row's `Help` 
 
 ---
 
-## 7. Theming
+## 7. Colours
 
-Three pieces work together:
+There is no theming: the launcher has one, light, appearance, and the dark-mode feature was dropped in milestone 11 (SDD §9.11).
 
-### 7.1 `IThemeService`
-
-```csharp
-public interface IThemeService
-{
-    LauncherTheme Current { get; }            // System | Light | Dark
-    ThemeVariant ActiveVariant { get; }       // Light | Dark — resolved from Current + OS
-    event EventHandler<ThemeChangedEventArgs> ThemeChanged;
-
-    Task SetThemeAsync(LauncherTheme theme, CancellationToken ct);
-}
-```
-
-`SetThemeAsync` writes through `ISettingsService.UpdateAsync(s => s.Theme = theme)`, recomputes `ActiveVariant`, and raises `ThemeChanged`. In `System` mode, the implementation also subscribes to Avalonia's `Application.Current.ActualThemeVariantProperty` and re-raises `ThemeChanged` when the OS preference flips. Single hookup, no scattered subscriptions in views.
-
-### 7.2 Resource dictionaries
-
-```
-Source/Erdmier.ZooTycoonLauncher.Desktop/Theme/
-├── LauncherClassicTheme.axaml         Master — merges Light / Dark.
-├── LauncherClassicTheme.Light.axaml   Token values for §1 keys in light mode.
-└── LauncherClassicTheme.Dark.axaml    Token values for §1 keys in dark mode.
-```
-
-The master dictionary uses `ResourceDictionary.ThemeDictionaries` (Avalonia 11.x) so the theme variant switch picks up the right child without an app-level reload. `Classic.Avalonia.Theme` is applied first in `App.axaml`; the launcher's master sits on top.
-
-### 7.3 View binding rule
-
-Every brush, font, and spacing referenced from XAML uses `{DynamicResource KeyName}`. `{StaticResource …}` is forbidden for anything in §1 — the live switch breaks otherwise. An architecture-style test (§11.x) greps the `Desktop` XAML tree and fails on any `StaticResource` whose key matches a §1 token.
+- **One place.** Every colour the views use is a `SolidColorBrush` in `Styles/Colours.axaml` (§1), merged in `App.axaml`.
+- **`StaticResource`.** Views reference a key as `{StaticResource AccentRed}`; nothing in the table needs `DynamicResource`.
+- **Chosen by converters.** A view model exposes state (`IsStatusError`, `InstallationValidity`), never a brush. `ValidityToBrushConverter` maps `Valid` to `AccentGreen` and
+  anything else to `AccentRed`; `ErrorToBrushConverter` maps `true` to `AccentRed` and otherwise leaves the default foreground.
+- **Guarded by a test.** `NoLiteralColoursTests` (Tests.Architecture) fails on a literal colour in a Desktop `*.axaml` and on `Brushes.` or `Colors.` in Desktop or Domain code.
+  Muted text is `Opacity="0.6"` or `ForegroundMuted`, as the views already do.
 
 ---
 
@@ -299,4 +287,5 @@ Captured here so the SDD doesn't accumulate UI-shaped notes:
 - **High-DPI scaling.** Classic.Avalonia targets 96 DPI; the prototype is pixel-fixed. Phase 1 ships at the OS scale; Phase 3 (§13.4) revisits.
 - **Keyboard accelerators on dialogues.** The prototype assigns Alt-accelerators (`Btn accel="A"` etc.); Avalonia's `_A` underscore notation does the same. Audit pass during Phase 1's dialogue work.
 - **What's-this `?` button.** The prototype prototyped a Win95 title-bar `?` button as an alternative help affordance and discarded it. Don't reintroduce without explicit user request.
-- **Tooltip styling.** Classic.Avalonia's default tooltip is close to the prototype's yellow OS tooltip but not identical. Worth pinning during Phase 1 if it reads wrong against dark mode.
+- **Tooltip styling.** Classic.Avalonia's default tooltip is close to the prototype's yellow OS tooltip but not identical. Worth pinning during Phase 1 if it reads wrong
+  against the Windows 95 original.

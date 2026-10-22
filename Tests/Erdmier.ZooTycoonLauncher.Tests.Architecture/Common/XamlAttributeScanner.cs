@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
 namespace Erdmier.ZooTycoonLauncher.Tests.Architecture.Common;
@@ -63,7 +62,7 @@ public static partial class XamlAttributeScanner
     public static string BlankComments(string text)
         => Comment().Replace(text, m => new string(m.Value.Where(c => c == '\n').ToArray()));
 
-    private static (Regex Attribute, Regex Setter) BuildPropertyRegexes(string key, string[] propertyNames)
+    private static (Regex Attribute, Regex Setter) BuildPropertyRegexes(string _, string[] propertyNames)
     {
         string names = string.Join(separator: "|", propertyNames.Select(n => n.StartsWith('*') ? @"\w*" + Regex.Escape(n[ 1.. ]) : Regex.Escape(n)));
 
@@ -74,7 +73,7 @@ public static partial class XamlAttributeScanner
         return (attribute, setter);
     }
 
-    private static Regex BuildElementRegex(string key, string[] elementNames)
+    private static Regex BuildElementRegex(string _, string[] elementNames)
     {
         string names = string.Join(separator: "|", elementNames.Select(Regex.Escape));
 

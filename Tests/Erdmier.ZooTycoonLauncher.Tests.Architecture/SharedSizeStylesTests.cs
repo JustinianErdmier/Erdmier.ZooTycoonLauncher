@@ -27,7 +27,7 @@ public sealed partial class SharedSizeStylesTests
     [ GeneratedRegex(@"\b(?:TextBlock|Label|AccessText|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b") ]
     private static partial Regex TextSelector();
 
-    [ GeneratedRegex(@"Classes\s*=\s*""[^""]*\bIcon(?:Large|Small)\b""") ]
+    [ GeneratedRegex(@"Classes\s*=\s*""[^""]*\bIcon(?:Large|Small)\b") ]
     private static partial Regex IconClasses();
 
     [ GeneratedRegex(@"\bImage\.(?:Width|Height)\s*=\s*""(?:32|16)""") ]
@@ -124,6 +124,8 @@ public sealed partial class SharedSizeStylesTests
 
         List<string> violations = [];
 
+        int icons = 0;
+
         foreach (string file in EnumerateViews(desktop))
         {
             string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
@@ -135,6 +137,8 @@ public sealed partial class SharedSizeStylesTests
                     continue;
                 }
 
+                icons++;
+
                 bool crisp = XamlAttributeScanner.Scan(image.Value, "BitmapInterpolationMode").Any(m => m.Value == "None");
 
                 if (!crisp)
@@ -143,6 +147,8 @@ public sealed partial class SharedSizeStylesTests
                 }
             }
         }
+
+        icons.ShouldBeGreaterThan(expected: 0, customMessage: "No IconLarge or IconSmall images were inspected; the icon-class pattern no longer matches.");
 
         violations.ShouldBeEmpty("Smoothed icons found:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }

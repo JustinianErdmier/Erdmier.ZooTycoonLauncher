@@ -5,13 +5,13 @@ namespace Erdmier.ZooTycoonLauncher.Tests.Architecture;
 /// <summary>Milestone 11 spec C7: colours are defined once in <c>Styles/Colours.axaml</c> and referenced by name everywhere else.</summary>
 public sealed partial class NoLiteralColoursTests
 {
-    [ GeneratedRegex(@"(?<![\w.:-])(?<name>Foreground|Background|BorderBrush|Fill|Stroke|Color)\s*=\s*""(?<value>[^""]*)""") ]
+    [ GeneratedRegex(@"(?<![\w.:-])(?:\w+\.)?(?<name>Foreground|Background|BorderBrush|Fill|Stroke|Color)\s*=\s*""(?<value>[^""]*)""") ]
     private static partial Regex ColourAttribute();
 
-    [ GeneratedRegex(@"<Setter\s+Property\s*=\s*""(?<name>Foreground|Background|BorderBrush|Fill|Stroke|Color)""\s+Value\s*=\s*""(?<value>[^""]*)""") ]
+    [ GeneratedRegex(@"<Setter\s+(?:Property\s*=\s*""(?:\w+\.)?(?<name>Foreground|Background|BorderBrush|Fill|Stroke|Color)""\s+Value\s*=\s*""(?<value>[^""]*)""|Value\s*=\s*""(?<value>[^""]*)""\s+Property\s*=\s*""(?:\w+\.)?(?<name>Foreground|Background|BorderBrush|Fill|Stroke|Color)"")") ]
     private static partial Regex ColourSetter();
 
-    [ GeneratedRegex("""\b(Brushes\.|Colors\.|Color\.Parse\(|Color\.FromRgb\(|Color\.FromArgb\(|Color\.FromUInt32\()""") ]
+    [ GeneratedRegex("""\b(Brushes\.|Colors\.|Color\.Parse\(|Color\.TryParse\(|Brush\.Parse\(|SolidColorBrush\.Parse\(|new\s+(?:[\w.]+\.)?Color\(|Color\.FromRgb\(|Color\.FromArgb\(|Color\.FromUInt32\()""") ]
     private static partial Regex BrushLiteral();
 
     [ GeneratedRegex("""Fallback(?<name>Green|Red)\s*=\s*new SolidColorBrush\(Color\.Parse\(s:\s*"(?<hex>#[0-9A-Fa-f]+)"\)\)""") ]
@@ -35,24 +35,23 @@ public sealed partial class NoLiteralColoursTests
                 continue;
             }
 
-            string[] lines = File.ReadAllLines(file);
+            string text = File.ReadAllText(file);
 
-            for (int i = 0; i < lines.Length; i++)
+            foreach (Regex regex in new[] { ColourAttribute(), ColourSetter() })
             {
-                foreach (Regex regex in new[] { ColourAttribute(), ColourSetter() })
+                foreach (Match match in regex.Matches(text))
                 {
-                    foreach (Match match in regex.Matches(lines[i]))
+                    string name  = match.Groups[ "name" ].Value;
+                    string value = match.Groups[ "value" ].Value.Trim();
+
+                    if (IsAllowed(name, value))
                     {
-                        string name  = match.Groups[ "name" ].Value;
-                        string value = match.Groups[ "value" ].Value.Trim();
-
-                        if (IsAllowed(name, value))
-                        {
-                            continue;
-                        }
-
-                        violations.Add($"{Path.GetRelativePath(desktop, file)}:{i + 1}: {match.Value}");
+                        continue;
                     }
+
+                    int line = text.AsSpan(start: 0, match.Index).Count(value: '\n') + 1;
+
+                    violations.Add($"{Path.GetRelativePath(desktop, file)}:{line}: {Regex.Replace(match.Value, @"\s+", " ")}");
                 }
             }
         }

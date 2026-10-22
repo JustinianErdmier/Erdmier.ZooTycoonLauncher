@@ -220,6 +220,23 @@ Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branc
 
 ---
 
+## Task 13: The colour registry lists only what the launcher defines
+
+**Files:** `Docs/UserInterfaceDesign/conventions.md` §1 (intro, §1.1, §1.2); create
+`Tests/…Tests.Architecture/ColourRegistryTests.cs` (helpers under `Common/` if reusable).
+
+- [ ] **Step 1: Write the failing test** `ConventionsTables_MatchColoursAxaml`: parse the §1.1 and §1.2 Markdown tables (key in backticks in the first column,
+  value as the first `#RRGGBB` in the row) and `Styles/Colours.axaml` (`x:Key` + `Color`), and assert the two key→value sets are equal, reporting each key
+  missing from either side or differing in value. Assert both sets are non-empty so the test cannot pass vacuously.
+- [ ] **Step 2: Run** → fail (the ten unused keys).
+- [ ] **Step 3: Edit conventions.md** per spec §6a.4: remove `SurfaceHighlight`, `LightHighlight`, `DeepShadow`, `DarkShadow`, `Foreground`,
+  `InputBackgroundReadOnly`, `InputBackgroundInvalid`, `AccentNavyBright`, `AccentTeal`, `AccentYellow`; drop the "reserved role names" paragraph and state
+  the rule (a colour the theme already sets gets a key only when the launcher overrides it); tidy the §1 introduction (one "literal is a defect" sentence,
+  point at §7 for the attribute list). Fix any other reference to a removed key (conventions and SDD §9). Prose ≤ 180.
+- [ ] **Step 4: Run** Architecture → pass. **Commit** — `docs(📝): list only the colours the launcher defines, and test it`
+
+---
+
 ## Task 12: Check the follow-ups in the running app (controller)
 
 - [ ] **Step 1:** INI editor: click the `fullscreen` drop-down and pick a value → focus leaves, footer shows the save status; click a number box's spinner,

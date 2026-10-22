@@ -3,7 +3,7 @@
 > **Milestone:** 11.1 — follow-up to milestone 11 (Epic 1 — MVP)
 > **Date:** 2026-10-22
 > **Author:** Justinian
-> **Status:** Approved for implementation (maintainer decisions 1–9 incl. 1a–1b; calls C1–C6; §6a added after the first review)
+> **Status:** Approved for implementation (maintainer decisions 1–10 incl. 1a–1b; calls C1–C6; §6a added after the first review)
 > **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §9, §11.5, §13.5
 > **Source of items:** [milestone-11 ledger](../../Ledgers/Epic-1-MVP/milestone-11-ledger.md) *Outstanding items → Polish*
 > **Deferred work taken:** DW-24 (consistent spacing, padding and margins)
@@ -34,6 +34,7 @@ rhythm everywhere. Faded text uses one method. The four polish items milestone 1
 | 7 | INI field focus (added after the first review) | Only keyboard focus keeps an INI field focused; a field the pointer focused gives focus back once its value is set, and a click elsewhere or Esc clears it (§6a.1). |
 | 8 | Muted grey (added after the first review)      | `ForegroundMuted` darkens from `#808080` to `#666666` (§6a.2).                                                                     |
 | 9 | Grid headers (added after the first review)    | The installation grid's column headers stop reacting to clicks (§6a.3).                                                            |
+| 10 | Colour registry (added after the first review) | conventions.md lists only the colour keys `Colours.axaml` defines; names for colours Classic.Avalonia draws and the launcher never overrides are removed (§6a.4). |
 
 ## 3. Non-goals and anti-goals
 
@@ -139,6 +140,18 @@ is. conventions §1.1/§7 and SDD §9 are updated where they quote the old value
 The installation grid (`InstallationGridView`, shared by the Installation Manager and the Open Game Installation view) has sorting off, yet its column
 headers still press when clicked, promising an action that never comes. They stop reacting to clicks, as the Restore Previous INI grid's already do. The
 columns stay resizable if the theme allows it without a clickable header; if it does not, resizing goes too, and the ledger records that.
+
+### 6a.4 The colour registry lists only what the launcher defines
+
+conventions §1.1–§1.2 list 21 colour keys, but `Colours.axaml` defines 11. The other ten are role names carried over from the prototype for colours that
+Classic.Avalonia draws itself and the launcher does not override: the bevel edges (`SurfaceHighlight`, `LightHighlight`, `DeepShadow`, `DarkShadow`), the
+title-bar gradient end (`AccentNavyBright`), the desktop backdrop (`AccentTeal`), the tooltip background (`AccentYellow`), the default text colour
+(`Foreground`) and the read-only and invalid input backgrounds (`InputBackgroundReadOnly`, `InputBackgroundInvalid`). They are removed, and the rule
+becomes: a colour the theme already sets gets a key only when the launcher overrides it.
+
+- §1.1 and §1.2 list exactly the keys and values in `Colours.axaml`; the "reserved role names" paragraph goes.
+- The §1 introduction loses its duplicated "a literal … is a defect" sentence and its stale attribute list, pointing at §7 instead.
+- An architecture test fails when the §1.1–§1.2 tables and `Colours.axaml` disagree on a key or a value, so the registry cannot drift again.
 
 ## 7. Documentation
 

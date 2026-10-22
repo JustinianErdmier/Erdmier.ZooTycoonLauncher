@@ -78,11 +78,13 @@ is defined in a token file from those tokens, never written in a view.
   (32 / 16 px, crisp interpolation) and `MutedText` (`ForegroundMuted`, `FontSizeBase`). Views opt in through `Classes`.
 - **C4 — Snapping.** Each spacing value is classified by its role and given the matching token. A value with no clear role takes the nearest token, and a `0`
   stays `0`. A recurring per-side pattern with a clear purpose gets its own purpose-based token (as the icon gaps do) and is listed in the ledger; one-offs are
-  snapped — the Auto-locate trail's `11 15 15 12` becomes token values (e.g. `MarginDialog` / `GroupBoxInset`). Thicknesses are written with a small
-  markup extension that builds a `Thickness` from token names — `{tokens:Space GapRelated}`, `{tokens:Space Left=GapLabel}`,
+  snapped — the Auto-locate trail (a `HeaderedContentControl` drawn as a group box) takes the group-box tokens: `GroupBoxInset` left and right,
+  `GroupBoxBottom` bottom, a top that puts its first row `GroupBoxFirstControl` below the box's top edge, and `GapRelated` between its rows. Thicknesses are
+  written with a small markup extension that builds a `Thickness` from token names — `{tokens:Space GapRelated}`, `{tokens:Space Left=GapLabel}`,
   `{tokens:Space Left=GroupBoxInset, Top=GroupBoxFirstControl}` — so no per-combination resources are needed and the spacing test sees a `{…}` value.
-  Group-box tokens are measured from the box edge: the group box's top content padding is set so its first control sits `GroupBoxFirstControl` below the box's top edge after Classic.Avalonia's header. The main window's fixed sizes and the
-  INI tab's row-label width stay as they are (layout dimensions, not spacing).
+  Group-box tokens are measured from the box edge: the group box's top content padding is set so its first control sits `GroupBoxFirstControl` below the
+  box's top edge after Classic.Avalonia's header. The main window's fixed sizes and the INI tab's row-label width stay as they are (layout dimensions, not
+  spacing).
 - **C5 — One test per group** (`Tests.Architecture`): `NoLiteralColoursTests` (widened, §6 item 2), `NoLiteralTypographyTests` (`FontFamily`, `FontSize`,
   `FontWeight` hold resources), `NoLiteralSpacingTests` (`Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing`, `HorizontalSpacing` hold resources, or `0`)
   and `SharedSizeStylesTests` (no `MinWidth="75"` and no 32 / 16 px `Width`/`Height` pair on an `Image` outside `Controls.axaml`). Each excludes its own token file,

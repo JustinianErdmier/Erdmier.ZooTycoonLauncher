@@ -16,11 +16,13 @@ public static class XamlAttributeScanner
     /// <returns>Every match, attributes first and then setters, each with its value and 1-based line.</returns>
     public static IReadOnlyList<XamlAttributeMatch> Scan(string text, params string[] propertyNames)
     {
+        text = BlankComments(text);
+
         string names = string.Join(separator: "|", propertyNames.Select(n => n.StartsWith('*') ? @"\w*" + Regex.Escape(n[ 1.. ]) : Regex.Escape(n)));
 
         Regex attribute = new($@"(?<![\w.:-])(?:\w+\.)?(?<name>{names})\s*=\s*""(?<value>[^""]*)""");
 
-        Regex setter = new($@"<Setter\b(?={AttributeRun}?\sProperty\s*=\s*""(?:\w+\.)?(?<name>{names})"")(?={AttributeRun}?\sValue\s*=\s*""(?<value>[^""]*)""){AttributeRun}");
+        Regex setter = new($@"<Setter\b(?={AttributeRun}?\sProperty\s*=\s*""(?:\w+\.)?(?<name>{names})"")(?={AttributeRun}?\sValue\s*=\s*""(?<value>[^""]*)""){AttributeRun}?/?>");
 
         List<XamlAttributeMatch> matches = [];
 
@@ -41,12 +43,18 @@ public static class XamlAttributeScanner
     /// <returns>Every element with non-empty text content, the element name as <see cref="XamlAttributeMatch.Name" /> and the content as the value.</returns>
     public static IReadOnlyList<XamlAttributeMatch> ScanElementContent(string text, params string[] elementNames)
     {
+        text = BlankComments(text);
+
         string names = string.Join(separator: "|", elementNames.Select(Regex.Escape));
 
         Regex element = new($@"<(?<name>{names})\b{AttributeRun}>\s*(?<value>[^<\s][^<]*?)\s*</\k<name>>");
 
         return element.Matches(text).Select(m => ToMatch(text, m)).ToList();
     }
+
+    /// <summary>Replaces every XML comment with its newlines alone, so commented-out XAML is not scanned and line numbers stay correct.</summary>
+    private static string BlankComments(string text)
+        => Regex.Replace(text, @"<!--[\s\S]*?-->", m => new string(m.Value.Where(c => c == '\n').ToArray()));
 
     private static XamlAttributeMatch ToMatch(string text, Match match)
     {

@@ -176,7 +176,7 @@ while busy; the view's `Closing` handler refuses a user close while `!CanClose`.
 
 ---
 
-## Follow-ups after the first review (spec §6a, decisions 7–9)
+## Follow-ups after the first review (spec §6a, decisions 7–10)
 
 Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branch and PR; same Global Constraints.
 
@@ -187,25 +187,25 @@ Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branc
 `Tests/…Desktop.Tests.Unit` (and the headless project if it exists on this branch by then; otherwise view-model tests plus the Task 12 drive).
 
 **Interfaces:** the footer keeps reading `IniFieldViewModel.IsFocused` / `IsHovered`; `IsFocused` becomes true only for keyboard focus
-(`GotFocusEventArgs.NavigationMethod` is `Tab` or `Directional`), never for `Pointer` or `Unspecified`.
+(`GotFocusEventArgs.NavigationMethod` is `Tab` or `Directional`), false for `Pointer`, and unchanged for `Unspecified` (a drop-down's own focus moves).
 
-- [ ] **Step 1: Write the failing tests** for whatever logic lands outside code-behind (e.g. a small focus-policy helper deciding from a `NavigationMethod`
+- [x] **Step 1: Write the failing tests** for whatever logic lands outside code-behind (e.g. a small focus-policy helper deciding from a `NavigationMethod`
   whether a field counts as focused, and whether a pointer-focused control should release focus after a commit). Name them for the spec's rules:
   `PointerFocus_DoesNotDriveTheFooter`, `KeyboardFocus_DrivesTheFooter`, `Escape_ClearsFieldFocus`.
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement** spec §6a.1: keyboard-only `IsFocused`; a pointer-focused field releases focus (to the editor, not to another input) when a
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement** spec §6a.1: keyboard-only `IsFocused`; a pointer-focused field releases focus (to the editor, not to another input) when a
   drop-down closes, after a toggle click, after a spinner step, and on Enter in a text or number box; a pointer press on a non-input part of the editor and
   Esc while an INI field is focused clear focus (a typed value commits as on lost focus). Section switching still clears hover and focus.
-- [ ] **Step 4: Run** Desktop + Architecture and a full build (0 warnings) → pass.
-- [ ] **Step 5: Commit** — `fix(🐛): let INI fields keep focus only from the keyboard`
+- [x] **Step 4: Run** Desktop + Architecture and a full build (0 warnings) → pass.
+- [x] **Step 5: Commit** — `fix(🐛): let INI fields keep focus only from the keyboard`
 
 ---
 
 ## Task 10: A slightly darker muted grey
 
-- [ ] **Step 1:** `Styles/Colours.axaml`: `ForegroundMuted` `#808080` → `#666666` (leave `MidShadow`). Update every doc that quotes the muted value:
+- [x] **Step 1:** `Styles/Colours.axaml`: `ForegroundMuted` `#808080` → `#666666` (leave `MidShadow`). Update every doc that quotes the muted value:
   conventions §1.1 and §7, SDD §9 and its 1.14 revision row (the ledger is the controller's).
-- [ ] **Step 2: Run** Architecture → pass. **Commit** — `style(🎨): darken the muted text grey for legibility`
+- [x] **Step 2: Run** Architecture → pass. **Commit** — `style(🎨): darken the muted text grey for legibility`
 
 ---
 
@@ -213,10 +213,10 @@ Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branc
 
 **Files:** `Desktop/Views/Common/InstallationGridView.axaml` (and a shared style in `Styles/Controls.axaml` if both grids can use one).
 
-- [ ] **Step 1:** Stop the column headers reacting to clicks, as `RestorePreviousIniDialogView`'s grid does (`DataGridColumnHeader` not hit-testable). Keep
+- [x] **Step 1:** Stop the column headers reacting to clicks, as `RestorePreviousIniDialogView`'s grid does (`DataGridColumnHeader` not hit-testable). Keep
   `CanUserResizeColumns="True"` if the Classic theme's resize grip still works with the header itself inert; if it cannot, turn resizing off and say so in
   the report. If the Restore grid and this one can share one style class, move the style into `Controls.axaml` and use it in both.
-- [ ] **Step 2: Run** Desktop + Architecture → pass. **Commit** — `fix(🐛): stop the installation grid's headers reacting to clicks`
+- [x] **Step 2: Run** Desktop + Architecture → pass. **Commit** — `fix(🐛): stop the installation grid's headers reacting to clicks`
 
 ---
 
@@ -225,27 +225,27 @@ Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branc
 **Files:** `Docs/UserInterfaceDesign/conventions.md` §1 (intro, §1.1, §1.2); create
 `Tests/…Tests.Architecture/ColourRegistryTests.cs` (helpers under `Common/` if reusable).
 
-- [ ] **Step 1: Write the failing test** `ConventionsTables_MatchColoursAxaml`: parse the §1.1 and §1.2 Markdown tables (key in backticks in the first column,
+- [x] **Step 1: Write the failing test** `ConventionsTables_MatchColoursAxaml`: parse the §1.1 and §1.2 Markdown tables (key in backticks in the first column,
   value as the first `#RRGGBB` in the row) and `Styles/Colours.axaml` (`x:Key` + `Color`), and assert the two key→value sets are equal, reporting each key
   missing from either side or differing in value. Assert both sets are non-empty so the test cannot pass vacuously.
-- [ ] **Step 2: Run** → fail (the ten unused keys).
-- [ ] **Step 3: Edit conventions.md** per spec §6a.4: remove `SurfaceHighlight`, `LightHighlight`, `DeepShadow`, `DarkShadow`, `Foreground`,
+- [x] **Step 2: Run** → fail (the ten unused keys).
+- [x] **Step 3: Edit conventions.md** per spec §6a.4: remove `SurfaceHighlight`, `LightHighlight`, `DeepShadow`, `DarkShadow`, `Foreground`,
   `InputBackgroundReadOnly`, `InputBackgroundInvalid`, `AccentNavyBright`, `AccentTeal`, `AccentYellow`; drop the "reserved role names" paragraph and state
   the rule (a colour the theme already sets gets a key only when the launcher overrides it); tidy the §1 introduction (one "literal is a defect" sentence,
   point at §7 for the attribute list). Fix any other reference to a removed key (conventions and SDD §9). Prose ≤ 180.
-- [ ] **Step 4: Run** Architecture → pass. **Commit** — `docs(📝): list only the colours the launcher defines, and test it`
+- [x] **Step 4: Run** Architecture → pass. **Commit** — `docs(📝): list only the colours the launcher defines, and test it`
 
 ---
 
 ## Task 12: Check the follow-ups in the running app (controller)
 
-- [ ] **Step 1:** INI editor: click the `fullscreen` drop-down and pick a value → focus leaves, footer shows the save status; click a number box's spinner,
+- [x] **Step 1:** INI editor: click the `fullscreen` drop-down and pick a value → focus leaves, footer shows the save status; click a number box's spinner,
   a toggle, type in a number box and press Enter → same; Tab to a field → it stays focused with its help shown; click empty editor space and press Esc
   while a field is focused → focus clears. Restore any value changed (Reset, or no save).
-- [ ] **Step 2:** Muted text is legible and still lighter than the Info labels.
-- [ ] **Step 3:** Installation Manager and Open Game Installation: clicking a column header does nothing visible.
+- [x] **Step 2:** Muted text is legible and still lighter than the Info labels.
+- [x] **Step 3:** Installation Manager and Open Game Installation: clicking a column header does nothing visible.
 
 ## Verification (follow-ups)
 
-- [ ] Clean build with 0 warnings; every test project passes.
-- [ ] Task 12 checked in the running app.
+- [x] Clean build with 0 warnings; every test project passes.
+- [x] Task 12 checked in the running app.

@@ -133,7 +133,7 @@ Reuse these wherever you can. The shared styles live in `Styles/Controls.axaml`;
 | `Image.IconLarge` / `Image.IconSmall`              | A 32 px or 16 px icon. Each `Image` also sets `RenderOptions.BitmapInterpolationMode="None"` itself (see below).    |
 | `Image.IconBesideBody` / `Image.IconBesideMessage` | The right margin that completes `GapIconBody` or `GapIconMessage` beside the text (§1.4). Combine with `IconLarge`. |
 | `TextBlock.MutedText`                              | Secondary text: `ForegroundMuted` at `FontSizeBase`. The one method for fading text (§7).                           |
-| `DataGrid.InertHeaders`                            | Column headers that ignore the pointer (no sort, no reorder). Also disables resizing, so pair it with `CanUserResizeColumns="False"`. |
+| `DataGrid.InertHeaders`                            | Plain-caption headers: no press, sort or reorder. Also stops resizing; pair with `CanUserResizeColumns="False"`.    |
 | `GroupBox`                                         | Bevelled fieldset with a `Header` text label (the prototype's `<GroupBox label>`). Padding is `GroupBoxPadding`.    |
 | `StatusBadge` *(not built)*                        | Inline pill: `OK`, `Err`, `Warn` or `Neutral`.                                                                      |
 | `Etched` *(not built)*                             | 1-px horizontal divider with the classic two-line shadow.                                                           |
@@ -179,7 +179,7 @@ Every row participates in the hover + status help affordance (SDD §9.3.2):
    chain, so attaching to the panel makes the whole row trigger the tip. Tip text comes from `IniFieldDescriptor.Help` in `IniEditorCatalogue` (`Desktop/Models/IniConfig/`), not
    `IIniHelpRegistry`.
 2. **Editor footer one-liner.** The row template in `IniSectionView` sets the field's `IsHovered` on `PointerEntered` / `PointerExited`. The editor's own footer (not the
-   main-window status bar) shows the hovered row's help, else the focused row's, else the dirty / saved state.
+   main-window status bar) shows the hovered row's help, else the keyboard-focused row's, else the dirty / saved state.
 3. **Keyboard parity.** The same row template sets the field's `IsFocused` on `GotFocus` / `LostFocus` for the row's input control, but only for keyboard focus (Tab or the arrow
    keys): `IniFieldFocusPolicy` clears it for pointer focus. A pointer-focused field gives focus back once its value is set (`IniFieldFocusRelease`: drop-down list closed, toggle
    click, spinner step, Enter in a text or number box; the drop-down views use their `DropDownClosed` event, which the row cannot hear). A click on a non-input part of the

@@ -10,6 +10,10 @@ Every typography value, spacing value and repeated control size in the views now
 `Spacing`, `Controls`), and an architecture test per group keeps literals out. Spacing moved onto the Windows 9x guideline values; faded text uses the
 `MutedText` style; icons draw pixel-crisp. The four polish items milestone 11 left open are closed.
 
+After the first review the maintainer added four follow-ups to this milestone (spec §6a, plan Tasks 9–13): INI fields keep focus only from the keyboard, the
+muted grey darkens to `#666666`, the installation grid's headers stop reacting to clicks, and conventions.md lists only the colours `Colours.axaml` defines,
+with a test that keeps the two in step.
+
 ## Rulings taken without the maintainer
 
 - **One project-path helper for the scanner too.** Task 5's `ProjectPaths` also replaced the shared XAML scanner's own project lookup, which the plan did not name.
@@ -30,6 +34,13 @@ Every typography value, spacing value and repeated control size in the views now
   mid-restore. This was outside the plan; a test (`Cancel_WhileRestoring_DoesNotClose`) covers it. Cost if wrong: none.
 - **Two documentation commits (`7fb2d95`, `954ffe7`) carry a `Claude Sonnet 5.5` co-author trailer**, the model that wrote them, instead of the run's usual
   `Opus 5.5`. Left as accurate rather than rewriting history. Cost if wrong: two trailers differ.
+- **Enter in an INI text or number box still presses the editor's default *Save*** as well as committing the field. It did so before the follow-ups, and a
+  default button taking Enter is the Windows 9x convention. Cost if wrong: pressing Enter to confirm one value writes `zoo.ini`; making Enter field-only is a
+  one-line `e.Handled = true`.
+- **The installation grid's columns are no longer resizable.** In Classic.Avalonia the column header handles both the click and the resize drag, so an inert
+  header cannot be resized; spec §6a.3 allowed this fallback. Cost if wrong: a long path cannot be widened by dragging (Path already takes twice Name's share).
+- **A keyboard user who opens a drop-down and then picks an item with the mouse loses focus when the list closes**, because the pick is pointer focus. It
+  follows the spec's "only keyboard focus lasts" rule. Cost if wrong: that mixed-input user presses Tab once more.
 
 ## Defects found in the plan
 
@@ -52,14 +63,21 @@ Every typography value, spacing value and repeated control size in the views now
 - **The game was started by mistake** during the drive: a click meant for the Installation Manager landed on *Launch Game*. `zoo.exe` reached its "CD Required"
   prompt, briefly changed the display mode and exited. The redirected test database's *Last played* became 22 October 12:15, and the game rewrote its own
   `zoo.ini` as it does on every start; the launcher saved nothing.
-- **An implementer left background work running** in Task 1 and was told to stop it.
+- **Implementers left background work running** in Task 1 and in Task 13 (a hung line-ending check); each was told to stop it and did.
+- **Task 9's first cut broke keyboard focus on drop-downs.** Avalonia's ComboBox moves focus to its list item on open and back to itself on close, and the
+  row's focus handlers treated those moves as leaving the field, so a Tab-focused drop-down lost focus when its list closed. Review caught it; fixed in
+  `f2450ce` (focus moves inside the row keep the state). The second review found the narrowed click check written but never called; wired in `0fc60ae`.
 
 ## Verification
 
-- Clean build of the solution with 0 warnings.
-- Tests: Architecture 26, Application 202, Domain 138, Desktop 216, Infrastructure 60 — all pass.
+- Clean build of the solution with 0 warnings (after the follow-ups, at `1c07b8c`).
+- Tests: Architecture 27, Application 202, Domain 138, Desktop 235, Infrastructure 60 — all pass.
+- In the running app (Task 12, the follow-ups): picking from the `fullscreen` drop-down, a spinner step and a toggle click each give focus back and the
+  footer shows the save status; a field reached with Tab keeps focus and its help, also through opening and closing its list from the keyboard; Esc clears
+  focus. The muted grey reads darker and stays lighter than the Info labels. A held mouse button on the Installation Manager's column header does not press it.
+  The one value changed during the check was reset, so nothing was saved.
 - In the running app (Task 8): all eleven before-captures retaken and compared — the main window's General and INI Config tabs, Restore Previous INI and its
-  confirmation, Installation Manager, Info, Edit, Delete, Add, Options and the installation picker. Muted text is `#808080`, the Info labels measure `#404040`,
+  confirmation, Installation Manager, Info, Edit, Delete, Add, Options and the installation picker. Muted text was `#808080` (now `#666666`), the Info labels measure `#404040`,
   icons are pixel-crisp, nothing is clipped. Esc closes Options when idle (the earlier failure was focus) and Restore. The title-bar close during a save is
   covered by the view model's tests only; a local save is too quick to catch by hand.
 
@@ -78,10 +96,14 @@ Every typography value, spacing value and repeated control size in the views now
 - `Views_DoNotFadeTextWithOpacity` flags any `Opacity` other than `1` (bindings and `1.0` included), while its summary and SDD §11.5 say "literal"; it also
   reports two literal-`MinWidth` buttons on one line once.
 - `XamlResourceKeys.CollectShared` reads only the top level of `Styles/`.
+- The INI focus code treats a drop-down's list as inside its row by walking from the popup to its owner. That holds while popups are separate windows (the
+  Windows default); turning on overlay popups would break it. `IniFieldFocusRelease.IsWithin` and the click filter have no test outside the running app.
+- `ColourRegistryTests`' duplicate-key path was not proven with a planted duplicate (the no-hex path was).
 
 ### Not planned
 
-- A headless Avalonia test that loads every view would catch every runtime-only XAML failure at once (DW candidate).
+- A headless Avalonia test that loads every view now exists on its own branch, `feat/headless-view-load-tests`, cut from this branch; it opens after this PR
+  merges. It is also the natural home for tests of the INI focus behaviour above.
 - Remapping the spacing tokens onto an even 2 → 14 scale: the table below records every original value and its token for that.
 
 ---

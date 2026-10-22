@@ -1550,9 +1550,8 @@ Removed in milestone 11: the launcher has one, light, appearance. Its colours ar
 Milestone 11.1 extended the same rule to typography, spacing and the repeated control sizes. Four files under `Styles/` hold them, merged in `App.axaml`:
 `Colours.axaml`, `Typography.axaml` (font families, sizes and weights), `Spacing.axaml` (the Windows 9x guideline distances converted to pixels, the measured icon gaps and the
 values derived from them) and `Controls.axaml` (`DialogButton`, `IconLarge` / `IconSmall`, `IconBesideBody` / `IconBesideMessage`, `MutedText` and `InertHeaders`).
-`SpaceExtension` builds a
-`Margin` or `Padding` from token names (`{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}`). Secondary text is faded one way only, by the muted grey
-(`MutedText` or `ForegroundMuted`), and icons draw without smoothing. Conventions §1 and §2 hold the tables.
+`SpaceExtension` builds a `Margin` or `Padding` from token names (`{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}`). Secondary text is faded
+one way only, by the muted grey (`MutedText` or `ForegroundMuted`), and icons draw without smoothing. Conventions §1 and §2 hold the tables.
 
 ### 9.12 Prototype reference
 

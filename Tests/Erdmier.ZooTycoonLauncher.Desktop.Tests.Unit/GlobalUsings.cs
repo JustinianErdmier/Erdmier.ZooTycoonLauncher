@@ -16,6 +16,7 @@ global using Erdmier.ZooTycoonLauncher.Application.Settings.Get;
 global using Erdmier.ZooTycoonLauncher.Application.Settings.Save;
 global using Erdmier.ZooTycoonLauncher.Desktop.Composition;
 global using Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.Common;
+global using Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.Headless;
 global using Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig;
 global using Erdmier.ZooTycoonLauncher.Desktop.Styles;
 global using Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.IniConfig;

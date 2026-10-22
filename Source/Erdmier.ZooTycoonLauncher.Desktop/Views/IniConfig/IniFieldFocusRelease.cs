@@ -18,4 +18,21 @@ public static class IniFieldFocusRelease
     /// <summary>Clears focus from whichever control holds it, so the focused field loses focus (committing any typed value) and the footer returns to the save status.</summary>
     /// <param name="control">Any control in the window.</param>
     public static void Clear(Control control) => TopLevel.GetTopLevel(control)?.FocusManager?.ClearFocus();
+
+    /// <summary>Whether the element is the row or lives inside it, counting a combo box's pop-up items (which sit in their own window) as inside.</summary>
+    /// <param name="row">The INI row.</param>
+    /// <param name="element">The element to test; <see langword="null" /> means nothing has focus, which is outside.</param>
+    /// <returns><see langword="true" /> when the row contains the element.</returns>
+    public static bool IsWithin(Control row, IInputElement? element)
+    {
+        for (StyledElement? current = element as StyledElement; current is not null; current = (current as Visual)?.GetVisualParent() as StyledElement ?? current.Parent)
+        {
+            if (ReferenceEquals(current, row))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

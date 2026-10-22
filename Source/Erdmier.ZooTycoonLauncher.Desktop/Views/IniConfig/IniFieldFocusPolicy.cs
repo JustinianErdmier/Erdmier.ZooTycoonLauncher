@@ -1,5 +1,3 @@
-using Avalonia.Input;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig;
 
 /// <summary>
@@ -8,10 +6,20 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig;
 /// </summary>
 public static class IniFieldFocusPolicy
 {
-    /// <summary>Whether focus gained by the given method makes the field's help drive the editor footer.</summary>
+    /// <summary>The fields focused state after it gained focus: keyboard focus sets it, pointer focus clears it, and focus moving inside the row leaves it alone.</summary>
+    /// <param name="current">Whether the field counts as focused now.</param>
     /// <param name="method">How focus arrived (<see cref="GotFocusEventArgs.NavigationMethod" />).</param>
-    /// <returns><see langword="true" /> for Tab and arrow-key focus; <see langword="false" /> for the pointer and for programmatic focus.</returns>
-    public static bool DrivesFooter(NavigationMethod method) => method is NavigationMethod.Tab or NavigationMethod.Directional;
+    /// <returns>
+    ///     <see langword="true" /> for Tab and arrow-key focus; <see langword="false" /> for the pointer; <paramref name="current" /> for <see cref="NavigationMethod.Unspecified" />, which is how a
+    ///     combo box moves focus to its own pop-up items and back, and must not cost a keyboard user their place.
+    /// </returns>
+    public static bool NextFocusedState(bool current, NavigationMethod method)
+        => method switch
+        {
+            NavigationMethod.Tab or NavigationMethod.Directional => true,
+            NavigationMethod.Pointer                             => false,
+            _                                                    => current
+        };
 
     /// <summary>Whether a field should give focus back once its value has been set.</summary>
     /// <param name="fieldHasKeyboardFocus">Whether the field's focus came from the keyboard.</param>

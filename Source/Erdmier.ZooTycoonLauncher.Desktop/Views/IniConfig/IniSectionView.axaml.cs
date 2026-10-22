@@ -1,5 +1,3 @@
-using Avalonia.Input;
-
 namespace Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig;
 
 /// <summary>
@@ -16,7 +14,7 @@ public sealed partial class IniSectionView : UserControl
     {
         if (sender is Control { DataContext: IniFieldViewModel field })
         {
-            field.IsFocused = IniFieldFocusPolicy.DrivesFooter(e.NavigationMethod);
+            field.IsFocused = IniFieldFocusPolicy.NextFocusedState(field.IsFocused, e.NavigationMethod);
         }
     }
 
@@ -38,12 +36,27 @@ public sealed partial class IniSectionView : UserControl
         }
     }
 
+    // Focus moving between the row's own parts (a combo box and its pop-up items) keeps the field focused; it is lost only when focus lands outside the row or nowhere.
+    // The new owner is read after the move has settled.
     private void OnRowLostFocus(object? sender, RoutedEventArgs e)
     {
-        if (sender is Control { DataContext: IniFieldViewModel field })
+        if (sender is Control { DataContext: IniFieldViewModel field } row)
         {
-            field.IsFocused = false;
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (!IniFieldFocusRelease.IsWithin(row, TopLevel.GetTopLevel(row)?.FocusManager?.GetFocusedElement()))
+                {
+                    field.IsFocused = false;
+                }
+            });
         }
+    }
+
+    private static bool CommitsValue(Visual source)
+    {
+        List<Visual> chain = source.GetSelfAndVisualAncestors().ToList();
+
+        return !chain.Any(visual => visual is ComboBox) && (source is ToggleButton || chain.Any(visual => visual is ButtonSpinner or NumericUpDown));
     }
 
     private void OnRowPointerEntered(object? sender, PointerEventArgs e)

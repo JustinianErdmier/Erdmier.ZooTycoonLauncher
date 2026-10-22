@@ -56,14 +56,14 @@ create `Tests/Erdmier.ZooTycoonLauncher.Tests.Architecture/NoLiteralTypographyTe
 **Interfaces:** Produces resources `FontFamilySystem`, `FontFamilyMono` (`FontFamily`, conventions §1.3 stacks), `FontSizeBase` 11, `FontSizeStrong` 14,
 `FontSizeAboutTitle` 13 (`x:Double`), `FontWeightStrong` (`Bold`), `FontWeightHeading` (`Solid`).
 
-- [ ] **Step 1: Write the failing test** `Views_UseNamedTypography`: every `FontFamily` / `FontSize` / `FontWeight` attribute (incl. owner-qualified such as
+- [x] **Step 1: Write the failing test** `Views_UseNamedTypography`: every `FontFamily` / `FontSize` / `FontWeight` attribute (incl. owner-qualified such as
   `TextElement.FontSize`, and style setters, multi-line) in Desktop `*.axaml` except `Styles/Typography.axaml` holds a `{…}` value; failures list `file:line`.
   Share the scanning helper with `NoLiteralColoursTests` rather than copying it (extract `XamlAttributeScanner` into the test project).
-- [ ] **Step 2: Run** → fails, listing today's literals.
-- [ ] **Step 3: Implement** the dictionary and apply it: `Consolas` and the Lucida stack → `FontFamilyMono`; `11` → `FontSizeBase`; `Bold` → `FontWeightStrong`;
+- [x] **Step 2: Run** → fails, listing today's literals.
+- [x] **Step 3: Implement** the dictionary and apply it: `Consolas` and the Lucida stack → `FontFamilyMono`; `11` → `FontSizeBase`; `Bold` → `FontWeightStrong`;
   `Solid` → `FontWeightHeading`. Do not apply `FontFamilySystem`, `FontSizeStrong` or `FontSizeAboutTitle` anywhere (C2).
-- [ ] **Step 4: Prove it bites** (plant a literal, see the failure, revert); run Architecture, Desktop and a full build (0 warnings) → pass.
-- [ ] **Step 5: Commit** — `style(🎨): define the launcher's typography once`
+- [x] **Step 4: Prove it bites** (plant a literal, see the failure, revert); run Architecture, Desktop and a full build (0 warnings) → pass.
+- [x] **Step 5: Commit** — `style(🎨): define the launcher's typography once`
 
 ---
 
@@ -74,13 +74,13 @@ create `Tests/Erdmier.ZooTycoonLauncher.Tests.Architecture/NoLiteralTypographyTe
 **Interfaces:** Produces style classes `DialogButton` (`Button`, `MinWidth` 75), `IconLarge` / `IconSmall` (`Image`, 32 / 16 px, `RenderOptions.BitmapInterpolationMode`
 `None`), `MutedText` (`TextBlock`, `Foreground` `ForegroundMuted`, `FontSize` `FontSizeBase`).
 
-- [ ] **Step 1: Write the failing test** `Views_UseSharedSizeStyles`: outside `Styles/Controls.axaml`, no `MinWidth="75"`, and no `Image` with `Width`/`Height` of
+- [x] **Step 1: Write the failing test** `Views_UseSharedSizeStyles`: outside `Styles/Controls.axaml`, no `MinWidth="75"`, and no `Image` with `Width`/`Height` of
   32 or 16. Also `Views_DoNotFadeTextWithOpacity`: no `Opacity="0.6"` on a `TextBlock`/`Run`/`StackPanel` of text (a whole `GroupBox`'s disabled `0.55` is allowed).
-- [ ] **Step 2: Run** → fails.
-- [ ] **Step 3: Implement:** buttons use `Classes="DialogButton"`; icons `Classes="IconLarge"` / `"IconSmall"` (crisp, decision 1a); every `Opacity="0.6"` fade
+- [x] **Step 2: Run** → fails.
+- [x] **Step 3: Implement:** buttons use `Classes="DialogButton"`; icons `Classes="IconLarge"` / `"IconSmall"` (crisp, decision 1a); every `Opacity="0.6"` fade
   becomes `Classes="MutedText"`, except the eight Installation Info row labels, which use `Foreground="{StaticResource ForegroundDim}"` (decision 1).
-- [ ] **Step 4: Prove it bites; run** Architecture, Desktop, full build → pass.
-- [ ] **Step 5: Commit** — `style(🎨): share button, icon and muted-text styles`
+- [x] **Step 4: Prove it bites; run** Architecture, Desktop, full build → pass.
+- [x] **Step 5: Commit** — `style(🎨): share button, icon and muted-text styles`
 
 ---
 
@@ -96,11 +96,11 @@ create `Tests/Erdmier.ZooTycoonLauncher.Tests.Architecture/NoLiteralTypographyTe
 (XML namespace prefix `tokens`) with a constructor `SpaceExtension(string uniform)` and settable `Left`, `Top`, `Right`, `Bottom`, `Horizontal`, `Vertical`
 token names, returning a `Thickness`; an unset side is 0; an unknown name throws `InvalidOperationException` naming it.
 
-- [ ] **Step 1: Write the failing tests:** `SpaceExtensionTests` — `Uniform_ResolvesTheToken`, `PerSide_BuildsTheThickness`, `HorizontalVertical_Pair`,
+- [x] **Step 1: Write the failing tests:** `SpaceExtensionTests` — `Uniform_ResolvesTheToken`, `PerSide_BuildsTheThickness`, `HorizontalVertical_Pair`,
   `UnknownToken_Throws` (inject a resolver so the tests need no `Application`); `NoLiteralSpacingTests.Views_UseSpacingTokens` — every spacing attribute and setter
   holds `{…}` or `0`.
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement and snap** by role (spec C4): root dialogue/window body margins → `MarginDialog`; gaps between groups or sections →
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement and snap** by role (spec C4): root dialogue/window body margins → `MarginDialog`; gaps between groups or sections →
   `GapUnrelated`; gaps between buttons, form rows, related controls → `GapRelated`; label-to-control → `GapLabel`; 1–2 px gaps → `GapSmallest`; group-box padding
   → `GroupBoxInset` sides, `GroupBoxBottom` bottom, and a top set so the first control sits `GroupBoxFirstControl` below the box's top edge; icon-beside-text
   `DockPanel` (`HorizontalSpacing="10"` + text `Margin="5 0 0 0"`) → `HorizontalSpacing="{StaticResource GapRelated}"`, no text margin, and the icon takes
@@ -108,8 +108,8 @@ token names, returning a `Thickness`; an unset side is 0; an unknown name throws
   (`NoGameInstallationFoundView.axaml`, a `HeaderedContentControl` drawn as a group box) takes left and right `GroupBoxInset`, bottom `GroupBoxBottom`, a top
   that puts its first row `GroupBoxFirstControl` below the box's top edge after the header, and its grid's `RowSpacing="4"` becomes `GapRelated` (its
   `11 15 15 12` padding goes). Leave the main window size and the INI row-label width alone. Record each value's token in the ledger table.
-- [ ] **Step 4: Run** every test project and a full build (0 warnings) → pass.
-- [ ] **Step 5: Commit** — `style(🎨): snap spacing to the Windows 9x guideline tokens`
+- [x] **Step 4: Run** every test project and a full build (0 warnings) → pass.
+- [x] **Step 5: Commit** — `style(🎨): snap spacing to the Windows 9x guideline tokens`
 
 ---
 
@@ -117,10 +117,10 @@ token names, returning a `Thickness`; an unset side is 0; an unknown name throws
 
 **Files:** modify `Tests/…Tests.Architecture/NoLiteralColoursTests.cs` (and the shared scanner from Task 1).
 
-- [ ] **Step 1:** Add to the scan: any attribute or setter property ending in `Brush` (e.g. `SelectionBrush`, `CaretBrush`), `OpacityMask`, element-content colours
+- [x] **Step 1:** Add to the scan: any attribute or setter property ending in `Brush` (e.g. `SelectionBrush`, `CaretBrush`), `OpacityMask`, element-content colours
   (`<SolidColorBrush …>Red</SolidColorBrush>`, `<Color>…</Color>`) outside `Colours.axaml`, and setters with other attributes between `<Setter` and
   `Property`/`Value`. Prove each bites, revert.
-- [ ] **Step 2: Run** Architecture → pass. **Commit** — `test(✅): widen the literal-colour scan`
+- [x] **Step 2: Run** Architecture → pass. **Commit** — `test(✅): widen the literal-colour scan`
 
 ---
 
@@ -129,10 +129,10 @@ token names, returning a `Thickness`; an unset side is 0; an unknown name throws
 **Files:** create `Tests/…Tests.Architecture/Common/ProjectPaths.cs`; modify `MainWindowSizeTests.cs` and every test using `ResolveProjectDirectory`; the
 launcher persistence test helpers (`ColumnExistsAsync`, `TableExistsAsync`); the migration Down test.
 
-- [ ] **Step 1:** Replace the duplicated project-directory resolvers with `ProjectPaths.Desktop` / `ProjectPaths.Source` (static, documented).
-- [ ] **Step 2:** The helpers stop disposing the connection EF owns (open it if closed; leave it to the context); parameterise the table/column names.
-- [ ] **Step 3:** The Down test asserts the restored column's default is `'System'` (`pragma_table_info` `dflt_value`), so its name is true.
-- [ ] **Step 4: Run** Architecture and Infrastructure → pass. **Commit** — `test(✅): share project paths and tidy the persistence test helpers`
+- [x] **Step 1:** Replace the duplicated project-directory resolvers with `ProjectPaths.Desktop` / `ProjectPaths.Source` (static, documented).
+- [x] **Step 2:** The helpers stop disposing the connection EF owns (open it if closed; leave it to the context); parameterise the table/column names.
+- [x] **Step 3:** The Down test asserts the restored column's default is `'System'` (`pragma_table_info` `dflt_value`), so its name is true.
+- [x] **Step 4: Run** Architecture and Infrastructure → pass. **Commit** — `test(✅): share project paths and tidy the persistence test helpers`
 
 ---
 
@@ -144,32 +144,32 @@ launcher persistence test helpers (`ColumnExistsAsync`, `TableExistsAsync`); the
 **Interfaces:** Produces `OptionsDialogViewModel.CanClose` (`bool`, `!IsBusy`), mirrored from `RestorePreviousIniDialogViewModel.CanClose`; `CancelCommand` disabled
 while busy; the view's `Closing` handler refuses a user close while `!CanClose`.
 
-- [ ] **Step 1: Write the failing tests:** `Cancel_WhileSaving_CannotExecute`; `CanClose_FalseWhileSaving_TrueAfter`; `EscTwiceDuringSave_ClosesOnceAfterSave`
+- [x] **Step 1: Write the failing tests:** `Cancel_WhileSaving_CannotExecute`; `CanClose_FalseWhileSaving_TrueAfter`; `EscTwiceDuringSave_ClosesOnceAfterSave`
   (two `CancelCommand` attempts during a pending save do nothing; completing the save raises `CloseRequested` exactly once).
-- [ ] **Step 2–4:** Run → fail; implement as `RestorePreviousIniDialogViewModel` does; run Desktop → pass.
-- [ ] **Step 5: Commit** — `fix(🐛): keep the Options dialogue open while it saves`
+- [x] **Step 2–4:** Run → fail; implement as `RestorePreviousIniDialogViewModel` does; run Desktop → pass.
+- [x] **Step 5: Commit** — `fix(🐛): keep the Options dialogue open while it saves`
 
 ---
 
 ## Task 7: Documentation
 
-- [ ] **Step 1: conventions.md** — §1.3 / §1.4 become the typography and spacing token tables as built (spec §4, incl. `GapIconBody` and the DLU column);
+- [x] **Step 1: conventions.md** — §1.3 / §1.4 become the typography and spacing token tables as built (spec §4, incl. `GapIconBody` and the DLU column);
   §2 points at `Styles/Controls.axaml` (`DialogButton`, `IconLarge`/`IconSmall` crisp, `MutedText`); §7 names one fading method (`MutedText`) and keeps §4's
   `0.55` group-box rule as a disabled state; drop §1.2's `dk-c-*` column; hard-wrap every prose line over 180.
-- [ ] **Step 2: SDD** — §9's conventions summary and §9.11 name the four token files and their tests; §11.5 lists the three new tests; DW-24 reworded to its
+- [x] **Step 2: SDD** — §9's conventions summary and §9.11 name the four token files and their tests; §11.5 lists the three new tests; DW-24 reworded to its
   remaining half (reusable stack/dock panel controls, `UniformStack`'s `TODO`s); revision **1.14**.
-- [ ] **Step 3: Verify** prose ≤ 180; **commit** — `docs(📝): document the launcher's style tokens`
+- [x] **Step 3: Verify** prose ≤ 180; **commit** — `docs(📝): document the launcher's style tokens`
 
 ---
 
 ## Task 8: Check it in the running app (controller)
 
-- [ ] **Step 1:** Recapture Task 0's screens and compare. Expected: lighter muted text, the Info labels' darker grey, Lucida Console where Consolas was,
+- [x] **Step 1:** Recapture Task 0's screens and compare. Expected: lighter muted text, the Info labels' darker grey, Lucida Console where Consolas was,
   pixel-crisp icons, spacing shifts. Nothing clipped, overlapping or misaligned; icons still 32 / 16 px.
-- [ ] **Step 2:** Options still opens, saves and closes normally (the in-flight guard itself is unit-tested; a local save is too quick to catch by hand).
-- [ ] **Step 3:** Close the launcher; restore any setting changed.
+- [x] **Step 2:** Options still opens, saves and closes normally (the in-flight guard itself is unit-tested; a local save is too quick to catch by hand).
+- [x] **Step 3:** Close the launcher; restore any setting changed.
 
 ## Verification
 
-- [ ] Clean build with 0 warnings; every test project passes.
-- [ ] Task 8 checked in the running app, or recorded in the ledger as left to the maintainer.
+- [x] Clean build with 0 warnings; every test project passes.
+- [x] Task 8 checked in the running app, or recorded in the ledger as left to the maintainer.

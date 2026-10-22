@@ -6,7 +6,83 @@
 **Spec:** [`milestone-11.1-style-tokens-and-follow-ups-design.md`](../../Specs/Epic-1-MVP/milestone-11.1-style-tokens-and-follow-ups-design.md) ·
 **Branch:** `feat/milestone-11.1-style-tokens-and-follow-ups`, cut from `main` at `838ba0b`
 
-*Run in progress — the summary, rulings and outstanding items are written when the run finishes.*
+Every typography value, spacing value and repeated control size in the views now comes from a token file under `Desktop/Styles/` (`Colours`, `Typography`,
+`Spacing`, `Controls`), and an architecture test per group keeps literals out. Spacing moved onto the Windows 9x guideline values; faded text uses the
+`MutedText` style; icons draw pixel-crisp. The four polish items milestone 11 left open are closed.
+
+## Rulings taken without the maintainer
+
+- **One project-path helper for the scanner too.** Task 5's `ProjectPaths` also replaced the shared XAML scanner's own project lookup, which the plan did not name.
+  Cost if wrong: none; one resolver was the point.
+- **Crisp icons are set per `Image`.** Avalonia 11.3 rejects `RenderOptions.BitmapInterpolationMode` as a style setter (`AVLN2000`), so each icon sets
+  `BitmapInterpolationMode="None"` itself and a third test, `Icons_DrawWithoutSmoothing`, enforces it. Cost if wrong: one attribute repeated on 24 images
+  instead of one setter.
+- **The group-box header is 6 px, not 14.** Measured on screen: Classic.Avalonia's content area starts at the frame line and the title text rises about 6 px
+  above it, so `GroupBoxPadding` is `14,12,14,11` (the guideline's 18 px from the box top, less 6). Cost if wrong: group-box content sits a pixel or two off the
+  guideline.
+- **Label-to-value column gaps all take `GapUnrelated` (11).** Info was `16`, General's Display and System `20`, General's Status `8`. Cost if wrong: Status's
+  columns are 3 px wider and the others 5–9 px narrower than before.
+- **Dialogue button rows take `Top=GapUnrelated` and no bottom margin**, since the dialogue's own `MarginDialog` gives the bottom edge. Cost if wrong: buttons
+  sit a few pixels closer to the content above.
+- **The Options explanatory text's checkbox indent took `GroupBoxInset` (14)**, down from `20`; the drive found it aligned. Cost if wrong: the text no longer
+  lines up exactly under the checkbox label.
+- **The Restore dialogue's `Cancel` got the same busy guard as Options.** `RelayCommand.Execute` ignores `CanExecute`, so a direct call could close the dialogue
+  mid-restore. This was outside the plan; a test (`Cancel_WhileRestoring_DoesNotClose`) covers it. Cost if wrong: none.
+- **Two documentation commits (`7fb2d95`, `954ffe7`) carry a `Claude Sonnet 5.5` co-author trailer**, the model that wrote them, instead of the run's usual
+  `Opus 5.5`. Left as accurate rather than rewriting history. Cost if wrong: two trailers differ.
+
+## Defects found in the plan
+
+- **Task 3 assumed a 14 px group-box header.** The first snap put group-box content 4 px under the frame line, touching the icons; fixed in `4053838` after an
+  on-screen measurement.
+- **Task 3 did not anticipate that a token on a custom control's property needs a public property field.** `UniformStack.SpacingProperty` was private; a literal
+  went through the CLR setter, but `{StaticResource GapRelated}` goes through the field, which threw `FieldAccessException` when the view loaded (see
+  *Incidents*). Fixed in `8faf776`.
+- **Task 4's bite proof could not plant a setter with an extra attribute in live XAML**, because Avalonia rejects it at compile time; that case was proven in an XML
+  comment, and the scanners now blank comments, so it is covered by reasoning about the regex rather than by a live plant.
+- **Spec C3 and conventions described markup that does not exist** (`Classes="default"`, `MinWidth="110"`, a `0.55` Cannot Play group box,
+  `TextRenderingMode`, `StatusBadge`, `Etched`). Task 7's fix round made the docs describe the views as built.
+
+## Incidents
+
+- **Opening Options crashed the launcher** (Task 8 drive): the private `UniformStack.SpacingProperty` above, affecting all five views with a `UniformStack`
+  (Options, Add, Edit and Delete Installation, the installation picker). The build, every test and three review seats had passed it; only the running app
+  showed it. Fixed with `AvaloniaProperties_ArePublic`, and the final review added `TokenReferencesTests` so a mistyped or wrongly typed resource reference
+  also fails a test rather than a view load.
+- **The game was started by mistake** during the drive: a click meant for the Installation Manager landed on *Launch Game*. `zoo.exe` reached its "CD Required"
+  prompt, briefly changed the display mode and exited. The redirected test database's *Last played* became 22 October 12:15, and the game rewrote its own
+  `zoo.ini` as it does on every start; the launcher saved nothing.
+- **An implementer left background work running** in Task 1 and was told to stop it.
+
+## Verification
+
+- Clean build of the solution with 0 warnings.
+- Tests: Architecture 26, Application 202, Domain 138, Desktop 216, Infrastructure 60 — all pass.
+- In the running app (Task 8): all eleven before-captures retaken and compared — the main window's General and INI Config tabs, Restore Previous INI and its
+  confirmation, Installation Manager, Info, Edit, Delete, Add, Options and the installation picker. Muted text is `#808080`, the Info labels measure `#404040`,
+  icons are pixel-crisp, nothing is clipped. Esc closes Options when idle (the earlier failure was focus) and Restore. The title-bar close during a save is
+  covered by the view model's tests only; a local save is too quick to catch by hand.
+
+## Outstanding items
+
+### Polish, whenever the area is next touched
+
+- The XAML scanners miss property-element syntax (`<Setter.Value>Red</Setter.Value>`, `<SolidColorBrush.Color>…`), single-quoted attribute values and literals in
+  markup-extension positional parameters.
+- `SharedSizeStylesTests` and `AvaloniaPropertyFieldTests` build `new Regex` rather than `[GeneratedRegex]`; the scanner rebuilds two regexes per `Scan` call.
+- `SharedSizeStylesTests`' style-block regex does not handle a selector-first, nested or self-closing `<Style>`, and reports `<Image Image.Width>` twice.
+- The Button `MinWidth` style-setter path of `Views_UseSharedSizeStyles` was not proven with a planted setter (the attribute path was).
+- The Infrastructure tests' parameter-adding code is repeated across three classes; `ProjectPaths.Project` no longer checks for the `.csproj`.
+- `AvaloniaProperties_ArePublic` scans source text, so a property field declared in an unusual form could slip past it.
+- `TokenReferencesTests` do not assert that they matched at least one reference, so a regex regression that matches nothing would quietly turn them off.
+- `Views_DoNotFadeTextWithOpacity` flags any `Opacity` other than `1` (bindings and `1.0` included), while its summary and SDD §11.5 say "literal"; it also
+  reports two literal-`MinWidth` buttons on one line once.
+- `XamlResourceKeys.CollectShared` reads only the top level of `Styles/`.
+
+### Not planned
+
+- A headless Avalonia test that loads every view would catch every runtime-only XAML failure at once (DW candidate).
+- Remapping the spacing tokens onto an even 2 → 14 scale: the table below records every original value and its token for that.
 
 ---
 
@@ -179,13 +255,15 @@ Tokens in the table are shown as written in the views: a bare name is a `{Static
   views, Add / Edit / Delete / Info dialogues, General tab, Fix, INI status) or `IconBesideMessage` (confirmation, error, launch-error and save prompts). The derived margins
   (`IconBesideBodyMargin` 5, `IconBesideMessageMargin` 11) live in `Spacing.axaml` with the arithmetic beside them.
 - **Group boxes.** Every `Padding` of `10 15`, and the Auto-locate trail's `11 15 15 12`, became `GroupBoxPadding` (left and right `GroupBoxInset` 14, bottom
-  `GroupBoxBottom` 11, top `GroupBoxFirstControl` 18 minus the 6 px the title text rises above the frame line = 12). The Fix dialogue's two group boxes had no padding and a `Margin="4"` on the dock
-  inside; the margin went and they now take `GroupBoxPadding` like every other group box.
+  `GroupBoxBottom` 11, top `GroupBoxFirstControl` 18 minus the 6 px the title text rises above the frame line = 12). The Fix dialogue's two group boxes had
+  no padding and a `Margin="4"` on the dock inside; the margin went and they now take `GroupBoxPadding` like every other group box.
 - **Dialogue and tab-page body margins** (`8`, `12`, `14`) became `MarginDialog`; gaps between sections and paragraphs (`8`, `10`, `14`) `GapUnrelated`; button rows, form rows and
   stacks of related controls (`4`, `5`, `6`, `8`) `GapRelated`; a label stacked over its control (`2` in the Auto-locate candidate, `8` in the Installation Profile row) `GapLabel`.
-- **Judgement calls.** Button `Padding` `10 0` (Add / Info / Manage) has no guideline role: it took `GapUnrelated` as the nearest sensible token; Open's `25 0` was dropped for `DialogButton`. The Options explanatory text's `20 0 0 0` indent under a checkbox took `GroupBoxInset`. The `0 5` margin around each dialogue's button row became
-  `Top=GapUnrelated` (the dialogue's `MarginDialog` gives the bottom edge). Data-grid cell margins `4 0` became `Horizontal=GapLabel`;
-  the Restore diff rows' `6 3` and `6 2` became `Horizontal=GapRelated, Vertical=GapSmallest`.
+- **Judgement calls.** Button `Padding` `10 0` (Add / Info / Manage) has no guideline role: it took `GapUnrelated` as the nearest sensible token; Open's
+  `25 0` was dropped for `DialogButton`. The Options explanatory text's `20 0 0 0` indent under a checkbox took `GroupBoxInset`. The `0 5` margin around
+  each dialogue's button row became `Top=GapUnrelated` (the dialogue's `MarginDialog` gives the bottom edge). Data-grid cell margins `4 0` became
+  `Horizontal=GapLabel`; the Restore diff rows' `6 3` and `6 2` became `Horizontal=GapRelated, Vertical=GapSmallest`.
 - **Label-to-value column gaps** (Info `16`, General Display and System `20`, General Status `8`) all became `GapUnrelated`.
-- **Main window.** The menu margin `5 1 5 2` became `Left`/`Right=GapLabel`, `Top`/`Bottom=GapSmallest`; the content margin `5 6 5 8` became
-  `MarginDialog` (the boot views have no margin of their own, and Win9x insets the tab control the same); the status bars' `0 2 0 0` became `Top=GapSmallest`. The window size and the INI tab's row-label width are untouched.
+- **Main window.** The menu margin `5 1 5 2` became `Horizontal=GapLabel, Vertical=GapSmallest`; the content margin `5 6 5 8` became `MarginDialog` (the
+  boot views have no margin of their own, and Win9x insets the tab control the same); the status bars' `0 2 0 0` became `Top=GapSmallest`. The window size
+  and the INI tab's row-label width are untouched.

@@ -7,7 +7,7 @@
              x:DataType="vm:InstallationGridViewModel">
     <UserControl.Resources>
         <converters:BoolToFontWeightConverter x:Key="BoolToFontWeight" />
-        <converters:ColourTokenToBrushConverter x:Key="ColourTokenToBrush" />
+        <converters:ValidityToBrushConverter x:Key="ValidityToBrush" />
     </UserControl.Resources>
 
     <DataGrid ItemsSource="{Binding Rows}"
@@ -46,7 +46,7 @@
                 <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="models:InstallationGridRowModel">
                         <TextBlock Text="{Binding ValidityDisplayName}"
-                                   Foreground="{Binding ValidityColourToken, Converter={StaticResource ColourTokenToBrush}}"
+                                   Foreground="{Binding Validity, Converter={StaticResource ValidityToBrush}}"
                                    VerticalAlignment="Center"
                                    Margin="4 0" />
                     </DataTemplate>

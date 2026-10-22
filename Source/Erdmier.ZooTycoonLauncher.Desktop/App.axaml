@@ -8,6 +8,14 @@
         <composition:ViewLocator />
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://Erdmier.ZooTycoonLauncher.Desktop/Styles/Colours.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
         <ClassicTheme />
         <StyleInclude Source="avares://Classic.Avalonia.Theme.DataGrid/Classic.axaml" />

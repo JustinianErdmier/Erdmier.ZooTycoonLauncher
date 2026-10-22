@@ -6,31 +6,27 @@ public sealed class InstallationValidity : SmartEnum<InstallationValidity>
 {
     /// <summary>The <c>zoo.exe</c> file is missing; the game cannot be launched.</summary>
     public static readonly InstallationValidity InvalidNoExe =
-        new(name: "InvalidNoExe", id: 2, displayName: "Invalid — No EXE", colourToken: "Red", hasExe: false, hasIni: true);
+        new(name: "InvalidNoExe", id: 2, displayName: "Invalid — No EXE", hasExe: false, hasIni: true);
 
     /// <summary>Both <c>zoo.exe</c> and <c>zoo.ini</c> are missing; the installation is wholly invalid.</summary>
     public static readonly InstallationValidity InvalidNoExeOrIni =
-        new(name: "InvalidNoExeOrIni", id: 4, displayName: "Invalid — No EXE or INI", colourToken: "Red", hasExe: false, hasIni: false);
+        new(name: "InvalidNoExeOrIni", id: 4, displayName: "Invalid — No EXE or INI", hasExe: false, hasIni: false);
 
     /// <summary>The <c>zoo.ini</c> file is missing; the launcher cannot configure or display INI state.</summary>
     public static readonly InstallationValidity InvalidNoIni =
-        new(name: "InvalidNoIni", id: 3, displayName: "Invalid — No INI", colourToken: "Red", hasExe: true, hasIni: false);
+        new(name: "InvalidNoIni", id: 3, displayName: "Invalid — No INI", hasExe: true, hasIni: false);
 
     /// <summary>Both <c>zoo.exe</c> and <c>zoo.ini</c> are present; the installation is launchable.</summary>
     public static readonly InstallationValidity Valid =
-        new(name: "Valid", id: 1, displayName: "Valid", colourToken: "Green", hasExe: true, hasIni: true);
+        new(name: "Valid", id: 1, displayName: "Valid", hasExe: true, hasIni: true);
 
-    private InstallationValidity(string name, int id, string displayName, string colourToken, bool hasExe, bool hasIni)
+    private InstallationValidity(string name, int id, string displayName, bool hasExe, bool hasIni)
         : base(name, id)
     {
         DisplayName = displayName;
-        ColourToken = colourToken;
         HasExe      = hasExe;
         HasIni      = hasIni;
     }
-
-    /// <summary>Colour token consumed by the XAML row template (Green for Valid, Red for the others).</summary>
-    public string ColourToken { get; }
 
     /// <summary>Display string shown in the Installation Manager grid.</summary>
     public string DisplayName { get; }

@@ -15,7 +15,4 @@ public sealed class LauncherSettings
 
     /// <summary>Startup-resolution preference; default is <see cref="LauncherStartupPreference.DefaultInstallation" />.</summary>
     public LauncherStartupPreference LauncherStartupPreference { get; set; } = LauncherStartupPreference.DefaultInstallation;
-
-    /// <summary>The launcher's theme choice (SDD §9.11); default is <see cref="LauncherTheme.System" />.</summary>
-    public LauncherTheme Theme { get; set; } = LauncherTheme.System;
 }

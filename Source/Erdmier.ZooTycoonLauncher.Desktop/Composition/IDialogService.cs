@@ -64,6 +64,9 @@ public interface IDialogService
     /// <returns>The new configuration after a restore; <see langword="null" /> when the user cancelled or nothing was restored.</returns>
     Task<IniConfigResult?> ShowRestorePreviousIniAsync(Guid installationId);
 
+    /// <summary>Opens the modal Options dialogue (<c>File → Options…</c>): the startup preference and the close-after-launch setting.</summary>
+    Task ShowOptionsAsync();
+
     /// <summary>Shows a modal error message box owned by the active window. With no owner window, shows a non-modal box and returns without waiting.</summary>
     /// <param name="title">The window title.</param>
     /// <param name="message">The message, shown verbatim.</param>

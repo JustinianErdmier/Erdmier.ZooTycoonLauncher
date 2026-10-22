@@ -14,7 +14,7 @@
                    VerticalAlignment="Top"
                    Width="16" />
 
-            <TextBlock Foreground="Maroon"
+            <TextBlock Foreground="{StaticResource AccentMaroon}"
                        Text="{Binding ReadOnlyWarning}"
                        TextWrapping="Wrap" />
         </DockPanel>

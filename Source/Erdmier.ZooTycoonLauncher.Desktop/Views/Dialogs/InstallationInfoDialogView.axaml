@@ -12,7 +12,7 @@
                WindowStartupLocation="CenterOwner"
                ShowInTaskbar="False">
     <ClassicWindow.Resources>
-        <converters:ColourTokenToBrushConverter x:Key="ColourTokenToBrush" />
+        <converters:ValidityToBrushConverter x:Key="ValidityToBrush" />
     </ClassicWindow.Resources>
 
     <StackPanel Margin="8"
@@ -28,7 +28,7 @@
             <StackPanel Margin="5 0 0 0"
                         Orientation="Vertical"
                         Spacing="6">
-                <TextBlock Foreground="Red"
+                <TextBlock Foreground="{StaticResource AccentRed}"
                            IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                            Text="{Binding ErrorMessage}"
                            TextWrapping="Wrap" />
@@ -64,7 +64,7 @@
                                Text="Status:" />
                     <TextBlock Grid.Column="1"
                                Grid.Row="2"
-                               Foreground="{Binding StatusColourToken, Converter={StaticResource ColourTokenToBrush}}"
+                               Foreground="{Binding Validity, Converter={StaticResource ValidityToBrush}}"
                                Text="{Binding StatusText}" />
 
                     <TextBlock Grid.Column="0"

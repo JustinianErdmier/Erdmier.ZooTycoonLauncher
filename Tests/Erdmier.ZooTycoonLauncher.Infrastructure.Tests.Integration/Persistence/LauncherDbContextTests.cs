@@ -1,6 +1,8 @@
 using System.Data.Common;
 
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration.Persistence;
 
@@ -82,6 +84,43 @@ public sealed class LauncherDbContextTests : IDisposable
         await Should.ThrowAsync<DbUpdateException>(async () => await context.SaveChangesAsync());
     }
 
+    [ Fact ]
+    public async Task Migration_DropsTheThemeColumn_AndKeepsSettings()
+    {
+        Guid defaultInstallationId = Guid.CreateVersion7();
+
+        await using (LauncherDbContext upgrade = BuildContext())
+        {
+            await upgrade.GetService<IMigrator>().MigrateAsync(targetMigration: "20260527123543_InitialLauncherSchema");
+
+            await upgrade.Database.ExecuteSqlAsync($"INSERT INTO \"LauncherSettings\" (\"Id\", \"LauncherStartupPreference\", \"CloseAfterGameLaunch\", \"DefaultInstallationId\", \"Theme\") VALUES (1, 'LastPlayedInstallation', 1, {defaultInstallationId}, 'Dark')");
+        }
+
+        await using LauncherDbContext context = BuildContext();
+
+        await context.Database.MigrateAsync();
+
+        (await ColumnExistsAsync(context, tableName: "LauncherSettings", columnName: "Theme")).ShouldBeFalse();
+
+        LauncherSettings settings = await new LauncherSettingsRepository(context).GetAsync(CancellationToken.None);
+
+        settings.LauncherStartupPreference.ShouldBe(LauncherStartupPreference.LastPlayedInstallation);
+        settings.CloseAfterGameLaunch.ShouldBeTrue();
+        settings.DefaultInstallationId.ShouldBe(defaultInstallationId);
+    }
+
+    [ Fact ]
+    public async Task Migration_Down_RestoresTheThemeColumnWithItsOldDefault()
+    {
+        await using LauncherDbContext context = BuildContext();
+
+        await context.Database.MigrateAsync();
+
+        await context.GetService<IMigrator>().MigrateAsync(targetMigration: "20260527123543_InitialLauncherSchema");
+
+        (await ColumnExistsAsync(context, tableName: "LauncherSettings", columnName: "Theme")).ShouldBeTrue();
+    }
+
     private LauncherDbContext BuildContext()
     {
         DbContextOptions<LauncherDbContext> options = new DbContextOptionsBuilder<LauncherDbContext>()
@@ -105,5 +144,16 @@ public sealed class LauncherDbContextTests : IDisposable
         object? result = await command.ExecuteScalarAsync();
 
         return result is not null;
+    }
+
+    private static async Task<bool> ColumnExistsAsync(LauncherDbContext context, string tableName, string columnName)
+    {
+        await using DbConnection connection = context.Database.GetDbConnection();
+        await connection.OpenAsync();
+        await using DbCommand command = connection.CreateCommand();
+        command.CommandText = $"SELECT COUNT(*) FROM pragma_table_info('{tableName}') WHERE name = '{columnName}'";
+        object? result = await command.ExecuteScalarAsync();
+
+        return Convert.ToInt32(result) > 0;
     }
 }

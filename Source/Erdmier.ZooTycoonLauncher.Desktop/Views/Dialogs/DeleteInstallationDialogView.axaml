@@ -45,7 +45,7 @@
                            Text="No installations will remain."
                            TextWrapping="Wrap" />
 
-                <TextBlock Foreground="Red"
+                <TextBlock Foreground="{StaticResource AccentRed}"
                            IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                            Text="{Binding ErrorMessage}"
                            TextWrapping="Wrap" />

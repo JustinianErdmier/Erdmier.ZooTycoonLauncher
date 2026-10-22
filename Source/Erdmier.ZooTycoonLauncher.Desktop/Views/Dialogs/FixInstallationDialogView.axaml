@@ -20,7 +20,7 @@
                                                                                                                                        Text="zoo.exe" /><Run Text="." />
         </TextBlock>
 
-        <TextBlock Foreground="Red"
+        <TextBlock Foreground="{StaticResource AccentRed}"
                    IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                    Text="{Binding ErrorMessage}"
                    TextWrapping="Wrap" />
@@ -54,7 +54,7 @@
                     <StackPanel IsVisible="{Binding HasExe}"
                                 Orientation="Vertical"
                                 Spacing="4">
-                        <TextBlock Foreground="Green"
+                        <TextBlock Foreground="{StaticResource AccentGreen}"
                                    Text="EXE present" />
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
@@ -66,7 +66,7 @@
                     <StackPanel IsVisible="{Binding !HasExe}"
                                 Orientation="Vertical"
                                 Spacing="4">
-                        <TextBlock Foreground="Red"
+                        <TextBlock Foreground="{StaticResource AccentRed}"
                                    Text="No EXE found!" />
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
@@ -76,7 +76,7 @@
                         </TextBlock>
                     </StackPanel>
 
-                    <TextBlock Foreground="Red"
+                    <TextBlock Foreground="{StaticResource AccentRed}"
                                IsVisible="{Binding ExeErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                Text="{Binding ExeErrorMessage}"
                                TextWrapping="Wrap" />
@@ -120,7 +120,7 @@
                     <StackPanel IsVisible="{Binding HasIni}"
                                 Orientation="Vertical"
                                 Spacing="4">
-                        <TextBlock Foreground="Green"
+                        <TextBlock Foreground="{StaticResource AccentGreen}"
                                    Text="INI present" />
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
@@ -132,14 +132,14 @@
                     <StackPanel IsVisible="{Binding !HasIni}"
                                 Orientation="Vertical"
                                 Spacing="4">
-                        <TextBlock Foreground="DarkGoldenrod"
+                        <TextBlock Foreground="{StaticResource AccentAmber}"
                                    Text="No INI found" />
                         <TextBlock Opacity="0.6"
                                    TextWrapping="Wrap">
                             <Run Text="Create a fresh " /><Run FontFamily="Consolas"
                                                               Text="zoo.ini" /><Run Text=" from the launcher's defaults, or locate an existing file to copy in. Any earlier values stay in history." />
                         </TextBlock>
-                        <TextBlock Foreground="Maroon"
+                        <TextBlock Foreground="{StaticResource AccentMaroon}"
                                    IsVisible="{Binding IniErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                    Text="{Binding IniErrorMessage}"
                                    TextWrapping="Wrap" />

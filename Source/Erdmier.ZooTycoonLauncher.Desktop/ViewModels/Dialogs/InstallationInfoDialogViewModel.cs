@@ -60,9 +60,9 @@ public sealed partial class InstallationInfoDialogViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial string Path { get; set; } = NotAvailable;
 
-    /// <summary>The validity colour token (<c>Green</c> / <c>Red</c>) for the Status value.</summary>
+    /// <summary>The installation's validity; the view maps it to the Status value's colour with <c>ValidityToBrushConverter</c>.</summary>
     [ ObservableProperty ]
-    public partial string StatusColourToken { get; set; } = "Green";
+    public partial InstallationValidity Validity { get; set; } = InstallationValidity.Valid;
 
     /// <summary>The validity display name (e.g. <c>Valid</c>, <c>Invalid — No EXE</c>); "—" until loaded.</summary>
     [ ObservableProperty ]
@@ -95,7 +95,7 @@ public sealed partial class InstallationInfoDialogViewModel : ViewModelBase
             Name              = summary.Name;
             Path              = summary.Path;
             StatusText        = summary.Validity.DisplayName;
-            StatusColourToken = summary.Validity.ColourToken;
+            Validity          = summary.Validity;
             DefaultText       = summary.IsDefault ? "Yes" : "No";
             AddedText         = FormatTimestamp(summary.AddedUtc);
             LastOpenedText    = FormatTimestamp(summary.LastOpenedUtc);

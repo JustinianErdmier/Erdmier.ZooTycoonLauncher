@@ -92,8 +92,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ ObservableProperty ]
     public partial string? StatusMessagePrimaryText { get; set; }
 
+    /// <summary><see langword="true" /> when the secondary status message reports an error; the view shows it in the error colour.</summary>
     [ ObservableProperty ]
-    public partial IBrush? StatusMessageSecondaryColour { get; set; }
+    public partial bool IsStatusError { get; set; }
 
     [ ObservableProperty ]
     public partial string? StatusMessageSecondaryText { get; set; }
@@ -187,6 +188,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     private bool CanCloseInstallation() => !IsBooting && ActiveContent is PlayViewModel;
+
+    // File → "Options…": opens the modal Options dialogue. Available in every booted state (the menu is hidden whilst booting) and needs no unsaved-edit guard, since it
+    // changes nothing about the open installation.
+    [ RelayCommand ]
+    private Task OpenOptionsAsync() => _dialogs.ShowOptionsAsync();
 
     // File → "Exit" (SDD §9.10). Asks about unsaved INI edits first; on approval marks the close as confirmed so MainWindow's close handler does not ask again.
     [ RelayCommand ]
@@ -320,14 +326,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IsBooting     = false;
         ActiveContent = new NoGameInstallationFoundViewModel(locatedCandidatePath: null, _dialogs, BootAsync);
 
-        StatusMessagePrimaryText     = "Error whilst booting up launcher…";
-        StatusMessageSecondaryText   = string.Empty;
-        StatusMessageSecondaryColour = null;
+        StatusMessagePrimaryText   = "Error whilst booting up launcher…";
+        StatusMessageSecondaryText = string.Empty;
+        IsStatusError              = false;
     }
 
     private void UpdateStatusMessages(AppBoot.BootResult result)
     {
-        StatusMessageSecondaryColour = null;
+        IsStatusError = false;
 
         switch (result.Outcome)
         {
@@ -340,9 +346,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 break;
 
             case AppBoot.BootOutcome.CannotPlay:
-                StatusMessagePrimaryText     = "Cannot launch — invalid installation";
-                StatusMessageSecondaryText   = "Fix required";
-                StatusMessageSecondaryColour = Brushes.Red;
+                StatusMessagePrimaryText   = "Cannot launch — invalid installation";
+                StatusMessageSecondaryText = "Fix required";
+                IsStatusError              = true;
 
                 break;
 
@@ -364,9 +370,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private void SetPickerStatusMessages()
     {
-        StatusMessagePrimaryText     = "Choose an installation to open";
-        StatusMessageSecondaryText   = string.Empty;
-        StatusMessageSecondaryColour = null;
+        StatusMessagePrimaryText   = "Choose an installation to open";
+        StatusMessageSecondaryText = string.Empty;
+        IsStatusError              = false;
     }
 
     // Single construction point for the picker so boot routing and the File menu build it identically: a fresh grid per picker (the picker owns and disposes it) and the

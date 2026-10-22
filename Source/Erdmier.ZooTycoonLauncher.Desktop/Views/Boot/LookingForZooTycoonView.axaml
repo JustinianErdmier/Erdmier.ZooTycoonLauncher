@@ -18,7 +18,7 @@
             <ProgressBar HorizontalAlignment="Stretch"
                          IsIndeterminate="True" />
 
-            <TextBlock Foreground="Gray"
+            <TextBlock Foreground="{StaticResource ForegroundMuted}"
                        Text="{Binding CurrentPhrase}" />
         </StackPanel>
     </DockPanel>

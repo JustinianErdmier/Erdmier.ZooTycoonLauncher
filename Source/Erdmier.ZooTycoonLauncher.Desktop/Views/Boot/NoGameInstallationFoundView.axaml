@@ -52,7 +52,7 @@
                            Grid.Row="0"
                            Text="HKLM\SOFTWARE\Microsoft Games\Zoo Tycoon\1.0" />
 
-                <TextBlock Foreground="Gray"
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
                            Grid.Column="2"
                            Grid.Row="0"
                            Text="no value" />
@@ -65,7 +65,7 @@
                            Grid.Row="1"
                            Text="C:\Program Files (x86)\Microsoft Games\Zoo Tycoon\" />
 
-                <TextBlock Foreground="Gray"
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
                            Grid.Column="2"
                            Grid.Row="1"
                            Text="directory missing" />
@@ -78,7 +78,7 @@
                            Grid.Row="2"
                            Text="C:\Program Files\Microsoft Games\Zoo Tycoon\" />
 
-                <TextBlock Foreground="Gray"
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
                            Grid.Column="2"
                            Grid.Row="2"
                            Text="directory missing" />
@@ -91,7 +91,7 @@
                            Grid.Row="3"
                            Text="Last-known path…" />
 
-                <TextBlock Foreground="Gray"
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
                            Grid.Column="2"
                            Grid.Row="3"
                            Text="empty" />

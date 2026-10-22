@@ -20,13 +20,13 @@
                 <TextBlock FontWeight="Bold"
                            Text="{Binding Headline}" />
 
-                <TextBlock Foreground="Gray"
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
                            IsVisible="{Binding ShowPlainBody}"
                            Text="{Binding Body}"
                            TextWrapping="Wrap" />
 
                 <!-- The No INI body (spec C9): same wording as the view model's Body, with zoo.ini in the monospace used elsewhere on the tab. -->
-                <TextBlock Foreground="Gray"
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
                            IsVisible="{Binding HasActions}"
                            TextWrapping="Wrap">
                     <Run Text="This installation has no " /><Run FontFamily="Lucida Console, Courier New, monospace"

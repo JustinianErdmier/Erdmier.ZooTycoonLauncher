@@ -25,7 +25,7 @@ rhythm everywhere. Faded text uses one method. The four polish items milestone 1
 |---|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1 | Faded text                       | Every `Opacity="0.6"` fade becomes the named grey `ForegroundMuted` (`#808080`), except the Installation Info dialogue's row labels, which take `ForegroundDim` (`#404040`) as conventions §1.1 reserves for them. |
 | 1a | Icons                           | Pixel-crisp: the shared icon styles draw without smoothing, so 16 px art shown at 32 px becomes pixel-doubled (authentic Windows 95).               |
-| 1b | Per-side spacing                | A recurring per-side pattern with a clear purpose gets its own purpose-based token; a one-off is snapped to the scale. Icon-beside-text bodies get `GapIconBody`; the Auto-locate trail's `11 15 15 12` is snapped. |
+| 1b | Per-side spacing                | A recurring per-side pattern with a clear purpose gets its own purpose-based token; a one-off is snapped to the scale. Icons beside text get `GapIconBody` (property-sheet layouts) or `GapIconMessage` (message prompts), measured from Windows screenshots; the Auto-locate trail's `11 15 15 12` is snapped. |
 | 2 | Scope of tokens                  | Everything the conventions can name: typography, spacing and repeated control sizes, not only colours.                                         |
 | 3 | Spacing values                   | **Windows 9x purpose-based tokens** (§4), not an even 2 → 14 scale. Existing values are snapped onto them, accepting small layout shifts.        |
 | 4 | Record of the old spacing        | The 11.1 ledger records every original spacing value, its file and line, and the token it became — enough to remap to an even 2 → 14 scale later. |
@@ -53,10 +53,18 @@ which is the `MinWidth="75"` the launcher's buttons already use.
 | `GroupBoxBottom`       | 11 | Last control to the bottom of a group box (7)                                          |
 | `GroupBoxInset`        | 14 | Group box left edge to its controls (9)                                                |
 | `GroupBoxFirstControl` | 18 | Group box top edge (including its header) to its first control (11)                   |
-| `GapIconBody`          | 15 | Icon to the text body beside it (launcher-specific; not in the guidelines)             |
+| `GapIconBody`          | 11 | Icon to the body text beside it in a property-sheet layout (measured; see below)        |
+| `GapIconMessage`       | 17 | Icon to the message text in a message prompt (measured; see below)                     |
 
-`GapIconBody` replaces today's pairing of a `DockPanel` with `HorizontalSpacing="10"` and a `Margin="5 0 0 0"` on the text `StackPanel` beside the icon (eight
-places): the `DockPanel`'s spacing becomes `GapIconBody` and the extra margin is removed, so the icon-to-text distance stays 15 px.
+The guidelines' spacing table names no icon gap, so the two icon tokens come from measuring real screenshots at actual size: Internet Options' *Content* and
+*General* tabs put body text 10–11 px after the 32 px icon slot and buttons about 6 px after the text; Windows 98's *Error Details* message box and
+Classic.Avalonia's message box both put the message 17 px after the icon. `GapIconBody` serves the group-box icon headers (General tab, Fix and Info
+dialogues and the like); `GapIconMessage` serves the confirmation, error and save prompts.
+
+These replace today's pairing of a `DockPanel` with `HorizontalSpacing="10"` and a `Margin="5 0 0 0"` on the text beside the icon (15 px). The panel's spacing
+becomes `GapRelated` (6 px), which is the right text-to-button distance, and the icon carries the rest of its gap as a right margin, so the visible icon-to-text
+distance is exactly `GapIconBody` or `GapIconMessage` while buttons stay 6 px from the text. Any value derived from the tokens (such as the icon's extra margin)
+is defined in a token file from those tokens, never written in a view.
 
 ## 5. Calls made by the author
 
@@ -69,11 +77,11 @@ places): the `DockPanel`'s spacing becomes `GapIconBody` and the extra margin is
 - **C3 — Shared styles** (`Controls.axaml`), the conventions §2 primitives that the code repeats: `DialogButton` (`MinWidth` 75), `IconLarge` / `IconSmall`
   (32 / 16 px, crisp interpolation) and `MutedText` (`ForegroundMuted`, `FontSizeBase`). Views opt in through `Classes`.
 - **C4 — Snapping.** Each spacing value is classified by its role and given the matching token. A value with no clear role takes the nearest token, and a `0`
-  stays `0`. A recurring per-side pattern with a clear purpose gets its own purpose-based token (as `GapIconBody` does) and is listed in the ledger; one-offs are
-  snapped — the Auto-locate trail's `11 15 15 12` becomes token values (e.g. `MarginDialog` / `GroupBoxInset`). Thicknesses are written with a small markup extension that builds a `Thickness`
-  from token names — `{tokens:Space GapRelated}`, `{tokens:Space Left=GapLabel}`, `{tokens:Space Left=GroupBoxInset, Top=GroupBoxFirstControl}` — so no
-  per-combination resources are needed and the spacing test sees a `{…}` value. Group-box tokens are measured from the box edge: the group box's top content
-  padding is set so its first control sits `GroupBoxFirstControl` below the box's top edge after Classic.Avalonia's header. The main window's fixed sizes and the
+  stays `0`. A recurring per-side pattern with a clear purpose gets its own purpose-based token (as the icon gaps do) and is listed in the ledger; one-offs are
+  snapped — the Auto-locate trail's `11 15 15 12` becomes token values (e.g. `MarginDialog` / `GroupBoxInset`). Thicknesses are written with a small
+  markup extension that builds a `Thickness` from token names — `{tokens:Space GapRelated}`, `{tokens:Space Left=GapLabel}`,
+  `{tokens:Space Left=GroupBoxInset, Top=GroupBoxFirstControl}` — so no per-combination resources are needed and the spacing test sees a `{…}` value.
+  Group-box tokens are measured from the box edge: the group box's top content padding is set so its first control sits `GroupBoxFirstControl` below the box's top edge after Classic.Avalonia's header. The main window's fixed sizes and the
   INI tab's row-label width stay as they are (layout dimensions, not spacing).
 - **C5 — One test per group** (`Tests.Architecture`): `NoLiteralColoursTests` (widened, §6 item 2), `NoLiteralTypographyTests` (`FontFamily`, `FontSize`,
   `FontWeight` hold resources), `NoLiteralSpacingTests` (`Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing`, `HorizontalSpacing` hold resources, or `0`)

@@ -64,6 +64,9 @@ with a test that keeps the two in step.
   prompt, briefly changed the display mode and exited. The redirected test database's *Last played* became 22 October 12:15, and the game rewrote its own
   `zoo.ini` as it does on every start; the launcher saved nothing.
 - **Implementers left background work running** in Task 1 and in Task 13 (a hung line-ending check); each was told to stop it and did.
+- **Task 15's regex conversion emptied a test.** Moving `IconClasses` to `[GeneratedRegex]` added a stray quote, so `Icons_DrawWithoutSmoothing`
+  matched no icon with a second class (all 20) and passed without checking anything. Review caught it; `a74e2fd` restored the pattern, added a non-empty
+  guard and compared every converted pattern with its original.
 - **Task 9's first cut broke keyboard focus on drop-downs.** Avalonia's ComboBox moves focus to its list item on open and back to itself on close, and the
   row's focus handlers treated those moves as leaving the field, so a Tab-focused drop-down lost focus when its list closed. Review caught it; fixed in
   `f2450ce` (focus moves inside the row keep the state). The second review found the narrowed click check written but never called; wired in `0fc60ae`.
@@ -83,27 +86,20 @@ with a test that keeps the two in step.
 
 ## Outstanding items
 
-### Polish, whenever the area is next touched
+The second review of this ledger sorted the outstanding items (decisions 11–12):
 
-- The XAML scanners miss property-element syntax (`<Setter.Value>Red</Setter.Value>`, `<SolidColorBrush.Color>…`), single-quoted attribute values and literals in
-  markup-extension positional parameters.
-- `SharedSizeStylesTests` and `AvaloniaPropertyFieldTests` build `new Regex` rather than `[GeneratedRegex]`; the scanner rebuilds two regexes per `Scan` call.
-- `SharedSizeStylesTests`' style-block regex does not handle a selector-first, nested or self-closing `<Style>`, and reports `<Image Image.Width>` twice.
-- The Button `MinWidth` style-setter path of `Views_UseSharedSizeStyles` was not proven with a planted setter (the attribute path was).
-- The Infrastructure tests' parameter-adding code is repeated across three classes; `ProjectPaths.Project` no longer checks for the `.csproj`.
-- `AvaloniaProperties_ArePublic` scans source text, so a property field declared in an unusual form could slip past it.
-- `TokenReferencesTests` do not assert that they matched at least one reference, so a regex regression that matches nothing would quietly turn them off.
-- `Views_DoNotFadeTextWithOpacity` flags any `Opacity` other than `1` (bindings and `1.0` included), while its summary and SDD §11.5 say "literal"; it also
-  reports two literal-`MinWidth` buttons on one line once.
-- `XamlResourceKeys.CollectShared` reads only the top level of `Styles/`.
-- The INI focus code treats a drop-down's list as inside its row by walking from the popup to its owner. That holds while popups are separate windows (the
-  Windows default); turning on overlay popups would break it. `IniFieldFocusRelease.IsWithin` and the click filter have no test outside the running app.
-- `ColourRegistryTests`' duplicate-key path was not proven with a planted duplicate (the no-hex path was).
+- **Closed in this milestone.** Task 14 made the token tests check what they claim: `TokenReferencesTests` and `Icons_DrawWithoutSmoothing` fail when they
+  match nothing; the opacity test skips bindings and resources and treats `1.0` as opaque; every literal-`MinWidth` button is reported; the Button `MinWidth`
+  setter and duplicate-colour-key paths were proven with plants; `Styles/` subfolders are read. Task 15 moved the fixed patterns to `[GeneratedRegex]`, caches
+  the scanner's built patterns, shares one parameter helper across the persistence tests and restores `ProjectPaths.Project`'s `.csproj` check.
+- **Deferred as SDD DW-36.** The XAML scanners' blind spots: property-element syntax, single-quoted values, literals in markup-extension parameters,
+  selector-first, nested or self-closing `<Style>` blocks, the `{}` literal escape read as a binding, the duplicate `<Image Image.Width>` report, and
+  `AvaloniaProperties_ArePublic` reading source text. The intended fix is to parse XAML with `XDocument` rather than patch each regex.
+- **Moved to the headless view-load test's branch** (`feat/headless-view-load-tests`): tests for the INI focus edge cases — a drop-down's list counting as
+  inside its row (which relies on popups being separate windows), the click filter, keyboard focus surviving a drop-down, Esc and click-away.
 
 ### Not planned
 
-- A headless Avalonia test that loads every view now exists on its own branch, `feat/headless-view-load-tests`, cut from this branch; it opens after this PR
-  merges. It is also the natural home for tests of the INI focus behaviour above.
 - Remapping the spacing tokens onto an even 2 → 14 scale: the table below records every original value and its token for that.
 
 ---

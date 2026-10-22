@@ -252,15 +252,15 @@ Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branc
 **Files:** `Tests/…Tests.Architecture/TokenReferencesTests.cs`, `SharedSizeStylesTests.cs`, `ColourRegistryTests.cs` (proof only),
 `Common/XamlResourceKeys.cs`; SDD §11.5 if a test's description changes.
 
-- [ ] **Step 1:** `TokenReferencesTests`: each test asserts it matched at least one reference (`ResourceReferences_Resolve` a `{StaticResource …}`,
+- [x] **Step 1:** `TokenReferencesTests`: each test asserts it matched at least one reference (`ResourceReferences_Resolve` a `{StaticResource …}`,
   `SpaceTokens_NameDoubleResources` a `{tokens:Space …}`, `SpacingResources_HaveTheRightType` a spacing attribute holding a resource). Prove each guard by
   pointing the test at an empty input or breaking its regex temporarily; revert.
-- [ ] **Step 2:** `Views_DoNotFadeTextWithOpacity`: skip values that start with `{`; treat `1`, `1.0` and `1.00` as opaque. `Views_UseSharedSizeStyles`: report
+- [x] **Step 2:** `Views_DoNotFadeTextWithOpacity`: skip values that start with `{`; treat `1`, `1.0` and `1.00` as opaque. `Views_UseSharedSizeStyles`: report
   every literal-`MinWidth` button, keyed by position rather than line. Prove both with plants; revert.
-- [ ] **Step 3:** Prove the unproven paths with plants (record the failure output, then revert): a `<Setter Property="MinWidth" Value="80" />` in a
+- [x] **Step 3:** Prove the unproven paths with plants (record the failure output, then revert): a `<Setter Property="MinWidth" Value="80" />` in a
   `Button` style inside a view, and a duplicated key in `Colours.axaml`.
-- [ ] **Step 4:** `XamlResourceKeys.CollectShared` reads `Styles/**/*.axaml`.
-- [ ] **Step 5: Run** Architecture + a full build (0 warnings). **Commit** — `test(✅): make the token tests check what they claim`
+- [x] **Step 4:** `XamlResourceKeys.CollectShared` reads `Styles/**/*.axaml`.
+- [x] **Step 5: Run** Architecture + a full build (0 warnings). **Commit** — `test(✅): make the token tests check what they claim`
 
 ---
 
@@ -270,14 +270,14 @@ Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branc
 the Infrastructure persistence tests' parameter helpers (`LauncherDbContextTests`, `InstallationDbContextTests`, `IniSnapshotRepositoryTests`);
 `Tests/…Tests.Architecture/Common/ProjectPaths.cs`.
 
-- [ ] **Step 1:** Fixed patterns become `[GeneratedRegex]` on `partial` classes; patterns built from arguments (the scanner's property-name alternations) are built
+- [x] **Step 1:** Fixed patterns become `[GeneratedRegex]` on `partial` classes; patterns built from arguments (the scanner's property-name alternations) are built
   once per distinct name set and cached, not per `Scan` call.
-- [ ] **Step 2:** One shared helper (one type per file, under the Infrastructure test project's `Common/` or `Persistence/` folder) adds a named SQLite
+- [x] **Step 2:** One shared helper (one type per file, under the Infrastructure test project's `Common/` or `Persistence/` folder) adds a named SQLite
   parameter to a `DbCommand`; the three classes use it.
-- [ ] **Step 3:** `ProjectPaths.Project(name)` checks that `<name>/<name>.csproj` exists, as the old resolver did.
-- [ ] **Step 4: Run** Architecture + Infrastructure + a full build (0 warnings). **Commit** — `refactor(♻️): tidy the architecture and persistence test code`
+- [x] **Step 3:** `ProjectPaths.Project(name)` checks that `<name>/<name>.csproj` exists, as the old resolver did.
+- [x] **Step 4: Run** Architecture + Infrastructure + a full build (0 warnings). **Commit** — `refactor(♻️): tidy the architecture and persistence test code`
 
 ## Verification (follow-ups)
 
-- [ ] Clean build with 0 warnings; every test project passes (after Tasks 14–15).
+- [x] Clean build with 0 warnings; every test project passes (after Tasks 14–15).
 - [x] Task 12 checked in the running app.

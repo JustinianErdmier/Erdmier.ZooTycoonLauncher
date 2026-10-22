@@ -1,3 +1,5 @@
+global using System.Data;
+global using System.Data.Common;
 global using System.IO.Abstractions.TestingHelpers;
 
 global using Erdmier.ZooTycoonLauncher.Application.Common.Abstractions;

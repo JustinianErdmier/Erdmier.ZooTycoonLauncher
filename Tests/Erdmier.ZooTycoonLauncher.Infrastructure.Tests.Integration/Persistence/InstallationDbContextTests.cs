@@ -1,6 +1,3 @@
-using System.Data;
-using System.Data.Common;
-
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration.Persistence;
@@ -98,6 +95,7 @@ public sealed class InstallationDbContextTests : IDisposable
         {
             await connection.OpenAsync();
         }
+
         await using DbCommand command = connection.CreateCommand();
         command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=$name";
         DbParameter parameter = command.CreateParameter();

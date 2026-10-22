@@ -1,6 +1,3 @@
-using System.Data;
-using System.Data.Common;
-
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -121,7 +118,7 @@ public sealed class LauncherDbContextTests : IDisposable
 
         (await ColumnExistsAsync(context, tableName: "LauncherSettings", columnName: "Theme")).ShouldBeTrue();
 
-        (await ColumnDefaultAsync(context, tableName: "LauncherSettings", columnName: "Theme")).ShouldBe("'System'");
+        (await ColumnDefaultAsync(context, tableName: "LauncherSettings", columnName: "Theme")).ShouldBe(expected: "'System'");
     }
 
     private LauncherDbContext BuildContext()
@@ -143,6 +140,7 @@ public sealed class LauncherDbContextTests : IDisposable
         {
             await connection.OpenAsync();
         }
+
         await using DbCommand command = connection.CreateCommand();
         command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=$name";
         AddParameter(command, name: "$name", tableName);
@@ -160,6 +158,7 @@ public sealed class LauncherDbContextTests : IDisposable
         {
             await connection.OpenAsync();
         }
+
         await using DbCommand command = connection.CreateCommand();
         command.CommandText = "SELECT COUNT(*) FROM pragma_table_info($table) WHERE name = $column";
 

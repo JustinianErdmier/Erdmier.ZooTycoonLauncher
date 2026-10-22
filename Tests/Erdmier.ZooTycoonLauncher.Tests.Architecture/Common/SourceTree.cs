@@ -1,6 +1,6 @@
 namespace Erdmier.ZooTycoonLauncher.Tests.Architecture.Common;
 
-/// <summary>Enumerates their source files for the architecture tests that scan text.</summary>
+/// <summary>Enumerates source files under a root for the architecture tests that scan text.</summary>
 public static class SourceTree
 {
     /// <summary>Enumerates the files under <paramref name="root" /> matching <paramref name="pattern" />, skipping <c>bin</c> and <c>obj</c>.</summary>

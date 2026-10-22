@@ -1,5 +1,3 @@
-using System.Data;
-using System.Data.Common;
 using System.IO.Abstractions;
 
 using Erdmier.ZooTycoonLauncher.Domain.IniKeys;

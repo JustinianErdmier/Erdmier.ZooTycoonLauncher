@@ -272,7 +272,7 @@ Cell 1 of the status bar carries the primary message; cell 2 carries the seconda
 |----------------|-----------------------------------------------|------------------------------------------|---------------------------------------|
 | Looking        | `Discovering installations…`                  | `Reading registry…`                      | Cell 2 updates as boot phases advance |
 | Ready          | `Ready — <installation name>`                 | `Display: <w>×<h>` (General) / `INI loaded` (INI Config) |                                       |
-| Cannot Play    | `Cannot launch — installation invalid`        | `Fix required` (bold, `AccentMaroon`)    |                                       |
+| Cannot Play    | `Cannot launch — installation invalid`        | `Fix required` (`AccentRed`)           |                                       |
 | No Installation| `No installation registered`                  | *(empty)*                                |                                       |
 | Open Picker    | `Choose an installation to open`              | *(empty)*                                |                                       |
 

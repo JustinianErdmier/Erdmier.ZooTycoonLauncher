@@ -827,7 +827,7 @@ A modal hosting a three-column, headered `DataGrid` (`Name`, `Path`, `Status`) a
 
 - **Sort order.** The default installation pins to the top with its `Name` rendered **bold** and a ` · default` suffix; remaining rows sort alphabetically case-insensitive.  
   Implementation: an `IComparer<InstallationGridRowModel>` so the grid stays simple.
-- **Status column.** `InstallationValidity.DisplayName` rendered in `Valid → Green`, others `Red`.
+- **Status column.** `InstallationValidity.DisplayName` rendered by `ValidityToBrushConverter`: `Valid` in `AccentGreen`, others in `AccentRed`.
 - **Action enablement.**
     - `Add…` always enabled.
     - `Info`, `Edit…`, `Delete` require a selected row.
@@ -1233,9 +1233,8 @@ conventions doc for everything that recurs.
 The authoritative visual reference for the MVP is the **live hi-fi prototype in Claude Design** (HTML/CSS/JS; built from the Claude Design handoff bundle that produced this  
 revision of the SDD). A single screen-recording GIF at [  
 `Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](../UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) is committed to the repo as a quick reference  
-covering every state, every dialogue and the INI tab help affordance (it also shows a dark/light theme switch, which the launcher does not have). The prototype is *not* a
-production target — match the visual output, not its  
-internal structure.
+covering every state, every dialogue and the INI tab help affordance (it also shows a dark/light theme switch, which the launcher does not have). The prototype is
+*not* a production target — match the visual output, not its internal structure.
 
 ### 9.1 Main window and chrome
 
@@ -1248,7 +1247,7 @@ internal structure.
 - **Tab strip.** Two tabs along the top edge of the content area for the `ReadyToPlay` and `CannotPlay` states: **General** (Alt-G) and **INI Config** (Alt-I). The strip is
   absent — not just disabled — in the `LookingForZooTycoon`, `NoGameInstallationFound`, and `OpenGameInstallation` states; with no installation open, there is nothing to edit.
 - **Status bar.** Two cells while booting (primary message + version label); three cells once booted (primary message + secondary detail + version label). `MainWindowViewModel`
-  owns the message text and an optional secondary colour brush so the secondary cell can be tinted (e.g. red for `Fix required`).
+  owns the message text and an `IsStatusError` flag; `ErrorToBrushConverter` tints the secondary cell `AccentRed` for `Fix required` (Cannot Play only).
 
 The five states reflect the startup state machine (§7.1). The hi-fi prototype (§9.12) is the visual contract for each one; what follows is a layout sketch, not a style guide:
 
@@ -1327,7 +1326,7 @@ Desktop/
 │   ├── States/                            Layer 1  
 │   ├── Tabs/                              Layer 2  
 │   ├── IniConfig/                         IniEditorView, IniSectionView, IniPlaceholderView (+ Fields/)  
-│   └── Dialogues/                         Modal UserControls (Add, Edit, Info, Fix, Historical, Options, Confirm, Save Changes prompt, error message)  
+│   └── Dialogs/                           Modal UserControls (Add, Edit, Info, Fix, Historical, Options, Confirm, Save Changes prompt, error message)  
 └── ViewModels/                            Mirrors Views/ exactly; every *View has a corresponding *ViewModel.  
 ```  
 
@@ -1531,8 +1530,8 @@ Removed in milestone 11: the launcher has one, light, appearance. Its colours ar
 A single screen-recording GIF — [`Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](../UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) — captures
 every  
 state, every dialogue and the INI Config tab help affordance in one pass (its dark/light theme switch no longer exists). The recording is the in-repo glance; the
-**live hi-fi prototype in Claude  
-Design** remains the authoritative visual reference (it surfaces hover behaviour, transitions, and the help-on-hover footer affordance that a static frame can't show).
+**live hi-fi prototype in Claude Design** remains the authoritative visual reference (it surfaces hover behaviour, transitions, and the help-on-hover footer affordance that
+a static frame can't show).
 
 Bordered boxes in the recording for action panels or metadata regions are visual boundaries only and are *not* rendered as borders in the final UI.
   
@@ -1736,7 +1735,7 @@ Planned phases (§13.3, §13.4), permanent non-goals (§3.2) and risks (§14.5) 
 | DW-05 | The General tab keeps its boot-time Cannot Play / "could not read `zoo.ini`" message after a later INI-tab retry succeeds; it should recover without a reopen.                                                                                                                                                                                                            | PR #6 (ruling R10)                                    |
 | DW-06 | Open an installation from the Installation Manager (an **Open** button and row double-click), and File → Open Installation… as the Manager focused on Open (§9.10). The Manager footer already promises "Double-click a row to open", which does nothing yet.                                                                                                             | PR #4, PR #5                                          |
 | DW-07 | Deleting the last installation while the picker shows leaves an empty picker. With the *No Installation* startup preference, `BootHandler` returns the picker even when no installations exist; it should fall through to auto-locate and No Game Installation Found. The picker's `Manage…` bypasses the main window, so the main window never reboots after those changes. | PR #4, PR #5                                          |
-| DW-09 | The status bar's display cell is hard-coded as "Display: 1920 × 1080" (`MainWindowViewModel.cs:321`, a `TODO`). Source it from the screen-modes work (§7.9).                                                                                                                                                                                                              | Code `TODO`; maintainer's note 4                      |
+| DW-09 | The status bar's display cell is hard-coded as "Display: 1920 × 1080" (`MainWindowViewModel`, a `TODO`). Source it from the screen-modes work (§7.9).                                                                                                                                                                                                              | Code `TODO`; maintainer's note 4                      |
 | DW-10 | The "Auto-locate trail" group box on No Game Installation Found is static markup (`NoGameInstallationFoundView.axaml:41`, a `TODO`). `BootResult` could carry the whole `LocatedDirectory` record (path plus every checked location and its status) instead of the path alone.                                                                                            | Code `TODO`; maintainer's note 2                      |
 | DW-11 | The "Your System" group box on Ready to Play is static markup, added from the mock-up after this SDD was written. It is unspecified, and feasibility needs research before a spec.                                                                                                                                                                                        | Maintainer's note 5                                   |
 | DW-36 | **V2.0.0.** Experiment with, then implement, a VirtualStore copy of `zoo.ini` as the fix for read-only installs, with no reinstall. First prove with a hand-made copy that `zoo.exe`, run without admin rights, reads the VirtualStore file before the launcher depends on it. See §14.5 row 9.                                                                           | Maintainer, 24 Sept 2026                              |

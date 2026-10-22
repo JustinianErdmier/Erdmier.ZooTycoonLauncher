@@ -44,8 +44,9 @@ These go in the ledger as rulings when the plan runs; each is cheap to reverse.
   **Game launch** group: check box `Close launcher after the game starts`, with the muted helper *"When ticked, the launcher exits as soon as `zoo.exe` reports
   started."* (`zoo.exe` in the monospace run, indented under the check box). Footer `OK` (default) and `Cancel`, right-aligned, `MinWidth="75"`.
 - **C2 — Saving.** The dialogue loads the current values when it opens. `OK` saves both values in one command and closes; `Cancel`, the title-bar close and
-  `Esc` discard. `OK` is always enabled (saving unchanged values is harmless). A save failure shows `Cannot Save Options` with the error and keeps the dialogue
-  open. Nothing applies live: the startup preference is read at the next start and the close setting at the next launch, which is already how the code works.
+  `Esc` discard. `OK` is enabled once the stored values have loaded (so a failed load cannot overwrite them with defaults); saving unchanged
+  values is harmless. A save failure shows `Cannot Save Options` with the error and keeps the dialogue open. Nothing applies live: the startup preference is read at the
+  next start and the close setting at the next launch, which is already how the code works.
   `DefaultInstallationId` is never touched by this dialogue.
 - **C3 — The menu item.** `File → Options…` replaces the inert `Settings…` item in the same place. `O` is already `Open Installation…`'s accelerator, so this
   item uses `P` (`O<u>p</u>tions…`, as Windows Explorer's *Folder Options* does). The item is enabled in every main-window state after boot (the menu is hidden

@@ -1,5 +1,6 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
                xmlns:common="using:Erdmier.ZooTycoonLauncher.Desktop.Views.Common"
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.InstallationManagerDialogView"
@@ -11,26 +12,26 @@
                CanResize="False"
                WindowStartupLocation="CenterOwner"
                ShowInTaskbar="False">
-    <DockPanel Margin="8">
+    <DockPanel Margin="{tokens:Space MarginDialog}">
         <!-- Footer: helper text, then Close on its own row -->
         <StackPanel DockPanel.Dock="Bottom"
-                    Margin="0 8 0 0"
-                    Spacing="8">
+                    Margin="{tokens:Space Top=GapUnrelated}"
+                    Spacing="{StaticResource GapRelated}">
             <TextBlock Text="{Binding Grid.Rows.Count, StringFormat='{}{0} installation(s) registered. Double-click a row to open.'}"
-                       Opacity="0.6" />
+                       Classes="MutedText" />
 
             <Button Command="{Binding CloseCommand}"
                     Content="Close"
                     HorizontalAlignment="Right"
                     IsDefault="True"
                     IsCancel="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
         </StackPanel>
 
         <!-- Right-side action panel -->
         <StackPanel DockPanel.Dock="Right"
-                    Margin="8 0 0 0"
-                    Spacing="4"
+                    Margin="{tokens:Space Left=GapRelated}"
+                    Spacing="{StaticResource GapRelated}"
                     Width="80">
             <Button Command="{Binding AddCommand}"
                     Content="Add…"
@@ -51,7 +52,7 @@
             <Button Command="{Binding FixCommand}"
                     Content="Fix…"
                     HorizontalAlignment="Stretch"
-                    Margin="0 12 0 0" />
+                    Margin="{tokens:Space Top=GapUnrelated}" />
         </StackPanel>
 
         <!-- Grid fills remaining space -->

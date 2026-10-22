@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
         xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
         x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.LaunchErrorView"
         x:DataType="vm:LaunchErrorViewModel"
@@ -22,15 +23,15 @@
         </Style>
     </Window.Styles>
 
-    <StackPanel Margin="8"
+    <StackPanel Margin="{tokens:Space MarginDialog}"
                 Orientation="Vertical"
-                Spacing="10">
-        <DockPanel HorizontalSpacing="10">
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
             <Image DockPanel.Dock="Left"
-                   Height="32"
+                   Classes="IconLarge IconBesideMessage"
+                   RenderOptions.BitmapInterpolationMode="None"
                    Source="/Assets/Win95Icons/cancel32.gif"
-                   VerticalAlignment="Center"
-                   Width="32" />
+                   VerticalAlignment="Center" />
 
             <TextBlock Text="{Binding Message}"
                        TextWrapping="Wrap" />
@@ -40,6 +41,6 @@
                 Content="OK"
                 HorizontalAlignment="Center"
                 IsDefault="True"
-                MinWidth="80" />
+                Classes="DialogButton" />
     </StackPanel>
 </Window>

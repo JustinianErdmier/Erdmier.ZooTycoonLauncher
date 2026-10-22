@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- The launcher's spacing, defined once, in pixels. The values are the Windows 9x guideline distances converted from dialog units (spec 11.1 section 4).
+         Views use {StaticResource …} for a Spacing value and {tokens:Space …} (SpaceExtension) for a Margin or Padding. -->
+    <x:Double x:Key="GapSmallest">3</x:Double>
+    <x:Double x:Key="GapLabel">5</x:Double>
+    <x:Double x:Key="GapRelated">6</x:Double>
+    <x:Double x:Key="MarginDialog">11</x:Double>
+    <x:Double x:Key="GapUnrelated">11</x:Double>
+    <x:Double x:Key="GroupBoxBottom">11</x:Double>
+    <x:Double x:Key="GroupBoxInset">14</x:Double>
+    <x:Double x:Key="GroupBoxFirstControl">18</x:Double>
+    <x:Double x:Key="GapIconBody">11</x:Double>
+    <x:Double x:Key="GapIconMessage">17</x:Double>
+
+    <!-- An icon beside text sits in a DockPanel whose HorizontalSpacing is GapRelated (the right distance to a button), so the icon carries the rest of its gap as a
+         right margin: the icon token minus GapRelated. IconBesideBodyMargin = GapIconBody (11) - GapRelated (6) = 5; IconBesideMessageMargin = GapIconMessage (17) -
+         GapRelated (6) = 11. An architecture test checks the arithmetic. -->
+    <Thickness x:Key="IconBesideBodyMargin">0,0,5,0</Thickness>
+    <Thickness x:Key="IconBesideMessageMargin">0,0,11,0</Thickness>
+
+    <!-- A group box measures its first control from the title text's top edge, but Classic.Avalonia's content area (and so Padding) starts at the frame line, which
+         sits GroupBoxHeaderHeight (6 px, measured on screen) below the title's top. GroupBoxPadding = left GroupBoxInset (14), top GroupBoxFirstControl (18) -
+         GroupBoxHeaderHeight (6) = 12, right GroupBoxInset (14), bottom GroupBoxBottom (11). An architecture test checks the arithmetic. -->
+    <x:Double x:Key="GroupBoxHeaderHeight">6</x:Double>
+    <Thickness x:Key="GroupBoxPadding">14,12,14,11</Thickness>
+</ResourceDictionary>

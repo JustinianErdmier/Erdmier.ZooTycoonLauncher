@@ -1,13 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.IniEditorView"
              x:DataType="vm:IniEditorViewModel">
     <Grid ColumnDefinitions="170,*"
-          ColumnSpacing="8"
-          Margin="8"
+          ColumnSpacing="{StaticResource GapRelated}"
+          Margin="{tokens:Space MarginDialog}"
           RowDefinitions="Auto,300,Auto"
-          RowSpacing="4">
+          RowSpacing="{StaticResource GapRelated}">
         <TextBlock Foreground="{StaticResource ForegroundMuted}"
                    Grid.Column="0"
                    Grid.Row="0"
@@ -26,7 +27,7 @@
                  SelectionMode="AlwaysSelected">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:IniSectionViewModel">
-                    <TextBlock FontFamily="Lucida Console, Courier New, monospace"
+                    <TextBlock FontFamily="{StaticResource FontFamilyMono}"
                                Text="{Binding Header}" />
                 </DataTemplate>
             </ListBox.ItemTemplate>
@@ -37,10 +38,12 @@
                 BorderThickness="1"
                 Grid.Column="1"
                 Grid.Row="1"
-                IsEnabled="{Binding !IsBusy}">
+                IsEnabled="{Binding !IsBusy}"
+                KeyDown="OnFormKeyDown"
+                PointerPressed="OnFormPointerPressed">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                 <ContentControl Content="{Binding SelectedSection}"
-                                Margin="10 8" />
+                                Margin="{tokens:Space Horizontal=GapUnrelated, Vertical=GapRelated}" />
             </ScrollViewer>
         </Border>
 
@@ -49,23 +52,23 @@
                    Grid.Row="2">
             <StackPanel DockPanel.Dock="Right"
                         Orientation="Horizontal"
-                        Spacing="6">
+                        Spacing="{StaticResource GapRelated}">
                 <Button Command="{Binding RestorePreviousCommand}"
                         Content="Restore previous…"
-                        MinWidth="75" />
+                        Classes="DialogButton" />
 
                 <Button Command="{Binding RestoreDefaultsCommand}"
                         Content="Restore defaults"
-                        MinWidth="75" />
+                        Classes="DialogButton" />
 
                 <Button Command="{Binding SaveCommand}"
                         Content="Save"
                         IsDefault="True"
-                        MinWidth="75" />
+                        Classes="DialogButton" />
 
                 <Button Command="{Binding ResetCommand}"
                         Content="Reset"
-                        MinWidth="75" />
+                        Classes="DialogButton" />
             </StackPanel>
 
             <Panel VerticalAlignment="Center">
@@ -74,7 +77,7 @@
                            Text="{Binding FooterText}"
                            TextTrimming="CharacterEllipsis" />
 
-                <TextBlock FontWeight="Bold"
+                <TextBlock FontWeight="{StaticResource FontWeightStrong}"
                            Foreground="{StaticResource AccentMaroon}"
                            IsVisible="{Binding IsFooterDirty}"
                            Text="{Binding FooterText}" />

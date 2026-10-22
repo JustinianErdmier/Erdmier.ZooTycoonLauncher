@@ -11,7 +11,7 @@
 |--------------------------|-----------------------------------|
 | **Project**              | Zoo Tycoon Launcher               |
 | **Document**             | Software Design Document (SDD)    |
-| **Version**              | 1.13                              |
+| **Version**              | 1.14                              |
 | **Status**               | Draft for implementation          |
 | **Author**               | Justinian                         |
 | **Last updated**         | 22 October 2026                   |
@@ -36,6 +36,7 @@
 | 1.11    | 21 October 2026   | Justinian | Milestone 9.2 (INI display polish). §9.3 describes the dollar display of the four `[UI]` cash rows and the read-only `lang` / `sublang` rows behind the curated picker; §9.7 describes diff cells that read as the editor shows them (labels, `true` / `false`, dollars) and inert history headers. Every `ClassicWindow` title starts with two spaces (conventions §4.1). |
 | 1.12    | 21 October 2026   | Justinian | Milestone 10 (INI recovery and read-only detection; spec `milestone-10-ini-recovery-and-read-only-detection-design.md`). §7.4 describes the two recovery actions as built (`CreateDefaultIniCommand`, `LocateIniCommand`: create-only write, first import or `Manual` archive of a surviving `Current`, `Ini.AlreadyExists` / `Ini.NotAnIni` / `Ini.ReadOnly`); §7.2.5, §9.3.1 and §9.5 give the Fix INI group and the No INI box their `Create` / `Locate…` buttons and add the INI tab's read-only strip; §7.1.2 Verify runs the write probe (`Writable`, `FolderReadOnly`, `FileReadOnly`, `Unknown`); §9.1 Cannot Play points at the INI Config tab; §14.5 row 9's MVP mitigation is implemented. §13.5.1 deletes DW-01 and DW-12, which this milestone delivers, and adds DW-40 (Copy From Another Installation). |
 | 1.13    | 22 October 2026   | Justinian | Milestone 11 (Options dialogue and colour cleanup; spec `milestone-11-options-and-colour-cleanup-design.md`). Dark mode and themes are scrapped: §5.1 / §5.2 / §6.2 drop `LauncherSettings.Theme`, the `LauncherTheme` enum and its column, and §5.2 drops `InstallationValidity.ColourToken` (a colour is presentation, not domain); §9.11 is reduced to a removal note. §9.8 describes the Options dialogue as built (Startup and Game launch only) and §9.10 renames the File menu item to `O<u>p</u>tions…`; §9.12 and §13.2 follow. The launcher's colours are defined once in `Styles/Colours.axaml` and guarded by an architecture test (conventions §1). §13.5 deletes DW-20, DW-37 and DW-39, which this milestone delivers. |
+| 1.14    | 22 October 2026   | Justinian | Milestone 11.1 (style tokens and follow-ups; spec `milestone-11.1-style-tokens-and-follow-ups-design.md`). Typography, spacing and the repeated control sizes join colours as named tokens: `Styles/Typography.axaml`, `Styles/Spacing.axaml` and `Styles/Controls.axaml` sit beside `Colours.axaml`, with `SpaceExtension` building margins and paddings from token names, an architecture test per group, a `TokenReferencesTests` check that every token and resource reference resolves, and an `AvaloniaProperties_ArePublic` check (§9.2.2, §9.11, §11.5). Spacing snaps onto the Windows 9x guideline values (dialog units converted to pixels), with measured icon-gap tokens and a group-box padding derived from the tokens. Faded text uses one method, the muted grey (`MutedText`); icons draw pixel-crisp; the Options dialogue refuses Cancel and close while a save is in flight, and the Restore dialogue guards its Cancel; the colour test covers every `*Brush` attribute, element content and split setters; the persistence test helpers share one `ProjectPaths`. §9 and conventions.md describe the tokens, and DW-24 keeps only its second half (reusable stack and dock panel controls). Follow-ups: only keyboard focus keeps an INI field focused (a pointer-focused field releases once its value is set; a click elsewhere or Esc clears it); `ForegroundMuted` darkens to `#666666`; the installation grid's headers are inert (`InertHeaders`) and its columns no longer resize; and the colour registry in conventions.md is trimmed to the 11 keys `Colours.axaml` defines, checked by `ColourRegistryTests`. |
 
   
 ---  
@@ -823,7 +824,8 @@ On a successful save operation:
 
 #### 7.2.2 Installation Manager dialogue
 
-A modal hosting a three-column, headered `DataGrid` (`Name`, `Path`, `Status`) and a right-side action panel (`Add…`, `Info`, `Edit…`, `Delete`, gap, `Fix…`).
+A modal hosting a three-column, headered `DataGrid` (`Name`, `Path`, `Status`; the headers are inert and the columns do not resize) and a right-side action
+panel (`Add…`, `Info`, `Edit…`, `Delete`, gap, `Fix…`).
 
 - **Sort order.** The default installation pins to the top with its `Name` rendered **bold** and a ` · default` suffix; remaining rows sort alphabetically case-insensitive.  
   Implementation: an `IComparer<InstallationGridRowModel>` so the grid stays simple.
@@ -1230,6 +1232,11 @@ expected reading order is **SDD §9.x → conventions.md → glance at the proto
 the  
 conventions doc for everything that recurs.
 
+Every colour, font, spacing and repeated control size the views use is a named token, defined once in `Source/Erdmier.ZooTycoonLauncher.Desktop/Styles/`:
+`Colours.axaml`, `Typography.axaml`, `Spacing.axaml` (the Windows 9x guideline distances in pixels; `SpaceExtension` builds a `Margin` or `Padding` from token names, as
+`{tokens:Space GapRelated}`) and `Controls.axaml` (the shared `DialogButton`, `IconLarge` / `IconSmall`, `MutedText` and `InertHeaders` styles). Views reference them with
+`StaticResource`; an architecture test per group (§11.5) fails on a literal. The values and their uses are in conventions §1 and §2.
+
 The authoritative visual reference for the MVP is the **live hi-fi prototype in Claude Design** (HTML/CSS/JS; built from the Claude Design handoff bundle that produced this  
 revision of the SDD). A single screen-recording GIF at [  
 `Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](../UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) is committed to the repo as a quick reference  
@@ -1333,7 +1340,11 @@ Desktop/
 ├── Converters/                            Value converters and ApplicationBrushLookup (state → named brush; view models hold no brushes).  
 ├── Models/                                Plain display models (InstallationGridRowModel, IniConfig/).  
 ├── Styles/  
-│   └── Colours.axaml                      The single colour set: every named brush, defined once (§9.11).  
+│   ├── Colours.axaml                      The single colour set: every named brush, defined once (§9.11).  
+│   ├── Typography.axaml                   Font families, sizes and weights (conventions §1.3).  
+│   ├── Spacing.axaml                      Spacing tokens in pixels, plus the values derived from them (conventions §1.4).  
+│   ├── SpaceExtension.cs                  Markup extension: builds a Thickness from token names.  
+│   └── Controls.axaml                     Shared control styles: DialogButton, IconLarge / IconSmall, MutedText, InertHeaders (conventions §2).  
 └── Assets/                                Brand icons, images and Win95 icons.  
 ```  
 
@@ -1413,8 +1424,11 @@ selected by the user, is **hover + status**:
 - **Hover/focus the row** → the editor's footer status label switches from the dirty-state indicator to a short italicised one-liner derived from the same prose. When no row
   is hovered or focused, the footer reverts to its dirty / saved indicator (`● Unsaved changes` in maroon-bold, or `All changes saved · Last write: <local time>` in muted grey).
 
-The row's pointer sets the field's `IsHovered` and its focus sets `IsFocused`; the editor footer shows the hovered row's help, else the focused
-row's, else the dirty / saved state. `IIniHelpRegistry` and `IStatusBarSink` are not used.
+The row's pointer sets the field's `IsHovered`; only keyboard focus (Tab or the arrow keys) sets `IsFocused`. The editor footer shows the hovered row's help, else the
+keyboard-focused row's, else the dirty / saved state. A field the pointer focused gives focus back once its value is set (a drop-down when its list closes, a toggle after the
+click, a spinner after a step, a text or number box on Enter), and a click on a non-input part of the editor, or Esc, clears focus. `IniFieldFocusPolicy` holds these rules and
+`IniFieldFocusRelease` applies them to the live controls; the drop-down views release from their `DropDownClosed` event, which is not routed and so cannot be heard by
+the row. `IIniHelpRegistry` and `IStatusBarSink` are not used.
 
 Defaults stay on the input controls themselves (placeholders and bounds), not in the help text. The Ref launcher's tooltip-on-parent-panel trick (§7.3.1) still applies — the
 panel  
@@ -1424,7 +1438,8 @@ that owns both label and input is what carries `ToolTip.Tip` so the whole row tr
 
 `ClassicWindow` modal titled `Installation Manager` (renamed from the previous "Installation Management" — the singular form reads as a proper noun naming the dialogue).
 
-- **Three-column `DataGrid`:** `Name`, `Path`, `Status` (validity badge).
+- **Three-column `DataGrid`:** `Name`, `Path`, `Status` (validity badge). The headers are plain captions (the `InertHeaders` class, with `CanUserResizeColumns="False"`), so
+  clicking one does nothing and the columns do not resize.
 - **Right-side vertical action panel:** `Add…`, `Info`, `Edit…`, `Delete`, gap, `Fix…`. Selection drives enablement (§7.2.2). `Fix…` is enabled only when the selected row is not
   valid.
 - **Footer:** row count + helper text (`Double-click a row to open`), then a `Close` default button.
@@ -1496,10 +1511,10 @@ exactly *N* keys written.
 - **Game launch** — single checkbox: `Close launcher after the game starts`. Muted helper, indented under the checkbox: *"When ticked, the launcher exits as soon as `zoo.exe`
   reports started."*
 
-Footer: `OK` (default) and `Cancel`, right-aligned, `MinWidth="75"`. The dialogue loads the stored values when it opens, and `OK` stays disabled until they have loaded. `OK` saves
-both values in one `SaveLauncherOptionsCommand` and closes; `Cancel`, `Esc` and the title-bar close discard. A failed save shows `Cannot Save Options` with the error and keeps
-the dialogue open. The dialogue never touches `LauncherSettings.DefaultInstallationId`, and nothing applies live: the startup preference is read at the next start and the close
-setting at the next launch.
+Footer: `OK` (default) and `Cancel`, right-aligned, both `DialogButton` (`MinWidth="75"`). The dialogue loads the stored values when it opens, and `OK` stays disabled until they
+have loaded. `OK` saves both values in one `SaveLauncherOptionsCommand` and closes; `Cancel`, `Esc` and the title-bar close discard. A failed save shows `Cannot Save Options` with
+the error and keeps the dialogue open. The dialogue never touches `LauncherSettings.DefaultInstallationId`, and nothing applies live: the startup preference is read at the next
+start and the close setting at the next launch.
 
 ### 9.9 About dialogue
 
@@ -1531,6 +1546,12 @@ Two top-level menus only. Accelerators in `<u>` underscores match Win95 conventi
 Removed in milestone 11: the launcher has one, light, appearance. Its colours are defined once, by name, in `Styles/Colours.axaml` and used through `StaticResource`
 (conventions §1); an architecture test forbids literal colours in the Desktop views and in Desktop and Domain code. A status colour is chosen by a converter in the Desktop
 (`ValidityToBrushConverter`, `ErrorToBrushConverter`), never by the Domain or a view model.
+
+Milestone 11.1 extended the same rule to typography, spacing and the repeated control sizes. Four files under `Styles/` hold them, merged in `App.axaml`:
+`Colours.axaml`, `Typography.axaml` (font families, sizes and weights), `Spacing.axaml` (the Windows 9x guideline distances converted to pixels, the measured icon gaps and the
+values derived from them) and `Controls.axaml` (`DialogButton`, `IconLarge` / `IconSmall`, `IconBesideBody` / `IconBesideMessage`, `MutedText` and `InertHeaders`).
+`SpaceExtension` builds a `Margin` or `Padding` from token names (`{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}`). Secondary text is faded
+one way only, by the muted grey (`MutedText` or `ForegroundMuted`), and icons draw without smoothing. Conventions §1 and §2 hold the tables.
 
 ### 9.12 Prototype reference
 
@@ -1637,12 +1658,31 @@ Solution-spanning rules using `NetArchTest.Rules`:
 - **MainWindow stays a host:** `Views/MainWindow.axaml` does not exceed 100 lines (a guard against the Ref-launcher drift the §9.2 convention exists to prevent). Adjust the cap  
   deliberately if Avalonia chrome demands more.
 - **No literal colours (milestone 11):** `NoLiteralColoursTests` fails on a literal colour in any `*.axaml` outside `Styles/Colours.axaml` (colour attributes and style setters),  
-  on brush or colour literals in `Desktop` or `Domain` code, and when `ApplicationBrushLookup`'s fallback values or key strings drift from `Colours.axaml`.
+  on brush or colour literals in `Desktop` or `Domain` code, and when `ApplicationBrushLookup`'s fallback values or key strings drift from `Colours.axaml`. Since milestone 11.1
+  it also covers every `*Brush` attribute, `OpacityMask`, colours written as element content and setters with an attribute between `<Setter` and `Property` / `Value`.
+- **No literal typography (milestone 11.1):** `NoLiteralTypographyTests` fails on a literal `FontFamily`, `FontSize` or `FontWeight` in any `*.axaml` outside
+  `Styles/Typography.axaml`, as an attribute or a style setter.
+- **No literal spacing (milestone 11.1):** `NoLiteralSpacingTests` fails on a `Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing`, `HorizontalSpacing` or
+  `VerticalSpacing` that is neither `0` nor a resource or `{tokens:Space …}`, outside `Styles/Spacing.axaml`; and `DerivedResources_MatchTheTokens` checks that each icon margin
+  is its icon gap minus `GapRelated` and that `GroupBoxPadding` is built from the group-box tokens.
+- **Shared control styles (milestone 11.1):** `SharedSizeStylesTests` fails on a literal `MinWidth` on a `Button`, `MinWidth="75"` anywhere, or a 32 / 16 px `Image` size outside
+  `Styles/Controls.axaml` (`Views_UseSharedSizeStyles`), on text faded with a literal `Opacity` other than `1` (`Views_DoNotFadeTextWithOpacity`; `1.0` counts as
+  `1`, and a binding or resource value is skipped), and on an icon `Image` that does not set `RenderOptions.BitmapInterpolationMode="None"` itself (`Icons_DrawWithoutSmoothing`;
+  Avalonia 11.3 cannot style that property). Every literal-`MinWidth` button is reported, even two on one line. The scanners behind all four tests skip XML comments.
+- **Token and resource references resolve (milestone 11.1):** `TokenReferencesTests` fails on a `{StaticResource}` or `{DynamicResource}` that names no resource declared in
+  `Styles/`, `App.axaml` or the same file (`ResourceReferences_Resolve`), on a `{tokens:Space …}` that names anything but an `x:Double` (`SpaceTokens_NameDoubleResources`), and on
+  a spacing attribute that references a resource of the wrong type, `x:Double` for `Spacing` and its relatives, `Thickness` for `Margin` and `Padding`
+  (`SpacingResources_HaveTheRightType`); each of the three also fails if it matched no reference at all, so a broken pattern cannot pass. `Styles/` is read with its
+  subfolders. A misspelt name otherwise fails only when the view loads.
+- **Avalonia property fields are public (milestone 11.1):** `AvaloniaPropertyFieldTests.AvaloniaProperties_ArePublic` fails on a static readonly `StyledProperty`,
+  `DirectProperty` or `AttachedProperty` field in `Desktop` that is not `public`, because Avalonia's XAML compiler sets the property through that field when a markup-extension
+  value (such as `{tokens:Space …}`) is assigned.
+- **The colour registry matches `Colours.axaml` (milestone 11.1):** `ColourRegistryTests.ConventionsTables_MatchColoursAxaml` fails when the conventions §1.1 and §1.2 tables and
+  `Colours.axaml` disagree, key for key and value for value, and on an entry either side lists twice or cannot be read.
 
 ### 11.6 Tests in milestone plans
 
-Each milestone plan's task list interleaves test tasks with production tasks: a feature task is "done" only when its `.Tests.Unit` / `.Tests.Integration` companions are written
-and  
+Each milestone plan's task list interleaves test tasks with production tasks: a feature task is "done" only when its `.Tests.Unit` / `.Tests.Integration` companions are written and
 green. Replaces the Ref launcher's "tests deferred" carve-out.
 
 ### 11.7 Test frameworks
@@ -1768,7 +1808,7 @@ Planned phases (§13.3, §13.4), permanent non-goals (§3.2) and risks (§14.5) 
 | DW-21 | Installation grid: the Name cell clips without an ellipsis (`InstallationGridView.axaml:29`), and the sort is ordinal rather than culture-aware (`InstallationGridViewModel.cs:201`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | PR #4                                |
 | DW-22 | **Decision pending.** Date formats differ: Info uses en-GB `d MMM yyyy HH:mm` (which renders September as "Sept"), while the General tab uses the current culture's `dd MMMM yyyy HH:mm`. Pick one convention.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | PR #5                                |
 | DW-23 | Centralise UI string literals. The version `V1.0.0` appears three times in `MainWindow.axaml`, status messages live in each view model, and the "Cannot Reload zoo.ini" title appears three times.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Maintainer's note 1; INI task review |
-| DW-24 | Make spacing, padding and margins consistent across views, and add reusable controls for commonly configured stack and dock panels. `UniformStack` exists, but carries two open `TODO`s (`UniformStack.cs:36-37`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Maintainer's notes 6–7; code `TODO`  |
+| DW-24 | Add reusable controls for commonly configured stack and dock panels. `UniformStack` exists, but carries two open `TODO`s (`UniformStack.cs:38-39`). The spacing half of this item was delivered in milestone 11.1 (spacing tokens).                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Maintainer's notes 6–7; code `TODO`  |
 | DW-25 | Remaining view `TODO`s: "No Installation" monospace and "Open" bold (`OpenGameInstallationView.axaml:23`); whether a member can be private (`AddInstallationDialogViewModel.cs:39`); confirm the handler validates name and path (`AddInstallationDialogViewModel.cs:102`); show several form errors at once (`InstallationFormViewModel.cs:31`).                                                                                                                                                                                                                                                                                                                                                                 | Code `TODO`s                         |
 | DW-26 | Domain INI hygiene: `IniKeySpec` handles the `Scenario` kind only through its catch-alls; the Domain globally imports both `System.Diagnostics.CodeAnalysis` and `JetBrains.Annotations`; the `IniKeyValue.Value` doc says "trimmed" but inserted values are stored as given; the `Int` / `Str` registry helpers lack a role parameter, so reclassifying a key is not the one-line change the INI spec promises; `IniDriftDetector.Find` duplicates `GetValueOrDefault`.                                                                                                                                                                                                                                          | INI task review                      |
 | DW-28 | Add an architecture test that fails when `/>` is followed by whitespace then `<Run` in any `*.axaml`, so the stray-space bug cannot return after a reformat.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | PR #5                                |
@@ -1788,12 +1828,13 @@ Planned phases (§13.3, §13.4), permanent non-goals (§3.2) and risks (§14.5) 
 | DW-32 | **Application** gaps:<br>• reconciler: `Source = Manual`, commit and no-archive asserts; a mixed-drift case;<br>• `IniSnapshotService`: cancellation propagation, `UnauthorizedAccessException` → `ReadFailed`, a throwing commit → `StoreFailed`;<br>• Get: the `LoadAsync`-error passthrough;<br>• Boot and Launch: tests assert row mutation, not `UpdateAsync` persistence;<br>• Save: the no-op save does not assert `DidNotReceive` on the archive. | INI task review |
 | DW-33 | **Infrastructure** gaps: an undeletable orphan (warning, then continue); `ReadAsync`'s `LastWriteUtc`; the repository's "only named rows" and "archive copies every row" rules; the composition tests build without `ValidateScopes`.                                                                                                                                                                                                                     | INI task review |
 | DW-34 | **Desktop** gaps: catalogue control kind versus value kind; the language picker's change notification; `SelectedTabIndex` → `ActivateAsync`; the guard's Open-approve path; `RouteResult`'s `IniErrorMessage` routing.                                                                                                                                                                                                                                    | INI task review |
+| DW-36 | **Architecture-test scanners** (milestone 11.1 ledger, *Outstanding items*): the regex-based XAML scanners behind the token tests miss property-element syntax (`<Setter.Value>Red</Setter.Value>`, `<SolidColorBrush.Color>…`), single-quoted attribute values, literals in markup-extension positional parameters, and selector-first, nested or self-closing `<Style>` blocks (`SharedSizeStylesTests` also reports `<Image Image.Width>` twice, and its opacity check reads the `{}` literal escape, e.g. `{}0.5`, as a binding); `AvaloniaProperties_ArePublic` reads source text, so an unusually declared property field could slip past. The clean fix is to parse XAML with `XDocument` (and inspect compiled types by reflection) instead of patching each regex. No view uses these forms today. |
 
 #### 13.5.6 Verification outstanding
 
 | ID    | Item                                                                                                                                                                                                                                                                                                                                                                                                         | Origin |
 |-------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
-| DW-35 | Run the manual end-to-end INI Config Core stubs 1–8. Smoke checks:<br>• row help appears on hover and on focus (task ruling R3);<br>• combo-box selections survive section switches;<br>• an empty text field keeps its width;<br>• Escape and Enter work on the save prompt;<br>• re-activating the tab after a game session picks up the game's writes;<br>• footer help follows keyboard section changes. | PR #6  |
+| DW-35 | Run the manual end-to-end INI Config Core stubs 1–8. Smoke checks:<br>• row help appears on hover and on keyboard focus (task ruling R3; milestone 11.1 §6a.1);<br>• combo-box selections survive section switches;<br>• an empty text field keeps its width;<br>• Escape and Enter work on the save prompt;<br>• re-activating the tab after a game session picks up the game's writes;<br>• footer help follows keyboard section changes. | PR #6  |
 
 ---  
 

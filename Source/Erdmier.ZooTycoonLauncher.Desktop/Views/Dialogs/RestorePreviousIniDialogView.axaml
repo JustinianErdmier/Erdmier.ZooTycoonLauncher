@@ -1,5 +1,6 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
                xmlns:models="using:Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig"
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.RestorePreviousIniDialogView"
@@ -11,12 +12,12 @@
                CanResize="False"
                WindowStartupLocation="CenterOwner"
                ShowInTaskbar="False">
-    <StackPanel Margin="12"
+    <StackPanel Margin="{tokens:Space MarginDialog}"
                 Orientation="Vertical"
-                Spacing="8">
-        <TextBlock Opacity="0.6"
+                Spacing="{StaticResource GapUnrelated}">
+        <TextBlock Classes="MutedText"
                    TextWrapping="Wrap">
-            <Run Text="Pick a previous version of " /><Run FontFamily="Lucida Console, Courier New, monospace"
+            <Run Text="Pick a previous version of " /><Run FontFamily="{StaticResource FontFamilyMono}"
                                                            Text="zoo.ini" /><Run Text=" to restore. The current version is archived to history before the restore is applied." />
         </TextBlock>
 
@@ -30,28 +31,21 @@
                   CanUserReorderColumns="False"
                   CanUserResizeColumns="False"
                   CanUserSortColumns="False"
+                  Classes="InertHeaders"
                   Height="140"
                   IsReadOnly="True"
                   ItemsSource="{Binding Rows}"
                   SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
                   SelectionMode="Single">
-            <DataGrid.Styles>
-                <Style Selector="DataGridColumnHeader">
-                    <Setter Property="HorizontalContentAlignment"
-                            Value="Stretch" />
-                    <Setter Property="IsHitTestVisible"
-                            Value="False" />
-                </Style>
-            </DataGrid.Styles>
 
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Captured"
                                         Width="45*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate DataType="models:IniHistoryRow">
-                            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
-                                       FontSize="11"
-                                       Margin="4 0"
+                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                                       FontSize="{StaticResource FontSizeBase}"
+                                       Margin="{tokens:Space Horizontal=GapLabel}"
                                        Text="{Binding CapturedText}"
                                        VerticalAlignment="Center" />
                         </DataTemplate>
@@ -65,15 +59,15 @@
                 <DataGridTemplateColumn Width="25*">
                     <DataGridTemplateColumn.Header>
                         <TextBlock HorizontalAlignment="Right"
-                                   Margin="4 0"
+                                   Margin="{tokens:Space Horizontal=GapLabel}"
                                    Text="Δ keys" />
                     </DataGridTemplateColumn.Header>
 
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate DataType="models:IniHistoryRow">
-                            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
+                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
                                        HorizontalAlignment="Right"
-                                       Margin="4 0"
+                                       Margin="{tokens:Space Horizontal=GapLabel}"
                                        Text="{Binding DeltaText}"
                                        VerticalAlignment="Center" />
                         </DataTemplate>
@@ -85,13 +79,11 @@
         <!-- Caption row -->
         <Grid ColumnDefinitions="*, Auto"
               IsVisible="{Binding !HasError}">
-            <TextBlock FontSize="11"
-                       Opacity="0.6"
+            <TextBlock Classes="MutedText"
                        Text="Diff: values from the selected snapshot replace the current ones on restore." />
 
             <TextBlock Grid.Column="1"
-                       FontSize="11"
-                       Opacity="0.6"
+                       Classes="MutedText"
                        Text="{Binding ChangeCountText}" />
         </Grid>
 
@@ -111,8 +103,8 @@
                         <Grid HorizontalAlignment="Left"
                               Width="{Binding Bounds.Width, ElementName=DiffItems}">
                             <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
-                                  Margin="6 3"
-                                  TextElement.FontSize="11">
+                                  Margin="{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}"
+                                  TextElement.FontSize="{StaticResource FontSizeBase}">
                                 <TextBlock Text="Key" />
 
                                 <TextBlock Grid.Column="1"
@@ -133,9 +125,9 @@
                                 <DataTemplate DataType="models:IniHistoryDiffRow">
                                     <StackPanel>
                                         <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
-                                              Margin="6 2"
-                                              TextElement.FontFamily="Lucida Console, Courier New, monospace"
-                                              TextElement.FontSize="11">
+                                              Margin="{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}"
+                                              TextElement.FontFamily="{StaticResource FontFamilyMono}"
+                                              TextElement.FontSize="{StaticResource FontSizeBase}">
                                             <TextBlock>
                                                 <Run Foreground="{StaticResource ForegroundMuted}"
                                                      Text="{Binding SectionText}" /><Run Text="/" /><Run Text="{Binding KeyText}" />
@@ -168,15 +160,15 @@
                 <TextBlock FontStyle="Italic"
                            HorizontalAlignment="Center"
                            IsVisible="{Binding HasNoDifferences}"
-                           Margin="14"
-                           Opacity="0.6"
+                           Margin="{tokens:Space GapUnrelated}"
+                           Classes="MutedText"
                            Text="No differences — this snapshot matches the current state."
                            TextAlignment="Center"
                            VerticalAlignment="Top" />
             </Panel>
         </ClassicBorderDecorator>
 
-        <TextBlock FontSize="11"
+        <TextBlock FontSize="{StaticResource FontSizeBase}"
                    Foreground="{StaticResource AccentMaroon}"
                    IsVisible="{Binding HasKeptKeys}"
                    Text="{Binding KeptKeysText}"
@@ -184,16 +176,16 @@
 
         <StackPanel HorizontalAlignment="Right"
                     Orientation="Horizontal"
-                    Spacing="6">
+                    Spacing="{StaticResource GapRelated}">
             <Button Command="{Binding RestoreCommand}"
                     Content="Restore"
                     IsDefault="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
 
             <Button Command="{Binding CancelCommand}"
                     Content="Cancel"
                     IsCancel="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
         </StackPanel>
     </StackPanel>
 </ClassicWindow>

@@ -1,14 +1,15 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig"
              xmlns:fields="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig.Fields"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.IniSectionView"
              x:DataType="vm:IniSectionViewModel">
-    <StackPanel Spacing="6">
+    <StackPanel Spacing="{StaticResource GapRelated}">
         <StackPanel Orientation="Horizontal"
-                    Spacing="6">
-            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
-                       FontWeight="Bold"
+                    Spacing="{StaticResource GapRelated}">
+            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                       FontWeight="{StaticResource FontWeightStrong}"
                        Text="{Binding Header}" />
 
             <TextBlock Foreground="{StaticResource ForegroundMuted}"
@@ -21,10 +22,10 @@
         <ItemsControl ItemsSource="{Binding Groups}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:IniFieldGroup">
-                    <StackPanel Margin="0 4 0 0"
-                                Spacing="6">
-                        <TextBlock FontFamily="Lucida Console, Courier New, monospace"
-                                   FontWeight="Bold"
+                    <StackPanel Margin="{tokens:Space Top=GapRelated}"
+                                Spacing="{StaticResource GapRelated}">
+                        <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                                   FontWeight="{StaticResource FontWeightStrong}"
                                    Foreground="{StaticResource ForegroundDim}"
                                    IsVisible="{Binding HasSubHeader}"
                                    Text="{Binding SubHeader}" />
@@ -33,18 +34,20 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="fields:IniFieldViewModel">
                                     <Grid Background="Transparent"
+                                          Button.Click="OnRowButtonClick"
                                           ColumnDefinitions="190,*"
                                           GotFocus="OnRowGotFocus"
+                                          KeyDown="OnRowKeyDown"
                                           LostFocus="OnRowLostFocus"
-                                          Margin="0 2"
+                                          Margin="{tokens:Space Vertical=GapSmallest}"
                                           PointerEntered="OnRowPointerEntered"
                                           PointerExited="OnRowPointerExited"
                                           ToolTip.Tip="{Binding Help}">
                                         <StackPanel Grid.Column="0">
-                                            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
+                                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
                                                        Text="{Binding Label}" />
 
-                                            <TextBlock FontFamily="Lucida Console, Courier New, monospace"
+                                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
                                                        Foreground="{StaticResource ForegroundMuted}"
                                                        IsVisible="{Binding HasHint}"
                                                        Text="{Binding Hint}" />
@@ -66,7 +69,7 @@
 
         <TextBlock Foreground="{StaticResource ForegroundMuted}"
                    IsVisible="{Binding HasFootnote}"
-                   Margin="0 6 0 0"
+                   Margin="{tokens:Space Top=GapRelated}"
                    Text="{Binding Footnote}"
                    TextWrapping="Wrap" />
     </StackPanel>

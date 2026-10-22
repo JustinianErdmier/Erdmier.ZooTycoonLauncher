@@ -1,5 +1,6 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
                xmlns:converters="using:Erdmier.ZooTycoonLauncher.Desktop.Converters"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels"
                xmlns:commonControls="clr-namespace:Classic.CommonControls;assembly=Classic.CommonControls.Avalonia"
@@ -34,7 +35,7 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top"
               IsVisible="{Binding !IsBooting}"
-              Margin="5 1 5 2">
+              Margin="{tokens:Space Horizontal=GapLabel, Vertical=GapSmallest}">
             <MenuItem Header="File">
                 <MenuItem Header="Open Installation…" Command="{Binding OpenInstallationPickerCommand}" />
 
@@ -63,11 +64,11 @@
 
         <ContentControl Content="{Binding ActiveContent}"
                         DockPanel.Dock="Top"
-                        Margin="5 6 5 8" />
+                        Margin="{tokens:Space MarginDialog}" />
         <!--Two cells whilst booting: primary message and version number.-->
         <commonControls:StatusBar IsVisible="{Binding IsBooting}"
                                   DockPanel.Dock="Top"
-                                  Margin="0 2 0 0">
+                                  Margin="{tokens:Space Top=GapSmallest}">
             <commonControls:StatusBarItem commonControls:StatusBar.Size="90*">
                 <TextBlock Text="{Binding StatusMessagePrimaryText}" />
             </commonControls:StatusBarItem>
@@ -80,7 +81,7 @@
         <!--Three cells after booting: primary message, secondary message, and version number.-->
         <commonControls:StatusBar IsVisible="{Binding !IsBooting}"
                                   DockPanel.Dock="Top"
-                                  Margin="0 2 0 0">
+                                  Margin="{tokens:Space Top=GapSmallest}">
             <commonControls:StatusBarItem commonControls:StatusBar.Size="70*">
                 <TextBlock Text="{Binding StatusMessagePrimaryText}" />
             </commonControls:StatusBarItem>

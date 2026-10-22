@@ -132,7 +132,16 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
 
     /// <summary>Closes the dialogue without restoring anything. Unavailable while a restore is in progress.</summary>
     [ RelayCommand(CanExecute = nameof(CanCancel)) ]
-    private void Cancel() => CloseRequested?.Invoke(this, EventArgs.Empty);
+    private void Cancel()
+    {
+        // Execute() does not consult CanExecute, so the guard is repeated here.
+        if (IsBusy)
+        {
+            return;
+        }
+
+        CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
 
     private bool CanCancel() => !IsBusy;
 

@@ -1,0 +1,52 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- The launcher's shared control styles. Views opt in through Classes; the values come from the resources in Colours.axaml and Typography.axaml. -->
+
+    <!-- A dialogue push button: Windows 95/98 sized every command button at least 75 px wide. -->
+    <Style Selector="Button.DialogButton">
+        <Setter Property="MinWidth"
+                Value="75" />
+    </Style>
+
+    <!-- Icon sizes. Pixel-crisp drawing (so 16 px art shown at 32 px is pixel-doubled rather than smoothed) is RenderOptions.BitmapInterpolationMode="None", which Avalonia 11.3 does not expose as a styleable property, so each icon Image sets it itself; an architecture test enforces that. -->
+    <Style Selector="Image.IconLarge">
+        <Setter Property="Width"
+                Value="32" />
+        <Setter Property="Height"
+                Value="32" />
+    </Style>
+
+    <Style Selector="Image.IconSmall">
+        <Setter Property="Width"
+                Value="16" />
+        <Setter Property="Height"
+                Value="16" />
+    </Style>
+
+    <!-- An icon beside text: the icon carries the rest of its gap to the text as a right margin (derived in Spacing.axaml), since the DockPanel between them spaces by GapRelated. IconBesideBody serves group-box and property-sheet layouts, IconBesideMessage the message prompts. -->
+    <Style Selector="Image.IconBesideBody">
+        <Setter Property="Margin"
+                Value="{StaticResource IconBesideBodyMargin}" />
+    </Style>
+
+    <Style Selector="Image.IconBesideMessage">
+        <Setter Property="Margin"
+                Value="{StaticResource IconBesideMessageMargin}" />
+    </Style>
+
+    <!-- Secondary text, in the named muted grey rather than faded with Opacity. -->
+    <Style Selector="TextBlock.MutedText">
+        <Setter Property="Foreground"
+                Value="{StaticResource ForegroundMuted}" />
+        <Setter Property="FontSize"
+                Value="{StaticResource FontSizeBase}" />
+    </Style>
+
+    <!-- A grid whose column headers are plain captions: sorting and reordering are off, so the headers ignore the pointer rather than pressing without effect. This also turns off column resizing, which the header itself handles; pair it with CanUserResizeColumns="False". -->
+    <Style Selector="DataGrid.InertHeaders DataGridColumnHeader">
+        <Setter Property="HorizontalContentAlignment"
+                Value="Stretch" />
+        <Setter Property="IsHitTestVisible"
+                Value="False" />
+    </Style>
+</Styles>

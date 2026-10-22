@@ -1,5 +1,6 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.SaveChangesPromptView"
                x:DataType="vm:SaveChangesPromptViewModel"
@@ -20,14 +21,14 @@
         </Style>
     </ClassicWindow.Styles>
 
-    <StackPanel Margin="14"
-                Spacing="14">
-        <DockPanel HorizontalSpacing="10">
+    <StackPanel Margin="{tokens:Space MarginDialog}"
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
             <Image DockPanel.Dock="Left"
-                   Height="32"
+                   Classes="IconLarge IconBesideMessage"
+                   RenderOptions.BitmapInterpolationMode="None"
                    Source="/Assets/Win95Icons/warning32.gif"
-                   VerticalAlignment="Center"
-                   Width="32" />
+                   VerticalAlignment="Center" />
 
             <TextBlock MaxWidth="320"
                        Text="{Binding Message}"
@@ -37,20 +38,20 @@
 
         <StackPanel HorizontalAlignment="Center"
                     Orientation="Horizontal"
-                    Spacing="6">
+                    Spacing="{StaticResource GapRelated}">
             <Button Click="OnYesClick"
                     Content="Yes"
                     IsDefault="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
 
             <Button Click="OnNoClick"
                     Content="No"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
 
             <Button Click="OnCancelClick"
                     Content="Cancel"
                     IsCancel="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
         </StackPanel>
     </StackPanel>
 </ClassicWindow>

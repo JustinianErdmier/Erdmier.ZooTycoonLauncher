@@ -31,6 +31,9 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
         : this(null!, null!, NullLogger<OptionsDialogViewModel>.Instance)
     { }
 
+    /// <summary>Whether a user-initiated close (the title-bar button) is allowed: <see langword="false" /> while a save is in flight.</summary>
+    public bool CanClose => !IsBusy;
+
     /// <summary>Whether the launcher closes itself once the game has started.</summary>
     [ ObservableProperty ]
     public partial bool CloseAfterGameLaunch { get; set; }
@@ -42,6 +45,8 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
     /// <summary><see langword="true" /> while a save is in flight.</summary>
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(OkCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(CancelCommand)) ]
+    [ NotifyPropertyChangedFor(nameof(CanClose)) ]
     public partial bool IsBusy { get; set; }
 
     /// <summary><see langword="true" /> once the stored options have loaded; OK stays disabled until then, so a failed load never overwrites the stored values.</summary>
@@ -138,6 +143,9 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
                 return;
             }
 
+            // Release the busy flag first so CanClose is true when the window's Closing handler runs in response to CloseRequested.
+            IsBusy = false;
+
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -152,8 +160,20 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
         }
     }
 
-    [ RelayCommand ]
-    private void Cancel() => CloseRequested?.Invoke(this, EventArgs.Empty);
+    /// <summary>Closes the dialogue without saving. Unavailable while a save is in flight.</summary>
+    [ RelayCommand(CanExecute = nameof(CanCancel)) ]
+    private void Cancel()
+    {
+        // Execute() does not consult CanExecute, so the guard is repeated here.
+        if (IsBusy)
+        {
+            return;
+        }
+
+        CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private bool CanCancel() => !IsBusy;
 
     private bool CanExecuteOk() => IsLoaded && !IsBusy;
 

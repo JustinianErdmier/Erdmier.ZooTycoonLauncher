@@ -1,5 +1,6 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
                xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
                xmlns:layout="clr-namespace:Erdmier.ZooTycoonLauncher.Desktop.Views.Layout"
@@ -12,19 +13,19 @@
                CanResize="False"
                WindowStartupLocation="CenterOwner"
                ShowInTaskbar="False">
-    <StackPanel Margin="8"
+    <StackPanel Margin="{tokens:Space MarginDialog}"
                 Orientation="Vertical"
-                Spacing="10">
+                Spacing="{StaticResource GapUnrelated}">
         <TextBlock Foreground="{StaticResource AccentRed}"
                    IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                    Text="{Binding ErrorMessage}"
                    TextWrapping="Wrap" />
 
         <controls:GroupBox Header="Startup"
-                           Padding="10 15">
+                           Padding="{StaticResource GroupBoxPadding}">
             <StackPanel Orientation="Vertical"
-                        Spacing="4">
-                <TextBlock Opacity="0.6"
+                        Spacing="{StaticResource GapRelated}">
+                <TextBlock Classes="MutedText"
                            Text="When the launcher opens, restore:" />
 
                 <RadioButton Content="The default installation"
@@ -46,32 +47,32 @@
         </controls:GroupBox>
 
         <controls:GroupBox Header="Game launch"
-                           Padding="10 15">
+                           Padding="{StaticResource GroupBoxPadding}">
             <StackPanel Orientation="Vertical"
-                        Spacing="4">
+                        Spacing="{StaticResource GapRelated}">
                 <CheckBox Content="Close launcher after the game starts"
                           IsChecked="{Binding CloseAfterGameLaunch}" />
 
-                <TextBlock Margin="20 0 0 0"
-                           Opacity="0.6"
+                <TextBlock Margin="{tokens:Space Left=GroupBoxInset}"
+                           Classes="MutedText"
                            TextWrapping="Wrap">
-                    <Run Text="When ticked, the launcher exits as soon as " /><Run FontFamily="Consolas"
+                    <Run Text="When ticked, the launcher exits as soon as " /><Run FontFamily="{StaticResource FontFamilyMono}"
                                                                                    Text="zoo.exe" /><Run Text=" reports started." />
                 </TextBlock>
             </StackPanel>
         </controls:GroupBox>
 
         <layout:UniformStack HorizontalAlignment="Right"
-                             Margin="0 5"
-                             Spacing="8">
+                             Margin="{tokens:Space Top=GapUnrelated}"
+                             Spacing="{StaticResource GapRelated}">
             <Button Command="{Binding OkCommand}"
                     Content="OK"
                     IsDefault="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
             <Button Command="{Binding CancelCommand}"
                     Content="Cancel"
                     IsCancel="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
         </layout:UniformStack>
     </StackPanel>
 </ClassicWindow>

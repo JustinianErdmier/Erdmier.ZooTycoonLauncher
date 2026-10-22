@@ -1,4 +1,3 @@
-using System.Data.Common;
 using System.IO.Abstractions;
 
 using Erdmier.ZooTycoonLauncher.Domain.IniKeys;
@@ -354,20 +353,19 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
 
     private static async Task<bool> IndexExistsAsync(InstallationDbContext context, string indexName)
     {
-        await using DbConnection connection = context.Database.GetDbConnection();
+        // EF owns this connection: open it if needed, never dispose it.
+        DbConnection connection = context.Database.GetDbConnection();
 
-        await connection.OpenAsync();
+        if (connection.State != ConnectionState.Open)
+        {
+            await connection.OpenAsync();
+        }
 
         await using DbCommand command = connection.CreateCommand();
 
         command.CommandText = "SELECT name FROM sqlite_master WHERE type = 'index' AND name = $name";
 
-        DbParameter parameter = command.CreateParameter();
-
-        parameter.ParameterName = "$name";
-        parameter.Value         = indexName;
-
-        command.Parameters.Add(parameter);
+        command.AddParameter(name: "$name", indexName);
 
         return await command.ExecuteScalarAsync() is not null;
     }

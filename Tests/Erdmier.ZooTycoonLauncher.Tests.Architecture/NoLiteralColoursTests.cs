@@ -5,12 +5,6 @@ namespace Erdmier.ZooTycoonLauncher.Tests.Architecture;
 /// <summary>Milestone 11 spec C7: colours are defined once in <c>Styles/Colours.axaml</c> and referenced by name everywhere else.</summary>
 public sealed partial class NoLiteralColoursTests
 {
-    [ GeneratedRegex(@"(?<![\w.:-])(?:\w+\.)?(?<name>Foreground|Background|BorderBrush|Fill|Stroke|Color)\s*=\s*""(?<value>[^""]*)""") ]
-    private static partial Regex ColourAttribute();
-
-    [ GeneratedRegex(@"<Setter\s+(?:Property\s*=\s*""(?:\w+\.)?(?<name>Foreground|Background|BorderBrush|Fill|Stroke|Color)""\s+Value\s*=\s*""(?<value>[^""]*)""|Value\s*=\s*""(?<value>[^""]*)""\s+Property\s*=\s*""(?:\w+\.)?(?<name>Foreground|Background|BorderBrush|Fill|Stroke|Color)"")") ]
-    private static partial Regex ColourSetter();
-
     [ GeneratedRegex("""\b(Brushes\.|Colors\.|Color\.Parse\(|Color\.TryParse\(|Brush\.Parse\(|SolidColorBrush\.Parse\(|new\s+(?:[\w.]+\.)?Color\(|Color\.FromRgb\(|Color\.FromArgb\(|Color\.FromUInt32\()""") ]
     private static partial Regex BrushLiteral();
 
@@ -27,11 +21,11 @@ public sealed partial class NoLiteralColoursTests
     [ Fact ]
     public void Views_UseNamedColours()
     {
-        string desktop = ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
+        string desktop = ProjectPaths.Desktop;
 
         List<string> violations = [];
 
-        foreach (string file in EnumerateSources(desktop, pattern: "*.axaml"))
+        foreach (string file in SourceTree.EnumerateSources(desktop, pattern: "*.axaml"))
         {
             if (file.EndsWith(Path.Combine("Styles", "Colours.axaml"), StringComparison.OrdinalIgnoreCase))
             {
@@ -40,22 +34,17 @@ public sealed partial class NoLiteralColoursTests
 
             string text = File.ReadAllText(file);
 
-            foreach (Regex regex in new[] { ColourAttribute(), ColourSetter() })
+            IEnumerable<XamlAttributeMatch> matches = XamlAttributeScanner.Scan(text, "Foreground", "Background", "*Brush", "Fill", "Stroke", "Color", "OpacityMask")
+                                                                          .Concat(XamlAttributeScanner.ScanElementContent(text, "SolidColorBrush", "Color"));
+
+            foreach (XamlAttributeMatch match in matches)
             {
-                foreach (Match match in regex.Matches(text))
+                if (IsAllowed(match.Name, match.Value))
                 {
-                    string name  = match.Groups[ "name" ].Value;
-                    string value = match.Groups[ "value" ].Value.Trim();
-
-                    if (IsAllowed(name, value))
-                    {
-                        continue;
-                    }
-
-                    int line = text.AsSpan(start: 0, match.Index).Count(value: '\n') + 1;
-
-                    violations.Add($"{Path.GetRelativePath(desktop, file)}:{line}: {Regex.Replace(match.Value, @"\s+", " ")}");
+                    continue;
                 }
+
+                violations.Add($"{Path.GetRelativePath(desktop, file)}:{match.Line}: {match.Text}");
             }
         }
 
@@ -66,14 +55,14 @@ public sealed partial class NoLiteralColoursTests
     [ Fact ]
     public void Code_UsesNoBrushLiterals()
     {
-        string desktop = ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
-        string domain  = ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Domain");
+        string desktop = ProjectPaths.Desktop;
+        string domain  = ProjectPaths.Domain;
 
         List<string> violations = [];
 
         foreach (string root in new[] { desktop, domain })
         {
-            foreach (string file in EnumerateSources(root, pattern: "*.cs"))
+            foreach (string file in SourceTree.EnumerateSources(root, pattern: "*.cs"))
             {
                 if (file.EndsWith(Path.Combine("Converters", "ApplicationBrushLookup.cs"), StringComparison.OrdinalIgnoreCase))
                 {
@@ -101,7 +90,7 @@ public sealed partial class NoLiteralColoursTests
     [ Fact ]
     public void BrushLookupFallbacks_MatchColoursAxaml()
     {
-        string desktop = ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
+        string desktop = ProjectPaths.Desktop;
 
         string colours = File.ReadAllText(Path.Combine(desktop, path2: "Styles", path3: "Colours.axaml"));
         string lookup  = File.ReadAllText(Path.Combine(desktop, path2: "Converters", path3: "ApplicationBrushLookup.cs"));
@@ -136,33 +125,4 @@ public sealed partial class NoLiteralColoursTests
         => value.StartsWith('{')
            || value.Equals("Transparent", StringComparison.Ordinal)
            || (name == "Fill" && (value == "True" || value == "False"));
-
-    private static IEnumerable<string> EnumerateSources(string root, string pattern)
-        => Directory.EnumerateFiles(root, pattern, SearchOption.AllDirectories)
-                    .Where(f =>
-                    {
-                        string relative = Path.GetRelativePath(root, f);
-
-                        return !relative.StartsWith("bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                               && !relative.StartsWith("obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
-                    });
-
-    private static string ResolveProjectDirectory(string project)
-    {
-        DirectoryInfo? current = new(AppContext.BaseDirectory);
-
-        while (current is not null)
-        {
-            string candidate = Path.Combine(current.FullName, path2: "Source", project);
-
-            if (Directory.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            current = current.Parent;
-        }
-
-        throw new InvalidOperationException($"Could not locate Source/{project} from {AppContext.BaseDirectory}.");
-    }
 }

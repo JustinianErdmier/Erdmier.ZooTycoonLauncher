@@ -4,7 +4,8 @@
              xmlns:models="using:Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.Fields.IniLanguageFieldView"
              x:DataType="vm:IniLanguageFieldViewModel">
-    <ComboBox ItemsSource="{Binding Options}"
+    <ComboBox DropDownClosed="OnDropDownClosed"
+              ItemsSource="{Binding Options}"
               MaxWidth="260"
               MinWidth="200"
               SelectedItem="{Binding SelectedOption}">

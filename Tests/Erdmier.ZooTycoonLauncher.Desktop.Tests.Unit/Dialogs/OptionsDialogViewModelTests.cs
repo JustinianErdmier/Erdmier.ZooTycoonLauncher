@@ -128,6 +128,62 @@ public sealed class OptionsDialogViewModelTests
     }
 
     [ Fact ]
+    public async Task Cancel_WhileSaving_CannotExecute()
+    {
+        OptionsDialogViewModel viewModel = await LoadedAsync();
+
+        viewModel.CancelCommand.CanExecute(parameter: null).ShouldBeTrue();
+
+        viewModel.IsBusy = true;
+
+        viewModel.CancelCommand.CanExecute(parameter: null).ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task CanClose_FalseWhileSaving_TrueAfter()
+    {
+        OptionsDialogViewModel viewModel = await LoadedAsync();
+
+        viewModel.CanClose.ShouldBeTrue();
+
+        viewModel.IsBusy = true;
+
+        viewModel.CanClose.ShouldBeFalse();
+
+        viewModel.IsBusy = false;
+
+        viewModel.CanClose.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public async Task EscTwiceDuringSave_ClosesOnceAfterSave()
+    {
+        OptionsDialogViewModel                 viewModel = await LoadedAsync();
+        TaskCompletionSource<ErrorOr<Success>> pending   = new();
+        int                                    closed    = 0;
+
+        _mediator.Send(Arg.Any<SaveLauncherOptionsCommand>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<Success>>(pending.Task));
+
+        viewModel.CloseRequested += (_, _) => closed++;
+
+        Task save = viewModel.OkCommand.ExecuteAsync(parameter: null);
+
+        viewModel.IsBusy.ShouldBeTrue();
+
+        viewModel.CancelCommand.Execute(parameter: null);
+        viewModel.CancelCommand.Execute(parameter: null);
+
+        closed.ShouldBe(expected: 0);
+
+        pending.SetResult(Result.Success);
+
+        await save;
+
+        closed.ShouldBe(expected: 1);
+    }
+
+    [ Fact ]
     public async Task Initialise_LoadFails_ShowsInlineErrorAndDisablesOk()
     {
         _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())

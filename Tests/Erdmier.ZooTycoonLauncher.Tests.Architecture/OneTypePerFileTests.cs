@@ -14,11 +14,8 @@ public sealed class OneTypePerFileTests
     [ MemberData(nameof(SourceProjectAssemblies)) ]
     public void EveryPublicTypeHasAFileNamedAfterIt(Assembly assembly)
     {
-        string assemblyDirectory = Path.GetDirectoryName(assembly.Location)!;
-
-        string projectDirectory = ResolveProjectDirectoryFromBinPath(assemblyDirectory,
-                                                                     assembly.GetName()
-                                                                             .Name!);
+        string projectDirectory = ProjectPaths.Project(assembly.GetName()
+                                                       .Name!);
 
         IEnumerable<Type> publicTypes = assembly.GetTypes()
                                                 .Where(t => t is { IsPublic: true, IsNested: false } && !t.IsCompilerGenerated())
@@ -49,26 +46,6 @@ public sealed class OneTypePerFileTests
         yield return [typeof(IAppStorageLocations).Assembly];
         yield return [typeof(AppStorageLocations).Assembly];
         yield return [typeof(App).Assembly];
-    }
-
-    private static string ResolveProjectDirectoryFromBinPath(string binDir, string assemblyName)
-    {
-        DirectoryInfo? current = new(binDir);
-
-        while (current is not null)
-        {
-            string sourceCandidate = Path.Combine(current.FullName, path2: "Source", assemblyName);
-
-            if (Directory.Exists(sourceCandidate)
-                && File.Exists(Path.Combine(sourceCandidate, assemblyName + ".csproj")))
-            {
-                return sourceCandidate;
-            }
-
-            current = current.Parent;
-        }
-
-        throw new InvalidOperationException($"Could not locate project directory for {assemblyName} starting from {binDir}.");
     }
 
     private static string StripGenericArity(string name)

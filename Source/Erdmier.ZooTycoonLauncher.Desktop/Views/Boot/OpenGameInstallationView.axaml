@@ -1,23 +1,23 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot"
              xmlns:common="using:Erdmier.ZooTycoonLauncher.Desktop.Views.Common"
              xmlns:layout="clr-namespace:Erdmier.ZooTycoonLauncher.Desktop.Views.Layout"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.OpenGameInstallationView"
              x:DataType="vm:OpenGameInstallationViewModel">
     <StackPanel Orientation="Vertical"
-                Spacing="10">
-        <DockPanel HorizontalSpacing="10">
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
             <Image DockPanel.Dock="Left"
-                   Height="32"
+                   Classes="IconLarge IconBesideBody"
+                   RenderOptions.BitmapInterpolationMode="None"
                    Source="/Assets/Win95Icons/foldercatalog16.ico"
-                   VerticalAlignment="Center"
-                   Width="32" />
+                   VerticalAlignment="Center" />
 
-            <StackPanel Margin="5 0 0 0"
-                        Orientation="Vertical"
-                        Spacing="4">
-                <TextBlock FontWeight="Solid"
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
+                <TextBlock FontWeight="{StaticResource FontWeightHeading}"
                            Text="Open Game Installation" />
 
                 <!--TODO: The "No Installation" needs to be monospaced, and "Open" needs to be bold.-->
@@ -29,27 +29,27 @@
                                      DoubleTapped="OnGridDoubleTapped"
                                      Height="150" />
 
-        <DockPanel HorizontalSpacing="8"
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}"
                    LastChildFill="False">
             <Button Command="{Binding OpenCommand}"
                     Content="Open"
                     DockPanel.Dock="Right"
                     IsDefault="True"
-                    Padding="25 0" />
+                    Classes="DialogButton" />
 
             <layout:UniformStack DockPanel.Dock="Left"
-                                 Spacing="8">
+                                 Spacing="{StaticResource GapRelated}">
                 <Button Command="{Binding AddCommand}"
                         Content="Add…"
-                        Padding="10 0" />
+                        Padding="{tokens:Space Horizontal=GapUnrelated}" />
 
                 <Button Command="{Binding InfoCommand}"
                         Content="Info"
-                        Padding="10 0" />
+                        Padding="{tokens:Space Horizontal=GapUnrelated}" />
 
                 <Button Command="{Binding ManageCommand}"
                         Content="Manage…"
-                        Padding="10 0" />
+                        Padding="{tokens:Space Horizontal=GapUnrelated}" />
             </layout:UniformStack>
         </DockPanel>
     </StackPanel>

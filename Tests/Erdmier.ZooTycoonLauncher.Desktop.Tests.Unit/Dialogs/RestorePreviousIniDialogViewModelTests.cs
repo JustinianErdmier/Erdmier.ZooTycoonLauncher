@@ -203,6 +203,33 @@ public sealed class RestorePreviousIniDialogViewModelTests
     }
 
     [ Fact ]
+    public async Task Cancel_WhileRestoring_DoesNotClose()
+    {
+        RestorePreviousIniDialogViewModel viewModel = await LoadedAsync();
+        int                               closed    = 0;
+
+        TaskCompletionSource<ErrorOr<IniConfigResult>> pending = new();
+
+        _dialogs.ShowConfirmationAsync(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
+        _mediator.Send(Arg.Any<RestoreIniSnapshotCommand>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniConfigResult>>(pending.Task));
+
+        viewModel.CloseRequested += (_, _) => closed++;
+
+        Task restoring = viewModel.RestoreCommand.ExecuteAsync(parameter: null);
+
+        viewModel.CancelCommand.Execute(parameter: null);
+
+        closed.ShouldBe(expected: 0);
+
+        pending.SetResult(IniEditorTestData.Result(("user", "screenwidth", "640")));
+
+        await restoring;
+
+        closed.ShouldBe(expected: 1);
+    }
+
+    [ Fact ]
     public async Task Cancel_WhileRestoring_CannotExecute()
     {
         RestorePreviousIniDialogViewModel viewModel = await LoadedAsync();

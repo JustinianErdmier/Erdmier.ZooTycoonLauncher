@@ -1,5 +1,3 @@
-using System.Data.Common;
-
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -119,6 +117,8 @@ public sealed class LauncherDbContextTests : IDisposable
         await context.GetService<IMigrator>().MigrateAsync(targetMigration: "20260527123543_InitialLauncherSchema");
 
         (await ColumnExistsAsync(context, tableName: "LauncherSettings", columnName: "Theme")).ShouldBeTrue();
+
+        (await ColumnDefaultAsync(context, tableName: "LauncherSettings", columnName: "Theme")).ShouldBe(expected: "'System'");
     }
 
     private LauncherDbContext BuildContext()
@@ -133,14 +133,17 @@ public sealed class LauncherDbContextTests : IDisposable
 
     private static async Task<bool> TableExistsAsync(LauncherDbContext context, string tableName)
     {
-        await using DbConnection connection = context.Database.GetDbConnection();
-        await connection.OpenAsync();
+        // EF owns this connection: open it if needed, never dispose it.
+        DbConnection connection = context.Database.GetDbConnection();
+
+        if (connection.State != ConnectionState.Open)
+        {
+            await connection.OpenAsync();
+        }
+
         await using DbCommand command = connection.CreateCommand();
         command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=$name";
-        DbParameter parameter = command.CreateParameter();
-        parameter.ParameterName = "$name";
-        parameter.Value         = tableName;
-        command.Parameters.Add(parameter);
+        command.AddParameter(name: "$name", tableName);
         object? result = await command.ExecuteScalarAsync();
 
         return result is not null;
@@ -148,12 +151,42 @@ public sealed class LauncherDbContextTests : IDisposable
 
     private static async Task<bool> ColumnExistsAsync(LauncherDbContext context, string tableName, string columnName)
     {
-        await using DbConnection connection = context.Database.GetDbConnection();
-        await connection.OpenAsync();
+        // EF owns this connection: open it if needed, never dispose it.
+        DbConnection connection = context.Database.GetDbConnection();
+
+        if (connection.State != ConnectionState.Open)
+        {
+            await connection.OpenAsync();
+        }
+
         await using DbCommand command = connection.CreateCommand();
-        command.CommandText = $"SELECT COUNT(*) FROM pragma_table_info('{tableName}') WHERE name = '{columnName}'";
+        command.CommandText = "SELECT COUNT(*) FROM pragma_table_info($table) WHERE name = $column";
+
+        command.AddParameter(name: "$table", tableName);
+        command.AddParameter(name: "$column", columnName);
+
         object? result = await command.ExecuteScalarAsync();
 
         return Convert.ToInt32(result) > 0;
+    }
+
+    private static async Task<string?> ColumnDefaultAsync(LauncherDbContext context, string tableName, string columnName)
+    {
+        // EF owns this connection: open it if needed, never dispose it.
+        DbConnection connection = context.Database.GetDbConnection();
+
+        if (connection.State != ConnectionState.Open)
+        {
+            await connection.OpenAsync();
+        }
+
+        await using DbCommand command = connection.CreateCommand();
+
+        command.CommandText = "SELECT dflt_value FROM pragma_table_info($table) WHERE name = $column";
+
+        command.AddParameter(name: "$table", tableName);
+        command.AddParameter(name: "$column", columnName);
+
+        return await command.ExecuteScalarAsync() as string;
     }
 }

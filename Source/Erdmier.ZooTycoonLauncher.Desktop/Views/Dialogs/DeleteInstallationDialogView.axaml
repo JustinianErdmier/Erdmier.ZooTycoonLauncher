@@ -1,5 +1,6 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
                xmlns:layout="clr-namespace:Erdmier.ZooTycoonLauncher.Desktop.Views.Layout"
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.DeleteInstallationDialogView"
@@ -11,33 +12,32 @@
                CanResize="False"
                WindowStartupLocation="CenterOwner"
                ShowInTaskbar="False">
-    <StackPanel Margin="8"
+    <StackPanel Margin="{tokens:Space MarginDialog}"
                 Orientation="Vertical"
-                Spacing="10">
-        <DockPanel HorizontalSpacing="10">
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
             <Image DockPanel.Dock="Left"
-                   Height="32"
+                   Classes="IconLarge IconBesideBody"
+                   RenderOptions.BitmapInterpolationMode="None"
                    Source="/Assets/Win95Icons/warning32.gif"
-                   VerticalAlignment="Top"
-                   Width="32" />
+                   VerticalAlignment="Top" />
 
-            <StackPanel Margin="5 0 0 0"
-                        Orientation="Vertical"
-                        Spacing="8">
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapUnrelated}">
                 <TextBlock IsVisible="{Binding IsLoaded}"
                            TextWrapping="Wrap">
-                    <Run Text="Remove " /><Run FontWeight="Bold"
+                    <Run Text="Remove " /><Run FontWeight="{StaticResource FontWeightStrong}"
                                                 Text="{Binding InstallationName}" /><Run Text=" from the launcher's registry?" />
                 </TextBlock>
 
                 <TextBlock IsVisible="{Binding IsLoaded}"
-                           Opacity="0.6"
+                           Classes="MutedText"
                            Text="The launcher's database for this installation, including INI history, will be deleted. The game folder on disk is left untouched."
                            TextWrapping="Wrap" />
 
                 <TextBlock IsVisible="{Binding HasPromotion}"
                            TextWrapping="Wrap">
-                    <Run FontWeight="Bold"
+                    <Run FontWeight="{StaticResource FontWeightStrong}"
                          Text="{Binding PromotedName}" /><Run Text=" will be promoted to default." />
                 </TextBlock>
 
@@ -51,16 +51,16 @@
                            TextWrapping="Wrap" />
 
                 <layout:UniformStack HorizontalAlignment="Right"
-                                     Margin="0 5"
-                                     Spacing="8">
+                                     Margin="{tokens:Space Top=GapUnrelated}"
+                                     Spacing="{StaticResource GapRelated}">
                     <Button Command="{Binding DeleteCommand}"
                             Content="Delete"
-                            MinWidth="75" />
+                            Classes="DialogButton" />
                     <Button Command="{Binding CancelCommand}"
                             Content="Cancel"
                             IsCancel="True"
                             IsDefault="True"
-                            MinWidth="75" />
+                            Classes="DialogButton" />
                 </layout:UniformStack>
             </StackPanel>
         </DockPanel>

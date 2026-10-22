@@ -54,16 +54,16 @@ The names describe the *role*, not the colour: `LightHighlight` is "the bright b
 
 Use them through their key, not by name. The values match the prototype's hardcoded swatches.
 
-| Key            | Use                                                                          | Light       | Replaces prototype `dk-c-*` class |
-|----------------|------------------------------------------------------------------------------|-------------|-----------------------------------|
-| `AccentNavy`   | Title-bar gradient start; key informational accent (diff "Snapshot" column)  | `#000080`   | `dk-c-navy`                       |
-| `AccentNavyBright` | Title-bar gradient end                                                   | `#1084D0`   | —                                 |
-| `AccentTeal`   | Desktop backdrop                                                             | `#008080`   | —                                 |
-| `AccentGreen`  | OK / valid badge; "EXE present" / "INI present" headlines                    | `#008000`   | `dk-c-green`                      |
-| `AccentRed`    | Strong error text ("No EXE found!", invalid-name message)                    | `#C00000`   | `dk-c-red`                        |
-| `AccentMaroon` | "Cannot Play" heading; dirty-state ("● Unsaved changes"); diff "Current" col | `#800000`   | `dk-c-maroon`                     |
-| `AccentAmber`  | "No INI found" headline; warn-level badges                                   | `#806000`   | `dk-c-amber`                      |
-| `AccentYellow` | Tooltip background (Classic.Avalonia default — keep as-is)                   | `#FFFF80`   | —                                 |
+| Key                | Use                                                                                                              | Light     | Replaces prototype `dk-c-*` class |
+|--------------------|------------------------------------------------------------------------------------------------------------------|-----------|-----------------------------------|
+| `AccentNavy`       | Title-bar gradient start; key informational accent (diff "Snapshot" column)                                      | `#000080` | `dk-c-navy`                       |
+| `AccentNavyBright` | Title-bar gradient end                                                                                           | `#1084D0` | —                                 |
+| `AccentTeal`       | Desktop backdrop                                                                                                 | `#008080` | —                                 |
+| `AccentGreen`      | OK / valid badge; "EXE present" / "INI present" headlines                                                        | `#008000` | `dk-c-green`                      |
+| `AccentRed`        | Strong error text ("No EXE found!", invalid-name message); "Cannot Play" heading (the prototype draws it maroon) | `#C00000` | `dk-c-red`                        |
+| `AccentMaroon`     | Dirty-state ("● Unsaved changes"); diff "Current" col                                                            | `#800000` | `dk-c-maroon`                     |
+| `AccentAmber`      | "No INI found" headline; warn-level badges                                                                       | `#806000` | `dk-c-amber`                      |
+| `AccentYellow`     | Tooltip background (Classic.Avalonia default — keep as-is)                                                       | `#FFFF80` | —                                 |
 
 ### 1.3 Typography
 
@@ -174,7 +174,7 @@ Used by the Status / Display / INI status / Fix-EXE / Fix-INI / Auto-locate-trai
 - **Icon column** is 32 px wide, top-aligned (or centred when the body is one line), pinned to the left. Use `IconBlock`.
 - **Body column** fills the remaining width. The first line is a bold headline (14 px for the five main-window states, 11 px elsewhere). Subsequent lines are muted prose, tables, or nested controls.
 - **Action button(s)** sit at the right when the row is short (Ready / NoInstall — single primary action) or in a footer row below the body when there are multiple actions or the body is long (Cannot Play — `Fix` + `Manage Installations`).
-- **Headline colour.** Maroon for Cannot Play, foreground (`Foreground`) elsewhere. Use the `AccentMaroon` token.
+- **Headline colour.** Red for Cannot Play (the `AccentRed` token; the prototype draws it maroon), foreground (`Foreground`) elsewhere.
 - **Muted state.** When the whole group needs to read as "not actionable" (Cannot Play's Display), set `Opacity="0.55"` on the `GroupBox`.
   Don't recolour individual children — the opacity layer does the right thing.
 
@@ -268,13 +268,13 @@ There is no theming: the launcher has one, light, appearance, and the dark-mode 
 
 Cell 1 of the status bar carries the primary message; cell 2 carries the secondary detail; cell 3 carries the version. Cell 2's text comes from this table.
 
-| State          | Cell 1                                        | Cell 2                                  | Notes                                |
-|----------------|-----------------------------------------------|------------------------------------------|---------------------------------------|
-| Looking        | `Discovering installations…`                  | `Reading registry…`                      | Cell 2 updates as boot phases advance |
-| Ready          | `Ready — <installation name>`                 | `Display: <w>×<h>` (General) / `INI loaded` (INI Config) |                                       |
-| Cannot Play    | `Cannot launch — installation invalid`        | `Fix required` (`AccentRed`)           |                                       |
-| No Installation| `No installation registered`                  | *(empty)*                                |                                       |
-| Open Picker    | `Choose an installation to open`              | *(empty)*                                |                                       |
+| State           | Cell 1                                 | Cell 2                                                   | Notes                                 |
+|-----------------|----------------------------------------|----------------------------------------------------------|---------------------------------------|
+| Looking         | `Discovering installations…`           | `Reading registry…`                                      | Cell 2 updates as boot phases advance |
+| Ready           | `Ready — <installation name>`          | `Display: <w>×<h>` (General) / `INI loaded` (INI Config) |                                       |
+| Cannot Play     | `Cannot launch — installation invalid` | `Fix required` (`AccentRed`)                             |                                       |
+| No Installation | `No installation registered`           | *(empty)*                                                |                                       |
+| Open Picker     | `Choose an installation to open`       | *(empty)*                                                |                                       |
 
 The INI editor's own footer shows unsaved-change state (§6). The full set of state strings is fixed and tested.
 

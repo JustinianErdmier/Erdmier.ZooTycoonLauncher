@@ -1,6 +1,7 @@
 namespace Erdmier.ZooTycoonLauncher.Application.Settings.Get;
 
 /// <summary>Handler for <see cref="GetLauncherOptionsQuery" />.</summary>
+/// <remarks>A repository exception propagates to the caller, which reports it to the user.</remarks>
 public sealed class GetLauncherOptionsHandler : IQueryHandler<GetLauncherOptionsQuery, ErrorOr<LauncherOptions>>
 {
     private readonly ILauncherSettingsRepository _settings;

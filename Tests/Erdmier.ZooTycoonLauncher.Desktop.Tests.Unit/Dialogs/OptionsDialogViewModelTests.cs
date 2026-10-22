@@ -142,6 +142,23 @@ public sealed class OptionsDialogViewModelTests
     }
 
     [ Fact ]
+    public async Task Initialise_LoadThrows_ShowsInlineErrorDisablesOkAndLogsOnce()
+    {
+        RecordingLogger<OptionsDialogViewModel> logger = new();
+
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<LauncherOptions>>>(_ => throw new InvalidOperationException("boom"));
+
+        OptionsDialogViewModel viewModel = new(_mediator, _dialogs, logger);
+
+        await viewModel.InitialiseAsync();
+
+        viewModel.ErrorMessage.ShouldNotBeNull();
+        viewModel.OkCommand.CanExecute(parameter: null).ShouldBeFalse();
+        logger.Entries.Count(entry => entry.Level == LogLevel.Error).ShouldBe(expected: 1);
+    }
+
+    [ Fact ]
     public async Task EachRadioChoice_MapsToItsPreference()
     {
         OptionsDialogViewModel viewModel = await LoadedAsync();

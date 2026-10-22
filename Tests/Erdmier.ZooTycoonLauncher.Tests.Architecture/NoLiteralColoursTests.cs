@@ -17,6 +17,9 @@ public sealed partial class NoLiteralColoursTests
     [ GeneratedRegex("""Fallback(?<name>Green|Red)\s*=\s*new SolidColorBrush\(Color\.Parse\(s:\s*"(?<hex>#[0-9A-Fa-f]+)"\)\)""") ]
     private static partial Regex FallbackDeclaration();
 
+    [ GeneratedRegex("""const string \w+Key\s*=\s*"(?<key>[^"]+)";""") ]
+    private static partial Regex LookupKey();
+
     [ GeneratedRegex(@"x:Key=""(?<key>Accent(?:Green|Red))""\s+Color=""(?<hex>#[0-9A-Fa-f]+)""") ]
     private static partial Regex NamedAccent();
 
@@ -113,6 +116,15 @@ public sealed partial class NoLiteralColoursTests
 
         named.Count.ShouldBe(expected: 2, "Expected AccentGreen and AccentRed in Colours.axaml.");
         fallbacks.Count.ShouldBe(expected: 2, "Expected FallbackGreen and FallbackRed in ApplicationBrushLookup.cs.");
+
+        string[] lookupKeys = LookupKey().Matches(lookup).Select(m => m.Groups[ "key" ].Value).ToArray();
+
+        lookupKeys.Length.ShouldBe(expected: 2, "Expected the AccentGreen and AccentRed key constants in ApplicationBrushLookup.cs.");
+
+        foreach (string lookupKey in lookupKeys)
+        {
+            named.ShouldContainKey(lookupKey, $"The lookup key {lookupKey} in ApplicationBrushLookup.cs is not an x:Key in Colours.axaml.");
+        }
 
         foreach ((string key, string hex) in named)
         {

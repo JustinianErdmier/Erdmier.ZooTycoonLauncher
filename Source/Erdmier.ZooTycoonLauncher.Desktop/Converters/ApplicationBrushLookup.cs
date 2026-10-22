@@ -5,11 +5,9 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.Converters;
 /// <summary>Resolves the launcher's named brushes (defined once in <c>Styles/Colours.axaml</c>) from the running application's resources.</summary>
 internal static class ApplicationBrushLookup
 {
-    /// <summary>Resource key of the green accent brush.</summary>
-    public const string AccentGreenKey = "AccentGreen";
+    private const string AccentGreenKey = "AccentGreen";
 
-    /// <summary>Resource key of the red accent brush.</summary>
-    public const string AccentRedKey = "AccentRed";
+    private const string AccentRedKey = "AccentRed";
 
     // Used when there is no running application (unit tests); the values mirror Colours.axaml.
     private static readonly IBrush FallbackGreen = new SolidColorBrush(Color.Parse(s: "#008000"));

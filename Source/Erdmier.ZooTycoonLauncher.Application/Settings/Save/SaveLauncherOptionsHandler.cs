@@ -15,10 +15,24 @@ public sealed class SaveLauncherOptionsHandler : ICommandHandler<SaveLauncherOpt
     {
         LauncherSettings settings = await _settings.GetAsync(cancellationToken);
 
+        LauncherStartupPreference oldPreference = settings.LauncherStartupPreference;
+        bool                      oldClose      = settings.CloseAfterGameLaunch;
+
         settings.LauncherStartupPreference = command.StartupPreference;
         settings.CloseAfterGameLaunch      = command.CloseAfterGameLaunch;
 
-        await _settings.UpdateAsync(settings, cancellationToken);
+        try
+        {
+            await _settings.UpdateAsync(settings, cancellationToken);
+        }
+        catch
+        {
+            // The tracked entity outlives this call, so a failed save must not leave the rejected values on it for the next read or save.
+            settings.LauncherStartupPreference = oldPreference;
+            settings.CloseAfterGameLaunch      = oldClose;
+
+            throw;
+        }
 
         return Result.Success;
     }

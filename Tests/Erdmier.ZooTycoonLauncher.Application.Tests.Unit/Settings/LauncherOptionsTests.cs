@@ -26,6 +26,7 @@ public sealed class LauncherOptionsTests
     {
         Guid             defaultId = Guid.CreateVersion7();
         LauncherSettings stored    = new() { DefaultInstallationId = defaultId };
+
         _repository.GetAsync(Arg.Any<CancellationToken>()).Returns(stored);
 
         ErrorOr<Success> result = await new SaveLauncherOptionsHandler(_repository).Handle(
@@ -51,6 +52,29 @@ public sealed class LauncherOptionsTests
 
         result.IsError.ShouldBeFalse();
         await _repository.Received(requiredNumberOfCalls: 1).UpdateAsync(Arg.Any<LauncherSettings>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Save_UpdateThrows_RestoresTheEntityAndRethrows()
+    {
+        LauncherSettings stored = new()
+        {
+            LauncherStartupPreference = LauncherStartupPreference.DefaultInstallation,
+            CloseAfterGameLaunch      = false
+        };
+
+        _repository.GetAsync(Arg.Any<CancellationToken>()).Returns(stored);
+        _repository.UpdateAsync(Arg.Any<LauncherSettings>(), Arg.Any<CancellationToken>())
+                   .Returns<Task>(_ => throw new InvalidOperationException("boom"));
+
+        SaveLauncherOptionsHandler handler = new(_repository);
+
+        await Should.ThrowAsync<InvalidOperationException>(async () => await handler.Handle(
+                                                               new SaveLauncherOptionsCommand(LauncherStartupPreference.NoInstallation, CloseAfterGameLaunch: true),
+                                                               CancellationToken.None));
+
+        stored.LauncherStartupPreference.ShouldBe(LauncherStartupPreference.DefaultInstallation);
+        stored.CloseAfterGameLaunch.ShouldBeFalse();
     }
 
     [ Fact ]

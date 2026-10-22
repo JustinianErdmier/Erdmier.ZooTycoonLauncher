@@ -276,5 +276,7 @@ file sealed class NoOpDialogService : IDialogService
 
     public Task<IniConfigResult?> ShowRestorePreviousIniAsync(Guid installationId) => Task.FromResult<IniConfigResult?>(null);
 
+    public Task ShowOptionsAsync() => Task.CompletedTask;
+
     public Task ShowErrorAsync(string title, string message) => Task.CompletedTask;
 }

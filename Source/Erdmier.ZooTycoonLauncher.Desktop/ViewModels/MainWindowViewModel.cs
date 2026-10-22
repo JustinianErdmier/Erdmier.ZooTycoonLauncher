@@ -188,6 +188,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private bool CanCloseInstallation() => !IsBooting && ActiveContent is PlayViewModel;
 
+    // File → "Options…": opens the modal Options dialogue. Available in every booted state (the menu is hidden whilst booting) and needs no unsaved-edit guard, since it
+    // changes nothing about the open installation.
+    [ RelayCommand ]
+    private Task OpenOptionsAsync() => _dialogs.ShowOptionsAsync();
+
     // File → "Exit" (SDD §9.10). Asks about unsaved INI edits first; on approval marks the close as confirmed so MainWindow's close handler does not ask again.
     [ RelayCommand ]
     private async Task ExitAsync(CancellationToken cancellationToken)

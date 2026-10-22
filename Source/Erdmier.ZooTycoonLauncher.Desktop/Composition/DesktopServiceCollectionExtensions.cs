@@ -19,6 +19,7 @@ public static class DesktopServiceCollectionExtensions
         services.AddTransient<RestorePreviousIniDialogViewModel>();
         services.AddTransient<DeleteInstallationDialogViewModel>();
         services.AddTransient<FixInstallationDialogViewModel>();
+        services.AddTransient<OptionsDialogViewModel>();
 
         return services;
     }

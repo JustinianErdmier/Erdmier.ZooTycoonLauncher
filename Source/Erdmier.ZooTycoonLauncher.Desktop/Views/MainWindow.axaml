@@ -39,7 +39,7 @@
 
                 <Separator />
 
-                <MenuItem Header="Settings…" />
+                <MenuItem Header="O_ptions…" Command="{Binding OpenOptionsCommand}" />
 
                 <Separator />
 

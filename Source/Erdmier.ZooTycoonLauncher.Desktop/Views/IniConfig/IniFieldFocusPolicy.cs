@@ -6,7 +6,7 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig;
 /// </summary>
 public static class IniFieldFocusPolicy
 {
-    /// <summary>The fields focused state after it gained focus: keyboard focus sets it, pointer focus clears it, and focus moving inside the row leaves it alone.</summary>
+    /// <summary>The field's focused state after it gained focus: keyboard focus sets it, pointer focus clears it, and focus moving inside the row leaves it alone.</summary>
     /// <param name="current">Whether the field counts as focused now.</param>
     /// <param name="method">How focus arrived (<see cref="GotFocusEventArgs.NavigationMethod" />).</param>
     /// <returns>

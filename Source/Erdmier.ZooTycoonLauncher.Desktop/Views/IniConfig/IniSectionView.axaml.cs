@@ -19,9 +19,10 @@ public sealed partial class IniSectionView : UserControl
     }
 
     // A toggle's click and a number box's spinner buttons: the value is set, so a pointer-focused field lets go.
+    // Clicks from inside a ComboBox (its internal toggle) are not a commit, so they are ignored.
     private void OnRowButtonClick(object? sender, RoutedEventArgs e)
     {
-        if (sender is Control row)
+        if (sender is Control row && e.Source is Visual source && CommitsValue(source))
         {
             IniFieldFocusRelease.AfterCommit(row);
         }

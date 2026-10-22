@@ -24,49 +24,36 @@ This doc is opinionated, not exhaustive. It captures the things that recur **acr
 The launcher overlays a small set of named values on top of `Classic.Avalonia.Theme`. They live in four files under
 `Source/Erdmier.ZooTycoonLauncher.Desktop/Styles/`, all merged in `App.axaml`, and views reach for a key through `{StaticResource …}`:
 `Colours.axaml` (§1.1, §1.2), `Typography.axaml` (§1.3), `Spacing.axaml` (§1.4) and `Controls.axaml` (§2). A literal in a view is a defect, and an architecture test
-per group (named in each section; §7 lists every colour attribute) fails on it. The colours come first. There is one, light,
-appearance, so nothing needs dynamic resolution. A literal colour in a view is a defect: the architecture test `NoLiteralColoursTests` fails on any `*.axaml` that sets
-`Foreground`, `Background`, `BorderBrush`, `Fill`, `Stroke` or `Color` to a name or `#…` instead of a key (`Transparent` is not a colour choice and stays a literal), and on
-`Brushes.` or `Colors.` in Desktop or Domain code. View models hold no brushes: a converter turns a state into a brush.
+per group (named in each section; §7 lists every colour attribute) fails on it. The colours come first. There is one, light, appearance, so nothing needs dynamic
+resolution. View models hold no brushes: a converter turns a state into a brush.
 
-`Colours.axaml` defines the keys the views use today (`Surface`, `MidShadow`, `ForegroundMuted`, `ForegroundDim`, `InputBackground`, `AccentGreen`, `AccentRed`,
-`AccentMaroon`, `AccentNavy`, `AccentAmber` and `RuleDotted`). The other keys below are reserved role names: add one to `Colours.axaml` when a view first needs it.
+`Colours.axaml` defines exactly the keys in §1.1 and §1.2, and `ColourRegistryTests` fails when the tables and the file disagree on a key or a value. A colour the theme
+already sets (the bevel edges, the title bar, the desktop backdrop, the default text colour, the tooltip) gets a key only when the launcher overrides it.
 
 ### 1.1 Neutrals
 
-The names describe the *role*, not the colour: `LightHighlight` is "the bright bevel edge" and `DarkShadow` is "the deepest bevel edge".
+The names describe the *role*, not the colour.
 
-| Key                       | Role                                             | Light             |
-|---------------------------|--------------------------------------------------|-------------------|
-| `Surface`                 | Window / button background; the primary chrome   | `#C0C0C0` silver  |
-| `SurfaceHighlight`        | Inner-light highlight on raised surfaces         | `#DFDFDF`         |
-| `LightHighlight`          | Outer bright bevel edge                          | `#FFFFFF`         |
-| `MidShadow`               | Mid bevel shadow                                 | `#808080`         |
-| `DeepShadow`              | Deeper inner shadow                              | `#404040`         |
-| `DarkShadow`              | Outermost bevel edge                             | `#000000`         |
-| `Foreground`              | Default text colour                              | `#000000`         |
-| `ForegroundMuted`         | Muted / hint text                                | `#666666`         |
-| `ForegroundDim`           | Faint label colour (Info dialogue row labels, INI sub-headers) | `#404040` |
-| `InputBackground`         | TextBox / ListBox / DataGrid background          | `#FFFFFF`         |
-| `InputBackgroundReadOnly` | Read-only input                                  | `#C0C0C0`         |
-| `InputBackgroundInvalid`  | Validation-error input background                | `#FFE0E0`         |
-| `RuleDotted`              | Dotted row separators (Restore dialogue)         | `#E0E0E0`         |
+| Key               | Role                                                           | Light            |
+|-------------------|----------------------------------------------------------------|------------------|
+| `Surface`         | Window / button background; the primary chrome                 | `#C0C0C0` silver |
+| `MidShadow`       | Mid bevel shadow                                               | `#808080`        |
+| `ForegroundMuted` | Muted / hint text                                              | `#666666`        |
+| `ForegroundDim`   | Faint label colour (Info dialogue row labels, INI sub-headers) | `#404040`        |
+| `InputBackground` | TextBox / ListBox / DataGrid background                        | `#FFFFFF`        |
+| `RuleDotted`      | Dotted row separators (Restore dialogue)                       | `#E0E0E0`        |
 
 ### 1.2 Accents
 
 Use them through their key, not by name. The values match the prototype's hardcoded swatches.
 
-| Key                | Use                                                                                                              | Light     |
-|--------------------|------------------------------------------------------------------------------------------------------------------|-----------|
-| `AccentNavy`       | Title-bar gradient start; key informational accent (diff "Snapshot" column)                                      | `#000080` |
-| `AccentNavyBright` | Title-bar gradient end                                                                                           | `#1084D0` |
-| `AccentTeal`       | Desktop backdrop                                                                                                 | `#008080` |
-| `AccentGreen`      | OK / valid badge; "EXE present" / "INI present" headlines                                                        | `#008000` |
-| `AccentRed`        | Strong error text ("No EXE found!", invalid-name message); "Cannot Play" heading (the prototype draws it maroon) | `#C00000` |
-| `AccentMaroon`     | Dirty-state ("● Unsaved changes"); diff "Current" col                                                            | `#800000` |
-| `AccentAmber`      | "No INI found" headline; warn-level badges                                                                       | `#806000` |
-| `AccentYellow`     | Tooltip background (Classic.Avalonia default — keep as-is)                                                       | `#FFFF80` |
-
+| Key            | Use                                                                                                              | Light     |
+|----------------|------------------------------------------------------------------------------------------------------------------|-----------|
+| `AccentNavy`   | Key informational accent (diff "Snapshot" column)                                                                | `#000080` |
+| `AccentGreen`  | OK / valid badge; "EXE present" / "INI present" headlines                                                        | `#008000` |
+| `AccentRed`    | Strong error text ("No EXE found!", invalid-name message); "Cannot Play" heading (the prototype draws it maroon) | `#C00000` |
+| `AccentMaroon` | Dirty-state ("● Unsaved changes"); diff "Current" col                                                            | `#800000` |
+| `AccentAmber`  | "No INI found" headline; warn-level badges                                                                       | `#806000` |
 ### 1.3 Typography
 
 Defined in `Styles/Typography.axaml`. `NoLiteralTypographyTests` fails on a literal `FontFamily`, `FontSize` or `FontWeight` in a view or a style setter; `FontStyle="Italic"`
@@ -207,7 +194,7 @@ Each section begins with a `SectionHeader` primitive:
 
 Mono-bold section name + muted "section of `zoo.ini`" continuation + a 1-px solid `Surface`-shaded underline.
 
-`SubHeader` (only used inside `[UI]`): mono bold text in `ForegroundDim`, dotted-underlined in `SurfaceHighlight`. Reads `Audio`, `Gameplay (cash)`, `Interface`.
+`SubHeader` (only used inside `[UI]`): mono bold text in `ForegroundDim`. Reads `Audio`, `Gameplay (cash)`, `Interface`.
 
 ---
 
@@ -227,7 +214,7 @@ Used by the Status / Display / INI status / Fix-EXE / Fix-INI / Auto-locate-trai
   or nested controls.
 - **Action button(s)** sit at the right when the row is short (Ready / NoInstall — single primary action) or in a footer row below the body when there are multiple actions or the
   body is long (Cannot Play — `Fix` + `Manage Installations`).
-- **Headline colour.** Red for Cannot Play (the `AccentRed` token; the prototype draws it maroon), foreground (`Foreground`) elsewhere.
+- **Headline colour.** Red for Cannot Play (the `AccentRed` token; the prototype draws it maroon), the theme's default text colour elsewhere.
 - **Disabled group (reserved).** If a whole group ever needs to read as "not actionable", set `Opacity="0.55"` on the `GroupBox` rather than recolouring its children. No view uses
   this today (Cannot Play leaves its Display and Your System groups un-muted, SDD §9.1). It is a disabled state, not a way to fade text; faded text uses `MutedText` (§7).
 

@@ -10,6 +10,9 @@ public static class ProjectPaths
     /// <summary>Gets the absolute path of the repository's <c>Source</c> directory.</summary>
     public static string Source => SourceDirectory.Value;
 
+    /// <summary>Gets the absolute path of the UI conventions document, <c>Docs/UserInterfaceDesign/conventions.md</c>.</summary>
+    public static string Conventions => Path.Combine(Directory.GetParent(Source)!.FullName, "Docs", "UserInterfaceDesign", "conventions.md");
+
     /// <summary>Gets the absolute path of the Domain project directory.</summary>
     public static string Domain => Project(Prefix + "Domain");
 

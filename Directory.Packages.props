@@ -9,6 +9,7 @@
         <PackageVersion Include="Avalonia" Version="11.3.14" />
         <PackageVersion Include="Avalonia.Desktop" Version="11.3.14" />
         <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.14" />
+        <PackageVersion Include="Avalonia.Headless.XUnit" Version="11.3.14" />
         <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1" />
         <PackageVersion Include="Classic.Avalonia.Theme" Version="11.3.0.3" />
         <PackageVersion Include="Classic.Avalonia.Theme.DataGrid" Version="11.3.0.3" />

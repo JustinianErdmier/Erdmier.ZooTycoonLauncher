@@ -31,13 +31,18 @@ public static class IniFieldFocusRelease
 #pragma warning restore CS0618
     }
 
-    /// <summary>Whether the element is the row or lives inside it, counting a combo box's pop-up items (which sit in their own window) as inside.</summary>
+    /// <summary>Whether the element is the row or lives inside it, counting a combo box's pop-up items as inside.</summary>
     /// <param name="row">The INI row.</param>
     /// <param name="element">The element to test; <see langword="null" /> means nothing has focus, which is outside.</param>
     /// <returns><see langword="true" /> when the row contains the element.</returns>
+    /// <remarks>
+    ///     Walks logical parents first, falling back to the visual parent where an element has none (a template part). A pop-up item's logical parent is its combo box
+    ///     whether the pop-up is its own window (the Windows default) or an overlay on the main window; the visual chain of an overlay pop-up runs up to the window and never
+    ///     passes the row.
+    /// </remarks>
     public static bool IsWithin(Control row, IInputElement? element)
     {
-        for (StyledElement? current = element as StyledElement; current is not null; current = (current as Visual)?.GetVisualParent() as StyledElement ?? current.Parent)
+        for (StyledElement? current = element as StyledElement; current is not null; current = current.Parent as StyledElement ?? (current as Visual)?.GetVisualParent() as StyledElement)
         {
             if (ReferenceEquals(current, row))
             {

@@ -42,8 +42,8 @@ save guard, and test-hygiene fixes.
 
 ## Task 0: Before screenshots and the spacing inventory (controller)
 
-- [ ] **Step 1:** Capture every main-window state and every dialogue from the current build (launched the same way each time) to the run workspace.
-- [ ] **Step 2:** Write the ledger's spacing table: every `Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing`, `HorizontalSpacing`, `VerticalSpacing`
+- [x] **Step 1:** Capture every main-window state and every dialogue from the current build (launched the same way each time) to the run workspace.
+- [x] **Step 2:** Write the ledger's spacing table: every `Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing`, `HorizontalSpacing`, `VerticalSpacing`
   value in `Source/Erdmier.ZooTycoonLauncher.Desktop/**/*.axaml` (file, line, attribute, original value), with an empty "new token" column.
 
 ---

@@ -11,7 +11,7 @@
 |--------------------------|-----------------------------------|
 | **Project**              | Zoo Tycoon Launcher               |
 | **Document**             | Software Design Document (SDD)    |
-| **Version**              | 1.14                              |
+| **Version**              | 1.15                              |
 | **Status**               | Draft for implementation          |
 | **Author**               | Justinian                         |
 | **Last updated**         | 22 October 2026                   |
@@ -37,6 +37,7 @@
 | 1.12    | 21 October 2026   | Justinian | Milestone 10 (INI recovery and read-only detection; spec `milestone-10-ini-recovery-and-read-only-detection-design.md`). §7.4 describes the two recovery actions as built (`CreateDefaultIniCommand`, `LocateIniCommand`: create-only write, first import or `Manual` archive of a surviving `Current`, `Ini.AlreadyExists` / `Ini.NotAnIni` / `Ini.ReadOnly`); §7.2.5, §9.3.1 and §9.5 give the Fix INI group and the No INI box their `Create` / `Locate…` buttons and add the INI tab's read-only strip; §7.1.2 Verify runs the write probe (`Writable`, `FolderReadOnly`, `FileReadOnly`, `Unknown`); §9.1 Cannot Play points at the INI Config tab; §14.5 row 9's MVP mitigation is implemented. §13.5.1 deletes DW-01 and DW-12, which this milestone delivers, and adds DW-40 (Copy From Another Installation). |
 | 1.13    | 22 October 2026   | Justinian | Milestone 11 (Options dialogue and colour cleanup; spec `milestone-11-options-and-colour-cleanup-design.md`). Dark mode and themes are scrapped: §5.1 / §5.2 / §6.2 drop `LauncherSettings.Theme`, the `LauncherTheme` enum and its column, and §5.2 drops `InstallationValidity.ColourToken` (a colour is presentation, not domain); §9.11 is reduced to a removal note. §9.8 describes the Options dialogue as built (Startup and Game launch only) and §9.10 renames the File menu item to `O<u>p</u>tions…`; §9.12 and §13.2 follow. The launcher's colours are defined once in `Styles/Colours.axaml` and guarded by an architecture test (conventions §1). §13.5 deletes DW-20, DW-37 and DW-39, which this milestone delivers. |
 | 1.14    | 22 October 2026   | Justinian | Milestone 11.1 (style tokens and follow-ups; spec `milestone-11.1-style-tokens-and-follow-ups-design.md`). Typography, spacing and the repeated control sizes join colours as named tokens: `Styles/Typography.axaml`, `Styles/Spacing.axaml` and `Styles/Controls.axaml` sit beside `Colours.axaml`, with `SpaceExtension` building margins and paddings from token names, an architecture test per group, a `TokenReferencesTests` check that every token and resource reference resolves, and an `AvaloniaProperties_ArePublic` check (§9.2.2, §9.11, §11.5). Spacing snaps onto the Windows 9x guideline values (dialog units converted to pixels), with measured icon-gap tokens and a group-box padding derived from the tokens. Faded text uses one method, the muted grey (`MutedText`); icons draw pixel-crisp; the Options dialogue refuses Cancel and close while a save is in flight, and the Restore dialogue guards its Cancel; the colour test covers every `*Brush` attribute, element content and split setters; the persistence test helpers share one `ProjectPaths`. §9 and conventions.md describe the tokens, and DW-24 keeps only its second half (reusable stack and dock panel controls). Follow-ups: only keyboard focus keeps an INI field focused (a pointer-focused field releases once its value is set; a click elsewhere or Esc clears it); `ForegroundMuted` darkens to `#666666`; the installation grid's headers are inert (`InertHeaders`) and its columns no longer resize; and the colour registry in conventions.md is trimmed to the 11 keys `Colours.axaml` defines, checked by `ColourRegistryTests`. |
+| 1.15    | 22 October 2026   | Justinian | Headless view-load test. §11.4 adds `ViewLoadTests`, which loads every view under the real application resources with its designer view model and fails on a load-time exception or an Avalonia warning; §11.5 notes that a missing `{StaticResource}` on a control property stays silent at run time, so `TokenReferencesTests` remains its guard; §11.7 lists `Avalonia.Headless.XUnit`. |
 
   
 ---  
@@ -1637,11 +1638,19 @@ EF Core against an ephemeral SQLite database per test (`Filename=:memory:` for n
 
 ### 11.4 `Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit`
 
-View-model logic without an Avalonia runtime: INI field view models, the editor (change tracking, footer, save / reset / restore), the INI tab host, the pending-changes guard on  
-`PlayViewModel` and `MainWindowViewModel`, and a catalogue-integrity check against `ZooIniDefaults`.
+View-model logic without an Avalonia runtime, plus one headless view-load test: INI field view models, the editor (change tracking, footer, save / reset / restore), the INI
+tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`, and a catalogue-integrity check against `ZooIniDefaults`.
 
 - `IniConfigTabViewModel` sub-state selection — editor / loading / no-INI / could-not-be-read, from `HasIni` and the `GetIniConfigQuery` load result or error.
 - Pending-changes guard — switching/closing while edits are pending is blocked unless the user confirms discard.
+- **Every view loads (headless):** `ViewLoadTests.View_LoadsWithItsDesignerViewModel` is an `[ AvaloniaTheory ]` (`Avalonia.Headless.XUnit`) over every `UserControl` and
+  `Window` under `Views/`, found by reflection. Each view is created, given the view model from its parameterless designer constructor (`MainWindow`, the pair rule's exception,
+  gets a substituted `MainWindowViewModel` whose boot lands on No Game Installation Found), shown and laid out. It fails on anything thrown while loading — an inaccessible
+  `AvaloniaProperty` field, a resource lookup on a non-control target, a bad markup-extension value — and on any warning or error Avalonia logs, such as a binding that cannot
+  convert its value or a failure inside a nested view that its host swallows. The headless application (`HeadlessTestApp`) loads the real `App.axaml` into a throwaway `App`
+  and moves its resources, styles and data templates across, so the tests see the shipped theme and tokens without running the launcher's start-up. A missing
+  `{StaticResource}` on a control property is invisible here: Avalonia defers the lookup and leaves the property unset without logging, so `TokenReferencesTests` (§11.5)
+  remains the guard for that case.
 
 ### 11.5 `Erdmier.ZooTycoonLauncher.Tests.Architecture`
 
@@ -1673,7 +1682,7 @@ Solution-spanning rules using `NetArchTest.Rules`:
   `Styles/`, `App.axaml` or the same file (`ResourceReferences_Resolve`), on a `{tokens:Space …}` that names anything but an `x:Double` (`SpaceTokens_NameDoubleResources`), and on
   a spacing attribute that references a resource of the wrong type, `x:Double` for `Spacing` and its relatives, `Thickness` for `Margin` and `Padding`
   (`SpacingResources_HaveTheRightType`); each of the three also fails if it matched no reference at all, so a broken pattern cannot pass. `Styles/` is read with its
-  subfolders. A misspelt name otherwise fails only when the view loads.
+  subfolders. A misspelt name on a control property otherwise fails silently, even when the view loads (§11.4).
 - **Avalonia property fields are public (milestone 11.1):** `AvaloniaPropertyFieldTests.AvaloniaProperties_ArePublic` fails on a static readonly `StyledProperty`,
   `DirectProperty` or `AttachedProperty` field in `Desktop` that is not `public`, because Avalonia's XAML compiler sets the property through that field when a markup-extension
   value (such as `{tokens:Space …}`) is assigned.
@@ -1692,6 +1701,7 @@ green. Replaces the Ref launcher's "tests deferred" carve-out.
 - **NSubstitute** — mocking.
 - **Microsoft.EntityFrameworkCore.Sqlite** — integration tests.
 - **NetArchTest.Rules** — architecture tests.
+- **Avalonia.Headless.XUnit** — the headless view-load test (§11.4).
 - **Verify** — only where it pulls its weight (parser round-trip is the obvious candidate).
 
 ---  

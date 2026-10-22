@@ -45,6 +45,7 @@
         <File Path="Docs/Specs/Epic-1-MVP/milestone-9.1-restore-previous-ini-follow-ups-design.md" />
         <File Path="Docs/Specs/Epic-1-MVP/milestone-10-ini-recovery-and-read-only-detection-design.md" />
         <File Path="Docs/Specs/Epic-1-MVP/milestone-11-options-and-colour-cleanup-design.md" />
+        <File Path="Docs/Specs/Epic-1-MVP/milestone-11.1-style-tokens-and-follow-ups-design.md" />
     </Folder>
     <Folder Name="/Docs/TestPlans/">
         <File Path="Docs/TestPlans/manual-end-to-end-tests.md" />

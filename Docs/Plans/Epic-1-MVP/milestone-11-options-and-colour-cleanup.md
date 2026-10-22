@@ -47,7 +47,7 @@ read it before any task; decisions 1–5 and calls C1–C7 are binding, and C1's
 
 ## Task 0: Before screenshots (controller)
 
-- [ ] **Step 1:** Launch the current build and save PNG captures of the General tab, the INI editor, the Installation Manager and the Restore Previous INI
+- [x] **Step 1:** Launch the current build and save PNG captures of the General tab, the INI editor, the Installation Manager and the Restore Previous INI
   dialogue to the run workspace (not committed). Close the launcher.
 
 ---
@@ -66,14 +66,14 @@ read it before any task; decisions 1–5 and calls C1–C7 are binding, and C1's
 - Test: the Launcher persistence tests in `Tests/Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration/` (follow
   `IniSnapshotRepositoryTests.Migration_UpgradesADatabaseCreatedByTheInitialSchema`)
 
-- [ ] **Step 1: Write the failing test** `Migration_DropsTheThemeColumn_AndKeepsSettings`: build a database at the `InitialLauncherSchema` migration, insert a
+- [x] **Step 1: Write the failing test** `Migration_DropsTheThemeColumn_AndKeepsSettings`: build a database at the `InitialLauncherSchema` migration, insert a
   settings row (`LauncherStartupPreference` = `LastPlayedInstallation`, `CloseAfterGameLaunch` = true, a `DefaultInstallationId`, `Theme` = `Dark`), migrate to
   latest, then assert the `Theme` column is gone (`PRAGMA table_info`) and the repository returns the three values unchanged.
-- [ ] **Step 2: Run** → fails (no migration yet).
-- [ ] **Step 3: Implement** — delete the enum and property, remove its configuration, generate the migration (its `Down` re-adds the column with the old
+- [x] **Step 2: Run** → fails (no migration yet).
+- [x] **Step 3: Implement** — delete the enum and property, remove its configuration, generate the migration (its `Down` re-adds the column with the old
   default). Fix every reference, including tests.
-- [ ] **Step 4: Run** Domain, Application, Infrastructure, Architecture → pass.
-- [ ] **Step 5: Commit** — `refactor(♻️): remove the unused launcher theme setting`
+- [x] **Step 4: Run** Domain, Application, Infrastructure, Architecture → pass.
+- [x] **Step 5: Commit** — `refactor(♻️): remove the unused launcher theme setting`
 
 ---
 
@@ -92,12 +92,12 @@ tests under `Tests/Erdmier.ZooTycoonLauncher.Application.Tests.Unit/Settings/`.
 Save loads the settings, sets the two properties, and calls `UpdateAsync` — `DefaultInstallationId` is never assigned. A repository exception propagates (the
 dialogue catches it). Validator: `StartupPreference` not null (`"Choose what the launcher opens at start-up."`).
 
-- [ ] **Step 1: Write the failing tests:** `Get_ReturnsTheStoredValues`; `Save_WritesBothValues_AndKeepsTheDefaultInstallation` (stored default id unchanged in
+- [x] **Step 1: Write the failing tests:** `Get_ReturnsTheStoredValues`; `Save_WritesBothValues_AndKeepsTheDefaultInstallation` (stored default id unchanged in
   the entity passed to `UpdateAsync`); `Save_UnchangedValues_StillSaves`; `Validator_NullPreference_Fails`.
-- [ ] **Step 2: Run** `--filter "FullyQualifiedName~LauncherOptions"` → compile failure.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** the filter, then Application + Architecture → pass.
-- [ ] **Step 5: Commit** — `feat(✨): read and save the launcher options`
+- [x] **Step 2: Run** `--filter "FullyQualifiedName~LauncherOptions"` → compile failure.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** the filter, then Application + Architecture → pass.
+- [x] **Step 5: Commit** — `feat(✨): read and save the launcher options`
 
 ---
 
@@ -121,13 +121,13 @@ and indented muted helper with the monospace `zoo.exe`, `OK` (default) / `Cancel
 failure or exception shows `ShowErrorAsync("Cannot Save Options", …)` and stays open with the choices intact. The menu header is `O_ptions…` bound to
 `OpenOptionsCommand` in place of the inert `Settings…` item.
 
-- [ ] **Step 1: Write the failing tests:** `Initialise_LoadsTheStoredValues`; `Ok_SendsOneSaveWithTheChosenValues_AndCloses`; `Cancel_SendsNothing_AndCloses`;
+- [x] **Step 1: Write the failing tests:** `Initialise_LoadsTheStoredValues`; `Ok_SendsOneSaveWithTheChosenValues_AndCloses`; `Cancel_SendsNothing_AndCloses`;
   `Ok_SaveFails_ShowsErrorAndStaysOpen` (values unchanged, `CloseRequested` not raised, warning logged); `Ok_SaveThrows_ShowsErrorAndStaysOpen`;
   `OkWhileBusy_CannotExecute`; and one test that each radio choice maps to its preference.
-- [ ] **Step 2: Run** the filter → fail.
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run** Desktop + Architecture → pass.
-- [ ] **Step 5: Commit** — `feat(✨): add the Options dialogue`
+- [x] **Step 2: Run** the filter → fail.
+- [x] **Step 3: Implement.**
+- [x] **Step 4: Run** Desktop + Architecture → pass.
+- [x] **Step 5: Commit** — `feat(✨): add the Options dialogue`
 
 ---
 
@@ -142,10 +142,10 @@ The dictionary holds one `SolidColorBrush` per C5 key with C5's exact values (`F
 `MidShadow`, `#404040` → `ForegroundDim`, `Green` → `AccentGreen`, `Red` → `AccentRed`, `Maroon` → `AccentMaroon`, `Navy` → `AccentNavy`, `DarkGoldenrod` →
 `AccentAmber`, `Silver` → `Surface`, `White` → `InputBackground`, `#E0E0E0` → `RuleDotted`; `Transparent` stays. Use `{StaticResource …}`.
 
-- [ ] **Step 1:** Implement; then `Select-String` the Desktop views for `(Foreground|Background|Fill|Stroke|BorderBrush|Color)="[^{"]` and confirm only
+- [x] **Step 1:** Implement; then `Select-String` the Desktop views for `(Foreground|Background|Fill|Stroke|BorderBrush|Color)="[^{"]` and confirm only
   `Transparent` (and `Colours.axaml`) remain.
-- [ ] **Step 2: Run** the solution build (0 warnings) and Desktop + Architecture → pass.
-- [ ] **Step 3: Commit** — `style(🎨): define the launcher's colours once`
+- [x] **Step 2: Run** the solution build (0 warnings) and Desktop + Architecture → pass.
+- [x] **Step 3: Commit** — `style(🎨): define the launcher's colours once`
 
 ---
 
@@ -164,12 +164,12 @@ The dictionary holds one `SolidColorBrush` per C5 key with C5's exact values (`F
   `ErrorToBrushConverter` (`true` → `AccentRed`, `false` → `null`/unset); `InstallationGridRowModel` carries `InstallationValidity Validity` instead of the token;
   `InstallationInfoDialogViewModel.Validity` replaces `StatusColourToken`; `MainWindowViewModel.IsStatusError` (`bool`) replaces `StatusMessageSecondaryColour`.
 
-- [ ] **Step 1: Write the failing tests:** `ValidityToBrushConverter_Valid_IsAccentGreen` / `_Invalid_IsAccentRed` (compare `Color` values `#008000` /
+- [x] **Step 1: Write the failing tests:** `ValidityToBrushConverter_Valid_IsAccentGreen` / `_Invalid_IsAccentRed` (compare `Color` values `#008000` /
   `#C00000`); `IsSelectionInvalid_FollowsValidity`; `BootFailure_SetsIsStatusError` and `SuccessfulBoot_ClearsIsStatusError`.
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement**; keep `MainWindow.axaml` ≤ 100 lines.
-- [ ] **Step 4: Run** every test project → pass.
-- [ ] **Step 5: Commit** — `refactor(♻️): move status colours out of the domain and view models`
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement**; keep `MainWindow.axaml` ≤ 100 lines.
+- [x] **Step 4: Run** every test project → pass.
+- [x] **Step 5: Commit** — `refactor(♻️): move status colours out of the domain and view models`
 
 ---
 
@@ -177,32 +177,32 @@ The dictionary holds one `SolidColorBrush` per C5 key with C5's exact values (`F
 
 **Files:** create `Tests/Erdmier.ZooTycoonLauncher.Tests.Architecture/NoLiteralColoursTests.cs`
 
-- [ ] **Step 1: Write** `Views_UseNamedColours`: for every `*.axaml` under `Source/Erdmier.ZooTycoonLauncher.Desktop/` except `Styles/Colours.axaml`, no
+- [x] **Step 1: Write** `Views_UseNamedColours`: for every `*.axaml` under `Source/Erdmier.ZooTycoonLauncher.Desktop/` except `Styles/Colours.axaml`, no
   `Foreground|Background|BorderBrush|Fill|Stroke|Color` attribute holds a value that does not start with `{` and is not `Transparent` (and `Fill` values `True`/
   `False` are booleans, not colours — exclude them); failures list `file:line`. And `Code_UsesNoBrushLiterals`: no `.cs` under Desktop or Domain contains
   `Brushes.` or `Colors.`. Locate the source tree the way `MainWindowSizeTests` does.
-- [ ] **Step 2: Prove it** — temporarily add `Foreground="Red"` to a view, see the test fail with that line, revert.
-- [ ] **Step 3: Run** Architecture → pass.
-- [ ] **Step 4: Commit** — `test(✅): forbid literal colours in views and code`
+- [x] **Step 2: Prove it** — temporarily add `Foreground="Red"` to a view, see the test fail with that line, revert.
+- [x] **Step 3: Run** Architecture → pass.
+- [x] **Step 4: Commit** — `test(✅): forbid literal colours in views and code`
 
 ---
 
 ## Task 7: Documentation
 
-- [ ] **Step 1: SDD** per spec §5 (§5.1/§5.2 incl. `ColourToken`, §6.2 `Theme` column, §9.8 Options, §9.10 menu row, §9.11 removed with its one-line note, §9.12,
+- [x] **Step 1: SDD** per spec §5 (§5.1/§5.2 incl. `ColourToken`, §6.2 `Theme` column, §9.8 Options, §9.10 menu row, §9.11 removed with its one-line note, §9.12,
   §13.2, every other theme/dark/`ColourToken` mention, §13.5 delete DW-20/37/39), revision **1.13**.
-- [ ] **Step 2: conventions.md** §1: drop the Dark columns and the light/dark sentences, add `RuleDotted`, say colours live in `Styles/Colours.axaml` through
+- [x] **Step 2: conventions.md** §1: drop the Dark columns and the light/dark sentences, add `RuleDotted`, say colours live in `Styles/Colours.axaml` through
   `StaticResource`; update any `Settings` mention to `Options` (icon table row).
-- [ ] **Step 3: Verify** prose ≤ 180 characters; commit — `docs(📝): document the Options dialogue and the single colour set`
+- [x] **Step 3: Verify** prose ≤ 180 characters; commit — `docs(📝): document the Options dialogue and the single colour set`
 
 ---
 
 ## Task 8: Check it in the running app (controller)
 
-- [ ] **Step 1:** `File → Options…` shows C1's layout and copy with the stored values; change both, `OK`; reopen to confirm they stuck; restart the launcher
+- [x] **Step 1:** `File → Options…` shows C1's layout and copy with the stored values; change both, `OK`; reopen to confirm they stuck; restart the launcher
   and confirm the startup choice took effect; restore the original values.
-- [ ] **Step 2:** Recapture Task 0's four screens and compare: only red text and the amber headline differ.
-- [ ] **Step 3:** Close the launcher.
+- [x] **Step 2:** Recapture Task 0's four screens and compare: only red text and the amber headline differ.
+- [x] **Step 3:** Close the launcher.
 
 ## Verification
 

@@ -54,6 +54,7 @@ Use them through their key, not by name. The values match the prototype's hardco
 | `AccentRed`    | Strong error text ("No EXE found!", invalid-name message); "Cannot Play" heading (the prototype draws it maroon) | `#C00000` |
 | `AccentMaroon` | Dirty-state ("● Unsaved changes"); diff "Current" col                                                            | `#800000` |
 | `AccentAmber`  | "No INI found" headline; warn-level badges                                                                       | `#806000` |
+
 ### 1.3 Typography
 
 Defined in `Styles/Typography.axaml`. `NoLiteralTypographyTests` fails on a literal `FontFamily`, `FontSize` or `FontWeight` in a view or a style setter; `FontStyle="Italic"`
@@ -293,8 +294,9 @@ There is no theming: the launcher has one, light, appearance, and the dark-mode 
 - **Guarded by a test.** `NoLiteralColoursTests` (Tests.Architecture) fails on a literal colour in a Desktop `*.axaml` and on `Brushes.` or `Colors.` in Desktop or Domain code.
 - **One way to fade text.** Muted text takes the `MutedText` class (§2) or `{StaticResource ForegroundMuted}`; it is never faded with `Opacity`.
   `Views_DoNotFadeTextWithOpacity` (`SharedSizeStylesTests`) fails on `Opacity="0.6"`. No view sets `Opacity` today; §4's `0.55` is reserved for a disabled group box.
-- **Wider than colours.** `NoLiteralColoursTests` also checks `SelectionBrush`, `CaretBrush`, `OpacityMask`, any other `*Brush` attribute, colours written as element
-  content and setters with an attribute between `<Setter` and `Property` / `Value`.
+- **Every colour attribute.** `NoLiteralColoursTests` fails when a `*.axaml` sets `Foreground`, `Background`, `BorderBrush`, `Fill`, `Stroke`, `Color`, `SelectionBrush`,
+  `CaretBrush`, `OpacityMask` or any other `*Brush` attribute to a name or `#…` instead of a key, when a colour is written as element content, and on setters with an
+  attribute between `<Setter` and `Property` / `Value`. `Transparent` is not a colour choice and stays a literal.
 
 ---
 

@@ -1671,6 +1671,8 @@ Solution-spanning rules using `NetArchTest.Rules`:
 - **Avalonia property fields are public (milestone 11.1):** `AvaloniaPropertyFieldTests.AvaloniaProperties_ArePublic` fails on a static readonly `StyledProperty`,
   `DirectProperty` or `AttachedProperty` field in `Desktop` that is not `public`, because Avalonia's XAML compiler sets the property through that field when a markup-extension
   value (such as `{tokens:Space …}`) is assigned.
+- **The colour registry matches `Colours.axaml` (milestone 11.1):** `ColourRegistryTests.ConventionsTables_MatchColoursAxaml` fails when the conventions §1.1 and §1.2 tables and
+  `Colours.axaml` disagree, key for key and value for value, and on an entry either side lists twice or cannot be read.
 
 ### 11.6 Tests in milestone plans
 

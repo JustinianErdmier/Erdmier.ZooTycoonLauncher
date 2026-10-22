@@ -5,23 +5,27 @@ namespace Erdmier.ZooTycoonLauncher.Tests.Architecture;
 /// <summary>Milestone 11.1: the colour tables in <c>conventions.md</c> (§1.1 and §1.2) list exactly the keys, and values, that <c>Colours.axaml</c> defines.</summary>
 public sealed class ColourRegistryTests
 {
-    private static readonly Regex TableRow = new(@"^\|\s*`(?<key>[^`]+)`\s*\|.*?(?<hex>#[0-9A-Fa-f]{6})\b", RegexOptions.Multiline);
+    private static readonly Regex TableRow = new(@"^\|\s*`(?<key>[^`]+)`\s*\|(?<rest>.*)$", RegexOptions.Multiline);
 
-    private static readonly Regex ColourBrush = new(@"x:Key\s*=\s*""(?<key>[^""]+)""[^>]*?\sColor\s*=\s*""(?<hex>#[0-9A-Fa-f]{6})""");
+    private static readonly Regex HexValue = new(@"#[0-9A-Fa-f]{6}\b");
 
-    /// <summary>Every key in the §1.1 and §1.2 tables is a key in <c>Colours.axaml</c> with the same value, and the other way round.</summary>
+    private static readonly Regex KeyedTag = new(@"<(?<tag>[^<>]*?\bx:Key\s*=\s*""(?<key>[^""]*)""[^<>]*)>");
+
+    private static readonly Regex ColourAttribute = new(@"\sColor\s*=\s*""(?<hex>#[0-9A-Fa-f]{6})""");
+
+    /// <summary>Every key in the §1.1 and §1.2 tables is a key in <c>Colours.axaml</c> with the same value, and the other way round; unreadable and duplicate entries are reported.</summary>
     [ Fact ]
     public void ConventionsTables_MatchColoursAxaml()
     {
-        Dictionary<string, string> documented = ReadDocumentedColours();
+        List<string> differences = [];
 
-        Dictionary<string, string> defined = ReadDefinedColours();
+        Dictionary<string, string> documented = ReadDocumentedColours(differences);
+
+        Dictionary<string, string> defined = ReadDefinedColours(differences);
 
         documented.ShouldNotBeEmpty("No colour keys were read from conventions.md §1.1 and §1.2.");
 
         defined.ShouldNotBeEmpty("No colour keys were read from Colours.axaml.");
-
-        List<string> differences = [];
 
         foreach ((string key, string value) in documented.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
@@ -43,7 +47,7 @@ public sealed class ColourRegistryTests
         differences.ShouldBeEmpty("conventions.md and Colours.axaml disagree:" + Environment.NewLine + string.Join(Environment.NewLine, differences));
     }
 
-    private static Dictionary<string, string> ReadDocumentedColours()
+    private static Dictionary<string, string> ReadDocumentedColours(List<string> problems)
     {
         string text = File.ReadAllText(ProjectPaths.Conventions).Replace("\r\n", "\n");
 
@@ -59,21 +63,43 @@ public sealed class ColourRegistryTests
 
         foreach (Match row in TableRow.Matches(text[ start..end ]))
         {
-            colours[ row.Groups[ "key" ].Value ] = row.Groups[ "hex" ].Value;
+            string key = row.Groups[ "key" ].Value;
+
+            Match hex = HexValue.Match(row.Groups[ "rest" ].Value);
+
+            if (!hex.Success)
+            {
+                problems.Add($"{key} in conventions.md has no #RRGGBB value");
+            }
+            else if (!colours.TryAdd(key, hex.Value))
+            {
+                problems.Add($"{key} is listed more than once in conventions.md");
+            }
         }
 
         return colours;
     }
 
-    private static Dictionary<string, string> ReadDefinedColours()
+    private static Dictionary<string, string> ReadDefinedColours(List<string> problems)
     {
         string text = XamlAttributeScanner.BlankComments(File.ReadAllText(Path.Combine(ProjectPaths.Desktop, "Styles", "Colours.axaml")));
 
         Dictionary<string, string> colours = new(StringComparer.Ordinal);
 
-        foreach (Match brush in ColourBrush.Matches(text))
+        foreach (Match keyed in KeyedTag.Matches(text))
         {
-            colours[ brush.Groups[ "key" ].Value ] = brush.Groups[ "hex" ].Value;
+            string key = keyed.Groups[ "key" ].Value;
+
+            Match colour = ColourAttribute.Match(keyed.Groups[ "tag" ].Value);
+
+            if (!colour.Success)
+            {
+                problems.Add($"{key} in Colours.axaml is an unrecognised colour definition (expected Color=\"#RRGGBB\")");
+            }
+            else if (!colours.TryAdd(key, colour.Groups[ "hex" ].Value))
+            {
+                problems.Add($"{key} is defined more than once in Colours.axaml");
+            }
         }
 
         return colours;

@@ -34,7 +34,17 @@ public sealed partial class NoLiteralColoursTests
 
             string text = File.ReadAllText(file);
 
-            foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(text, "Foreground", "Background", "BorderBrush", "Fill", "Stroke", "Color"))
+            foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(text, "Foreground", "Background", "*Brush", "Fill", "Stroke", "Color", "OpacityMask"))
+            {
+                if (IsAllowed(match.Name, match.Value))
+                {
+                    continue;
+                }
+
+                violations.Add($"{Path.GetRelativePath(desktop, file)}:{match.Line}: {match.Text}");
+            }
+
+            foreach (XamlAttributeMatch match in XamlAttributeScanner.ScanElementContent(text, "SolidColorBrush", "Color"))
             {
                 if (IsAllowed(match.Name, match.Value))
                 {

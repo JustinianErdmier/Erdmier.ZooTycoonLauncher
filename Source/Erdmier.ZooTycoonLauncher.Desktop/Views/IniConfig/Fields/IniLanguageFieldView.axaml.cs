@@ -5,4 +5,7 @@ public sealed partial class IniLanguageFieldView : UserControl
 {
     /// <summary>Initialises a new instance.</summary>
     public IniLanguageFieldView() => AvaloniaXamlLoader.Load(this);
+
+    // DropDownClosed is a CLR event, not a routed one, so the row cannot hear it: the value is set, so a pointer-focused field lets go.
+    private void OnDropDownClosed(object? sender, EventArgs e) => IniFieldFocusRelease.AfterCommit(this);
 }

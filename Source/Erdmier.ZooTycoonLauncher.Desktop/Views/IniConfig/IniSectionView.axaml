@@ -34,8 +34,10 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="fields:IniFieldViewModel">
                                     <Grid Background="Transparent"
+                                          Button.Click="OnRowButtonClick"
                                           ColumnDefinitions="190,*"
                                           GotFocus="OnRowGotFocus"
+                                          KeyDown="OnRowKeyDown"
                                           LostFocus="OnRowLostFocus"
                                           Margin="{tokens:Space Vertical=GapSmallest}"
                                           PointerEntered="OnRowPointerEntered"

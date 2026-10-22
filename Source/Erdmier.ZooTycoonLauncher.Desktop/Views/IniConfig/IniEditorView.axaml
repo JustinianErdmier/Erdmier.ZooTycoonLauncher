@@ -38,7 +38,9 @@
                 BorderThickness="1"
                 Grid.Column="1"
                 Grid.Row="1"
-                IsEnabled="{Binding !IsBusy}">
+                IsEnabled="{Binding !IsBusy}"
+                KeyDown="OnFormKeyDown"
+                PointerPressed="OnFormPointerPressed">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                 <ContentControl Content="{Binding SelectedSection}"
                                 Margin="{tokens:Space Horizontal=GapUnrelated, Vertical=GapRelated}" />

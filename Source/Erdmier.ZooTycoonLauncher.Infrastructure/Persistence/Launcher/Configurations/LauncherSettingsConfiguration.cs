@@ -22,11 +22,5 @@ public sealed class LauncherSettingsConfiguration : IEntityTypeConfiguration<Lau
                .IsRequired();
 
         builder.Property(s => s.DefaultInstallationId);
-
-        builder.Property(s => s.Theme)
-               .HasConversion(static v => v.Name,
-                              static v => LauncherTheme.FromName(v, ignoreCase: false))
-               .HasDefaultValue(LauncherTheme.System)
-               .IsRequired();
     }
 }

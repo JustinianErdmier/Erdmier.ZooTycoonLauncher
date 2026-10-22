@@ -11,11 +11,11 @@
                        FontWeight="Bold"
                        Text="{Binding Header}" />
 
-            <TextBlock Foreground="Gray"
+            <TextBlock Foreground="{StaticResource ForegroundMuted}"
                        Text="section of zoo.ini" />
         </StackPanel>
 
-        <Border Background="Silver"
+        <Border Background="{StaticResource Surface}"
                 Height="1" />
 
         <ItemsControl ItemsSource="{Binding Groups}">
@@ -25,7 +25,7 @@
                                 Spacing="6">
                         <TextBlock FontFamily="Lucida Console, Courier New, monospace"
                                    FontWeight="Bold"
-                                   Foreground="#404040"
+                                   Foreground="{StaticResource ForegroundDim}"
                                    IsVisible="{Binding HasSubHeader}"
                                    Text="{Binding SubHeader}" />
 
@@ -45,7 +45,7 @@
                                                        Text="{Binding Label}" />
 
                                             <TextBlock FontFamily="Lucida Console, Courier New, monospace"
-                                                       Foreground="Gray"
+                                                       Foreground="{StaticResource ForegroundMuted}"
                                                        IsVisible="{Binding HasHint}"
                                                        Text="{Binding Hint}" />
                                         </StackPanel>
@@ -64,7 +64,7 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <TextBlock Foreground="Gray"
+        <TextBlock Foreground="{StaticResource ForegroundMuted}"
                    IsVisible="{Binding HasFootnote}"
                    Margin="0 6 0 0"
                    Text="{Binding Footnote}"

@@ -55,7 +55,7 @@
                                Text="Ready to Play" />
 
                     <TextBlock FontWeight="Solid"
-                               Foreground="Red"
+                               Foreground="{StaticResource AccentRed}"
                                IsVisible="{Binding !CanPlay}"
                                Text="Cannot Play" />
 
@@ -69,13 +69,13 @@
                                    Grid.Row="0"
                                    Text="EXE:" />
 
-                        <TextBlock Foreground="Green"
+                        <TextBlock Foreground="{StaticResource AccentGreen}"
                                    Grid.Column="1"
                                    Grid.Row="0"
                                    IsVisible="{Binding HasExe}"
                                    Text="Found" />
 
-                        <TextBlock Foreground="Red"
+                        <TextBlock Foreground="{StaticResource AccentRed}"
                                    Grid.Column="1"
                                    Grid.Row="0"
                                    IsVisible="{Binding !HasExe}"
@@ -85,13 +85,13 @@
                                    Grid.Row="1"
                                    Text="INI:" />
 
-                        <TextBlock Foreground="Green"
+                        <TextBlock Foreground="{StaticResource AccentGreen}"
                                    Grid.Column="1"
                                    Grid.Row="1"
                                    IsVisible="{Binding HasIni}"
                                    Text="Found" />
 
-                        <TextBlock Foreground="Red"
+                        <TextBlock Foreground="{StaticResource AccentRed}"
                                    Grid.Column="1"
                                    Grid.Row="1"
                                    IsVisible="{Binding !HasIni}"
@@ -107,22 +107,22 @@
                                    TextWrapping="Wrap" />
                     </Grid>
 
-                    <TextBlock Foreground="Gray"
+                    <TextBlock Foreground="{StaticResource ForegroundMuted}"
                                IsVisible="{Binding IsMissingOnlyExe}"
                                Text="zoo.exe is missing from this installation's directory. The game cannot be started because it technically doesn't exist. Open the installation manager to try fixing the problem."
                                TextWrapping="Wrap" />
 
-                    <TextBlock Foreground="Gray"
+                    <TextBlock Foreground="{StaticResource ForegroundMuted}"
                                IsVisible="{Binding IsMissingOnlyIni}"
                                Text="{Binding MissingIniMessage}"
                                TextWrapping="Wrap" />
 
-                    <TextBlock Foreground="Gray"
+                    <TextBlock Foreground="{StaticResource ForegroundMuted}"
                                IsVisible="{Binding IsMissingBothExeAndIni}"
                                Text="zoo.exe and zoo.ini are missing from this installation's directory. The game cannot be started without them. Use Fix to locate or recreate the files. Open the installation manager to try fixing the problem."
                                TextWrapping="Wrap" />
 
-                    <TextBlock Foreground="Gray"
+                    <TextBlock Foreground="{StaticResource ForegroundMuted}"
                                IsVisible="{Binding IsIniUnreadable}"
                                TextWrapping="Wrap">
                         <Run Text="The launcher could not read zoo.ini." />
@@ -130,7 +130,7 @@
                         <Run Text="{Binding IniErrorMessage}" />
                     </TextBlock>
 
-                    <TextBlock Foreground="Gray"
+                    <TextBlock Foreground="{StaticResource ForegroundMuted}"
                                IsVisible="{Binding ShowPendingIniChangesHint}"
                                Text="Save or revert your INI changes to launch."
                                TextWrapping="Wrap" />
@@ -186,17 +186,17 @@
                                    Text="14 compatible (16-bit ≤ 1600 x 1200)" />
                     </Grid>
 
-                    <TextBlock Foreground="Gray"
+                    <TextBlock Foreground="{StaticResource ForegroundMuted}"
                                IsVisible="{Binding IsMissingOnlyExe}">
                         <Italic>Display detection succeeded, but the game cannot launch until the EXE is restored.</Italic>
                     </TextBlock>
 
-                    <TextBlock Foreground="Gray"
+                    <TextBlock Foreground="{StaticResource ForegroundMuted}"
                                IsVisible="{Binding IsMissingOnlyIni}">
                         <Italic>Display detection succeeded, but the game cannot launch until the INI is restored.</Italic>
                     </TextBlock>
 
-                    <TextBlock Foreground="Gray"
+                    <TextBlock Foreground="{StaticResource ForegroundMuted}"
                                IsVisible="{Binding IsMissingBothExeAndIni}">
                         <Italic>Display detection succeeded, but the game cannot launch until the EXE and INI are restored.</Italic>
                     </TextBlock>
@@ -264,10 +264,10 @@
                                Width="16" />
 
                         <TextBlock FontWeight="Bold"
-                                   Foreground="Green"
+                                   Foreground="{StaticResource AccentGreen}"
                                    Text="zoo.exe is configured correctly." />
 
-                        <TextBlock Foreground="Gray"
+                        <TextBlock Foreground="{StaticResource ForegroundMuted}"
                                    Text="Windows XP compatibility, 16-bit colour, and fullscreen optimisations are all set." />
                     </StackPanel>
 
@@ -281,17 +281,17 @@
                                Width="16" />
 
                         <TextBlock FontWeight="Bold"
-                                   Foreground="Red"
+                                   Foreground="{StaticResource AccentRed}"
                                    Text="zoo.exe is missing." />
 
-                        <TextBlock Foreground="Gray"
+                        <TextBlock Foreground="{StaticResource ForegroundMuted}"
                                    Text="There's no game to configure." />
                     </StackPanel>
                 </StackPanel>
             </DockPanel>
         </controls:GroupBox>
 
-        <TextBlock Foreground="Gray"
+        <TextBlock Foreground="{StaticResource ForegroundMuted}"
                    HorizontalAlignment="Right">
             <Run Text="Last played: " /><Run Text="{Binding InstallationLastPlayed}" />
         </TextBlock>

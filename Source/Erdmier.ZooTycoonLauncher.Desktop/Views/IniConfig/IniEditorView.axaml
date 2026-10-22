@@ -8,12 +8,12 @@
           Margin="8"
           RowDefinitions="Auto,300,Auto"
           RowSpacing="4">
-        <TextBlock Foreground="Gray"
+        <TextBlock Foreground="{StaticResource ForegroundMuted}"
                    Grid.Column="0"
                    Grid.Row="0"
                    Text="Section" />
 
-        <TextBlock Foreground="Gray"
+        <TextBlock Foreground="{StaticResource ForegroundMuted}"
                    Grid.Column="1"
                    Grid.Row="0"
                    Text="{Binding SelectedSection.Descriptor}" />
@@ -32,8 +32,8 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <Border Background="White"
-                BorderBrush="Gray"
+        <Border Background="{StaticResource InputBackground}"
+                BorderBrush="{StaticResource MidShadow}"
                 BorderThickness="1"
                 Grid.Column="1"
                 Grid.Row="1"
@@ -75,11 +75,11 @@
                            TextTrimming="CharacterEllipsis" />
 
                 <TextBlock FontWeight="Bold"
-                           Foreground="Maroon"
+                           Foreground="{StaticResource AccentMaroon}"
                            IsVisible="{Binding IsFooterDirty}"
                            Text="{Binding FooterText}" />
 
-                <TextBlock Foreground="Gray"
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
                            IsVisible="{Binding IsFooterSaved}"
                            Text="{Binding FooterText}" />
             </Panel>

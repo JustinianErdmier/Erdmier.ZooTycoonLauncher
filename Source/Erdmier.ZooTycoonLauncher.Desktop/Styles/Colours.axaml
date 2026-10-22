@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- The launcher's colours, defined once (light values only). Views use {StaticResource …}; Transparent stays a literal. -->
+    <SolidColorBrush x:Key="ForegroundMuted" Color="#808080" />
+    <SolidColorBrush x:Key="ForegroundDim" Color="#404040" />
+    <SolidColorBrush x:Key="AccentGreen" Color="#008000" />
+    <SolidColorBrush x:Key="AccentRed" Color="#C00000" />
+    <SolidColorBrush x:Key="AccentMaroon" Color="#800000" />
+    <SolidColorBrush x:Key="AccentNavy" Color="#000080" />
+    <SolidColorBrush x:Key="AccentAmber" Color="#806000" />
+    <SolidColorBrush x:Key="Surface" Color="#C0C0C0" />
+    <SolidColorBrush x:Key="InputBackground" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="MidShadow" Color="#808080" />
+    <SolidColorBrush x:Key="RuleDotted" Color="#E0E0E0" />
+</ResourceDictionary>

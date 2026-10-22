@@ -28,7 +28,7 @@
             <StackPanel Margin="5 0 0 0"
                         Orientation="Vertical"
                         Spacing="6">
-                <TextBlock Foreground="Red"
+                <TextBlock Foreground="{StaticResource AccentRed}"
                            IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                            Text="{Binding ErrorMessage}"
                            TextWrapping="Wrap" />

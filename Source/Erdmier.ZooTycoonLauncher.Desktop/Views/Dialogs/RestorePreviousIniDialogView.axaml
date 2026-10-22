@@ -20,7 +20,7 @@
                                                            Text="zoo.ini" /><Run Text=" to restore. The current version is archived to history before the restore is applied." />
         </TextBlock>
 
-        <TextBlock Foreground="Red"
+        <TextBlock Foreground="{StaticResource AccentRed}"
                    IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                    Text="{Binding ErrorMessage}"
                    TextWrapping="Wrap" />
@@ -96,7 +96,7 @@
         </Grid>
 
         <!-- Differences of the selected snapshot: a header row and a scrolling list in a sunken frame, so the rows are not selectable -->
-        <ClassicBorderDecorator Background="White"
+        <ClassicBorderDecorator Background="{StaticResource InputBackground}"
                                 BorderStyle="Sunken"
                                 BorderThickness="2"
                                 Height="140"
@@ -105,8 +105,8 @@
                 <Grid IsVisible="{Binding !HasNoDifferences}"
                       RowDefinitions="Auto, *">
                     <!-- The header's width follows the rows' (the ItemsControl sits inside the viewport), so it stays aligned when the scrollbar shows -->
-                    <Border Background="Silver"
-                            BorderBrush="Gray"
+                    <Border Background="{StaticResource Surface}"
+                            BorderBrush="{StaticResource MidShadow}"
                             BorderThickness="0 0 0 1">
                         <Grid HorizontalAlignment="Left"
                               Width="{Binding Bounds.Width, ElementName=DiffItems}">
@@ -137,15 +137,15 @@
                                               TextElement.FontFamily="Lucida Console, Courier New, monospace"
                                               TextElement.FontSize="11">
                                             <TextBlock>
-                                                <Run Foreground="Gray"
+                                                <Run Foreground="{StaticResource ForegroundMuted}"
                                                      Text="{Binding SectionText}" /><Run Text="/" /><Run Text="{Binding KeyText}" />
                                             </TextBlock>
 
-                                            <TextBlock Foreground="Maroon"
+                                            <TextBlock Foreground="{StaticResource AccentMaroon}"
                                                        Grid.Column="1"
                                                        Text="{Binding CurrentText}" />
 
-                                            <TextBlock Foreground="Navy"
+                                            <TextBlock Foreground="{StaticResource AccentNavy}"
                                                        Grid.Column="2"
                                                        Text="{Binding SnapshotText}" />
                                         </Grid>
@@ -154,7 +154,7 @@
                                         <Line ClipToBounds="True"
                                               EndPoint="4000,0.5"
                                               Height="1"
-                                              Stroke="#E0E0E0"
+                                              Stroke="{StaticResource RuleDotted}"
                                               StrokeDashArray="1, 1"
                                               StrokeThickness="1"
                                               StartPoint="0,0.5" />
@@ -177,7 +177,7 @@
         </ClassicBorderDecorator>
 
         <TextBlock FontSize="11"
-                   Foreground="Maroon"
+                   Foreground="{StaticResource AccentMaroon}"
                    IsVisible="{Binding HasKeptKeys}"
                    Text="{Binding KeptKeysText}"
                    TextWrapping="Wrap" />

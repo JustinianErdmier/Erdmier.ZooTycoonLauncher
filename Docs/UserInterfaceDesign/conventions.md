@@ -87,10 +87,9 @@ anywhere). Mono runs always use `{StaticResource FontFamilyMono}`.
 
 ### 1.4 Spacings
 
-Defined in `Styles/Spacing.axaml`, in pixels. The values are Microsoft's Windows 9x layout guideline distances, which the guidelines give in dialog units (DLUs) and which
-convert here for 8 pt MS Sans Serif at 96 DPI (about 1.5 px per DLU across, 1.6 px down; a 50 × 14 DLU command button is 75 × 23 px, the `MinWidth="75"` of
-`DialogButton`). `NoLiteralSpacingTests` fails on a literal `Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing`, `HorizontalSpacing` or `VerticalSpacing` in a view or a
-style setter,
+Defined in `Styles/Spacing.axaml`, in pixels. The values are Microsoft's Windows 9x layout guideline distances, which the guidelines give in dialog units (DLUs) and which convert
+here for 8 pt MS Sans Serif at 96 DPI (about 1.5 px per DLU across, 1.6 px down; a 50 × 14 DLU command button is 75 × 23 px, the `MinWidth="75"` of `DialogButton`).
+`NoLiteralSpacingTests` fails on a literal `Margin`, `Padding`, `Spacing`, `RowSpacing`, `ColumnSpacing`, `HorizontalSpacing` or `VerticalSpacing` in a view or a style setter,
 other than `0`.
 
 | Key                    | px | Guideline (DLUs)                                                                            | Use                                                  |
@@ -125,7 +124,7 @@ markup extension (`Styles/SpaceExtension.cs`, `xmlns:tokens="using:Erdmier.ZooTy
 
 ```xml
 <StackPanel Margin="{tokens:Space MarginDialog}" Spacing="{StaticResource GapRelated}" />
-<Border Padding="{tokens:Space Left=GroupBoxInset, Top=GroupBoxFirstControl}" />
+<Border Padding="{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}" />
 <TextBlock Margin="{tokens:Space Horizontal=GapLabel}" />
 ```
 
@@ -229,9 +228,8 @@ Used by the Status / Display / INI status / Fix-EXE / Fix-INI / Auto-locate-trai
 - **Action button(s)** sit at the right when the row is short (Ready / NoInstall — single primary action) or in a footer row below the body when there are multiple actions or the
   body is long (Cannot Play — `Fix` + `Manage Installations`).
 - **Headline colour.** Red for Cannot Play (the `AccentRed` token; the prototype draws it maroon), foreground (`Foreground`) elsewhere.
-- **Disabled group (reserved).** If a whole group ever needs to read as "not actionable", set `Opacity="0.55"` on the `GroupBox` rather than recolouring its children.
-  No view uses this today (Cannot Play leaves its Display and Your System groups un-muted, SDD §9.1). It is a disabled state, not a way to fade text; faded text uses `MutedText`
-(§7).
+- **Disabled group (reserved).** If a whole group ever needs to read as "not actionable", set `Opacity="0.55"` on the `GroupBox` rather than recolouring its children. No view uses
+  this today (Cannot Play leaves its Display and Your System groups un-muted, SDD §9.1). It is a disabled state, not a way to fade text; faded text uses `MutedText` (§7).
 
 ### 4.1 Icon vocabulary
 
@@ -283,11 +281,10 @@ Every modal dialogue ends with a horizontal button row aligned to the right. Uni
 - **Default button** is the rightmost in single-action footers (`OK` / `Close`), or the leftmost-of-the-confirming-pair when there's a primary-plus-cancel (`Save` `Cancel`,
   `Restore` `Cancel`, `Delete` `Cancel`). Mark the default with `IsDefault="True"` (the Classic theme draws the outline), as `OptionsDialogView` and `ConfirmationPromptView` do.
 - **Gap.** `GapRelated` (6 px) between buttons. `GapUnrelated` (11 px) between the body and the footer; the dialogue's own margin is `MarginDialog` (11 px).
-- **Width.** Buttons take the `DialogButton` class (`MinWidth="75"`, §2); the default button gets the same width. A button whose label is longer than that sizes to its
-  content.
+- **Width.** Buttons take the `DialogButton` class (`MinWidth="75"`, §2); the default button gets the same width. A button whose label is longer than that sizes to its content.
 
-Footer order from left to right matches the natural reading order: positive action(s) first, destructive action(s) second, dismissive action last. The prototype follows this and
-so does §9.
+Footer order from left to right matches the natural reading order: positive action(s) first, destructive action(s) second, dismissive action last. The prototype follows this and so
+does §9.
 
 ---
 

@@ -17,14 +17,14 @@
                     Margin="0 8 0 0"
                     Spacing="8">
             <TextBlock Text="{Binding Grid.Rows.Count, StringFormat='{}{0} installation(s) registered. Double-click a row to open.'}"
-                       Opacity="0.6" />
+                       Classes="MutedText" />
 
             <Button Command="{Binding CloseCommand}"
                     Content="Close"
                     HorizontalAlignment="Right"
                     IsDefault="True"
                     IsCancel="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
         </StackPanel>
 
         <!-- Right-side action panel -->

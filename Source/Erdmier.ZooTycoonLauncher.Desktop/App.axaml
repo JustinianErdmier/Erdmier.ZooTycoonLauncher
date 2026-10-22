@@ -21,6 +21,7 @@
         <ClassicTheme />
         <StyleInclude Source="avares://Classic.Avalonia.Theme.DataGrid/Classic.axaml" />
         <StyleInclude Source="avares://Classic.Avalonia.Theme.Dock/Classic.axaml" />
+        <StyleInclude Source="avares://Erdmier.ZooTycoonLauncher.Desktop/Styles/Controls.axaml" />
 
         <!-- Win95/98 paints a read-only edit control in the 3D-face grey with normal text. The Classic theme only greys disabled TextBoxes, so mirror its :disabled background here. -->
         <Style Selector="TextBox[IsReadOnly=True] /template/ ClassicBorderDecorator#Bd">

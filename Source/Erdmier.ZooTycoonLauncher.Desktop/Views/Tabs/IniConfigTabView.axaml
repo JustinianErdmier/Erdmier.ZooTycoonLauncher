@@ -8,11 +8,11 @@
                    IsVisible="{Binding HasReadOnlyWarning}"
                    Margin="0,0,0,6">
             <Image DockPanel.Dock="Left"
-                   Height="16"
+                   Classes="IconSmall"
+                   RenderOptions.BitmapInterpolationMode="None"
                    Margin="0,0,6,0"
                    Source="/Assets/Win95Icons/warning32.gif"
-                   VerticalAlignment="Top"
-                   Width="16" />
+                   VerticalAlignment="Top" />
 
             <TextBlock Foreground="{StaticResource AccentMaroon}"
                        Text="{Binding ReadOnlyWarning}"

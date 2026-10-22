@@ -14,7 +14,7 @@
     <StackPanel Margin="12"
                 Orientation="Vertical"
                 Spacing="8">
-        <TextBlock Opacity="0.6"
+        <TextBlock Classes="MutedText"
                    TextWrapping="Wrap">
             <Run Text="Pick a previous version of " /><Run FontFamily="{StaticResource FontFamilyMono}"
                                                            Text="zoo.ini" /><Run Text=" to restore. The current version is archived to history before the restore is applied." />
@@ -86,12 +86,12 @@
         <Grid ColumnDefinitions="*, Auto"
               IsVisible="{Binding !HasError}">
             <TextBlock FontSize="{StaticResource FontSizeBase}"
-                       Opacity="0.6"
+                       Classes="MutedText"
                        Text="Diff: values from the selected snapshot replace the current ones on restore." />
 
             <TextBlock Grid.Column="1"
                        FontSize="{StaticResource FontSizeBase}"
-                       Opacity="0.6"
+                       Classes="MutedText"
                        Text="{Binding ChangeCountText}" />
         </Grid>
 
@@ -169,7 +169,7 @@
                            HorizontalAlignment="Center"
                            IsVisible="{Binding HasNoDifferences}"
                            Margin="14"
-                           Opacity="0.6"
+                           Classes="MutedText"
                            Text="No differences — this snapshot matches the current state."
                            TextAlignment="Center"
                            VerticalAlignment="Top" />
@@ -188,12 +188,12 @@
             <Button Command="{Binding RestoreCommand}"
                     Content="Restore"
                     IsDefault="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
 
             <Button Command="{Binding CancelCommand}"
                     Content="Cancel"
                     IsCancel="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
         </StackPanel>
     </StackPanel>
 </ClassicWindow>

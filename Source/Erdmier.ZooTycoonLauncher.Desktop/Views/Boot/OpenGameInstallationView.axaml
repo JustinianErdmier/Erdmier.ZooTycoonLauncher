@@ -9,10 +9,10 @@
                 Spacing="10">
         <DockPanel HorizontalSpacing="10">
             <Image DockPanel.Dock="Left"
-                   Height="32"
+                   Classes="IconLarge"
+                   RenderOptions.BitmapInterpolationMode="None"
                    Source="/Assets/Win95Icons/foldercatalog16.ico"
-                   VerticalAlignment="Center"
-                   Width="32" />
+                   VerticalAlignment="Center" />
 
             <StackPanel Margin="5 0 0 0"
                         Orientation="Vertical"

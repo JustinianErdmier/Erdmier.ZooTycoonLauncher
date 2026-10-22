@@ -24,7 +24,7 @@
                            Padding="10 15">
             <StackPanel Orientation="Vertical"
                         Spacing="4">
-                <TextBlock Opacity="0.6"
+                <TextBlock Classes="MutedText"
                            Text="When the launcher opens, restore:" />
 
                 <RadioButton Content="The default installation"
@@ -53,7 +53,7 @@
                           IsChecked="{Binding CloseAfterGameLaunch}" />
 
                 <TextBlock Margin="20 0 0 0"
-                           Opacity="0.6"
+                           Classes="MutedText"
                            TextWrapping="Wrap">
                     <Run Text="When ticked, the launcher exits as soon as " /><Run FontFamily="{StaticResource FontFamilyMono}"
                                                                                    Text="zoo.exe" /><Run Text=" reports started." />
@@ -67,11 +67,11 @@
             <Button Command="{Binding OkCommand}"
                     Content="OK"
                     IsDefault="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
             <Button Command="{Binding CancelCommand}"
                     Content="Cancel"
                     IsCancel="True"
-                    MinWidth="75" />
+                    Classes="DialogButton" />
         </layout:UniformStack>
     </StackPanel>
 </ClassicWindow>

@@ -52,20 +52,20 @@
                         Spacing="6">
                 <Button Command="{Binding RestorePreviousCommand}"
                         Content="Restore previous…"
-                        MinWidth="75" />
+                        Classes="DialogButton" />
 
                 <Button Command="{Binding RestoreDefaultsCommand}"
                         Content="Restore defaults"
-                        MinWidth="75" />
+                        Classes="DialogButton" />
 
                 <Button Command="{Binding SaveCommand}"
                         Content="Save"
                         IsDefault="True"
-                        MinWidth="75" />
+                        Classes="DialogButton" />
 
                 <Button Command="{Binding ResetCommand}"
                         Content="Reset"
-                        MinWidth="75" />
+                        Classes="DialogButton" />
             </StackPanel>
 
             <Panel VerticalAlignment="Center">

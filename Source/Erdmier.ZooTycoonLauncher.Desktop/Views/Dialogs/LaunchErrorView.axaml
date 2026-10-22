@@ -27,10 +27,10 @@
                 Spacing="10">
         <DockPanel HorizontalSpacing="10">
             <Image DockPanel.Dock="Left"
-                   Height="32"
+                   Classes="IconLarge"
+                   RenderOptions.BitmapInterpolationMode="None"
                    Source="/Assets/Win95Icons/cancel32.gif"
-                   VerticalAlignment="Center"
-                   Width="32" />
+                   VerticalAlignment="Center" />
 
             <TextBlock Text="{Binding Message}"
                        TextWrapping="Wrap" />

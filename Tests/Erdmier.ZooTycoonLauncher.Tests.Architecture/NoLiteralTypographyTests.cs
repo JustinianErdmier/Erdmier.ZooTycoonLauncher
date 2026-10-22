@@ -1,5 +1,3 @@
-using Erdmier.ZooTycoonLauncher.Tests.Architecture.Common;
-
 namespace Erdmier.ZooTycoonLauncher.Tests.Architecture;
 
 /// <summary>Milestone 11.1 spec C1: font families, sizes and weights are defined once in <c>Styles/Typography.axaml</c> and referenced by name everywhere else.</summary>

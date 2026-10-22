@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using Erdmier.ZooTycoonLauncher.Tests.Architecture.Common;
 
 namespace Erdmier.ZooTycoonLauncher.Tests.Architecture;
 

@@ -25,10 +25,10 @@
                 Spacing="14">
         <DockPanel HorizontalSpacing="10">
             <Image DockPanel.Dock="Left"
-                   Height="32"
+                   Classes="IconLarge"
+                   RenderOptions.BitmapInterpolationMode="None"
                    Source="/Assets/Win95Icons/error32.gif"
-                   VerticalAlignment="Top"
-                   Width="32" />
+                   VerticalAlignment="Top" />
 
             <TextBlock Text="{Binding Message}"
                        TextWrapping="Wrap" />
@@ -38,6 +38,6 @@
                 Content="OK"
                 HorizontalAlignment="Center"
                 IsDefault="True"
-                MinWidth="75" />
+                Classes="DialogButton" />
     </StackPanel>
 </ClassicWindow>

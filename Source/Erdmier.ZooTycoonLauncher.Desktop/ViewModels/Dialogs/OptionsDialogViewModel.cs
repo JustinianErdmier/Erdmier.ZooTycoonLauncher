@@ -143,6 +143,9 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
                 return;
             }
 
+            // Release the busy flag first so CanClose is true when the window's Closing handler runs in response to CloseRequested.
+            IsBusy = false;
+
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)

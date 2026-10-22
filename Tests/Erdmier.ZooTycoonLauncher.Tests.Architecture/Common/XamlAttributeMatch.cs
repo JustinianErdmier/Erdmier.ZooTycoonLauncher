@@ -6,4 +6,8 @@ namespace Erdmier.ZooTycoonLauncher.Tests.Architecture.Common;
 /// <param name="Line">The 1-based line on which the match starts.</param>
 /// <param name="Text">The matched text with runs of whitespace collapsed, for failure messages.</param>
 /// <param name="Index">The 0-based character index at which the match starts, in the comment-blanked text that was scanned.</param>
+/// <remarks>
+///     <see cref="Index" /> is an offset into the comment-blanked text, because <see cref="XamlAttributeScanner.Scan" /> blanks comments itself. A caller that offsets it into its own string must
+///     blank comments first (<see cref="XamlAttributeScanner.BlankComments" />); <see cref="Line" /> is valid either way.
+/// </remarks>
 public sealed record XamlAttributeMatch(string Name, string Value, int Line, string Text, int Index);

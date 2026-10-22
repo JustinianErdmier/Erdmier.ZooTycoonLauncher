@@ -44,7 +44,7 @@ public sealed partial class TokenReferencesTests
             }
         }
 
-        references.ShouldBeGreaterThan(0, "No {StaticResource} or {DynamicResource} reference was found in any view; the pattern or the scanned path is broken.");
+        references.ShouldBeGreaterThan(expected: 0, customMessage: "No {StaticResource} or {DynamicResource} reference was found in any view; the pattern or the scanned path is broken.");
 
         violations.ShouldBeEmpty("Unresolved resource references found:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }
@@ -87,7 +87,7 @@ public sealed partial class TokenReferencesTests
             }
         }
 
-        uses.ShouldBeGreaterThan(0, "No {tokens:Space …} use was found in any view; the pattern or the scanned path is broken.");
+        uses.ShouldBeGreaterThan(expected: 0, customMessage: "No {tokens:Space …} use was found in any view; the pattern or the scanned path is broken.");
 
         violations.ShouldBeEmpty("Spacing tokens that are not x:Double resources:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }
@@ -134,7 +134,7 @@ public sealed partial class TokenReferencesTests
             }
         }
 
-        references.ShouldBeGreaterThan(0, "No spacing attribute holding a resource reference was found in any view; the pattern or the scanned path is broken.");
+        references.ShouldBeGreaterThan(expected: 0, customMessage: "No spacing attribute holding a resource reference was found in any view; the pattern or the scanned path is broken.");
 
         violations.ShouldBeEmpty("Spacing resources of the wrong type:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }

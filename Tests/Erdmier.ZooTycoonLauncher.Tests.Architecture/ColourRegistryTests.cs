@@ -29,9 +29,9 @@ public sealed partial class ColourRegistryTests
 
         Dictionary<string, string> defined = ReadDefinedColours(differences);
 
-        documented.ShouldNotBeEmpty("No colour keys were read from conventions.md §1.1 and §1.2.");
+        documented.ShouldNotBeEmpty(customMessage: "No colour keys were read from conventions.md §1.1 and §1.2.");
 
-        defined.ShouldNotBeEmpty("No colour keys were read from Colours.axaml.");
+        defined.ShouldNotBeEmpty(customMessage: "No colour keys were read from Colours.axaml.");
 
         foreach ((string key, string value) in documented.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
@@ -61,9 +61,9 @@ public sealed partial class ColourRegistryTests
 
         int end = text.IndexOf("### 1.3 ", StringComparison.Ordinal);
 
-        start.ShouldBeGreaterThanOrEqualTo(0, "conventions.md has no '### 1.1' heading.");
+        start.ShouldBeGreaterThanOrEqualTo(expected: 0, customMessage: "conventions.md has no '### 1.1' heading.");
 
-        end.ShouldBeGreaterThan(start, "conventions.md has no '### 1.3' heading after '### 1.1'.");
+        end.ShouldBeGreaterThan(expected: start, customMessage: "conventions.md has no '### 1.3' heading after '### 1.1'.");
 
         Dictionary<string, string> colours = new(StringComparer.Ordinal);
 

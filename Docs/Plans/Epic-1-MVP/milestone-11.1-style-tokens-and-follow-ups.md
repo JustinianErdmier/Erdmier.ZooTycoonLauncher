@@ -173,3 +173,62 @@ while busy; the view's `Closing` handler refuses a user close while `!CanClose`.
 
 - [x] Clean build with 0 warnings; every test project passes.
 - [x] Task 8 checked in the running app, or recorded in the ledger as left to the maintainer.
+
+---
+
+## Follow-ups after the first review (spec §6a, decisions 7–9)
+
+Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branch and PR; same Global Constraints.
+
+## Task 9: INI field focus follows the keyboard
+
+**Files:** modify `Desktop/Views/IniConfig/IniSectionView.axaml(.cs)` and, where a field needs it, the `Views/IniConfig/Fields/*View.axaml(.cs)` and
+`Views/IniConfig/IniEditorView.axaml(.cs)`; `ViewModels/IniConfig/IniEditorViewModel.cs` only if the footer logic must change; tests in
+`Tests/…Desktop.Tests.Unit` (and the headless project if it exists on this branch by then; otherwise view-model tests plus the Task 12 drive).
+
+**Interfaces:** the footer keeps reading `IniFieldViewModel.IsFocused` / `IsHovered`; `IsFocused` becomes true only for keyboard focus
+(`GotFocusEventArgs.NavigationMethod` is `Tab` or `Directional`), never for `Pointer` or `Unspecified`.
+
+- [ ] **Step 1: Write the failing tests** for whatever logic lands outside code-behind (e.g. a small focus-policy helper deciding from a `NavigationMethod`
+  whether a field counts as focused, and whether a pointer-focused control should release focus after a commit). Name them for the spec's rules:
+  `PointerFocus_DoesNotDriveTheFooter`, `KeyboardFocus_DrivesTheFooter`, `Escape_ClearsFieldFocus`.
+- [ ] **Step 2: Run** → fail.
+- [ ] **Step 3: Implement** spec §6a.1: keyboard-only `IsFocused`; a pointer-focused field releases focus (to the editor, not to another input) when a
+  drop-down closes, after a toggle click, after a spinner step, and on Enter in a text or number box; a pointer press on a non-input part of the editor and
+  Esc while an INI field is focused clear focus (a typed value commits as on lost focus). Section switching still clears hover and focus.
+- [ ] **Step 4: Run** Desktop + Architecture and a full build (0 warnings) → pass.
+- [ ] **Step 5: Commit** — `fix(🐛): let INI fields keep focus only from the keyboard`
+
+---
+
+## Task 10: A slightly darker muted grey
+
+- [ ] **Step 1:** `Styles/Colours.axaml`: `ForegroundMuted` `#808080` → `#666666` (leave `MidShadow`). Update every doc that quotes the muted value:
+  conventions §1.1 and §7, SDD §9 and its 1.14 revision row (the ledger is the controller's).
+- [ ] **Step 2: Run** Architecture → pass. **Commit** — `style(🎨): darken the muted text grey for legibility`
+
+---
+
+## Task 11: Installation grid headers do not react to clicks
+
+**Files:** `Desktop/Views/Common/InstallationGridView.axaml` (and a shared style in `Styles/Controls.axaml` if both grids can use one).
+
+- [ ] **Step 1:** Stop the column headers reacting to clicks, as `RestorePreviousIniDialogView`'s grid does (`DataGridColumnHeader` not hit-testable). Keep
+  `CanUserResizeColumns="True"` if the Classic theme's resize grip still works with the header itself inert; if it cannot, turn resizing off and say so in
+  the report. If the Restore grid and this one can share one style class, move the style into `Controls.axaml` and use it in both.
+- [ ] **Step 2: Run** Desktop + Architecture → pass. **Commit** — `fix(🐛): stop the installation grid's headers reacting to clicks`
+
+---
+
+## Task 12: Check the follow-ups in the running app (controller)
+
+- [ ] **Step 1:** INI editor: click the `fullscreen` drop-down and pick a value → focus leaves, footer shows the save status; click a number box's spinner,
+  a toggle, type in a number box and press Enter → same; Tab to a field → it stays focused with its help shown; click empty editor space and press Esc
+  while a field is focused → focus clears. Restore any value changed (Reset, or no save).
+- [ ] **Step 2:** Muted text is legible and still lighter than the Info labels.
+- [ ] **Step 3:** Installation Manager and Open Game Installation: clicking a column header does nothing visible.
+
+## Verification (follow-ups)
+
+- [ ] Clean build with 0 warnings; every test project passes.
+- [ ] Task 12 checked in the running app.

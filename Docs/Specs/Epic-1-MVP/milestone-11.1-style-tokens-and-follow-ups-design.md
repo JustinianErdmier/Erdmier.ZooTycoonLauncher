@@ -3,7 +3,7 @@
 > **Milestone:** 11.1 — follow-up to milestone 11 (Epic 1 — MVP)
 > **Date:** 2026-10-22
 > **Author:** Justinian
-> **Status:** Approved for implementation (maintainer decisions 1–6 incl. 1a–1b; calls C1–C6)
+> **Status:** Approved for implementation (maintainer decisions 1–9 incl. 1a–1b; calls C1–C6; §6a added after the first review)
 > **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §9, §11.5, §13.5
 > **Source of items:** [milestone-11 ledger](../../Ledgers/Epic-1-MVP/milestone-11-ledger.md) *Outstanding items → Polish*
 > **Deferred work taken:** DW-24 (consistent spacing, padding and margins)
@@ -31,6 +31,9 @@ rhythm everywhere. Faded text uses one method. The four polish items milestone 1
 | 4 | Record of the old spacing        | The 11.1 ledger records every original spacing value, its file and line, and the token it became — enough to remap to an even 2 → 14 scale later. |
 | 5 | One test per token group         | Colours, typography, spacing and shared sizes each have their own architecture test.                                                            |
 | 6 | Milestone 11 leftovers           | All four "Polish" items from the milestone 11 ledger are in scope (§6).                                                                         |
+| 7 | INI field focus (added after the first review) | Only keyboard focus keeps an INI field focused; a field the pointer focused gives focus back once its value is set, and a click elsewhere or Esc clears it (§6a.1). |
+| 8 | Muted grey (added after the first review)      | `ForegroundMuted` darkens from `#808080` to `#666666` (§6a.2).                                                                     |
+| 9 | Grid headers (added after the first review)    | The installation grid's column headers stop reacting to clicks (§6a.3).                                                            |
 
 ## 3. Non-goals and anti-goals
 
@@ -101,6 +104,41 @@ is defined in a token file from those tokens, never written in a view.
 3. **Test hygiene.** One shared `ProjectPaths` helper replaces the duplicated `ResolveProjectDirectory`; the launcher persistence test helpers stop disposing the
    connection EF owns; the migration Down test asserts the restored column's `'System'` default its name promises.
 4. **conventions.md tidy.** Drop the vestigial `dk-c-*` column from §1.2 and hard-wrap every prose line over 180 characters.
+
+## 6a. Maintainer follow-ups (added 2026-10-22, after the first review)
+
+Found by the maintainer using the build from the first review. They extend this milestone rather than open another.
+
+### 6a.1 INI field focus follows the keyboard
+
+Today a mouse click on any INI field (the `fullscreen` drop-down, a number box, a toggle) leaves that field focused after the value is set. The editor footer
+shows a focused field's help instead of the save status, so the status disappears. Nothing gives the focus back: clicking elsewhere and Esc do not, and only
+switching section and back clears it.
+
+- **Keyboard focus is the only lasting focus.** A field reached with Tab (or the arrow keys) stays focused and shows its help in the footer, as today.
+- **Pointer focus is temporary.** A field the pointer focused gives focus back as soon as its value is set:
+  - a drop-down, when its list closes;
+  - a toggle, after the click;
+  - a number box's spinner, after the step;
+  - a text or number box being typed into, on Enter.
+- **Pointer focus never drives the footer.** The help line shows for pointer hover (unchanged) and keyboard focus only. A field still being typed into after
+  a click does not take the footer over.
+- **A click elsewhere or Esc clears focus.** A click on any part of the editor that is not an input, or Esc while an INI field is focused, clears the focus,
+  and the footer goes back to the save status. A value typed but not yet committed is committed the same way clicking away commits it today; Esc does not
+  discard it.
+- Switching section keeps clearing focus and hover as today.
+
+### 6a.2 A slightly darker muted grey
+
+`ForegroundMuted` (`#808080`) is hard to read on the `#C0C0C0` surface: a contrast of 2.17:1. It becomes `#666666` (3.16:1, above the 3:1 guideline for
+interface text), still clearly lighter than `ForegroundDim` (`#404040`, 5.70:1). Only the token changes; `MidShadow` (`#808080`, the 3D shadow) stays as it
+is. conventions §1.1/§7 and SDD §9 are updated where they quote the old value.
+
+### 6a.3 Installation grid headers do not react to clicks
+
+The installation grid (`InstallationGridView`, shared by the Installation Manager and the Open Game Installation view) has sorting off, yet its column
+headers still press when clicked, promising an action that never comes. They stop reacting to clicks, as the Restore Previous INI grid's already do. The
+columns stay resizable if the theme allows it without a clickable header; if it does not, resizing goes too, and the ledger records that.
 
 ## 7. Documentation
 

@@ -35,7 +35,7 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top"
               IsVisible="{Binding !IsBooting}"
-              Margin="{tokens:Space Left=GapLabel, Top=GapSmallest, Right=GapLabel, Bottom=GapSmallest}">
+              Margin="{tokens:Space Horizontal=GapLabel, Vertical=GapSmallest}">
             <MenuItem Header="File">
                 <MenuItem Header="Open Installation…" Command="{Binding OpenInstallationPickerCommand}" />
 

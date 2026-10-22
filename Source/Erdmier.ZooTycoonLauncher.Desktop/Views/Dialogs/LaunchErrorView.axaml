@@ -41,6 +41,6 @@
                 Content="OK"
                 HorizontalAlignment="Center"
                 IsDefault="True"
-                MinWidth="80" />
+                Classes="DialogButton" />
     </StackPanel>
 </Window>

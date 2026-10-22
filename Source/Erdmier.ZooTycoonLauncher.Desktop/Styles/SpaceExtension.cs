@@ -2,7 +2,7 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.Styles;
 
 /// <summary>
 ///     Builds a <see cref="Thickness" /> from the spacing token names defined in <c>Styles/Spacing.axaml</c>, so views write
-///     <c>{tokens:Space GapRelated}</c> or <c>{tokens:Space Left=GroupBoxInset, Top=GroupBoxFirstControl}</c> rather than a literal margin or padding.
+///     <c>{tokens:Space GapRelated}</c> or <c>{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}</c> rather than a literal margin or padding.
 /// </summary>
 /// <remarks>
 ///     An unset side is 0. The sides combine in order of precedence: <see cref="Uniform" /> first, then <see cref="Horizontal" /> and <see cref="Vertical" />, then the

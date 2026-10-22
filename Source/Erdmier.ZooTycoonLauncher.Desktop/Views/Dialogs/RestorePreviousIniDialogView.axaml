@@ -86,12 +86,10 @@
         <!-- Caption row -->
         <Grid ColumnDefinitions="*, Auto"
               IsVisible="{Binding !HasError}">
-            <TextBlock FontSize="{StaticResource FontSizeBase}"
-                       Classes="MutedText"
+            <TextBlock Classes="MutedText"
                        Text="Diff: values from the selected snapshot replace the current ones on restore." />
 
             <TextBlock Grid.Column="1"
-                       FontSize="{StaticResource FontSizeBase}"
                        Classes="MutedText"
                        Text="{Binding ChangeCountText}" />
         </Grid>

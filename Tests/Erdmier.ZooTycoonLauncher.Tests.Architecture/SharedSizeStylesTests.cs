@@ -7,17 +7,21 @@ public sealed class SharedSizeStylesTests
 {
     private static readonly Regex ImageElement = new(@"<Image\b[^>]*>", RegexOptions.Singleline);
 
-    private static readonly Regex TextElement = new(@"<(?:TextBlock|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b[^>]*>", RegexOptions.Singleline);
+    private static readonly Regex TextElement = new(@"<(?:TextBlock|Label|AccessText|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b[^>]*>", RegexOptions.Singleline);
 
     private static readonly Regex StyleBlock = new(@"<Style\s+Selector\s*=\s*""(?<selector>[^""]*)""[^>]*>(?<body>.*?)</Style>", RegexOptions.Singleline);
 
     private static readonly Regex ImageSelector = new(@"\bImage\b");
 
-    private static readonly Regex TextSelector = new(@"\b(?:TextBlock|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b");
+    private static readonly Regex ButtonElement = new(@"<Button\b[^>]*>", RegexOptions.Singleline);
+
+    private static readonly Regex ButtonSelector = new(@"\bButton\b");
+
+    private static readonly Regex TextSelector = new(@"\b(?:TextBlock|Label|AccessText|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b");
 
     private static readonly Regex QualifiedImageSize = new(@"\bImage\.(?:Width|Height)\s*=\s*""(?:32|16)""");
 
-    /// <summary>No view may size a button with <c>MinWidth="75"</c> or an image at 32 or 16 pixels; the shared styles carry those values.</summary>
+    /// <summary>No view may give a <c>Button</c> a literal <c>MinWidth</c>, use <c>MinWidth="75"</c> anywhere, or size an image at 32 or 16 pixels; the shared styles carry those values.</summary>
     [ Fact ]
     public void Views_UseSharedSizeStyles()
     {
@@ -29,11 +33,24 @@ public sealed class SharedSizeStylesTests
         {
             string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
 
+            HashSet<int> widthLines = [];
+
             foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(text, "MinWidth"))
             {
-                if (match.Value == "75")
+                if (match.Value == "75" && widthLines.Add(match.Line))
                 {
                     violations.Add($"{Path.GetRelativePath(desktop, file)}:{match.Line}: {match.Text} (use Classes=\"DialogButton\")");
+                }
+            }
+
+            foreach ((int offset, string scope) in Scopes(text, ButtonElement, ButtonSelector))
+            {
+                foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(scope, "MinWidth"))
+                {
+                    if (!match.Value.StartsWith('{') && widthLines.Add(offset + match.Line))
+                    {
+                        violations.Add($"{Path.GetRelativePath(desktop, file)}:{offset + match.Line}: {match.Text} (use Classes=\"DialogButton\")");
+                    }
                 }
             }
 
@@ -55,10 +72,11 @@ public sealed class SharedSizeStylesTests
                 violations.Add($"{Path.GetRelativePath(desktop, file)}:{line}: {match.Value} (use Classes=\"IconLarge\" or \"IconSmall\")");
             }
         }
+
         violations.ShouldBeEmpty("Repeated sizes found; use the shared styles in Styles/Controls.axaml:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }
 
-    /// <summary>No text may be faded with <c>Opacity="0.6"</c>; muted text takes the <c>MutedText</c> class or a named foreground.</summary>
+    /// <summary>No text element may carry a literal <c>Opacity</c> other than <c>1</c>; muted text takes the <c>MutedText</c> class or a named foreground.</summary>
     [ Fact ]
     public void Views_DoNotFadeTextWithOpacity()
     {
@@ -74,13 +92,14 @@ public sealed class SharedSizeStylesTests
             {
                 foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(scope, "Opacity"))
                 {
-                    if (match.Value == "0.6")
+                    if (match.Value != "1")
                     {
                         violations.Add($"{Path.GetRelativePath(desktop, file)}:{offset + match.Line}: {match.Text} (use Classes=\"MutedText\" or a named foreground)");
                     }
                 }
             }
         }
+
         violations.ShouldBeEmpty("Faded text found; use a named foreground instead of Opacity:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }
 

@@ -7,7 +7,7 @@ public sealed class NoLiteralTypographyTests
     [ Fact ]
     public void Views_UseNamedTypography()
     {
-        string desktop = SourceTree.ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
+        string desktop = ProjectPaths.Desktop;
 
         List<string> violations = [];
 

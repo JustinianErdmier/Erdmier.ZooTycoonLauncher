@@ -1,3 +1,4 @@
+using System.Data;
 using System.Data.Common;
 using System.IO.Abstractions;
 
@@ -354,9 +355,13 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
 
     private static async Task<bool> IndexExistsAsync(InstallationDbContext context, string indexName)
     {
-        await using DbConnection connection = context.Database.GetDbConnection();
+        // EF owns this connection: open it if needed, never dispose it.
+        DbConnection connection = context.Database.GetDbConnection();
 
-        await connection.OpenAsync();
+        if (connection.State != ConnectionState.Open)
+        {
+            await connection.OpenAsync();
+        }
 
         await using DbCommand command = connection.CreateCommand();
 

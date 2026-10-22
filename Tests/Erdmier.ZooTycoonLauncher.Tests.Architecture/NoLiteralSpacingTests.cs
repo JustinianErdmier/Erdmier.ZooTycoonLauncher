@@ -9,7 +9,7 @@ public sealed class NoLiteralSpacingTests
     [ Fact ]
     public void Views_UseSpacingTokens()
     {
-        string desktop = SourceTree.ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
+        string desktop = ProjectPaths.Desktop;
 
         List<string> violations = [];
 
@@ -40,7 +40,7 @@ public sealed class NoLiteralSpacingTests
     [ Fact ]
     public void DerivedResources_MatchTheTokens()
     {
-        string desktop = SourceTree.ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
+        string desktop = ProjectPaths.Desktop;
 
         string text = File.ReadAllText(Path.Combine(desktop, path2: "Styles", path3: "Spacing.axaml"));
 

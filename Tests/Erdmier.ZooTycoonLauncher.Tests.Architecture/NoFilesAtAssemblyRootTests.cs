@@ -22,28 +22,9 @@ public sealed class NoFilesAtAssemblyRootTests
 
     public static IEnumerable<object[]> SourceProjectDirectories()
     {
-        yield return [ResolveProjectDirectory(assemblyName: "Erdmier.ZooTycoonLauncher.Domain")];
-        yield return [ResolveProjectDirectory(assemblyName: "Erdmier.ZooTycoonLauncher.Application")];
-        yield return [ResolveProjectDirectory(assemblyName: "Erdmier.ZooTycoonLauncher.Infrastructure")];
-        yield return [ResolveProjectDirectory(assemblyName: "Erdmier.ZooTycoonLauncher.Desktop")];
-    }
-
-    private static string ResolveProjectDirectory(string assemblyName)
-    {
-        DirectoryInfo? current = new(AppContext.BaseDirectory);
-
-        while (current is not null)
-        {
-            string candidate = Path.Combine(current.FullName, path2: "Source", assemblyName);
-
-            if (Directory.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            current = current.Parent;
-        }
-
-        throw new InvalidOperationException($"Could not locate Source/{assemblyName} from {AppContext.BaseDirectory}.");
+        yield return [ProjectPaths.Domain];
+        yield return [ProjectPaths.Application];
+        yield return [ProjectPaths.Infrastructure];
+        yield return [ProjectPaths.Desktop];
     }
 }

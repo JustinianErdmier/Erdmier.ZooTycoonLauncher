@@ -21,7 +21,7 @@ public sealed class SharedSizeStylesTests
     [ Fact ]
     public void Views_UseSharedSizeStyles()
     {
-        string desktop = SourceTree.ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
+        string desktop = ProjectPaths.Desktop;
 
         List<string> violations = [];
 
@@ -62,7 +62,7 @@ public sealed class SharedSizeStylesTests
     [ Fact ]
     public void Views_DoNotFadeTextWithOpacity()
     {
-        string desktop = SourceTree.ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
+        string desktop = ProjectPaths.Desktop;
 
         List<string> violations = [];
 
@@ -91,7 +91,7 @@ public sealed class SharedSizeStylesTests
     [ Fact ]
     public void Icons_DrawWithoutSmoothing()
     {
-        string desktop = SourceTree.ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
+        string desktop = ProjectPaths.Desktop;
 
         List<string> violations = [];
 

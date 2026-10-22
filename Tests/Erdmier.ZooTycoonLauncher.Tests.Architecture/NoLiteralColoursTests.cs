@@ -21,7 +21,7 @@ public sealed partial class NoLiteralColoursTests
     [ Fact ]
     public void Views_UseNamedColours()
     {
-        string desktop = SourceTree.ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
+        string desktop = ProjectPaths.Desktop;
 
         List<string> violations = [];
 
@@ -55,8 +55,8 @@ public sealed partial class NoLiteralColoursTests
     [ Fact ]
     public void Code_UsesNoBrushLiterals()
     {
-        string desktop = SourceTree.ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
-        string domain  = SourceTree.ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Domain");
+        string desktop = ProjectPaths.Desktop;
+        string domain  = ProjectPaths.Domain;
 
         List<string> violations = [];
 
@@ -90,7 +90,7 @@ public sealed partial class NoLiteralColoursTests
     [ Fact ]
     public void BrushLookupFallbacks_MatchColoursAxaml()
     {
-        string desktop = SourceTree.ResolveProjectDirectory("Erdmier.ZooTycoonLauncher.Desktop");
+        string desktop = ProjectPaths.Desktop;
 
         string colours = File.ReadAllText(Path.Combine(desktop, path2: "Styles", path3: "Colours.axaml"));
         string lookup  = File.ReadAllText(Path.Combine(desktop, path2: "Converters", path3: "ApplicationBrushLookup.cs"));

@@ -176,7 +176,7 @@ while busy; the view's `Closing` handler refuses a user close while `!CanClose`.
 
 ---
 
-## Follow-ups after the first review (spec §6a, decisions 7–10)
+## Follow-ups after the first review (spec §6a, decisions 7–12)
 
 Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branch and PR; same Global Constraints.
 
@@ -220,6 +220,16 @@ Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branc
 
 ---
 
+## Task 12: Check the follow-ups in the running app (controller)
+
+- [x] **Step 1:** INI editor: click the `fullscreen` drop-down and pick a value → focus leaves, footer shows the save status; click a number box's spinner,
+  a toggle, type in a number box and press Enter → same; Tab to a field → it stays focused with its help shown; click empty editor space and press Esc
+  while a field is focused → focus clears. Restore any value changed (Reset, or no save).
+- [x] **Step 2:** Muted text is legible and still lighter than the Info labels.
+- [x] **Step 3:** Installation Manager and Open Game Installation: clicking a column header does nothing visible.
+
+---
+
 ## Task 13: The colour registry lists only what the launcher defines
 
 **Files:** `Docs/UserInterfaceDesign/conventions.md` §1 (intro, §1.1, §1.2); create
@@ -237,15 +247,37 @@ Added 2026-10-22 from the maintainer's own use of the reviewed build. Same branc
 
 ---
 
-## Task 12: Check the follow-ups in the running app (controller)
+## Task 14: Tests that do what they say (spec §6a.5, decision 11)
 
-- [x] **Step 1:** INI editor: click the `fullscreen` drop-down and pick a value → focus leaves, footer shows the save status; click a number box's spinner,
-  a toggle, type in a number box and press Enter → same; Tab to a field → it stays focused with its help shown; click empty editor space and press Esc
-  while a field is focused → focus clears. Restore any value changed (Reset, or no save).
-- [x] **Step 2:** Muted text is legible and still lighter than the Info labels.
-- [x] **Step 3:** Installation Manager and Open Game Installation: clicking a column header does nothing visible.
+**Files:** `Tests/…Tests.Architecture/TokenReferencesTests.cs`, `SharedSizeStylesTests.cs`, `ColourRegistryTests.cs` (proof only),
+`Common/XamlResourceKeys.cs`; SDD §11.5 if a test's description changes.
+
+- [ ] **Step 1:** `TokenReferencesTests`: each test asserts it matched at least one reference (`ResourceReferences_Resolve` a `{StaticResource …}`,
+  `SpaceTokens_NameDoubleResources` a `{tokens:Space …}`, `SpacingResources_HaveTheRightType` a spacing attribute holding a resource). Prove each guard by
+  pointing the test at an empty input or breaking its regex temporarily; revert.
+- [ ] **Step 2:** `Views_DoNotFadeTextWithOpacity`: skip values that start with `{`; treat `1`, `1.0` and `1.00` as opaque. `Views_UseSharedSizeStyles`: report
+  every literal-`MinWidth` button, keyed by position rather than line. Prove both with plants; revert.
+- [ ] **Step 3:** Prove the unproven paths with plants (record the failure output, then revert): a `<Setter Property="MinWidth" Value="80" />` in a
+  `Button` style inside a view, and a duplicated key in `Colours.axaml`.
+- [ ] **Step 4:** `XamlResourceKeys.CollectShared` reads `Styles/**/*.axaml`.
+- [ ] **Step 5: Run** Architecture + a full build (0 warnings). **Commit** — `test(✅): make the token tests check what they claim`
+
+---
+
+## Task 15: Test-code tidy (spec §6a.6, decision 12)
+
+**Files:** the architecture tests that build `new Regex` (`SharedSizeStylesTests`, `AvaloniaPropertyFieldTests`, `Common/XamlAttributeScanner.cs` and any other);
+the Infrastructure persistence tests' parameter helpers (`LauncherDbContextTests`, `InstallationDbContextTests`, `IniSnapshotRepositoryTests`);
+`Tests/…Tests.Architecture/Common/ProjectPaths.cs`.
+
+- [ ] **Step 1:** Fixed patterns become `[GeneratedRegex]` on `partial` classes; patterns built from arguments (the scanner's property-name alternations) are built
+  once per distinct name set and cached, not per `Scan` call.
+- [ ] **Step 2:** One shared helper (one type per file, under the Infrastructure test project's `Common/` or `Persistence/` folder) adds a named SQLite
+  parameter to a `DbCommand`; the three classes use it.
+- [ ] **Step 3:** `ProjectPaths.Project(name)` checks that `<name>/<name>.csproj` exists, as the old resolver did.
+- [ ] **Step 4: Run** Architecture + Infrastructure + a full build (0 warnings). **Commit** — `refactor(♻️): tidy the architecture and persistence test code`
 
 ## Verification (follow-ups)
 
-- [x] Clean build with 0 warnings; every test project passes.
+- [ ] Clean build with 0 warnings; every test project passes (after Tasks 14–15).
 - [x] Task 12 checked in the running app.

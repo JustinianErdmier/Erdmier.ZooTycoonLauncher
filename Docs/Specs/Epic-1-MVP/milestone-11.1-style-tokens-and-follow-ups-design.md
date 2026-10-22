@@ -3,7 +3,7 @@
 > **Milestone:** 11.1 — follow-up to milestone 11 (Epic 1 — MVP)
 > **Date:** 2026-10-22
 > **Author:** Justinian
-> **Status:** Approved for implementation (maintainer decisions 1–10 incl. 1a–1b; calls C1–C6; §6a added after the first review)
+> **Status:** Approved for implementation (maintainer decisions 1–12 incl. 1a–1b; calls C1–C6; §6a added after the first review)
 > **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §9, §11.5, §13.5
 > **Source of items:** [milestone-11 ledger](../../Ledgers/Epic-1-MVP/milestone-11-ledger.md) *Outstanding items → Polish*
 > **Deferred work taken:** DW-24 (consistent spacing, padding and margins)
@@ -35,6 +35,8 @@ rhythm everywhere. Faded text uses one method. The four polish items milestone 1
 | 8 | Muted grey (added after the first review)      | `ForegroundMuted` darkens from `#808080` to `#666666` (§6a.2).                                                                     |
 | 9 | Grid headers (added after the first review)    | The installation grid's column headers stop reacting to clicks (§6a.3).                                                            |
 | 10 | Colour registry (added after the first review) | conventions.md lists only the colour keys `Colours.axaml` defines; names for colours Classic.Avalonia draws and the launcher never overrides are removed (§6a.4). |
+| 11 | Ledger's test gaps (added after the second review) | The tests that claim more than they check are fixed in this milestone (§6a.5).                                          |
+| 12 | Ledger's test-code tidy (added after the second review) | Done in this milestone (§6a.6); the scanner blind spots go to DW-36, the focus edge-case tests to the headless branch. |
 
 ## 3. Non-goals and anti-goals
 
@@ -152,6 +154,25 @@ becomes: a colour the theme already sets gets a key only when the launcher overr
 - §1.1 and §1.2 list exactly the keys and values in `Colours.axaml`; the "reserved role names" paragraph goes.
 - The §1 introduction loses its duplicated "a literal … is a defect" sentence and its stale attribute list, pointing at §7 instead.
 - An architecture test fails when the §1.1–§1.2 tables and `Colours.axaml` disagree on a key or a value, so the registry cannot drift again.
+
+### 6a.5 Tests that do what they say (from the ledger's outstanding items)
+
+The ledger's review of the test suite left four gaps where a test claims more than it checks. They are closed here:
+
+- `TokenReferencesTests` assert that they found at least one resource reference and one `{tokens:Space …}` use, so a regex that matches nothing fails
+  instead of passing.
+- `Views_DoNotFadeTextWithOpacity` flags only literal `Opacity` values (not bindings or resources) and treats `1` and `1.0` alike, as its summary and SDD
+  §11.5 say; `Views_UseSharedSizeStyles` reports every literal-`MinWidth` button, even two on one line.
+- The two failure paths never proven are proven with planted violations: a Button `MinWidth` style setter and a duplicate colour key.
+- `XamlResourceKeys.CollectShared` reads `Styles/` and its subfolders.
+
+### 6a.6 Test-code tidy (from the ledger's outstanding items)
+
+No behaviour change: the architecture tests use `[GeneratedRegex]` and build each scanner regex once; the Infrastructure tests share one parameter-adding
+helper; `ProjectPaths.Project` checks again that the project's `.csproj` exists.
+
+The ledger's other outstanding items are placed elsewhere: the scanner blind spots (property-element syntax, single quotes, markup-extension parameters,
+`<Style>` shapes, the source-text property check) become SDD DW-36, and tests for the INI focus edge cases join the headless view-load test's branch.
 
 ## 7. Documentation
 

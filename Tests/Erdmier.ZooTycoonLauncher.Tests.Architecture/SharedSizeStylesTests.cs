@@ -7,7 +7,15 @@ public sealed class SharedSizeStylesTests
 {
     private static readonly Regex ImageElement = new(@"<Image\b[^>]*>", RegexOptions.Singleline);
 
-    private static readonly Regex TextElement = new(@"<(?:TextBlock|Run|StackPanel)\b[^>]*>", RegexOptions.Singleline);
+    private static readonly Regex TextElement = new(@"<(?:TextBlock|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b[^>]*>", RegexOptions.Singleline);
+
+    private static readonly Regex StyleBlock = new(@"<Style\s+Selector\s*=\s*""(?<selector>[^""]*)""[^>]*>(?<body>.*?)</Style>", RegexOptions.Singleline);
+
+    private static readonly Regex ImageSelector = new(@"\bImage\b");
+
+    private static readonly Regex TextSelector = new(@"\b(?:TextBlock|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b");
+
+    private static readonly Regex QualifiedImageSize = new(@"\bImage\.(?:Width|Height)\s*=\s*""(?:32|16)""");
 
     /// <summary>No view may size a button with <c>MinWidth="75"</c> or an image at 32 or 16 pixels; the shared styles carry those values.</summary>
     [ Fact ]
@@ -29,11 +37,9 @@ public sealed class SharedSizeStylesTests
                 }
             }
 
-            foreach (Match image in ImageElement.Matches(text))
+            foreach ((int offset, string scope) in Scopes(text, ImageElement, ImageSelector))
             {
-                int offset = text.AsSpan(start: 0, image.Index).Count(value: '\n');
-
-                foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(image.Value, "Width", "Height"))
+                foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(scope, "Width", "Height"))
                 {
                     if (match.Value is "32" or "16")
                     {
@@ -41,8 +47,14 @@ public sealed class SharedSizeStylesTests
                     }
                 }
             }
-        }
 
+            foreach (Match match in QualifiedImageSize.Matches(text))
+            {
+                int line = text.AsSpan(start: 0, match.Index).Count(value: '\n') + 1;
+
+                violations.Add($"{Path.GetRelativePath(desktop, file)}:{line}: {match.Value} (use Classes=\"IconLarge\" or \"IconSmall\")");
+            }
+        }
         violations.ShouldBeEmpty("Repeated sizes found; use the shared styles in Styles/Controls.axaml:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }
 
@@ -58,11 +70,9 @@ public sealed class SharedSizeStylesTests
         {
             string text = File.ReadAllText(file);
 
-            foreach (Match element in TextElement.Matches(text))
+            foreach ((int offset, string scope) in Scopes(text, TextElement, TextSelector))
             {
-                int offset = text.AsSpan(start: 0, element.Index).Count(value: '\n');
-
-                foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(element.Value, "Opacity"))
+                foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(scope, "Opacity"))
                 {
                     if (match.Value == "0.6")
                     {
@@ -71,7 +81,6 @@ public sealed class SharedSizeStylesTests
                 }
             }
         }
-
         violations.ShouldBeEmpty("Faded text found; use a named foreground instead of Opacity:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }
 
@@ -92,7 +101,7 @@ public sealed class SharedSizeStylesTests
 
             foreach (Match image in ImageElement.Matches(text))
             {
-                if (!Regex.IsMatch(image.Value, @"Classes\s*=\s*""Icon(?:Large|Small)"""))
+                if (!Regex.IsMatch(image.Value, @"Classes\s*=\s*""[^""]*\bIcon(?:Large|Small)\b"))
                 {
                     continue;
                 }
@@ -109,6 +118,23 @@ public sealed class SharedSizeStylesTests
         }
 
         violations.ShouldBeEmpty("Smoothed icons found:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
+    }
+
+    /// <summary>Yields the start tags matching <paramref name="element" /> and the bodies of styles whose selector matches <paramref name="selector" />, each with its 0-based line offset.</summary>
+    private static IEnumerable<(int Offset, string Scope)> Scopes(string text, Regex element, Regex selector)
+    {
+        foreach (Match match in element.Matches(text))
+        {
+            yield return (text.AsSpan(start: 0, match.Index).Count(value: '\n'), match.Value);
+        }
+
+        foreach (Match match in StyleBlock.Matches(text))
+        {
+            if (selector.IsMatch(match.Groups[ "selector" ].Value))
+            {
+                yield return (text.AsSpan(start: 0, match.Groups[ "body" ].Index).Count(value: '\n'), match.Groups[ "body" ].Value);
+            }
+        }
     }
 
     private static IEnumerable<string> EnumerateViews(string desktop)

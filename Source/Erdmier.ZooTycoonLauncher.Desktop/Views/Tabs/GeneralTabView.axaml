@@ -59,7 +59,6 @@
                                IsVisible="{Binding !CanPlay}"
                                Text="Cannot Play" />
 
-                    <!--TODO: The installation validity enum actually defines the colour tokens, so the foreground doesn't need to be hard-coded.-->
                     <Grid ColumnDefinitions="Auto,*"
                           ColumnSpacing="8"
                           Margin="0 2 0 0"

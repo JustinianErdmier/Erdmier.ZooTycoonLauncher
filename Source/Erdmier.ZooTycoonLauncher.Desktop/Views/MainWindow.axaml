@@ -1,5 +1,6 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:converters="using:Erdmier.ZooTycoonLauncher.Desktop.Converters"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels"
                xmlns:commonControls="clr-namespace:Classic.CommonControls;assembly=Classic.CommonControls.Avalonia"
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.MainWindow"
@@ -25,6 +26,10 @@
                     Value="False" />
         </Style>
     </ClassicWindow.Styles>
+
+    <ClassicWindow.Resources>
+        <converters:ErrorToBrushConverter x:Key="ErrorToBrush" />
+    </ClassicWindow.Resources>
 
     <DockPanel>
         <Menu DockPanel.Dock="Top"
@@ -81,7 +86,7 @@
             </commonControls:StatusBarItem>
 
             <commonControls:StatusBarItem commonControls:StatusBar.Size="20*">
-                <TextBlock Foreground="{Binding StatusMessageSecondaryColour}"
+                <TextBlock Foreground="{Binding IsStatusError, Converter={StaticResource ErrorToBrush}}"
                            Text="{Binding StatusMessageSecondaryText}" />
             </commonControls:StatusBarItem>
 

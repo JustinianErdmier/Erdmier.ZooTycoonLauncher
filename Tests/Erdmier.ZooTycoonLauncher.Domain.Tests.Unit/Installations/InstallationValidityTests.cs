@@ -29,16 +29,5 @@ public sealed class InstallationValidityTests
 
     [ Fact ]
     public void Valid_DisplayNameIsValid()
-    {
-        InstallationValidity.Valid.DisplayName.ShouldBe(expected: "Valid");
-        InstallationValidity.Valid.ColourToken.ShouldBe(expected: "Green");
-    }
-
-    [ Fact ]
-    public void InvalidVariants_AllUseRedColourToken()
-    {
-        InstallationValidity.InvalidNoExe.ColourToken.ShouldBe(expected: "Red");
-        InstallationValidity.InvalidNoIni.ColourToken.ShouldBe(expected: "Red");
-        InstallationValidity.InvalidNoExeOrIni.ColourToken.ShouldBe(expected: "Red");
-    }
+        => InstallationValidity.Valid.DisplayName.ShouldBe(expected: "Valid");
 }

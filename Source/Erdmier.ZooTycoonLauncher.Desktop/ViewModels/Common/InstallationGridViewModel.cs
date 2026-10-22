@@ -57,7 +57,7 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
     public bool HasSelection => SelectedRow is not null;
 
     /// <summary><see langword="true" /> when the selected row's validity is not <c>Valid</c>. Guards the <c>Fix</c> command in the Installation Manager.</summary>
-    public bool IsSelectionInvalid => SelectedRow?.ValidityColourToken == "Red";
+    public bool IsSelectionInvalid => SelectedRow is { Validity: { } validity } && validity != InstallationValidity.Valid;
 
     /// <summary>
     ///     Loads all registered installations from the database, projects them to <see cref="InstallationGridRowModel" />, sorts them (default first, then
@@ -90,7 +90,7 @@ public sealed partial class InstallationGridViewModel : ViewModelBase,
                                                                                                        s.Name,
                                                                                                        s.Path,
                                                                                                        s.Validity.DisplayName,
-                                                                                                       s.Validity.ColourToken,
+                                                                                                       s.Validity,
                                                                                                        s.IsDefault))
                                                              .Order(new InstallationGridRowComparer());
 

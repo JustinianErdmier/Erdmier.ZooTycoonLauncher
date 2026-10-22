@@ -143,7 +143,7 @@ public sealed class LauncherDbContextTests : IDisposable
 
         await using DbCommand command = connection.CreateCommand();
         command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=$name";
-        AddParameter(command, name: "$name", tableName);
+        command.AddParameter(name: "$name", tableName);
         object? result = await command.ExecuteScalarAsync();
 
         return result is not null;
@@ -162,8 +162,8 @@ public sealed class LauncherDbContextTests : IDisposable
         await using DbCommand command = connection.CreateCommand();
         command.CommandText = "SELECT COUNT(*) FROM pragma_table_info($table) WHERE name = $column";
 
-        AddParameter(command, name: "$table", tableName);
-        AddParameter(command, name: "$column", columnName);
+        command.AddParameter(name: "$table", tableName);
+        command.AddParameter(name: "$column", columnName);
 
         object? result = await command.ExecuteScalarAsync();
 
@@ -184,19 +184,9 @@ public sealed class LauncherDbContextTests : IDisposable
 
         command.CommandText = "SELECT dflt_value FROM pragma_table_info($table) WHERE name = $column";
 
-        AddParameter(command, name: "$table", tableName);
-        AddParameter(command, name: "$column", columnName);
+        command.AddParameter(name: "$table", tableName);
+        command.AddParameter(name: "$column", columnName);
 
         return await command.ExecuteScalarAsync() as string;
-    }
-
-    private static void AddParameter(DbCommand command, string name, string value)
-    {
-        DbParameter parameter = command.CreateParameter();
-
-        parameter.ParameterName = name;
-        parameter.Value         = value;
-
-        command.Parameters.Add(parameter);
     }
 }

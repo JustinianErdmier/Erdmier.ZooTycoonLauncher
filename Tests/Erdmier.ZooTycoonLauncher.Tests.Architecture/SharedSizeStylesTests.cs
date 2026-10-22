@@ -4,23 +4,34 @@ using System.Text.RegularExpressions;
 namespace Erdmier.ZooTycoonLauncher.Tests.Architecture;
 
 /// <summary>Milestone 11.1 spec C3: the repeated button width, icon sizes and faded text live in <c>Styles/Controls.axaml</c> and views opt in through <c>Classes</c>.</summary>
-public sealed class SharedSizeStylesTests
+public sealed partial class SharedSizeStylesTests
 {
-    private static readonly Regex ImageElement = new(@"<Image\b[^>]*>", RegexOptions.Singleline);
+    [ GeneratedRegex(@"<Image\b[^>]*>", RegexOptions.Singleline) ]
+    private static partial Regex ImageElement();
 
-    private static readonly Regex TextElement = new(@"<(?:TextBlock|Label|AccessText|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b[^>]*>", RegexOptions.Singleline);
+    [ GeneratedRegex(@"<(?:TextBlock|Label|AccessText|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b[^>]*>", RegexOptions.Singleline) ]
+    private static partial Regex TextElement();
 
-    private static readonly Regex StyleBlock = new(@"<Style\s+Selector\s*=\s*""(?<selector>[^""]*)""[^>]*>(?<body>.*?)</Style>", RegexOptions.Singleline);
+    [ GeneratedRegex(@"<Style\s+Selector\s*=\s*""(?<selector>[^""]*)""[^>]*>(?<body>.*?)</Style>", RegexOptions.Singleline) ]
+    private static partial Regex StyleBlock();
 
-    private static readonly Regex ImageSelector = new(@"\bImage\b");
+    [ GeneratedRegex(@"\bImage\b") ]
+    private static partial Regex ImageSelector();
 
-    private static readonly Regex ButtonElement = new(@"<Button\b[^>]*>", RegexOptions.Singleline);
+    [ GeneratedRegex(@"<Button\b[^>]*>", RegexOptions.Singleline) ]
+    private static partial Regex ButtonElement();
 
-    private static readonly Regex ButtonSelector = new(@"\bButton\b");
+    [ GeneratedRegex(@"\bButton\b") ]
+    private static partial Regex ButtonSelector();
 
-    private static readonly Regex TextSelector = new(@"\b(?:TextBlock|Label|AccessText|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b");
+    [ GeneratedRegex(@"\b(?:TextBlock|Label|AccessText|SelectableTextBlock|Run|Span|Italic|Bold|Underline|StackPanel)\b") ]
+    private static partial Regex TextSelector();
 
-    private static readonly Regex QualifiedImageSize = new(@"\bImage\.(?:Width|Height)\s*=\s*""(?:32|16)""");
+    [ GeneratedRegex(@"Classes\s*=\s*""[^""]*\bIcon(?:Large|Small)\b""") ]
+    private static partial Regex IconClasses();
+
+    [ GeneratedRegex(@"\bImage\.(?:Width|Height)\s*=\s*""(?:32|16)""") ]
+    private static partial Regex QualifiedImageSize();
 
     /// <summary>No view may give a <c>Button</c> a literal <c>MinWidth</c>, use <c>MinWidth="75"</c> anywhere, or size an image at 32 or 16 pixels; the shared styles carry those values.</summary>
     [ Fact ]
@@ -44,7 +55,7 @@ public sealed class SharedSizeStylesTests
                 }
             }
 
-            foreach ((int start, string scope) in Scopes(text, ButtonElement, ButtonSelector))
+            foreach ((int start, string scope) in Scopes(text, ButtonElement(), ButtonSelector()))
             {
                 foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(scope, "MinWidth"))
                 {
@@ -55,7 +66,7 @@ public sealed class SharedSizeStylesTests
                 }
             }
 
-            foreach ((int start, string scope) in Scopes(text, ImageElement, ImageSelector))
+            foreach ((int start, string scope) in Scopes(text, ImageElement(), ImageSelector()))
             {
                 foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(scope, "Width", "Height"))
                 {
@@ -66,7 +77,7 @@ public sealed class SharedSizeStylesTests
                 }
             }
 
-            foreach (Match match in QualifiedImageSize.Matches(text))
+            foreach (Match match in QualifiedImageSize().Matches(text))
             {
                 violations.Add($"{Path.GetRelativePath(desktop, file)}:{LineOf(text, match.Index)}: {match.Value} (use Classes=\"IconLarge\" or \"IconSmall\")");
             }
@@ -87,7 +98,7 @@ public sealed class SharedSizeStylesTests
         {
             string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
 
-            foreach ((int start, string scope) in Scopes(text, TextElement, TextSelector))
+            foreach ((int start, string scope) in Scopes(text, TextElement(), TextSelector()))
             {
                 foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(scope, "Opacity"))
                 {
@@ -117,9 +128,9 @@ public sealed class SharedSizeStylesTests
         {
             string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
 
-            foreach (Match image in ImageElement.Matches(text))
+            foreach (Match image in ImageElement().Matches(text))
             {
-                if (!Regex.IsMatch(image.Value, @"Classes\s*=\s*""[^""]*\bIcon(?:Large|Small)\b"))
+                if (!IconClasses().IsMatch(image.Value))
                 {
                     continue;
                 }
@@ -144,7 +155,7 @@ public sealed class SharedSizeStylesTests
             yield return (match.Index, match.Value);
         }
 
-        foreach (Match match in StyleBlock.Matches(text))
+        foreach (Match match in StyleBlock().Matches(text))
         {
             if (selector.IsMatch(match.Groups[ "selector" ].Value))
             {

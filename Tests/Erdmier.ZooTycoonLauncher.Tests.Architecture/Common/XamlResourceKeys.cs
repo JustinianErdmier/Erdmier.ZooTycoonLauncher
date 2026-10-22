@@ -3,9 +3,10 @@ using System.Text.RegularExpressions;
 namespace Erdmier.ZooTycoonLauncher.Tests.Architecture.Common;
 
 /// <summary>Collects the <c>x:Key</c> resources declared in XAML, each with the element type that declares it, for the tests that check resource references.</summary>
-public static class XamlResourceKeys
+public static partial class XamlResourceKeys
 {
-    private static readonly Regex KeyedElement = new(@"<(?<element>[\w:.]+)\b(?:[^>""]|""[^""]*"")*?\sx:Key\s*=\s*""(?<key>[^""]+)""", RegexOptions.Singleline);
+    [ GeneratedRegex(@"<(?<element>[\w:.]+)\b(?:[^>""]|""[^""]*"")*?\sx:Key\s*=\s*""(?<key>[^""]+)""", RegexOptions.Singleline) ]
+    private static partial Regex KeyedElement();
 
     /// <summary>Finds every keyed element in <paramref name="text" />, ignoring comments.</summary>
     /// <param name="text">The XAML source.</param>
@@ -14,7 +15,7 @@ public static class XamlResourceKeys
     {
         Dictionary<string, string> keys = new(StringComparer.Ordinal);
 
-        foreach (Match match in KeyedElement.Matches(XamlAttributeScanner.BlankComments(text)))
+        foreach (Match match in KeyedElement().Matches(XamlAttributeScanner.BlankComments(text)))
         {
             keys[ match.Groups[ "key" ].Value ] = match.Groups[ "element" ].Value;
         }

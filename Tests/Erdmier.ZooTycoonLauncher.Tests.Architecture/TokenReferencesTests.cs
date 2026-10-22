@@ -3,11 +3,13 @@ using System.Text.RegularExpressions;
 namespace Erdmier.ZooTycoonLauncher.Tests.Architecture;
 
 /// <summary>Milestone 11.1: a misspelt token or resource name fails at view load, so these tests catch it at build time, naming the file and line.</summary>
-public sealed class TokenReferencesTests
+public sealed partial class TokenReferencesTests
 {
-    private static readonly Regex ResourceReference = new(@"\{(?<kind>Static|Dynamic)Resource\s+(?<name>[A-Za-z_]\w*)\s*\}");
+    [ GeneratedRegex(@"\{(?<kind>Static|Dynamic)Resource\s+(?<name>[A-Za-z_]\w*)\s*\}") ]
+    private static partial Regex ResourceReference();
 
-    private static readonly Regex SpaceExtension = new(@"\{tokens:Space\s+(?<arguments>[^}]*)\}");
+    [ GeneratedRegex(@"\{tokens:Space\s+(?<arguments>[^}]*)\}") ]
+    private static partial Regex SpaceExtension();
 
     private static readonly string[] SpacingProperties = [ "Spacing", "RowSpacing", "ColumnSpacing", "HorizontalSpacing", "VerticalSpacing" ];
 
@@ -29,7 +31,7 @@ public sealed class TokenReferencesTests
 
             IReadOnlyDictionary<string, string> local = XamlResourceKeys.Collect(text);
 
-            foreach (Match match in ResourceReference.Matches(text))
+            foreach (Match match in ResourceReference().Matches(text))
             {
                 references++;
 
@@ -65,7 +67,7 @@ public sealed class TokenReferencesTests
 
             IReadOnlyDictionary<string, string> local = XamlResourceKeys.Collect(text);
 
-            foreach (Match match in SpaceExtension.Matches(text))
+            foreach (Match match in SpaceExtension().Matches(text))
             {
                 uses++;
 
@@ -110,7 +112,7 @@ public sealed class TokenReferencesTests
 
             foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(text, [ ..SpacingProperties, "Margin", "Padding" ]))
             {
-                Match reference = ResourceReference.Match(match.Value);
+                Match reference = ResourceReference().Match(match.Value);
 
                 if (!reference.Success)
                 {

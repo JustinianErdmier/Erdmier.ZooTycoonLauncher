@@ -365,12 +365,7 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
 
         command.CommandText = "SELECT name FROM sqlite_master WHERE type = 'index' AND name = $name";
 
-        DbParameter parameter = command.CreateParameter();
-
-        parameter.ParameterName = "$name";
-        parameter.Value         = indexName;
-
-        command.Parameters.Add(parameter);
+        command.AddParameter(name: "$name", indexName);
 
         return await command.ExecuteScalarAsync() is not null;
     }

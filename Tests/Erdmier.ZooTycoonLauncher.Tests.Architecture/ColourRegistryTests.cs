@@ -3,15 +3,19 @@ using System.Text.RegularExpressions;
 namespace Erdmier.ZooTycoonLauncher.Tests.Architecture;
 
 /// <summary>Milestone 11.1: the colour tables in <c>conventions.md</c> (§1.1 and §1.2) list exactly the keys, and values, that <c>Colours.axaml</c> defines.</summary>
-public sealed class ColourRegistryTests
+public sealed partial class ColourRegistryTests
 {
-    private static readonly Regex TableRow = new(@"^\|\s*`(?<key>[^`]+)`\s*\|(?<rest>.*)$", RegexOptions.Multiline);
+    [ GeneratedRegex(@"^\|\s*`(?<key>[^`]+)`\s*\|(?<rest>.*)$", RegexOptions.Multiline) ]
+    private static partial Regex TableRow();
 
-    private static readonly Regex HexValue = new(@"#[0-9A-Fa-f]{6}\b");
+    [ GeneratedRegex(@"#[0-9A-Fa-f]{6}\b") ]
+    private static partial Regex HexValue();
 
-    private static readonly Regex KeyedTag = new(@"<(?<tag>[^<>]*?\bx:Key\s*=\s*""(?<key>[^""]*)""[^<>]*)>");
+    [ GeneratedRegex(@"<(?<tag>[^<>]*?\bx:Key\s*=\s*""(?<key>[^""]*)""[^<>]*)>") ]
+    private static partial Regex KeyedTag();
 
-    private static readonly Regex ColourAttribute = new(@"\sColor\s*=\s*""(?<hex>#[0-9A-Fa-f]{6})""");
+    [ GeneratedRegex(@"\sColor\s*=\s*""(?<hex>#[0-9A-Fa-f]{6})""") ]
+    private static partial Regex ColourAttribute();
 
     /// <summary>
     ///     Every key in the §1.1 and §1.2 tables is a key in <c>Colours.axaml</c> with the same value, and the other way round; unreadable and duplicate entries are reported.
@@ -67,17 +71,17 @@ public sealed class ColourRegistryTests
 
         foreach (string line in section.Split('\n'))
         {
-            if (line.StartsWith('|') && !TableRow.IsMatch(line) && !IsHeaderOrSeparator(line))
+            if (line.StartsWith('|') && !TableRow().IsMatch(line) && !IsHeaderOrSeparator(line))
             {
                 problems.Add($"conventions.md has a colour row without a backticked key: {line.Trim()}");
             }
         }
 
-        foreach (Match row in TableRow.Matches(section))
+        foreach (Match row in TableRow().Matches(section))
         {
             string key = row.Groups[ "key" ].Value;
 
-            Match hex = HexValue.Match(row.Groups[ "rest" ].Value);
+            Match hex = HexValue().Match(row.Groups[ "rest" ].Value);
 
             if (!hex.Success)
             {
@@ -105,11 +109,11 @@ public sealed class ColourRegistryTests
 
         Dictionary<string, string> colours = new(StringComparer.Ordinal);
 
-        foreach (Match keyed in KeyedTag.Matches(text))
+        foreach (Match keyed in KeyedTag().Matches(text))
         {
             string key = keyed.Groups[ "key" ].Value;
 
-            Match colour = ColourAttribute.Match(keyed.Groups[ "tag" ].Value);
+            Match colour = ColourAttribute().Match(keyed.Groups[ "tag" ].Value);
 
             if (!colour.Success)
             {

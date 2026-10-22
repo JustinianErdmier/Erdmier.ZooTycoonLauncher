@@ -98,10 +98,7 @@ public sealed class InstallationDbContextTests : IDisposable
 
         await using DbCommand command = connection.CreateCommand();
         command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=$name";
-        DbParameter parameter = command.CreateParameter();
-        parameter.ParameterName = "$name";
-        parameter.Value         = tableName;
-        command.Parameters.Add(parameter);
+        command.AddParameter(name: "$name", tableName);
         object? result = await command.ExecuteScalarAsync();
 
         return result is not null;

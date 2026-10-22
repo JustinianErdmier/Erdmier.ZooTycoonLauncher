@@ -28,14 +28,14 @@ public static class ProjectPaths
     /// <summary>Gets the absolute path of a project directory under <c>Source</c>.</summary>
     /// <param name="assemblyName">The project folder (and assembly) name, for example <c>Erdmier.ZooTycoonLauncher.Desktop</c>.</param>
     /// <returns>The absolute path of the project directory.</returns>
-    /// <exception cref="InvalidOperationException">The project directory does not exist.</exception>
+    /// <exception cref="InvalidOperationException">The project directory, or its project file, does not exist.</exception>
     public static string Project(string assemblyName)
     {
         string candidate = Path.Combine(Source, assemblyName);
 
-        return Directory.Exists(candidate)
+        return Directory.Exists(candidate) && File.Exists(Path.Combine(candidate, assemblyName + ".csproj"))
                    ? candidate
-                   : throw new InvalidOperationException($"Could not locate Source/{assemblyName} under {Source}.");
+                   : throw new InvalidOperationException($"Could not locate Source/{assemblyName}/{assemblyName}.csproj under {Source}.");
     }
 
     private static string LocateSource()

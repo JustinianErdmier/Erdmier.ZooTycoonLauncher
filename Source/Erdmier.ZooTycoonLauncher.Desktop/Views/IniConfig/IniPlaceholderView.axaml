@@ -1,22 +1,23 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig"
              xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.IniPlaceholderView"
              x:DataType="vm:IniPlaceholderViewModel">
     <controls:GroupBox Header="INI status"
-                       Margin="8"
-                       Padding="10 15"
+                       Margin="{tokens:Space MarginDialog}"
+                       Padding="{StaticResource GroupBoxPadding}"
                        VerticalAlignment="Top">
-        <DockPanel HorizontalSpacing="10">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
             <Image DockPanel.Dock="Left"
-                   Classes="IconLarge"
+                   Classes="IconLarge IconBesideBody"
                    RenderOptions.BitmapInterpolationMode="None"
                    IsVisible="{Binding ShowWarningIcon}"
                    Source="/Assets/Win95Icons/warning32.gif"
                    VerticalAlignment="Top" />
 
-            <StackPanel Spacing="4">
+            <StackPanel Spacing="{StaticResource GapRelated}">
                 <TextBlock FontWeight="{StaticResource FontWeightStrong}"
                            Text="{Binding Headline}" />
 
@@ -34,9 +35,9 @@
                 </TextBlock>
 
                 <StackPanel IsVisible="{Binding HasActions}"
-                            Margin="0 8 0 0"
+                            Margin="{tokens:Space Top=GapUnrelated}"
                             Orientation="Horizontal"
-                            Spacing="6">
+                            Spacing="{StaticResource GapRelated}">
                     <Button Command="{Binding CreateCommand}"
                             Content="Create zoo.ini from defaults"
                             IsDefault="True"

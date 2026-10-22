@@ -13,6 +13,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Erdmier.ZooTycoonLauncher.Desktop/Styles/Colours.axaml" />
                 <ResourceInclude Source="avares://Erdmier.ZooTycoonLauncher.Desktop/Styles/Typography.axaml" />
+                <ResourceInclude Source="avares://Erdmier.ZooTycoonLauncher.Desktop/Styles/Spacing.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

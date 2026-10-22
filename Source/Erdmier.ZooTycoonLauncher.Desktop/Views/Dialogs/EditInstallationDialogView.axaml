@@ -1,5 +1,6 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
                xmlns:common="using:Erdmier.ZooTycoonLauncher.Desktop.Views.Common"
                xmlns:layout="clr-namespace:Erdmier.ZooTycoonLauncher.Desktop.Views.Layout"
@@ -12,19 +13,18 @@
                CanResize="False"
                WindowStartupLocation="CenterOwner"
                ShowInTaskbar="False">
-    <StackPanel Margin="8"
+    <StackPanel Margin="{tokens:Space MarginDialog}"
                 Orientation="Vertical"
-                Spacing="10">
-        <DockPanel HorizontalSpacing="10">
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
             <Image DockPanel.Dock="Left"
-                   Classes="IconLarge"
+                   Classes="IconLarge IconBesideBody"
                    RenderOptions.BitmapInterpolationMode="None"
                    Source="/Assets/Win95Icons/foldercatalog16.ico"
                    VerticalAlignment="Top" />
 
-            <StackPanel Margin="5 0 0 0"
-                        Orientation="Vertical"
-                        Spacing="4">
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
                 <TextBlock FontWeight="{StaticResource FontWeightHeading}"
                            Text="Edit installation" />
 
@@ -33,11 +33,11 @@
                            TextWrapping="Wrap" />
 
                 <common:InstallationFormView DataContext="{Binding Form}"
-                                             Margin="0 6 0 0" />
+                                             Margin="{tokens:Space Top=GapRelated}" />
 
                 <layout:UniformStack HorizontalAlignment="Right"
-                                     Margin="0 5"
-                                     Spacing="8">
+                                     Margin="{tokens:Space Vertical=GapLabel}"
+                                     Spacing="{StaticResource GapRelated}">
                     <Button Command="{Binding SaveCommand}"
                             Content="Save"
                             IsDefault="True"

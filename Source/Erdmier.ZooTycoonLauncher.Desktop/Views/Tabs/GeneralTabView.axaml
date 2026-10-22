@@ -1,13 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs"
              xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Tabs.GeneralTabView"
              x:DataType="vm:GeneralTabViewModel">
-    <StackPanel Margin="8"
-                Spacing="10">
+    <StackPanel Margin="{tokens:Space MarginDialog}"
+                Spacing="{StaticResource GapUnrelated}">
         <StackPanel Orientation="Horizontal"
-                    Spacing="8">
+                    Spacing="{StaticResource GapLabel}">
             <TextBlock Text="Installation Profile:" />
 
             <TextBlock Text="{Binding InstallationName}"
@@ -15,17 +16,17 @@
         </StackPanel>
 
         <controls:GroupBox Header="Status"
-                           Padding="10 15">
-            <DockPanel HorizontalSpacing="10">
+                           Padding="{StaticResource GroupBoxPadding}">
+            <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
                 <Image DockPanel.Dock="Left"
-                       Classes="IconLarge"
+                       Classes="IconLarge IconBesideBody"
                        RenderOptions.BitmapInterpolationMode="None"
                        IsVisible="{Binding CanPlay}"
                        Source="/Assets/Win95Icons/ok32.gif"
                        VerticalAlignment="Top" />
 
                 <Image DockPanel.Dock="Left"
-                       Classes="IconLarge"
+                       Classes="IconLarge IconBesideBody"
                        RenderOptions.BitmapInterpolationMode="None"
                        IsVisible="{Binding !CanPlay}"
                        Source="/Assets/Win95Icons/warning32.gif"
@@ -47,9 +48,8 @@
                     Open Installation Manager…
                 </Button>
 
-                <StackPanel Margin="5 0 0 0"
-                            Orientation="Vertical"
-                            Spacing="4">
+                <StackPanel Orientation="Vertical"
+                            Spacing="{StaticResource GapRelated}">
                     <TextBlock FontWeight="{StaticResource FontWeightHeading}"
                                IsVisible="{Binding CanPlay}"
                                Text="Ready to Play" />
@@ -60,10 +60,10 @@
                                Text="Cannot Play" />
 
                     <Grid ColumnDefinitions="Auto,*"
-                          ColumnSpacing="8"
-                          Margin="0 2 0 0"
+                          ColumnSpacing="{StaticResource GapRelated}"
+                          Margin="{tokens:Space Top=GapSmallest}"
                           RowDefinitions="Auto,Auto,Auto"
-                          RowSpacing="2">
+                          RowSpacing="{StaticResource GapSmallest}">
                         <TextBlock Grid.Column="0"
                                    Grid.Row="0"
                                    Text="EXE:" />
@@ -138,20 +138,20 @@
         </controls:GroupBox>
 
         <controls:GroupBox Header="Display"
-                           Padding="10 15">
-            <DockPanel HorizontalSpacing="10">
+                           Padding="{StaticResource GroupBoxPadding}">
+            <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
                 <Image DockPanel.Dock="Left"
-                       Classes="IconLarge"
+                       Classes="IconLarge IconBesideBody"
                        RenderOptions.BitmapInterpolationMode="None"
                        Source="/Assets/Win95Icons/mystify16.ico"
                        VerticalAlignment="Top" />
 
                 <StackPanel Orientation="Vertical"
-                            Spacing="6">
+                            Spacing="{StaticResource GapRelated}">
                     <Grid ColumnDefinitions="Auto,*"
-                          ColumnSpacing="20"
+                          ColumnSpacing="{StaticResource GapUnrelated}"
                           RowDefinitions="Auto,Auto, Auto, Auto"
-                          RowSpacing="2">
+                          RowSpacing="{StaticResource GapSmallest}">
                         <TextBlock Grid.Column="0"
                                    Grid.Row="0"
                                    Text="Current resolution:" />
@@ -204,20 +204,20 @@
         </controls:GroupBox>
 
         <controls:GroupBox Header="Your System"
-                           Padding="10 15">
-            <DockPanel HorizontalSpacing="10">
+                           Padding="{StaticResource GroupBoxPadding}">
+            <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
                 <Image DockPanel.Dock="Left"
-                       Classes="IconLarge"
+                       Classes="IconLarge IconBesideBody"
                        RenderOptions.BitmapInterpolationMode="None"
                        Source="/Assets/Win95Icons/mycomputer16.ico"
                        VerticalAlignment="Top" />
 
                 <StackPanel Orientation="Vertical"
-                            Spacing="6">
+                            Spacing="{StaticResource GapRelated}">
                     <Grid ColumnDefinitions="Auto,*"
-                          ColumnSpacing="20"
+                          ColumnSpacing="{StaticResource GapUnrelated}"
                           RowDefinitions="Auto,Auto, Auto, Auto"
-                          RowSpacing="2">
+                          RowSpacing="{StaticResource GapSmallest}">
                         <TextBlock Grid.Column="0"
                                    Grid.Row="0"
                                    Text="Operating system:" />
@@ -255,7 +255,7 @@
 
                     <StackPanel IsVisible="{Binding CanPlay}"
                                 Orientation="Horizontal"
-                                Spacing="6">
+                                Spacing="{StaticResource GapRelated}">
                         <Image DockPanel.Dock="Left"
                                Classes="IconSmall"
                                RenderOptions.BitmapInterpolationMode="None"
@@ -272,7 +272,7 @@
 
                     <StackPanel IsVisible="{Binding !HasExe}"
                                 Orientation="Horizontal"
-                                Spacing="6">
+                                Spacing="{StaticResource GapRelated}">
                         <Image DockPanel.Dock="Left"
                                Classes="IconSmall"
                                RenderOptions.BitmapInterpolationMode="None"

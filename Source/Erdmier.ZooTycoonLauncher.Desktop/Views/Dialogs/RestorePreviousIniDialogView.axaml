@@ -1,5 +1,6 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
                xmlns:models="using:Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig"
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.RestorePreviousIniDialogView"
@@ -11,9 +12,9 @@
                CanResize="False"
                WindowStartupLocation="CenterOwner"
                ShowInTaskbar="False">
-    <StackPanel Margin="12"
+    <StackPanel Margin="{tokens:Space MarginDialog}"
                 Orientation="Vertical"
-                Spacing="8">
+                Spacing="{StaticResource GapUnrelated}">
         <TextBlock Classes="MutedText"
                    TextWrapping="Wrap">
             <Run Text="Pick a previous version of " /><Run FontFamily="{StaticResource FontFamilyMono}"
@@ -51,7 +52,7 @@
                         <DataTemplate DataType="models:IniHistoryRow">
                             <TextBlock FontFamily="{StaticResource FontFamilyMono}"
                                        FontSize="{StaticResource FontSizeBase}"
-                                       Margin="4 0"
+                                       Margin="{tokens:Space Horizontal=GapLabel}"
                                        Text="{Binding CapturedText}"
                                        VerticalAlignment="Center" />
                         </DataTemplate>
@@ -65,7 +66,7 @@
                 <DataGridTemplateColumn Width="25*">
                     <DataGridTemplateColumn.Header>
                         <TextBlock HorizontalAlignment="Right"
-                                   Margin="4 0"
+                                   Margin="{tokens:Space Horizontal=GapLabel}"
                                    Text="Δ keys" />
                     </DataGridTemplateColumn.Header>
 
@@ -73,7 +74,7 @@
                         <DataTemplate DataType="models:IniHistoryRow">
                             <TextBlock FontFamily="{StaticResource FontFamilyMono}"
                                        HorizontalAlignment="Right"
-                                       Margin="4 0"
+                                       Margin="{tokens:Space Horizontal=GapLabel}"
                                        Text="{Binding DeltaText}"
                                        VerticalAlignment="Center" />
                         </DataTemplate>
@@ -111,7 +112,7 @@
                         <Grid HorizontalAlignment="Left"
                               Width="{Binding Bounds.Width, ElementName=DiffItems}">
                             <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
-                                  Margin="6 3"
+                                  Margin="{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}"
                                   TextElement.FontSize="{StaticResource FontSizeBase}">
                                 <TextBlock Text="Key" />
 
@@ -133,7 +134,7 @@
                                 <DataTemplate DataType="models:IniHistoryDiffRow">
                                     <StackPanel>
                                         <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
-                                              Margin="6 2"
+                                              Margin="{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}"
                                               TextElement.FontFamily="{StaticResource FontFamilyMono}"
                                               TextElement.FontSize="{StaticResource FontSizeBase}">
                                             <TextBlock>
@@ -168,7 +169,7 @@
                 <TextBlock FontStyle="Italic"
                            HorizontalAlignment="Center"
                            IsVisible="{Binding HasNoDifferences}"
-                           Margin="14"
+                           Margin="{tokens:Space GapUnrelated}"
                            Classes="MutedText"
                            Text="No differences — this snapshot matches the current state."
                            TextAlignment="Center"
@@ -184,7 +185,7 @@
 
         <StackPanel HorizontalAlignment="Right"
                     Orientation="Horizontal"
-                    Spacing="6">
+                    Spacing="{StaticResource GapRelated}">
             <Button Command="{Binding RestoreCommand}"
                     Content="Restore"
                     IsDefault="True"

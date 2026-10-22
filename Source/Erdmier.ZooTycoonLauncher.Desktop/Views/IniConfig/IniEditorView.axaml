@@ -1,13 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.IniEditorView"
              x:DataType="vm:IniEditorViewModel">
     <Grid ColumnDefinitions="170,*"
-          ColumnSpacing="8"
-          Margin="8"
+          ColumnSpacing="{StaticResource GapRelated}"
+          Margin="{tokens:Space MarginDialog}"
           RowDefinitions="Auto,300,Auto"
-          RowSpacing="4">
+          RowSpacing="{StaticResource GapRelated}">
         <TextBlock Foreground="{StaticResource ForegroundMuted}"
                    Grid.Column="0"
                    Grid.Row="0"
@@ -40,7 +41,7 @@
                 IsEnabled="{Binding !IsBusy}">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                 <ContentControl Content="{Binding SelectedSection}"
-                                Margin="10 8" />
+                                Margin="{tokens:Space Horizontal=GapUnrelated, Vertical=GapRelated}" />
             </ScrollViewer>
         </Border>
 
@@ -49,7 +50,7 @@
                    Grid.Row="2">
             <StackPanel DockPanel.Dock="Right"
                         Orientation="Horizontal"
-                        Spacing="6">
+                        Spacing="{StaticResource GapRelated}">
                 <Button Command="{Binding RestorePreviousCommand}"
                         Content="Restore previous…"
                         Classes="DialogButton" />

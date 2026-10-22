@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Common"
              xmlns:converters="using:Erdmier.ZooTycoonLauncher.Desktop.Converters"
              xmlns:models="using:Erdmier.ZooTycoonLauncher.Desktop.Models"
@@ -25,7 +26,7 @@
                     <DataTemplate DataType="models:InstallationGridRowModel">
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center"
-                                    Margin="4 0">
+                                    Margin="{tokens:Space Horizontal=GapLabel}">
                             <TextBlock Text="{Binding Name}"
                                        FontWeight="{Binding IsDefault, Converter={StaticResource BoolToFontWeight}}" />
 
@@ -48,7 +49,7 @@
                         <TextBlock Text="{Binding ValidityDisplayName}"
                                    Foreground="{Binding Validity, Converter={StaticResource ValidityToBrush}}"
                                    VerticalAlignment="Center"
-                                   Margin="4 0" />
+                                   Margin="{tokens:Space Horizontal=GapLabel}" />
                     </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
             </DataGridTemplateColumn>

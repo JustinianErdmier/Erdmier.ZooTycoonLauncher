@@ -1,5 +1,6 @@
 <ClassicWindow xmlns="https://github.com/avaloniaui"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
                xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs"
                xmlns:converters="using:Erdmier.ZooTycoonLauncher.Desktop.Converters"
                x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Dialogs.InstallationInfoDialogView"
@@ -15,29 +16,28 @@
         <converters:ValidityToBrushConverter x:Key="ValidityToBrush" />
     </ClassicWindow.Resources>
 
-    <StackPanel Margin="8"
+    <StackPanel Margin="{tokens:Space MarginDialog}"
                 Orientation="Vertical"
-                Spacing="10">
-        <DockPanel HorizontalSpacing="10">
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
             <Image DockPanel.Dock="Left"
-                   Classes="IconLarge"
+                   Classes="IconLarge IconBesideBody"
                    RenderOptions.BitmapInterpolationMode="None"
                    Source="/Assets/Win95Icons/information32.gif"
                    VerticalAlignment="Top" />
 
-            <StackPanel Margin="5 0 0 0"
-                        Orientation="Vertical"
-                        Spacing="6">
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
                 <TextBlock Foreground="{StaticResource AccentRed}"
                            IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                            Text="{Binding ErrorMessage}"
                            TextWrapping="Wrap" />
 
                 <Grid ColumnDefinitions="Auto, *"
-                      ColumnSpacing="16"
+                      ColumnSpacing="{StaticResource GapUnrelated}"
                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNullOrEmpty}}"
                       RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
-                      RowSpacing="6">
+                      RowSpacing="{StaticResource GapRelated}">
                     <TextBlock Grid.Column="0"
                                Grid.Row="0"
                                Foreground="{StaticResource ForegroundDim}"
@@ -113,7 +113,7 @@
                         HorizontalAlignment="Right"
                         IsCancel="True"
                         IsDefault="True"
-                        Margin="0 5"
+                        Margin="{tokens:Space Vertical=GapLabel}"
                         Classes="DialogButton" />
             </StackPanel>
         </DockPanel>

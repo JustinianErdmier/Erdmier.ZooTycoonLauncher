@@ -23,6 +23,17 @@
                 Value="16" />
     </Style>
 
+    <!-- An icon beside text: the icon carries the rest of its gap to the text as a right margin (derived in Spacing.axaml), since the DockPanel between them spaces by GapRelated. IconBesideBody serves group-box and property-sheet layouts, IconBesideMessage the message prompts. -->
+    <Style Selector="Image.IconBesideBody">
+        <Setter Property="Margin"
+                Value="{StaticResource IconBesideBodyMargin}" />
+    </Style>
+
+    <Style Selector="Image.IconBesideMessage">
+        <Setter Property="Margin"
+                Value="{StaticResource IconBesideMessageMargin}" />
+    </Style>
+
     <!-- Secondary text, in the named muted grey rather than faded with Opacity. -->
     <Style Selector="TextBlock.MutedText">
         <Setter Property="Foreground"

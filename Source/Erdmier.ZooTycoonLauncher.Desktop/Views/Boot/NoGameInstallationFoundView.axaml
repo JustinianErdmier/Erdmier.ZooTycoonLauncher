@@ -4,10 +4,10 @@
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.Boot.NoGameInstallationFoundView"
              x:DataType="vm:NoGameInstallationFoundViewModel">
     <StackPanel Orientation="Vertical"
-                Spacing="10">
-        <DockPanel HorizontalSpacing="10">
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
             <Image DockPanel.Dock="Left"
-                   Classes="IconLarge"
+                   Classes="IconLarge IconBesideBody"
                    RenderOptions.BitmapInterpolationMode="None"
                    Source="/Assets/Win95Icons/error32.gif"
                    VerticalAlignment="Center" />
@@ -19,9 +19,8 @@
                 Add Installation
             </Button>
 
-            <StackPanel Margin="5 0 0 0"
-                        Orientation="Vertical"
-                        Spacing="4">
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
                 <TextBlock FontWeight="{StaticResource FontWeightHeading}"
                            Text="No Game Installation Found" />
 
@@ -31,7 +30,7 @@
 
         <StackPanel IsVisible="{Binding HasLocatedPath}"
                     Orientation="Vertical"
-                    Spacing="2">
+                    Spacing="{StaticResource GapLabel}">
             <TextBlock TextWrapping="Wrap">A potential candidate has been located at the following path:</TextBlock>
 
             <TextBox IsReadOnly="True"
@@ -40,10 +39,10 @@
 
         <!-- TODO: Build grid dynamically and display actual values  -->
         <HeaderedContentControl Header="Auto-locate trail"
-                                Padding="11 15 15 12">
+                                Padding="{StaticResource GroupBoxPadding}">
             <Grid ColumnDefinitions="25, 75*, 25*"
                   RowDefinitions="*, *, *, *"
-                  RowSpacing="4">
+                  RowSpacing="{StaticResource GapRelated}">
                 <TextBlock Grid.Column="0"
                            Grid.Row="0"
                            Text="×" />

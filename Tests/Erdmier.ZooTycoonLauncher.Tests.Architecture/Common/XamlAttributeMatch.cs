@@ -5,4 +5,5 @@ namespace Erdmier.ZooTycoonLauncher.Tests.Architecture.Common;
 /// <param name="Value">The attribute or setter value, trimmed.</param>
 /// <param name="Line">The 1-based line on which the match starts.</param>
 /// <param name="Text">The matched text with runs of whitespace collapsed, for failure messages.</param>
-public sealed record XamlAttributeMatch(string Name, string Value, int Line, string Text);
+/// <param name="Index">The 0-based character index at which the match starts, in the comment-blanked text that was scanned.</param>
+public sealed record XamlAttributeMatch(string Name, string Value, int Line, string Text, int Index);

@@ -1666,13 +1666,14 @@ Solution-spanning rules using `NetArchTest.Rules`:
   `VerticalSpacing` that is neither `0` nor a resource or `{tokens:Space …}`, outside `Styles/Spacing.axaml`; and `DerivedResources_MatchTheTokens` checks that each icon margin
   is its icon gap minus `GapRelated` and that `GroupBoxPadding` is built from the group-box tokens.
 - **Shared control styles (milestone 11.1):** `SharedSizeStylesTests` fails on a literal `MinWidth` on a `Button`, `MinWidth="75"` anywhere, or a 32 / 16 px `Image` size outside
-  `Styles/Controls.axaml` (`Views_UseSharedSizeStyles`), on text faded with a literal `Opacity` other than `1` (`Views_DoNotFadeTextWithOpacity`), and on an icon `Image` that
-  does not set `RenderOptions.BitmapInterpolationMode="None"` itself (`Icons_DrawWithoutSmoothing`; Avalonia 11.3 cannot style that property). The scanners behind all four tests
-  skip XML comments.
+  `Styles/Controls.axaml` (`Views_UseSharedSizeStyles`), on text faded with a literal `Opacity` other than `1` (`Views_DoNotFadeTextWithOpacity`; `1.0` counts as
+  `1`, and a binding or resource value is skipped), and on an icon `Image` that does not set `RenderOptions.BitmapInterpolationMode="None"` itself (`Icons_DrawWithoutSmoothing`;
+  Avalonia 11.3 cannot style that property). Every literal-`MinWidth` button is reported, even two on one line. The scanners behind all four tests skip XML comments.
 - **Token and resource references resolve (milestone 11.1):** `TokenReferencesTests` fails on a `{StaticResource}` or `{DynamicResource}` that names no resource declared in
   `Styles/`, `App.axaml` or the same file (`ResourceReferences_Resolve`), on a `{tokens:Space …}` that names anything but an `x:Double` (`SpaceTokens_NameDoubleResources`), and on
   a spacing attribute that references a resource of the wrong type, `x:Double` for `Spacing` and its relatives, `Thickness` for `Margin` and `Padding`
-  (`SpacingResources_HaveTheRightType`). A misspelt name otherwise fails only when the view loads.
+  (`SpacingResources_HaveTheRightType`); each of the three also fails if it matched no reference at all, so a broken pattern cannot pass. `Styles/` is read with its
+  subfolders. A misspelt name otherwise fails only when the view loads.
 - **Avalonia property fields are public (milestone 11.1):** `AvaloniaPropertyFieldTests.AvaloniaProperties_ArePublic` fails on a static readonly `StyledProperty`,
   `DirectProperty` or `AttachedProperty` field in `Desktop` that is not `public`, because Avalonia's XAML compiler sets the property through that field when a markup-extension
   value (such as `{tokens:Space …}`) is assigned.

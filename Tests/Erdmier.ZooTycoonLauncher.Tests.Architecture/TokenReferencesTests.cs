@@ -21,6 +21,8 @@ public sealed class TokenReferencesTests
 
         List<string> violations = [];
 
+        int references = 0;
+
         foreach (string file in SourceTree.EnumerateSources(desktop, pattern: "*.axaml"))
         {
             string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
@@ -29,6 +31,8 @@ public sealed class TokenReferencesTests
 
             foreach (Match match in ResourceReference.Matches(text))
             {
+                references++;
+
                 string name = match.Groups[ "name" ].Value;
 
                 if (!shared.ContainsKey(name) && !local.ContainsKey(name))
@@ -37,6 +41,8 @@ public sealed class TokenReferencesTests
                 }
             }
         }
+
+        references.ShouldBeGreaterThan(0, "No {StaticResource} or {DynamicResource} reference was found in any view; the pattern or the scanned path is broken.");
 
         violations.ShouldBeEmpty("Unresolved resource references found:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }
@@ -51,6 +57,8 @@ public sealed class TokenReferencesTests
 
         List<string> violations = [];
 
+        int uses = 0;
+
         foreach (string file in SourceTree.EnumerateSources(desktop, pattern: "*.axaml"))
         {
             string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
@@ -59,6 +67,8 @@ public sealed class TokenReferencesTests
 
             foreach (Match match in SpaceExtension.Matches(text))
             {
+                uses++;
+
                 foreach (string argument in match.Groups[ "arguments" ].Value.Split(','))
                 {
                     string name = argument.Contains('=') ? argument[ (argument.IndexOf('=') + 1).. ].Trim() : argument.Trim();
@@ -75,6 +85,8 @@ public sealed class TokenReferencesTests
             }
         }
 
+        uses.ShouldBeGreaterThan(0, "No {tokens:Space …} use was found in any view; the pattern or the scanned path is broken.");
+
         violations.ShouldBeEmpty("Spacing tokens that are not x:Double resources:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }
 
@@ -87,6 +99,8 @@ public sealed class TokenReferencesTests
         IReadOnlyDictionary<string, string> shared = XamlResourceKeys.CollectShared(desktop);
 
         List<string> violations = [];
+
+        int references = 0;
 
         foreach (string file in SourceTree.EnumerateSources(desktop, pattern: "*.axaml"))
         {
@@ -103,6 +117,8 @@ public sealed class TokenReferencesTests
                     continue;
                 }
 
+                references++;
+
                 string expected = SpacingProperties.Contains(match.Name) ? "x:Double" : "Thickness";
 
                 string name = reference.Groups[ "name" ].Value;
@@ -115,6 +131,8 @@ public sealed class TokenReferencesTests
                 }
             }
         }
+
+        references.ShouldBeGreaterThan(0, "No spacing attribute holding a resource reference was found in any view; the pattern or the scanned path is broken.");
 
         violations.ShouldBeEmpty("Spacing resources of the wrong type:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }

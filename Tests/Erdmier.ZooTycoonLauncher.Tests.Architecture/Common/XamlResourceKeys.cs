@@ -22,14 +22,14 @@ public static class XamlResourceKeys
         return keys;
     }
 
-    /// <summary>Finds the keys the whole Desktop project shares: those declared in <c>Styles/*.axaml</c> and <c>App.axaml</c>.</summary>
+    /// <summary>Finds the keys the whole Desktop project shares: those declared in <c>Styles/**/*.axaml</c> and <c>App.axaml</c>.</summary>
     /// <param name="desktop">The Desktop project directory.</param>
     /// <returns>A map from each shared key to its declaring element name.</returns>
     public static IReadOnlyDictionary<string, string> CollectShared(string desktop)
     {
         Dictionary<string, string> keys = new(StringComparer.Ordinal);
 
-        IEnumerable<string> files = Directory.EnumerateFiles(Path.Combine(desktop, path2: "Styles"), searchPattern: "*.axaml")
+        IEnumerable<string> files = Directory.EnumerateFiles(Path.Combine(desktop, path2: "Styles"), searchPattern: "*.axaml", SearchOption.AllDirectories)
                                              .Append(Path.Combine(desktop, path2: "App.axaml"));
 
         foreach (string file in files)

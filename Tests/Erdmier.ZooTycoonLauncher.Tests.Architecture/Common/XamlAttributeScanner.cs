@@ -62,6 +62,6 @@ public static class XamlAttributeScanner
     {
         int line = text.AsSpan(start: 0, match.Index).Count(value: '\n') + 1;
 
-        return new XamlAttributeMatch(match.Groups[ "name" ].Value, match.Groups[ "value" ].Value.Trim(), line, Regex.Replace(match.Value, @"\s+", " "));
+        return new XamlAttributeMatch(match.Groups[ "name" ].Value, match.Groups[ "value" ].Value.Trim(), line, Regex.Replace(match.Value, @"\s+", " "), match.Index);
     }
 }

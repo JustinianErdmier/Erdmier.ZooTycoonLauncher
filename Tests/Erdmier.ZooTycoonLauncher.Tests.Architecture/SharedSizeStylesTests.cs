@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Erdmier.ZooTycoonLauncher.Tests.Architecture;
@@ -33,50 +34,48 @@ public sealed class SharedSizeStylesTests
         {
             string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
 
-            HashSet<int> widthLines = [];
+            HashSet<int> widthIndexes = [];
 
             foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(text, "MinWidth"))
             {
-                if (match.Value == "75" && widthLines.Add(match.Line))
+                if (match.Value == "75" && widthIndexes.Add(match.Index))
                 {
                     violations.Add($"{Path.GetRelativePath(desktop, file)}:{match.Line}: {match.Text} (use Classes=\"DialogButton\")");
                 }
             }
 
-            foreach ((int offset, string scope) in Scopes(text, ButtonElement, ButtonSelector))
+            foreach ((int start, string scope) in Scopes(text, ButtonElement, ButtonSelector))
             {
                 foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(scope, "MinWidth"))
                 {
-                    if (!match.Value.StartsWith('{') && widthLines.Add(offset + match.Line))
+                    if (!match.Value.StartsWith('{') && widthIndexes.Add(start + match.Index))
                     {
-                        violations.Add($"{Path.GetRelativePath(desktop, file)}:{offset + match.Line}: {match.Text} (use Classes=\"DialogButton\")");
+                        violations.Add($"{Path.GetRelativePath(desktop, file)}:{LineOf(text, start) + match.Line - 1}: {match.Text} (use Classes=\"DialogButton\")");
                     }
                 }
             }
 
-            foreach ((int offset, string scope) in Scopes(text, ImageElement, ImageSelector))
+            foreach ((int start, string scope) in Scopes(text, ImageElement, ImageSelector))
             {
                 foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(scope, "Width", "Height"))
                 {
                     if (match.Value is "32" or "16")
                     {
-                        violations.Add($"{Path.GetRelativePath(desktop, file)}:{offset + match.Line}: {match.Text} (use Classes=\"IconLarge\" or \"IconSmall\")");
+                        violations.Add($"{Path.GetRelativePath(desktop, file)}:{LineOf(text, start) + match.Line - 1}: {match.Text} (use Classes=\"IconLarge\" or \"IconSmall\")");
                     }
                 }
             }
 
             foreach (Match match in QualifiedImageSize.Matches(text))
             {
-                int line = text.AsSpan(start: 0, match.Index).Count(value: '\n') + 1;
-
-                violations.Add($"{Path.GetRelativePath(desktop, file)}:{line}: {match.Value} (use Classes=\"IconLarge\" or \"IconSmall\")");
+                violations.Add($"{Path.GetRelativePath(desktop, file)}:{LineOf(text, match.Index)}: {match.Value} (use Classes=\"IconLarge\" or \"IconSmall\")");
             }
         }
 
         violations.ShouldBeEmpty("Repeated sizes found; use the shared styles in Styles/Controls.axaml:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }
 
-    /// <summary>No text element may carry a literal <c>Opacity</c> other than <c>1</c>; muted text takes the <c>MutedText</c> class or a named foreground.</summary>
+    /// <summary>No text element may carry a literal <c>Opacity</c> other than <c>1</c> (<c>1.0</c> counts as <c>1</c>; bindings and resources are skipped); muted text takes the <c>MutedText</c> class or a named foreground.</summary>
     [ Fact ]
     public void Views_DoNotFadeTextWithOpacity()
     {
@@ -88,13 +87,13 @@ public sealed class SharedSizeStylesTests
         {
             string text = XamlAttributeScanner.BlankComments(File.ReadAllText(file));
 
-            foreach ((int offset, string scope) in Scopes(text, TextElement, TextSelector))
+            foreach ((int start, string scope) in Scopes(text, TextElement, TextSelector))
             {
                 foreach (XamlAttributeMatch match in XamlAttributeScanner.Scan(scope, "Opacity"))
                 {
-                    if (match.Value != "1")
+                    if (!IsBindingOrResource(match.Value) && !IsOpaque(match.Value))
                     {
-                        violations.Add($"{Path.GetRelativePath(desktop, file)}:{offset + match.Line}: {match.Text} (use Classes=\"MutedText\" or a named foreground)");
+                        violations.Add($"{Path.GetRelativePath(desktop, file)}:{LineOf(text, start) + match.Line - 1}: {match.Text} (use Classes=\"MutedText\" or a named foreground)");
                     }
                 }
             }
@@ -129,9 +128,7 @@ public sealed class SharedSizeStylesTests
 
                 if (!crisp)
                 {
-                    int line = text.AsSpan(start: 0, image.Index).Count(value: '\n') + 1;
-
-                    violations.Add($"{Path.GetRelativePath(desktop, file)}:{line}: icon without RenderOptions.BitmapInterpolationMode=\"None\"");
+                    violations.Add($"{Path.GetRelativePath(desktop, file)}:{LineOf(text, image.Index)}: icon without RenderOptions.BitmapInterpolationMode=\"None\"");
                 }
             }
         }
@@ -139,22 +136,28 @@ public sealed class SharedSizeStylesTests
         violations.ShouldBeEmpty("Smoothed icons found:" + Environment.NewLine + string.Join(Environment.NewLine, violations));
     }
 
-    /// <summary>Yields the start tags matching <paramref name="element" /> and the bodies of styles whose selector matches <paramref name="selector" />, each with its 0-based line offset.</summary>
-    private static IEnumerable<(int Offset, string Scope)> Scopes(string text, Regex element, Regex selector)
+    /// <summary>Yields the start tags matching <paramref name="element" /> and the bodies of styles whose selector matches <paramref name="selector" />, each with its 0-based start index in <paramref name="text" />.</summary>
+    private static IEnumerable<(int Start, string Scope)> Scopes(string text, Regex element, Regex selector)
     {
         foreach (Match match in element.Matches(text))
         {
-            yield return (text.AsSpan(start: 0, match.Index).Count(value: '\n'), match.Value);
+            yield return (match.Index, match.Value);
         }
 
         foreach (Match match in StyleBlock.Matches(text))
         {
             if (selector.IsMatch(match.Groups[ "selector" ].Value))
             {
-                yield return (text.AsSpan(start: 0, match.Groups[ "body" ].Index).Count(value: '\n'), match.Groups[ "body" ].Value);
+                yield return (match.Groups[ "body" ].Index, match.Groups[ "body" ].Value);
             }
         }
     }
+
+    private static int LineOf(string text, int index) => text.AsSpan(start: 0, index).Count(value: '\n') + 1;
+
+    private static bool IsBindingOrResource(string value) => value.StartsWith('{');
+
+    private static bool IsOpaque(string value) => double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out double opacity) && opacity == 1d;
 
     private static IEnumerable<string> EnumerateViews(string desktop)
         => SourceTree.EnumerateSources(desktop, pattern: "*.axaml")

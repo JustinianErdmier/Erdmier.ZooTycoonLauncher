@@ -9,7 +9,7 @@ public sealed partial class IniToggleFieldViewModel : IniKeyedFieldViewModel
         : base(descriptor)
     {
         Caption  = descriptor.Caption ?? string.Empty;
-        Inverted = descriptor.Inverted;
+        Inverted = descriptor.Conversion == IniValueConversion.Invert;
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>

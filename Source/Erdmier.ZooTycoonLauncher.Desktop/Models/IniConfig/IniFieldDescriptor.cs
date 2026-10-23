@@ -11,8 +11,11 @@ public sealed record IniFieldDescriptor(IniKeyId? Id, string Label, IniControlKi
     /// <summary>The caption beside a toggle's check box.</summary>
     public string? Caption { get; init; }
 
-    /// <summary>Whether a toggle shows the opposite of the stored value (<c>noMenuMusic</c> reads "Play menu music").</summary>
-    public bool Inverted { get; init; }
+    /// <summary>How the control's value relates to the raw file value (Friendly layout only; the INI layout shows raw values).</summary>
+    public IniValueConversion Conversion { get; init; } = IniValueConversion.None;
+
+    /// <summary>Whether the row stays in the layout for its key but is rendered nowhere (the Friendly layout's language codes, which the picker drives).</summary>
+    public bool IsHidden { get; init; }
 
     /// <summary>Whether a number row is a cash amount, shown as dollars (<c>$1,000,000</c>) rather than a plain number.</summary>
     public bool IsCurrency { get; init; }

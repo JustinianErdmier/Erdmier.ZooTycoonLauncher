@@ -84,10 +84,10 @@ public static class IniEditorCatalogue
                     ]),
                 new(SubHeader: "Gameplay (cash)",
                     [
-                        Cash(section: "UI", key: "MSStartingCash", hint: "$0–$10,000,000", help: "Starting cash a new zoo offers by default; the player can change it before the zoo starts."),
-                        Cash(section: "UI", key: "MSCashIncrement", hint: "$100–$1,000,000", help: "How much the starting cash goes up or down per step while the player chooses it (default $75,000, step $25,000: one step up gives $100,000)."),
-                        Cash(section: "UI", key: "MSMinCash", hint: "$0–$10,000,000", help: "The least starting cash the player can choose for a new zoo. Does not limit cash during play, which can go negative."),
-                        Cash(section: "UI", key: "MSMaxCash", hint: "$0–$10,000,000", help: "The most starting cash the player can choose for a new zoo. Does not limit cash during play.")
+                        Cash(section: "UI", key: "MSStartingCash", hint: "$0–$10,000,000", help: "Default starting cash for a new zoo; you can change it before you start."),
+                        Cash(section: "UI", key: "MSCashIncrement", hint: "$100–$1,000,000", help: "Amount the starting cash goes up or down by with each step when you change it."),
+                        Cash(section: "UI", key: "MSMinCash", hint: "$0–$10,000,000", help: "Least starting cash you can choose for a new zoo."),
+                        Cash(section: "UI", key: "MSMaxCash", hint: "$0–$10,000,000", help: "Most starting cash you can choose for a new zoo.")
                     ]),
                 new(SubHeader: "Interface",
                     [

@@ -74,6 +74,7 @@ public sealed class IniSliderFieldViewModelTests
         field.TryGetEdit(out string? _).ShouldBeFalse();
         field.Percent.ShouldBe(expected: 88);
     }
+
     [ Fact ]
     public void ResetToDefault_GoesThroughTheConversion()
     {

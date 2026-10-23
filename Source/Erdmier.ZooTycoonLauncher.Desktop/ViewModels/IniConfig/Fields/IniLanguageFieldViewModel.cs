@@ -46,8 +46,8 @@ public sealed class IniLanguageFieldViewModel : IniFieldViewModel
     /// <summary>Whether the muted codes line under the picker is shown (the Friendly style).</summary>
     public bool ShowCodesText => !IsIniStyle;
 
-    /// <summary>The muted line under the picker naming the current codes, for example <c>Windows language codes: LANGID 9 · SUBLANGID 1</c> (spec C13).</summary>
-    public string CodesText => $"Windows language codes: LANGID {Format(_language.Value)} · SUBLANGID {Format(_subLanguage.Value)}";
+    /// <summary>The muted line under the picker naming the current codes, on two lines so the pair never wraps apart: <c>Windows language codes:</c> then <c>LANGID 9 · SUBLANGID 1</c> (spec C13, §6.6).</summary>
+    public string CodesText => $"Windows language codes:\nLANGID {Format(_language.Value)} · SUBLANGID {Format(_subLanguage.Value)}";
 
     /// <summary>The curated entry matching the two rows, or <see langword="null" />. Setting a non-null entry writes both rows.</summary>
     public IniLanguageOption? SelectedOption

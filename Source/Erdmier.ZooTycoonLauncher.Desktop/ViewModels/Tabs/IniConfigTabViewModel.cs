@@ -287,6 +287,7 @@ file sealed class NoOpDialogService : IDialogService
 
     public Task ShowErrorAsync(string title, string message) => Task.CompletedTask;
 }
+
 file sealed class NullIniEditorStyleState : IIniEditorStyleState
 {
     public IniEditorStyle Style { get; set; } = IniEditorStyle.Friendly;

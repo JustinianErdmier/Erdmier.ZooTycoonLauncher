@@ -90,10 +90,10 @@ public static class IniEditorFriendlyCatalogue
             [
                 new(SubHeader: "Money",
                     [
-                        Cash(section: "UI", key: "MSStartingCash", label: "Starting cash", hint: "$0–$10,000,000", help: "The cash you start a new zoo with."),
-                        Cash(section: "UI", key: "MSCashIncrement", label: "Cash step", hint: "$100–$1,000,000", help: "The denomination in which cash amounts are awarded."),
-                        Cash(section: "UI", key: "MSMinCash", label: "Minimum cash", hint: "$0–$10,000,000", help: "The minimum cash the player may hold."),
-                        Cash(section: "UI", key: "MSMaxCash", label: "Maximum cash", hint: "$0–$10,000,000", help: "The maximum cash the player may hold.")
+                        Cash(section: "UI", key: "MSStartingCash", label: "Starting cash", hint: "$0–$10,000,000", help: "The starting cash a new zoo offers by default. The player can change it before the zoo starts."),
+                        Cash(section: "UI", key: "MSCashIncrement", label: "Cash step", hint: "$100–$1,000,000", help: "How much the starting cash goes up or down each step while the player picks it. With the default $75,000 and a $25,000 step, one step up gives $100,000."),
+                        Cash(section: "UI", key: "MSMinCash", label: "Minimum cash", hint: "$0–$10,000,000", help: "The least starting cash the player can pick for a new zoo. It does not limit cash during play, which can go negative."),
+                        Cash(section: "UI", key: "MSMaxCash", label: "Maximum cash", hint: "$0–$10,000,000", help: "The most starting cash the player can pick for a new zoo. It does not limit cash during play.")
                     ]),
                 new(SubHeader: "Map size",
                     [

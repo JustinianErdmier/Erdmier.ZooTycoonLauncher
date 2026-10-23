@@ -113,6 +113,7 @@ public sealed class IniEditorStyleHeadlessTests
 
         harness.Close();
     }
+
     /// <summary>A Friendly slider reached with Tab moves ten per cent on Page Up and Page Down (<c>LargeChange</c>).</summary>
     [ AvaloniaFact ]
     public void FriendlySlider_PageKeysMoveTenPercent()

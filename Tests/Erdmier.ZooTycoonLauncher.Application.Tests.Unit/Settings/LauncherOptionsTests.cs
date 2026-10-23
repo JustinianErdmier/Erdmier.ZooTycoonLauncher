@@ -110,6 +110,7 @@ public sealed class LauncherOptionsTests
     public void Validator_NullPreference_Fails()
         => new SaveLauncherOptionsValidator().Validate(new SaveLauncherOptionsCommand(StartupPreference: null!, CloseAfterGameLaunch: false, EditorStyle: IniEditorStyle.Friendly))
                                              .Errors.ShouldContain(error => error.ErrorMessage == "Choose what the launcher opens at start-up.");
+
     [ Fact ]
     public void Validator_NullEditorStyle_Fails()
         => new SaveLauncherOptionsValidator().Validate(new SaveLauncherOptionsCommand(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, EditorStyle: null!))

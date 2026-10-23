@@ -9,17 +9,17 @@ public sealed class IniLanguageFieldViewModelTests
                IniEditorTestData.Result(("language", "lang", "9"), ("language", "sublang", "1")), NullLogger<IniEditorViewModel>.Instance, style);
 
     [ Fact ]
-    public void LanguageField_CodesTextShowsCurrentValues()
+    public void LanguageCodes_SitOnTheirOwnLine()
     {
         IniEditorViewModel editor = Editor(IniEditorStyle.Friendly);
 
         IniLanguageFieldViewModel language = Language(editor);
 
-        language.CodesText.ShouldBe(expected: "Windows language codes: LANGID 9 · SUBLANGID 1");
+        language.CodesText.Split('\n').ShouldBe([ "Windows language codes:", "LANGID 9 · SUBLANGID 1" ]);
 
         language.SelectedOption = IniEditorCatalogue.Languages.First(option => option is { Lang: 7, SubLang: 1 });
 
-        language.CodesText.ShouldBe(expected: "Windows language codes: LANGID 7 · SUBLANGID 1");
+        language.CodesText.Split('\n').ShouldBe([ "Windows language codes:", "LANGID 7 · SUBLANGID 1" ]);
     }
 
     [ Fact ]

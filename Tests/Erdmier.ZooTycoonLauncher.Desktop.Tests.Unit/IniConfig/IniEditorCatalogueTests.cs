@@ -53,6 +53,24 @@ public sealed class IniEditorCatalogueTests
     }
 
     [ Fact ]
+    public void CashHelp_IsTheSameMeaningInBothLayouts()
+    {
+        IEnumerable<IniSectionDescriptor> layouts = [ ..IniEditorCatalogue.Sections, ..IniEditorFriendlyCatalogue.Sections ];
+
+        string Help(IniSectionDescriptor section, string key) => section.Groups.SelectMany(group => group.Fields).Single(field => field.Id == new IniKeyId(Section: "UI", Key: key)).Help;
+
+        foreach (IniSectionDescriptor section in layouts.Where(section => section.Section == "UI"))
+        {
+            Help(section, key: "MSStartingCash").ShouldContain("new zoo");
+            Help(section, key: "MSStartingCash").ShouldContain("change");
+            Help(section, key: "MSCashIncrement").ShouldContain("starting cash");
+            Help(section, key: "MSCashIncrement").ShouldContain("step");
+            Help(section, key: "MSMinCash").ShouldContain("least starting cash");
+            Help(section, key: "MSMaxCash").ShouldContain("most starting cash");
+        }
+    }
+
+    [ Fact ]
     public void ChoiceOptions_AreValidForTheirKey()
     {
         foreach (IniFieldDescriptor field in AllFields.Where(field => field.Control == IniControlKind.Choice))

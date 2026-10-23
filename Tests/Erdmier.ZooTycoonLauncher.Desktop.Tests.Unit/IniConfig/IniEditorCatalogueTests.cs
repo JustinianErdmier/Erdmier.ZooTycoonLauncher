@@ -55,18 +55,16 @@ public sealed class IniEditorCatalogueTests
     [ Fact ]
     public void CashHelp_IsTheSameMeaningInBothLayouts()
     {
-        IEnumerable<IniSectionDescriptor> layouts = [ ..IniEditorCatalogue.Sections, ..IniEditorFriendlyCatalogue.Sections ];
-
-        string Help(IniSectionDescriptor section, string key) => section.Groups.SelectMany(group => group.Fields).Single(field => field.Id == new IniKeyId(Section: "UI", Key: key)).Help;
-
-        foreach (IniSectionDescriptor section in layouts.Where(section => section.Section == "UI"))
+        foreach (IReadOnlyList<IniSectionDescriptor> layout in new[] { IniEditorCatalogue.Sections, IniEditorFriendlyCatalogue.Sections })
         {
-            Help(section, key: "MSStartingCash").ShouldContain("new zoo");
-            Help(section, key: "MSStartingCash").ShouldContain("change");
-            Help(section, key: "MSCashIncrement").ShouldContain("starting cash");
-            Help(section, key: "MSCashIncrement").ShouldContain("step");
-            Help(section, key: "MSMinCash").ShouldContain("least starting cash");
-            Help(section, key: "MSMaxCash").ShouldContain("most starting cash");
+            string Help(string key) => layout.SelectMany(section => section.Groups).SelectMany(group => group.Fields).Single(field => field.Id == new IniKeyId(Section: "UI", Key: key)).Help;
+
+            Help(key: "MSStartingCash").ShouldContain("new zoo");
+            Help(key: "MSStartingCash").ShouldContain("change");
+            Help(key: "MSCashIncrement").ShouldContain("starting cash");
+            Help(key: "MSCashIncrement").ShouldContain("step");
+            Help(key: "MSMinCash").ShouldContain("least starting cash");
+            Help(key: "MSMaxCash").ShouldContain("most starting cash");
         }
     }
 

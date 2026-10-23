@@ -20,6 +20,6 @@
         <TextBlock Foreground="{StaticResource ForegroundMuted}"
                    IsVisible="{Binding ShowCodesText}"
                    Text="{Binding CodesText}"
-                   TextWrapping="Wrap" />
+                   TextWrapping="NoWrap" />
     </StackPanel>
 </UserControl>

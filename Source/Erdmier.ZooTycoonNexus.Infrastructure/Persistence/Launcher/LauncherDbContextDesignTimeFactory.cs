@@ -5,7 +5,7 @@ namespace Erdmier.ZooTycoonNexus.Infrastructure.Persistence.Launcher;
 ///     <c>dotnet ef migrations add</c>.
 /// </summary>
 /// <remarks>
-///     Resolves the connection string from the <c>ZOOLAUNCHER_DESIGNTIME_DB</c> environment variable when set, otherwise falls back to a fixed temp path. Never touches the
+///     Resolves the connection string from the <c>ZOONEXUS_DESIGNTIME_DB</c> environment variable when set, otherwise falls back to a fixed temp path. Never touches the
 ///     user's real <c>Nexus.db</c>.
 /// </remarks>
 [ UsedImplicitly ]
@@ -14,7 +14,7 @@ public sealed class LauncherDbContextDesignTimeFactory : IDesignTimeDbContextFac
     /// <inheritdoc />
     public LauncherDbContext CreateDbContext(string[] args)
     {
-        string databasePath = Environment.GetEnvironmentVariable(variable: "ZOOLAUNCHER_DESIGNTIME_DB")
+        string databasePath = Environment.GetEnvironmentVariable(variable: "ZOONEXUS_DESIGNTIME_DB")
                               ?? Path.Combine(Path.GetTempPath(), path2: "ZooTycoonNexus.DesignTime.db");
 
         DbContextOptions<LauncherDbContext> options = new DbContextOptionsBuilder<LauncherDbContext>()

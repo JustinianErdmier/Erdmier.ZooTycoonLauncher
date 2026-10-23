@@ -18,12 +18,14 @@ storage folder, the database and log names, the window titles and the documents 
   wrong: one string without a test.
 - **R4 (Task 2):** the Rider data source's display name was renamed `Launcher.db` → `Nexus.db` alongside its jdbc URL. Cost if wrong: none (the user's own IDE setting; the data
   source UUID is unchanged).
+- **R5 (Task 2 fix round):** the design-time environment variables carried the old product name, so `ZOOLAUNCHER_DESIGNTIME_DB` and `ZOOLAUNCHER_INSTALLATION_DESIGNTIME_DB` became
+  `ZOONEXUS_DESIGNTIME_DB` and `ZOONEXUS_INSTALLATION_DESIGNTIME_DB`. Cost if wrong: anyone with the old variable set locally must rename it.
 
 ## Task 2 outcome
 
 Commit `a637a8d`. Tests written first and seen failing (old folder, `Launcher.db`/`Launcher.log`, `Zoo Tycoon Launcher` titles), then green: Infrastructure integration 64,
 Desktop unit 375, Architecture 27, Application unit 205, Domain unit 140, all passing with 0 build warnings. The `git grep` for the old product name, folder and file names
-over `Source`, `Tests` and `.idea` is empty.
+over `Source`, `Tests` and `.idea` has one hit: the negative assertion in `AppStorageLocationsTests` (see the plan defects above).
 
 Step 7 app check: the built Desktop exe was started with `Start-Process` and captured through user32. The title bar reads `Zoo Tycoon Nexus  V1.0.0`. `ZooTycoonNexus\Data\Nexus.db`
 (with its `-shm`/`-wal`) and `ZooTycoonNexus\Logs\Nexus<date>.log` were created, and appeared both under `%LOCALAPPDATA%` and under the Claude package's
@@ -32,7 +34,10 @@ behaviour from `Launcher<date>.log`). The process was stopped. Nothing under `%L
 
 ## Defects found in the plan
 
-_None yet._
+- **Task 2 Step 5 grep cannot be empty.** Step 1's negative assertion (`directory.Contains("ZooTycoonLauncher")` in `AppStorageLocationsTests`) needs the literal, so the grep over
+  `Tests` always hits it. That assertion is the one allowed survivor; the literal is kept so the test's intent stays readable.
+- **Task 2 log file name.** The plan says `Logs\Nexus.log`, but Serilog's rolling sink writes `Nexus<yyyyMMdd>.log`. The configured base name is `Nexus.log`, as `Launcher.log` was
+  before. Task 3's documents describe it the same way the SDD already does.
 
 ## Incidents
 

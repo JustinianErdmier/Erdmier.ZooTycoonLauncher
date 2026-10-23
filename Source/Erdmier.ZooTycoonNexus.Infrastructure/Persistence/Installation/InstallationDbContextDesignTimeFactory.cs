@@ -9,7 +9,7 @@ public sealed class InstallationDbContextDesignTimeFactory : IDesignTimeDbContex
     /// <inheritdoc />
     public InstallationDbContext CreateDbContext(string[] args)
     {
-        string databasePath = Environment.GetEnvironmentVariable(variable: "ZOOLAUNCHER_INSTALLATION_DESIGNTIME_DB")
+        string databasePath = Environment.GetEnvironmentVariable(variable: "ZOONEXUS_INSTALLATION_DESIGNTIME_DB")
                               ?? Path.Combine(Path.GetTempPath(), path2: "ZooTycoonNexus.Installation.DesignTime.db");
 
         DbContextOptions<InstallationDbContext> options = new DbContextOptionsBuilder<InstallationDbContext>()

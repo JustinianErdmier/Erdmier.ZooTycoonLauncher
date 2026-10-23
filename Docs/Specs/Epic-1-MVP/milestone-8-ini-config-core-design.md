@@ -4,7 +4,7 @@
 > **Date:** 24 September 2026
 > **Author:** Justinian
 > **Status:** Approved for implementation
-> **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §5.3, §6.3, §7.1, §7.3, §7.7, §8.1, §8.2, §9.3
+> **Authoritative spec:** [1-zoo-tycoon-nexus-master-design.md](../1-zoo-tycoon-nexus-master-design.md) §5.3, §6.3, §7.1, §7.3, §7.7, §8.1, §8.2, §9.3
 
 ---
 

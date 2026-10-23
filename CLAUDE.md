@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Native Windows desktop launcher for **Zoo Tycoon (2001)**. Multi-installation discovery and management, exhaustive INI configuration per installation with full historical
-versioning in SQLite, scenarios management, screen-mode enumeration with ZT1 filtering, and one-click launch. Windows-only (permanently — the game is a 32-bit Windows binary from
-2001); .NET 10, Avalonia 11.3 + Classic.Avalonia theme (Windows 95/98 aesthetic).
+**Zoo Tycoon Nexus**: native Windows desktop launcher for **Zoo Tycoon (2001)**. Multi-installation discovery and management, exhaustive INI configuration per installation
+with full historical versioning in SQLite, scenarios management, screen-mode enumeration with ZT1 filtering, and one-click launch. Windows-only (permanently — the game is a
+32-bit Windows binary from 2001); .NET 10, Avalonia 11.3 + Classic.Avalonia theme (Windows 95/98 aesthetic).
 
-The launcher is a **fresh-start rewrite**, built greenfield under `Source/` as a layered architecture (`Erdmier.ZooTycoonLauncher.{Domain, Application, Infrastructure,
+The launcher is a **fresh-start rewrite**, built greenfield under `Source/` as a layered architecture (`Erdmier.ZooTycoonNexus.{Domain, Application, Infrastructure,
 Desktop}`). The prior single-project prototype (the *Ref* build, `Erdmier.ZooTycoonLauncherRef`) served as read-only inspiration for the early slices and was removed from the
 repository in `8e0532b`. Where the SDD or an older plan mentions "the Ref build", it means that prototype; recover a file with `git show 8e0532b^:References/<path>` only if a
 design question genuinely needs it, and never copy-paste from it.
@@ -19,7 +19,7 @@ Work is organised into **epics** (e.g. `Epic-1-MVP`, the SDD's Phase 1) made of 
 sharing the same `milestone-<N>-<feature-name>` stem. Number milestones in creation order within the epic; a follow-up to milestone `<N>` that needs its own document is
 `<N>.1`, `<N>.2`, …
 
-- **SDD (authoritative spec):** [`Docs/Specs/1-zoo-tycoon-launcher-master-design.md`](./Docs/Specs/1-zoo-tycoon-launcher-master-design.md). When the SDD and any other
+- **SDD (authoritative spec):** [`Docs/Specs/1-zoo-tycoon-nexus-master-design.md`](./Docs/Specs/1-zoo-tycoon-nexus-master-design.md). When the SDD and any other
   document disagree, the SDD wins. **Keep it current:** when a milestone changes the architecture, the slice list, the view pairs or the folder layout, amend the SDD in the
   same milestone — never let the code and the spec drift apart.
 - **Milestone specs:** under [`Docs/Specs/<Epic>/`](./Docs/Specs/) — e.g. [`Docs/Specs/Epic-1-MVP/`](./Docs/Specs/Epic-1-MVP/) — named
@@ -32,7 +32,7 @@ sharing the same `milestone-<N>-<feature-name>` stem. Number milestones in creat
   lost — and clean it into a readable document when the plan finishes. It must record, at minimum: every **ruling** taken without the user and what it costs if wrong; **defects
   found in the plan itself**; **outstanding items** grouped by when they should be revisited; and any **incidents**. Milestones 1–8 predate this rule and have no
   ledger.
-- **Keep the solution view in sync:** [`Erdmier.ZooTycoonLauncher.slnx`](./Erdmier.ZooTycoonLauncher.slnx) lists every file under `Docs/` (in the top-level `/Docs/…`
+- **Keep the solution view in sync:** [`Erdmier.ZooTycoonNexus.slnx`](./Erdmier.ZooTycoonNexus.slnx) lists every file under `Docs/` (in the top-level `/Docs/…`
   solution folders, which mirror the on-disk path — never under `/SolutionItems/`) and the root-level files under `/SolutionItems/`. **Whenever such a file is created,
   renamed, moved or deleted, update the `.slnx` to match** in the same commit, keeping milestone documents in milestone order. The user reads these documents through Rider's
   solution view, where an unregistered file is invisible; Rider's auto-sync is a convenience, not a guarantee.
@@ -41,7 +41,8 @@ sharing the same `milestone-<N>-<feature-name>` stem. Number milestones in creat
   each screen's exact layout and copy; read them when specifying or building a view. It is also captured in
   [`Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](./Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) and the `HiFiMockupScreenshots/`
   beside it, with recurring UI patterns documented in [`Docs/UserInterfaceDesign/conventions.md`](./Docs/UserInterfaceDesign/conventions.md). The SDD (§9), not the
-  prototype, is the contract. The imported copy is a snapshot: re-import a file from the Claude Design project when the live prototype has moved on.
+  prototype, is the contract. The imported copy is a snapshot: re-import a file from the Claude Design project when the live prototype has moved on. The snapshot predates
+  the rename, so read its *Zoo Tycoon Launcher* copy (titles, About, Help, `Launcher.db`) as *Zoo Tycoon Nexus* / `Nexus.db`.
 - **Manual test plan:** [`Docs/TestPlans/manual-end-to-end-tests.md`](./Docs/TestPlans/manual-end-to-end-tests.md).
 
 ## Executing a plan
@@ -85,12 +86,12 @@ Fix, or the game rewriting `zoo.ini` is expected behaviour, so drive those flows
 
 > **Always run shell commands via PowerShell — never Bash.**
 
-- **Build:** prefer `mcp__rider__build_solution`. Fallback: `dotnet build Erdmier.ZooTycoonLauncher.slnx`.
+- **Build:** prefer `mcp__rider__build_solution`. Fallback: `dotnet build Erdmier.ZooTycoonNexus.slnx`.
 - **Build a single project** (narrow build to sidestep file locks — see *Build file-lock errors*): `dotnet build Source/<Project>/<Project>.csproj`, e.g.
-  `dotnet build Source/Erdmier.ZooTycoonLauncher.Domain/Erdmier.ZooTycoonLauncher.Domain.csproj`.
-- **Validate task completion:** clean, then build. `dotnet clean Erdmier.ZooTycoonLauncher.slnx; dotnet build Erdmier.ZooTycoonLauncher.slnx`.
+  `dotnet build Source/Erdmier.ZooTycoonNexus.Domain/Erdmier.ZooTycoonNexus.Domain.csproj`.
+- **Validate task completion:** clean, then build. `dotnet clean Erdmier.ZooTycoonNexus.slnx; dotnet build Erdmier.ZooTycoonNexus.slnx`.
 - **Add an EF Core migration:**
-  `dotnet ef migrations add <Name> --project Source/Erdmier.ZooTycoonLauncher.Infrastructure --context <ContextName> --output-dir Persistence/<scope>/Migrations`.
+  `dotnet ef migrations add <Name> --project Source/Erdmier.ZooTycoonNexus.Infrastructure --context <ContextName> --output-dir Persistence/<scope>/Migrations`.
 
 ## Build file-lock errors
 
@@ -98,7 +99,7 @@ Builds may fail with a **file lock error** (an output assembly or DLL that canno
 the launcher running — it is an artefact of the **Avalonia Preview plugin in Rider** holding a handle on the built output. Do the following, in order:
 
 1. **Build only what is relevant.** If a change touched a single project, build just that project and run only its corresponding test project — e.g. a Domain-only change needs only
-   the Domain project built and `Erdmier.ZooTycoonLauncher.Domain.Tests.Unit` run. A narrow build usually sidesteps the locked Desktop output entirely.
+   the Domain project built and `Erdmier.ZooTycoonNexus.Domain.Tests.Unit` run. A narrow build usually sidesteps the locked Desktop output entirely.
 2. **Only escalate to a full build when genuinely needed.** If a true build of the whole solution (or the Desktop project specifically) really is required, first confirm the lock
    is a genuine problem and not just the preview-plugin artefact.
 3. **When unsure, stop and ask the user.** If you cannot safely determine whether the lock can be ignored, ask — the user can resolve or clarify it quickly.
@@ -122,13 +123,13 @@ before running `git commit`. Either way, stage only the files the task touched; 
 
 Clean Architecture + Vertical Slice Architecture + CQRS via source-generated `Mediator` (martinothamar). Handlers return `ErrorOr<T>`; expected failures are values, not exceptions.
 FluentValidation validators run as a Mediator pipeline behaviour. POCO entities; Ardalis.SmartEnum for richer enumerations. EF Core + SQLite, code-first migrations. Serilog file
-sink under `%LOCALAPPDATA%\ZooTycoonLauncher\Logs\`.
+sink under `%LOCALAPPDATA%\ZooTycoonNexus\Logs\`.
 
 Dependency direction: `Desktop → Application → Domain`; `Infrastructure → Application/Domain`; `Desktop` composes `Infrastructure` only at the composition-root namespace (
-`Erdmier.ZooTycoonLauncher.Desktop.Composition`). An architecture test in `Tests.Architecture` enforces this.
+`Erdmier.ZooTycoonNexus.Desktop.Composition`). An architecture test in `Tests.Architecture` enforces this.
 
-Storage layout under `%LOCALAPPDATA%\ZooTycoonLauncher\`: `Data\Launcher.db` (settings + installation registry) and `Data\{installationId}.db` (per-installation INI snapshots with
-`Original` / `Current` / `Historical` tables). Logs at `Logs\Launcher.log` + `Logs\Installations\{installationId}.log`. Full detail in SDD §4.7, §6.
+Storage layout under `%LOCALAPPDATA%\ZooTycoonNexus\`: `Data\Nexus.db` (settings + installation registry) and `Data\{installationId}.db` (per-installation INI snapshots with
+`Original` / `Current` / `Historical` tables). Logs at `Logs\Nexus.log` + `Logs\Installations\{installationId}.log`. Full detail in SDD §4.7, §6.
 
 Presentation: Avalonia 11 + Classic.Avalonia (Windows 95/98 chrome) + CommunityToolkit.Mvvm. Views are decomposed into small `UserControl` + `ViewModel` pairs the way Blazor /
 React / Angular use components: per main-window state, per tab, per INI section. `MainWindow.axaml` is chrome only and capped at ≤ 100 lines by an architecture test. See SDD §9.2.

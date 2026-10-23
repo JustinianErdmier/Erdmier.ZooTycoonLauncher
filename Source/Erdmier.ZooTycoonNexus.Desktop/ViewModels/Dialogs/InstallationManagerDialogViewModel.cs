@@ -1,0 +1,142 @@
+namespace Erdmier.ZooTycoonNexus.Desktop.ViewModels.Dialogs;
+
+/// <summary>
+///     View model for the Installation Manager modal (SDD §7.2.2, §9.4). Hosts <see cref="InstallationGridViewModel" /> and exposes the five management
+///     commands — Add, Info, Edit, Delete and Fix — all of which are now live.
+/// </summary>
+public sealed partial class InstallationManagerDialogViewModel : ViewModelBase, IDisposable
+{
+    private readonly IDialogService? _dialogs;
+
+    /// <summary>Initialises a new instance.</summary>
+    /// <param name="grid">The installation grid view model. The manager takes ownership of it and disposes it alongside itself.</param>
+    /// <param name="dialogs">The dialogue service — used here to open the Add, Info, Edit, Delete and Fix dialogues.</param>
+    public InstallationManagerDialogViewModel(InstallationGridViewModel grid, IDialogService dialogs)
+    {
+        Grid     = grid;
+        _dialogs = dialogs;
+
+        Grid.PropertyChanged += OnGridPropertyChanged;
+    }
+
+    /// <summary>Initialises a new instance for the XAML designer.</summary>
+    public InstallationManagerDialogViewModel()
+        : this(new InstallationGridViewModel(), null!)
+    { }
+
+    /// <summary>The installation grid view model. Bound to <c>InstallationGridView.DataContext</c>.</summary>
+    public InstallationGridViewModel Grid { get; }
+
+    /// <summary>
+    ///     <see langword="true" /> when the user has changed anything during this session of the dialogue (a successful Add, Edit, Delete or Fix). Read by
+    ///     <see cref="Composition.AvaloniaDialogService.ShowInstallationManagerAsync" /> once the dialogue closes, so callers only refresh when something actually changed.
+    /// </summary>
+    public bool HasChanges { get; private set; }
+
+    /// <summary>Loads the installation list. Must be awaited by the dialogue service before the window is shown.</summary>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    public Task InitialiseAsync(CancellationToken cancellationToken = default)
+        => Grid.LoadAsync(cancellationToken);
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Grid.PropertyChanged -= OnGridPropertyChanged;
+        Grid.Dispose();
+    }
+
+    [ RelayCommand ]
+    private async Task AddAsync()
+    {
+        if (_dialogs is null)
+        {
+            return;
+        }
+
+        AddInstallationResult? result = await _dialogs.ShowAddInstallationAsync(prefilledPath: null);
+
+        if (result is not null)
+        {
+            HasChanges = true;
+        }
+    }
+
+    [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
+    private async Task InfoAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        await _dialogs.ShowInstallationInfoAsync(Grid.SelectedRow.Id);
+    }
+
+    [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
+    private async Task EditAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        if (await _dialogs.ShowEditInstallationAsync(Grid.SelectedRow.Id))
+        {
+            HasChanges = true;
+        }
+    }
+
+    [ RelayCommand(CanExecute = nameof(CanExecuteSelectionCommand)) ]
+    private async Task DeleteAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        if (await _dialogs.ShowDeleteInstallationAsync(Grid.SelectedRow.Id))
+        {
+            HasChanges = true;
+        }
+    }
+
+    [ RelayCommand(CanExecute = nameof(CanExecuteFixCommand)) ]
+    private async Task FixAsync()
+    {
+        if (_dialogs is null
+            || Grid.SelectedRow is null)
+        {
+            return;
+        }
+
+        if (await _dialogs.ShowFixInstallationAsync(Grid.SelectedRow.Id))
+        {
+            HasChanges = true;
+        }
+    }
+
+    [ RelayCommand ]
+    private void Close() => CloseRequested?.Invoke(this, EventArgs.Empty);
+
+    private bool CanExecuteSelectionCommand() => Grid.HasSelection;
+
+    private bool CanExecuteFixCommand() => Grid.IsSelectionInvalid;
+
+    private void OnGridPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(InstallationGridViewModel.HasSelection)
+                           or nameof(InstallationGridViewModel.IsSelectionInvalid))
+        {
+            InfoCommand.NotifyCanExecuteChanged();
+            EditCommand.NotifyCanExecuteChanged();
+            DeleteCommand.NotifyCanExecuteChanged();
+            FixCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    /// <summary>Raised when the dialogue should close.</summary>
+    public event EventHandler? CloseRequested;
+}

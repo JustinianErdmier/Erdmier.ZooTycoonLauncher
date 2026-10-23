@@ -16,7 +16,7 @@ shared `IniWritePipeline` that Save and the new `RestoreIniSnapshotCommand` both
 EF Core + SQLite, xUnit 2.9 + Shouldly + NSubstitute.
 
 **Spec:** [`Docs/Specs/Epic-1-MVP/milestone-9-restore-previous-ini-design.md`](../../Specs/Epic-1-MVP/milestone-9-restore-previous-ini-design.md) — read it before any
-task; its calls C1–C11 are binding. The SDD ([`1-zoo-tycoon-launcher-master-design.md`](../../Specs/1-zoo-tycoon-launcher-master-design.md)) wins wherever neither covers
+task; its calls C1–C11 are binding. The SDD ([`1-zoo-tycoon-nexus-master-design.md`](../../Specs/1-zoo-tycoon-nexus-master-design.md)) wins wherever neither covers
 a point. Layout and copy for the dialogue come from [`HiFiPrototype/src/dialogs.jsx`](../../UserInterfaceDesign/HiFiPrototype/src/dialogs.jsx) lines 427–506.
 
 ## Global Constraints
@@ -454,7 +454,7 @@ Text: `"1 snapshot"`, otherwise `"{n} snapshots"`; `"—"` when the query errors
 **Files:**
 - Modify: `Source/…Desktop/Views/Dialogs/InstallationManagerDialogView.axaml` (`Add…`, `Edit…`, `Fix…`), `Views/Boot/OpenGameInstallationView.axaml` (`Add…`, `Manage…`),
   `Views/Dialogs/FixInstallationDialogView.axaml` (`Locate…`)
-- Modify: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`, `Docs/TestPlans/manual-end-to-end-tests.md`
+- Modify: `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`, `Docs/TestPlans/manual-end-to-end-tests.md`
 
 Use the real ellipsis character `…` (U+2026), as `Browse…` does. Leave `Info`, `Delete`, `Create`, `Open` unchanged (spec §7.6).
 

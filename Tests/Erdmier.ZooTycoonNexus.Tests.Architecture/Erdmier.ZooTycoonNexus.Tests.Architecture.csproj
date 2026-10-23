@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>Erdmier.ZooTycoonNexus.Tests.Architecture</RootNamespace>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="Shouldly" />
+        <PackageReference Include="NetArchTest.Rules" />
+        <PackageReference Include="coverlet.collector" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Source\Erdmier.ZooTycoonNexus.Domain\Erdmier.ZooTycoonNexus.Domain.csproj" />
+        <ProjectReference Include="..\..\Source\Erdmier.ZooTycoonNexus.Application\Erdmier.ZooTycoonNexus.Application.csproj" />
+        <ProjectReference Include="..\..\Source\Erdmier.ZooTycoonNexus.Infrastructure\Erdmier.ZooTycoonNexus.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\Source\Erdmier.ZooTycoonNexus.Desktop\Erdmier.ZooTycoonNexus.Desktop.csproj" />
+    </ItemGroup>
+</Project>

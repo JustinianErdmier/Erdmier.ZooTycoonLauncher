@@ -199,7 +199,7 @@ the dialogue reads `IIniEditorStyleState.Style` when it builds its rows.
 
 ## Task 7: Headless coverage and documentation
 
-**Files:** `Tests/…Desktop.Tests.Unit/Views/` (headless editor tests, beside `IniEditorHarness`); `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`;
+**Files:** `Tests/…Desktop.Tests.Unit/Views/` (headless editor tests, beside `IniEditorHarness`); `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`;
 `Docs/UserInterfaceDesign/conventions.md`.
 
 - [x] **Step 1: Headless tests:** `Editor_RendersInBothStyles` (every section/page selected in turn, no logged warning); `FriendlySoundPage_EnableMenuMusicTicked`
@@ -261,7 +261,7 @@ tests in `Tests/…Desktop.Tests.Unit/` (the MainWindowViewModel test files).
 
 ## Task 11: The SDD and conventions as built
 
-**Files:** `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`, `Docs/UserInterfaceDesign/conventions.md`.
+**Files:** `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`, `Docs/UserInterfaceDesign/conventions.md`.
 
 - [x] **Step 1:** SDD §9.10 — add the **View** menu (*Config layout ▸ Friendly style / INI style*, radio bullet, saves and applies at once) and drop "`View` menus
   are not present"; §9.3.3 — mention the View menu; §9.7 — the Friendly key column uses the system face (ruling R9); §11.4 — list every test this milestone added

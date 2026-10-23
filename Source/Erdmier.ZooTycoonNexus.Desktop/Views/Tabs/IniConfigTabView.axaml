@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tokens="using:Erdmier.ZooTycoonNexus.Desktop.Styles"
+             xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels.Tabs"
+             x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.Tabs.IniConfigTabView"
+             x:DataType="vm:IniConfigTabViewModel">
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top"
+                   IsVisible="{Binding HasReadOnlyWarning}"
+                   Margin="{tokens:Space Bottom=GapRelated}">
+            <Image DockPanel.Dock="Left"
+                   Classes="IconSmall"
+                   RenderOptions.BitmapInterpolationMode="None"
+                   Margin="{tokens:Space Right=GapRelated}"
+                   Source="/Assets/Win95Icons/warning32.gif"
+                   VerticalAlignment="Top" />
+
+            <TextBlock Foreground="{StaticResource AccentMaroon}"
+                       Text="{Binding ReadOnlyWarning}"
+                       TextWrapping="Wrap" />
+        </DockPanel>
+
+        <ContentControl Content="{Binding Content}" />
+    </DockPanel>
+</UserControl>

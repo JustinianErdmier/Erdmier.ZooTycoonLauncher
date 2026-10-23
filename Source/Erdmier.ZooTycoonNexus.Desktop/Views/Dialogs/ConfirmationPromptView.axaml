@@ -1,0 +1,53 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonNexus.Desktop.Styles"
+               xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels.Dialogs"
+               x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.Dialogs.ConfirmationPromptView"
+               x:DataType="vm:ConfirmationPromptViewModel"
+               CanResize="False"
+               Icon="/Assets/BrandIcons/ZTL_Title-Icon.png"
+               ShowInTaskbar="False"
+               SizeToContent="WidthAndHeight"
+               Title="{Binding Title, StringFormat='  {0}'}"
+               WindowStartupLocation="CenterOwner">
+    <ClassicWindow.Styles>
+        <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+        <Style Selector="CaptionButtons /template/ Button#PART_RestoreButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+    </ClassicWindow.Styles>
+
+    <StackPanel Margin="{tokens:Space MarginDialog}"
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
+            <Image DockPanel.Dock="Left"
+                   Classes="IconLarge IconBesideMessage"
+                   RenderOptions.BitmapInterpolationMode="None"
+                   Source="/Assets/Win95Icons/warning32.gif"
+                   VerticalAlignment="Center" />
+
+            <TextBlock MaxWidth="320"
+                       Text="{Binding Message}"
+                       TextWrapping="Wrap"
+                       VerticalAlignment="Center" />
+        </DockPanel>
+
+        <StackPanel HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="{StaticResource GapRelated}">
+            <Button Click="OnYesClick"
+                    Content="Yes"
+                    IsDefault="True"
+                    Classes="DialogButton" />
+
+            <Button Click="OnNoClick"
+                    Content="No"
+                    IsCancel="True"
+                    Classes="DialogButton" />
+        </StackPanel>
+    </StackPanel>
+</ClassicWindow>

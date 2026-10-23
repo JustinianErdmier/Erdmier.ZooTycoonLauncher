@@ -4,7 +4,7 @@
 > - **Date:** 2026-10-22
 > - **Author:** Justinian
 > - **Status:** Approved for implementation (decisions 1–12; calls C1–C16)
-> - **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §5.1, §5.2, §6.2, §9.3, §9.7, §9.8, §13.2
+> - **Authoritative spec:** [1-zoo-tycoon-nexus-master-design.md](../1-zoo-tycoon-nexus-master-design.md) §5.1, §5.2, §6.2, §9.3, §9.7, §9.8, §13.2
 > - **Design reference:** the brainstorming mock-ups (2026-10-22): the side-by-side `[user]` / Display comparison and the eight-page draft in §6.1 below;
 >   `Docs/UserInterfaceDesign/conventions.md` §2–§5
 > - **Branch:** `feat/milestone-12-ini-editor-display-style`

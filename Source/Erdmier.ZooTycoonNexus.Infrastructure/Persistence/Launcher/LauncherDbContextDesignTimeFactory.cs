@@ -1,0 +1,26 @@
+namespace Erdmier.ZooTycoonNexus.Infrastructure.Persistence.Launcher;
+
+/// <summary>
+///     Design-time factory used by the EF Core CLI to construct <see cref="LauncherDbContext" /> outside the running application — e.g. when running
+///     <c>dotnet ef migrations add</c>.
+/// </summary>
+/// <remarks>
+///     Resolves the connection string from the <c>ZOONEXUS_DESIGNTIME_DB</c> environment variable when set, otherwise falls back to a fixed temp path. Never touches the
+///     user's real <c>Nexus.db</c>.
+/// </remarks>
+[ UsedImplicitly ]
+public sealed class LauncherDbContextDesignTimeFactory : IDesignTimeDbContextFactory<LauncherDbContext>
+{
+    /// <inheritdoc />
+    public LauncherDbContext CreateDbContext(string[] args)
+    {
+        string databasePath = Environment.GetEnvironmentVariable(variable: "ZOONEXUS_DESIGNTIME_DB")
+                              ?? Path.Combine(Path.GetTempPath(), path2: "ZooTycoonNexus.DesignTime.db");
+
+        DbContextOptions<LauncherDbContext> options = new DbContextOptionsBuilder<LauncherDbContext>()
+                                                      .UseSqlite($"Data Source={databasePath}")
+                                                      .Options;
+
+        return new LauncherDbContext(options);
+    }
+}

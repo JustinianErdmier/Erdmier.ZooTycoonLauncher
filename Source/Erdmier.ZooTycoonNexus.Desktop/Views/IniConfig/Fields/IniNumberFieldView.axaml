@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels.IniConfig.Fields"
+             x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.IniConfig.Fields.IniNumberFieldView"
+             x:DataType="vm:IniNumberFieldViewModel">
+    <NumericUpDown FormatString="{Binding FormatString}"
+                   HorizontalAlignment="Left"
+                   Increment="1"
+                   IsReadOnly="{Binding IsReadOnly}"
+                   Maximum="{Binding Maximum}"
+                   Minimum="{Binding Minimum}"
+                   NumberFormat="{Binding NumberFormat}"
+                   ParsingNumberStyle="{Binding ParsingNumberStyle}"
+                   ShowButtonSpinner="{Binding !IsReadOnly}"
+                   Value="{Binding Value}"
+                   Width="120" />
+</UserControl>

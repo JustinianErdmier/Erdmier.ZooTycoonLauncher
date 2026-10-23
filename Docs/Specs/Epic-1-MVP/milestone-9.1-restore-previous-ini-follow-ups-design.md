@@ -4,7 +4,7 @@
 > **Date:** 2026-10-20
 > **Author:** Justinian
 > **Status:** Approved for implementation
-> **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §7.6, §8.2, §9.3.2, §9.7, §13.5
+> **Authoritative spec:** [1-zoo-tycoon-nexus-master-design.md](../1-zoo-tycoon-nexus-master-design.md) §7.6, §8.2, §9.3.2, §9.7, §13.5
 > **Source of items:** [milestone-9 ledger](../../Ledgers/Epic-1-MVP/milestone-9-ledger.md) *Outstanding items*
 > **Deferred work taken:** DW-17 (INI loggers and the shared activation token), DW-18 (hover vs focus help), DW-27 (INI hygiene)
 > **Branch:** `feat/milestone-9.1-restore-previous-ini-follow-ups`, stacked on `feat/milestone-9-restore-previous-ini` (PR #7) until that merges

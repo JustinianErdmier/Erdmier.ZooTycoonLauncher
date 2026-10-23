@@ -1,0 +1,100 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonNexus.Desktop.Styles"
+               xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels.Dialogs"
+               xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
+               xmlns:layout="clr-namespace:Erdmier.ZooTycoonNexus.Desktop.Views.Layout"
+               x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.Dialogs.OptionsDialogView"
+               x:DataType="vm:OptionsDialogViewModel"
+               Icon="/Assets/Win95Icons/controls32.ico"
+               Title="  Options"
+               Width="460"
+               SizeToContent="Height"
+               CanResize="False"
+               WindowStartupLocation="CenterOwner"
+               ShowInTaskbar="False">
+    <StackPanel Margin="{tokens:Space MarginDialog}"
+                Orientation="Vertical"
+                Spacing="{StaticResource GapUnrelated}">
+        <TextBlock Foreground="{StaticResource AccentRed}"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                   Text="{Binding ErrorMessage}"
+                   TextWrapping="Wrap" />
+
+        <controls:GroupBox Header="Startup"
+                           Padding="{StaticResource GroupBoxPadding}">
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
+                <TextBlock Classes="MutedText"
+                           Text="When the launcher opens, restore:" />
+
+                <RadioButton Content="The default installation"
+                             GroupName="Startup"
+                             IsChecked="{Binding IsDefaultInstallation}" />
+
+                <RadioButton Content="The installation I last played"
+                             GroupName="Startup"
+                             IsChecked="{Binding IsLastPlayedInstallation}" />
+
+                <RadioButton Content="The installation I last opened in the launcher"
+                             GroupName="Startup"
+                             IsChecked="{Binding IsLastOpenedInstallation}" />
+
+                <RadioButton Content="No installation — show the picker"
+                             GroupName="Startup"
+                             IsChecked="{Binding IsNoInstallation}" />
+            </StackPanel>
+        </controls:GroupBox>
+
+        <controls:GroupBox Header="Config editor"
+                           Padding="{StaticResource GroupBoxPadding}">
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
+                <TextBlock Classes="MutedText"
+                           Text="Show settings in the Game Config tab:" />
+
+                <RadioButton Content="{Binding FriendlyStyleName}"
+                             GroupName="EditorStyle"
+                             IsChecked="{Binding IsFriendlyStyle}" />
+
+                <RadioButton Content="{Binding IniStyleName}"
+                             GroupName="EditorStyle"
+                             IsChecked="{Binding IsIniStyle}" />
+
+                <TextBlock Margin="{tokens:Space Left=GroupBoxInset}"
+                           Classes="MutedText"
+                           Text="{Binding StyleDescription}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </controls:GroupBox>
+
+        <controls:GroupBox Header="Game launch"
+                           Padding="{StaticResource GroupBoxPadding}">
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
+                <CheckBox Content="Close launcher after the game starts"
+                          IsChecked="{Binding CloseAfterGameLaunch}" />
+
+                <TextBlock Margin="{tokens:Space Left=GroupBoxInset}"
+                           Classes="MutedText"
+                           TextWrapping="Wrap">
+                    <Run Text="When ticked, the launcher exits as soon as " /><Run FontFamily="{StaticResource FontFamilyMono}"
+                                                                                   Text="zoo.exe" /><Run Text=" reports started." />
+                </TextBlock>
+            </StackPanel>
+        </controls:GroupBox>
+
+        <layout:UniformStack HorizontalAlignment="Right"
+                             Margin="{tokens:Space Top=GapUnrelated}"
+                             Spacing="{StaticResource GapRelated}">
+            <Button Command="{Binding OkCommand}"
+                    Content="OK"
+                    IsDefault="True"
+                    Classes="DialogButton" />
+            <Button Command="{Binding CancelCommand}"
+                    Content="Cancel"
+                    IsCancel="True"
+                    Classes="DialogButton" />
+        </layout:UniformStack>
+    </StackPanel>
+</ClassicWindow>

@@ -1,0 +1,201 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonNexus.Desktop.Styles"
+               xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels.Dialogs"
+               xmlns:models="using:Erdmier.ZooTycoonNexus.Desktop.Models.IniConfig"
+               x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.Dialogs.RestorePreviousIniDialogView"
+               x:DataType="vm:RestorePreviousIniDialogViewModel"
+               Icon="/Assets/Win95Icons/sheetsanddocuments32.ico"
+               Title="  Restore Previous INI"
+               Width="620"
+               SizeToContent="Height"
+               CanResize="False"
+               WindowStartupLocation="CenterOwner"
+               ShowInTaskbar="False">
+    <ClassicWindow.Styles>
+        <!-- An INI key reads in the monospace key face; a Friendly-style name in words keeps the system face (ruling R9). -->
+        <Style Selector="TextBlock.Mono">
+            <Setter Property="FontFamily"
+                    Value="{StaticResource FontFamilyMono}" />
+        </Style>
+    </ClassicWindow.Styles>
+
+    <StackPanel Margin="{tokens:Space MarginDialog}"
+                Orientation="Vertical"
+                Spacing="{StaticResource GapUnrelated}">
+        <TextBlock Classes="MutedText"
+                   TextWrapping="Wrap">
+            <Run Text="Pick a previous version of " /><Run FontFamily="{StaticResource FontFamilyMono}"
+                                                           Text="zoo.ini" /><Run Text=" to restore. The current version is archived to history before the restore is applied." />
+        </TextBlock>
+
+        <TextBlock Foreground="{StaticResource AccentRed}"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                   Text="{Binding ErrorMessage}"
+                   TextWrapping="Wrap" />
+
+        <!-- Snapshot history, newest first -->
+        <DataGrid AutoGenerateColumns="False"
+                  CanUserReorderColumns="False"
+                  CanUserResizeColumns="False"
+                  CanUserSortColumns="False"
+                  Classes="InertHeaders"
+                  Height="140"
+                  IsReadOnly="True"
+                  ItemsSource="{Binding Rows}"
+                  SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+                  SelectionMode="Single">
+
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Captured"
+                                        Width="45*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="models:IniHistoryRow">
+                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                                       FontSize="{StaticResource FontSizeBase}"
+                                       Margin="{tokens:Space Horizontal=GapLabel}"
+                                       Text="{Binding CapturedText}"
+                                       VerticalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Binding="{Binding TriggerText}"
+                                    Header="Trigger"
+                                    Width="30*" />
+
+                <DataGridTemplateColumn Width="25*">
+                    <DataGridTemplateColumn.Header>
+                        <TextBlock HorizontalAlignment="Right"
+                                   Margin="{tokens:Space Horizontal=GapLabel}"
+                                   Text="Δ keys" />
+                    </DataGridTemplateColumn.Header>
+
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="models:IniHistoryRow">
+                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                                       HorizontalAlignment="Right"
+                                       Margin="{tokens:Space Horizontal=GapLabel}"
+                                       Text="{Binding DeltaText}"
+                                       VerticalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Caption row -->
+        <Grid ColumnDefinitions="*, Auto"
+              IsVisible="{Binding !HasError}">
+            <TextBlock Classes="MutedText"
+                       Text="Diff: values from the selected snapshot replace the current ones on restore." />
+
+            <TextBlock Grid.Column="1"
+                       Classes="MutedText"
+                       Text="{Binding ChangeCountText}" />
+        </Grid>
+
+        <!-- Differences of the selected snapshot: a header row and a scrolling list in a sunken frame, so the rows are not selectable -->
+        <ClassicBorderDecorator Background="{StaticResource InputBackground}"
+                                BorderStyle="Sunken"
+                                BorderThickness="2"
+                                Height="140"
+                                IsVisible="{Binding !HasError}">
+            <Panel>
+                <Grid IsVisible="{Binding !HasNoDifferences}"
+                      RowDefinitions="Auto, *">
+                    <!-- The header's width follows the rows' (the ItemsControl sits inside the viewport), so it stays aligned when the scrollbar shows -->
+                    <Border Background="{StaticResource Surface}"
+                            BorderBrush="{StaticResource MidShadow}"
+                            BorderThickness="0 0 0 1">
+                        <Grid HorizontalAlignment="Left"
+                              Width="{Binding Bounds.Width, ElementName=DiffItems}">
+                            <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
+                                  Margin="{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}"
+                                  TextElement.FontSize="{StaticResource FontSizeBase}">
+                                <TextBlock Text="Key" />
+
+                                <TextBlock Grid.Column="1"
+                                           Text="Current" />
+
+                                <TextBlock Grid.Column="2"
+                                           Text="Snapshot" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <ScrollViewer Grid.Row="1"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="DiffItems"
+                                      ItemsSource="{Binding DiffRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:IniHistoryDiffRow">
+                                    <StackPanel>
+                                        <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
+                                              Margin="{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}"
+                                              TextElement.FontSize="{StaticResource FontSizeBase}">
+                                            <TextBlock Classes.Mono="{Binding !UsesSystemFace}"
+                                                       TextWrapping="Wrap">
+                                                <Run Foreground="{StaticResource ForegroundMuted}"
+                                                     Text="{Binding SectionText}" /><Run Text="{Binding SeparatorText}" /><Run Text="{Binding KeyText}" />
+                                            </TextBlock>
+
+                                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                                                       Foreground="{StaticResource AccentMaroon}"
+                                                       Grid.Column="1"
+                                                       Text="{Binding CurrentText}" />
+
+                                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                                                       Foreground="{StaticResource AccentNavy}"
+                                                       Grid.Column="2"
+                                                       Text="{Binding SnapshotText}" />
+                                        </Grid>
+
+                                        <!-- 1 px dotted light-grey row separator (a Border cannot be dashed in Avalonia) -->
+                                        <Line ClipToBounds="True"
+                                              EndPoint="4000,0.5"
+                                              Height="1"
+                                              Stroke="{StaticResource RuleDotted}"
+                                              StrokeDashArray="1, 1"
+                                              StrokeThickness="1"
+                                              StartPoint="0,0.5" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+
+                <TextBlock FontStyle="Italic"
+                           HorizontalAlignment="Center"
+                           IsVisible="{Binding HasNoDifferences}"
+                           Margin="{tokens:Space GapUnrelated}"
+                           Classes="MutedText"
+                           Text="No differences — this snapshot matches the current state."
+                           TextAlignment="Center"
+                           VerticalAlignment="Top" />
+            </Panel>
+        </ClassicBorderDecorator>
+
+        <TextBlock FontSize="{StaticResource FontSizeBase}"
+                   Foreground="{StaticResource AccentMaroon}"
+                   IsVisible="{Binding HasKeptKeys}"
+                   Text="{Binding KeptKeysText}"
+                   TextWrapping="Wrap" />
+
+        <StackPanel HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="{StaticResource GapRelated}">
+            <Button Command="{Binding RestoreCommand}"
+                    Content="Restore"
+                    IsDefault="True"
+                    Classes="DialogButton" />
+
+            <Button Command="{Binding CancelCommand}"
+                    Content="Cancel"
+                    IsCancel="True"
+                    Classes="DialogButton" />
+        </StackPanel>
+    </StackPanel>
+</ClassicWindow>

@@ -4,7 +4,7 @@
 > **Date:** 2026-10-20
 > **Author:** Justinian
 > **Status:** Approved for implementation
-> **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §6.3, §7.3.2, §7.3.3, §7.6, §8.2, §9.3, §9.4, §9.5, §9.7
+> **Authoritative spec:** [1-zoo-tycoon-nexus-master-design.md](../1-zoo-tycoon-nexus-master-design.md) §6.3, §7.3.2, §7.3.3, §7.6, §8.2, §9.3, §9.4, §9.5, §9.7
 > **Deferred work taken:** DW-02 (Restore Previous INI dialogue), DW-03 (Restore defaults and Undo), DW-08 (Installation Info's History entries)
 > **Design reference:** [`HiFiPrototype/src/dialogs.jsx`](../../UserInterfaceDesign/HiFiPrototype/src/dialogs.jsx) `HistoryDialog` (lines 427–506);
 > [`HiFiPrototype/src/ini-config.jsx`](../../UserInterfaceDesign/HiFiPrototype/src/ini-config.jsx) `IniEditor` footer

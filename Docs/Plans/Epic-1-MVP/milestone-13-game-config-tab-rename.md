@@ -161,7 +161,7 @@ git commit -m "feat(✨): rename the INI Config tab to Game Config"
 
 **Files:**
 
-- Modify: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`
+- Modify: `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`
 - Modify: `Docs/UserInterfaceDesign/conventions.md:349` (the status-bar table's `(INI Config)` → `(Game Config)`)
 - Modify: `Docs/TestPlans/manual-end-to-end-tests.md`
 - Modify: `Docs/Ledgers/Epic-1-MVP/milestone-13-ledger.md`, this plan (ticks)
@@ -190,7 +190,7 @@ git commit -m "feat(✨): rename the INI Config tab to Game Config"
 - [x] **Step 5: Verify.** Run:
 
 ```bash
-rg -n "INI Config" Docs/Specs/1-zoo-tycoon-launcher-master-design.md Docs/UserInterfaceDesign/conventions.md Docs/TestPlans/manual-end-to-end-tests.md
+rg -n "INI Config" Docs/Specs/1-zoo-tycoon-nexus-master-design.md Docs/UserInterfaceDesign/conventions.md Docs/TestPlans/manual-end-to-end-tests.md
 ```
 
   Check by eye that every survivor is a revision-history row, a *Source* cell, a slice or milestone name, the "formerly" note, or a mock-up description. Check the

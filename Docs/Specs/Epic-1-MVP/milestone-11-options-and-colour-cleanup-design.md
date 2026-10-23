@@ -4,7 +4,7 @@
 > **Date:** 2026-10-21
 > **Author:** Justinian
 > **Status:** Approved for implementation (calls C1–C7 accepted)
-> **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §5.1, §5.2, §9.8, §9.10, §9.11, §9.12, §13.2
+> **Authoritative spec:** [1-zoo-tycoon-nexus-master-design.md](../1-zoo-tycoon-nexus-master-design.md) §5.1, §5.2, §9.8, §9.10, §9.11, §9.12, §13.2
 > **Deferred work taken:** DW-37 (rename Settings to Options), DW-39 (closed by dropping dark mode), DW-20 (colour tokens as bare strings)
 > **Design reference:** `Docs/UserInterfaceDesign/HiFiPrototype/src/dialogs.jsx` (`SettingsDialog`), `Docs/UserInterfaceDesign/conventions.md` §1
 > **Branch:** `feat/milestone-11-options-and-colour-cleanup`

@@ -156,7 +156,7 @@ by the language picker above.`; `sublang` — `Windows sub-language identifier (
 **Files:**
 - Modify: `Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Dialogs/RestorePreviousIniDialogView.axaml`, `ConfirmationPromptView.axaml`, `ErrorMessageView.axaml`,
   `SaveChangesPromptView.axaml`
-- Modify: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`, `Docs/UserInterfaceDesign/conventions.md`
+- Modify: `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`, `Docs/UserInterfaceDesign/conventions.md`
 
 - [x] **Step 1: History headers.** In the history `DataGrid`, set `CanUserResizeColumns="False"` and, in its existing `DataGridColumnHeader` style, set
   `IsHitTestVisible` to `False` so a click neither depresses nor resizes a header.

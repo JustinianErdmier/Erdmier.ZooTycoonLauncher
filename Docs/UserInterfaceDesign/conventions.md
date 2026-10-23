@@ -216,11 +216,12 @@ footer help are unchanged (§3.3).
 
 ### 3.6 Slider row
 
-A volume key in the Friendly style renders as a slider row in the control column: a `Grid` with columns `"*,Auto"` and `GapRelated` between them: a stretching `Slider` 0–100
+A volume key in the Friendly style renders as a slider row in the control column: a `Grid` with columns `"*,Auto"` and `GapRelated` between them: a `Slider` 0–100
 (`MinWidth="120"`, `MaxWidth="200"`, `SmallChange="1"`, `LargeChange="10"`, `TickFrequency="10"`, `TickPlacement="BottomRight"`) and a mono `TextBlock` (`MinWidth="48"`) reading
-the percentage (`75 %`), so the readout always fits the column. The muted hint under the label reads `Silent – Full`. Louder is to the right. The row takes the standard help wiring
-(§3.3): a Tab-focused slider keeps focus and the footer help while the arrow keys move it, and a pointer drag gives the focus back on release (`IniFieldFocusRelease.AfterCommit`,
-listening for handled events too because the thumb captures the pointer). No new token or style is involved.
+the percentage (`75 %`), so the readout always fits the column. In a left-aligned row the star column gives the slider only its `MinWidth`, so it sits at about 120 px and grows
+toward 200 px only when the control column is wider; the maintainer accepts that width. The muted hint under the label reads `Silent – Full`. Louder is to the right. The row takes
+the standard help wiring (§3.3): a Tab-focused slider keeps focus and the footer help while the arrow keys move it, and a pointer drag gives the focus back on release
+(`IniFieldFocusRelease.AfterCommit`, listening for handled events too because the thumb captures the pointer). No new token or style is involved.
 
 ---
 
@@ -298,6 +299,14 @@ Every modal dialogue ends with a horizontal button row aligned to the right. Uni
 
 Footer order from left to right matches the natural reading order: positive action(s) first, destructive action(s) second, dismissive action last. The prototype follows this and so
 does §9.
+
+### 5.1 Mutually exclusive menu items
+
+A menu pair that picks one of several states (View ▸ Config layout ▸ Friendly style / INI style) uses the Win9x radio bullet: each `MenuItem` sets `ToggleType="Radio"` and the same
+`GroupName`, and `IsChecked` binds `Mode=TwoWay` to a stored property on the view model, one per item (`IsFriendlyStyle`, `IsIniStyle`). The item writes its own check when clicked,
+so the properties must be reset from the source of truth, not left to follow the click: after every choice, successful or not, assign each property from the real state. A failed
+save then changes the property back and the binding pushes the bullet back; re-raising an unchanged value would be dropped and leave the wrong bullet. Each item also carries a
+`Command` that stores the choice, disabled while a save is in flight so a second click is not lost.
 
 ---
 

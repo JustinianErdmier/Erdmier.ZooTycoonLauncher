@@ -72,6 +72,12 @@ namespace Erdmier.ZooTycoonLauncher.Infrastructure.Persistence.Launcher.Migratio
                     b.Property<Guid?>("DefaultInstallationId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("IniEditorStyle")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Friendly");
+
                     b.Property<string>("LauncherStartupPreference")
                         .IsRequired()
                         .HasColumnType("TEXT");

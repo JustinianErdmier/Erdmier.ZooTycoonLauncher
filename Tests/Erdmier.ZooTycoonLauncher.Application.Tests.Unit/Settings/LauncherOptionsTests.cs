@@ -22,6 +22,33 @@ public sealed class LauncherOptionsTests
     }
 
     [ Fact ]
+    public async Task Get_ReturnsTheEditorStyle()
+    {
+        _repository.GetAsync(Arg.Any<CancellationToken>()).Returns(new LauncherSettings { IniEditorStyle = IniEditorStyle.Ini });
+
+        ErrorOr<LauncherOptions> result = await new GetLauncherOptionsHandler(_repository).Handle(new GetLauncherOptionsQuery(), CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        result.Value.EditorStyle.ShouldBe(IniEditorStyle.Ini);
+    }
+
+    [ Fact ]
+    public async Task Save_StoresTheEditorStyle()
+    {
+        LauncherSettings stored = new();
+
+        _repository.GetAsync(Arg.Any<CancellationToken>()).Returns(stored);
+
+        ErrorOr<Success> result = await new SaveLauncherOptionsHandler(_repository).Handle(
+            new SaveLauncherOptionsCommand(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, EditorStyle: IniEditorStyle.Ini),
+            CancellationToken.None);
+
+        result.IsError.ShouldBeFalse();
+        stored.IniEditorStyle.ShouldBe(IniEditorStyle.Ini);
+        await _repository.Received(requiredNumberOfCalls: 1).UpdateAsync(stored, Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
     public async Task Save_WritesBothValues_AndKeepsTheDefaultInstallation()
     {
         Guid             defaultId = Guid.CreateVersion7();
@@ -30,7 +57,7 @@ public sealed class LauncherOptionsTests
         _repository.GetAsync(Arg.Any<CancellationToken>()).Returns(stored);
 
         ErrorOr<Success> result = await new SaveLauncherOptionsHandler(_repository).Handle(
-            new SaveLauncherOptionsCommand(LauncherStartupPreference.LastPlayedInstallation, CloseAfterGameLaunch: true),
+            new SaveLauncherOptionsCommand(LauncherStartupPreference.LastPlayedInstallation, CloseAfterGameLaunch: true, EditorStyle: IniEditorStyle.Friendly),
             CancellationToken.None);
 
         result.IsError.ShouldBeFalse();
@@ -47,7 +74,7 @@ public sealed class LauncherOptionsTests
         _repository.GetAsync(Arg.Any<CancellationToken>()).Returns(new LauncherSettings());
 
         ErrorOr<Success> result = await new SaveLauncherOptionsHandler(_repository).Handle(
-            new SaveLauncherOptionsCommand(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false),
+            new SaveLauncherOptionsCommand(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, EditorStyle: IniEditorStyle.Friendly),
             CancellationToken.None);
 
         result.IsError.ShouldBeFalse();
@@ -70,7 +97,7 @@ public sealed class LauncherOptionsTests
         SaveLauncherOptionsHandler handler = new(_repository);
 
         await Should.ThrowAsync<InvalidOperationException>(async () => await handler.Handle(
-                                                               new SaveLauncherOptionsCommand(LauncherStartupPreference.NoInstallation, CloseAfterGameLaunch: true),
+                                                               new SaveLauncherOptionsCommand(LauncherStartupPreference.NoInstallation, CloseAfterGameLaunch: true, EditorStyle: IniEditorStyle.Friendly),
                                                                CancellationToken.None));
 
         stored.LauncherStartupPreference.ShouldBe(LauncherStartupPreference.DefaultInstallation);
@@ -79,6 +106,6 @@ public sealed class LauncherOptionsTests
 
     [ Fact ]
     public void Validator_NullPreference_Fails()
-        => new SaveLauncherOptionsValidator().Validate(new SaveLauncherOptionsCommand(StartupPreference: null!, CloseAfterGameLaunch: false))
+        => new SaveLauncherOptionsValidator().Validate(new SaveLauncherOptionsCommand(StartupPreference: null!, CloseAfterGameLaunch: false, EditorStyle: IniEditorStyle.Friendly))
                                              .Errors.ShouldContain(error => error.ErrorMessage == "Choose what the launcher opens at start-up.");
 }

@@ -17,9 +17,11 @@ public sealed class SaveLauncherOptionsHandler : ICommandHandler<SaveLauncherOpt
 
         LauncherStartupPreference oldPreference = settings.LauncherStartupPreference;
         bool                      oldClose      = settings.CloseAfterGameLaunch;
+        IniEditorStyle            oldStyle      = settings.IniEditorStyle;
 
         settings.LauncherStartupPreference = command.StartupPreference;
         settings.CloseAfterGameLaunch      = command.CloseAfterGameLaunch;
+        settings.IniEditorStyle            = command.EditorStyle;
 
         try
         {
@@ -30,6 +32,7 @@ public sealed class SaveLauncherOptionsHandler : ICommandHandler<SaveLauncherOpt
             // The tracked entity outlives this call, so a failed save must not leave the rejected values on it for the next read or save.
             settings.LauncherStartupPreference = oldPreference;
             settings.CloseAfterGameLaunch      = oldClose;
+            settings.IniEditorStyle            = oldStyle;
 
             throw;
         }

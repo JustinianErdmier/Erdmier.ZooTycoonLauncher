@@ -6,9 +6,9 @@ public sealed class OptionsDialogViewModelTests
 
     private readonly IMediator _mediator = Substitute.For<IMediator>();
 
-    private void ReturnsStored(LauncherStartupPreference preference, bool closeAfterGameLaunch)
+    private void ReturnsStored(LauncherStartupPreference preference, bool closeAfterGameLaunch, IniEditorStyle? editorStyle = null)
         => _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
-                    .Returns(new ValueTask<ErrorOr<LauncherOptions>>(new LauncherOptions(preference, closeAfterGameLaunch)));
+                    .Returns(new ValueTask<ErrorOr<LauncherOptions>>(new LauncherOptions(preference, closeAfterGameLaunch, editorStyle ?? IniEditorStyle.Friendly)));
 
     private void ReturnsSave(ErrorOr<Success> result)
         => _mediator.Send(Arg.Any<SaveLauncherOptionsCommand>(), Arg.Any<CancellationToken>())
@@ -54,6 +54,21 @@ public sealed class OptionsDialogViewModelTests
                                                                            && !command.CloseAfterGameLaunch),
                              Arg.Any<CancellationToken>());
         closed.ShouldBe(expected: 1);
+    }
+
+    [ Fact ]
+    public async Task Ok_PassesBackTheLoadedEditorStyle()
+    {
+        ReturnsStored(LauncherStartupPreference.DefaultInstallation, closeAfterGameLaunch: false, editorStyle: IniEditorStyle.Ini);
+        ReturnsSave(Result.Success);
+
+        OptionsDialogViewModel viewModel = new(_mediator, _dialogs, new RecordingLogger<OptionsDialogViewModel>());
+
+        await viewModel.InitialiseAsync();
+        await viewModel.OkCommand.ExecuteAsync(parameter: null);
+
+        await _mediator.Received(requiredNumberOfCalls: 1)
+                       .Send(Arg.Is<SaveLauncherOptionsCommand>(command => command.EditorStyle == IniEditorStyle.Ini), Arg.Any<CancellationToken>());
     }
 
     [ Fact ]

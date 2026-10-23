@@ -15,6 +15,9 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
 
     private readonly IMediator _mediator;
 
+    // Passed back unchanged on save until the Options dialogue offers a choice, so OK never resets a stored style.
+    private IniEditorStyle _loadedEditorStyle = IniEditorStyle.Friendly;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="dialogs">The dialogue service, used to report a failed save.</param>
@@ -115,6 +118,7 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
 
             StartupPreference    = result.Value.StartupPreference;
             CloseAfterGameLaunch = result.Value.CloseAfterGameLaunch;
+            _loadedEditorStyle   = result.Value.EditorStyle;
             IsLoaded             = true;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -132,7 +136,7 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
 
         try
         {
-            ErrorOr<Success> result = await _mediator.Send(new SaveLauncherOptionsCommand(StartupPreference, CloseAfterGameLaunch), cancellationToken);
+            ErrorOr<Success> result = await _mediator.Send(new SaveLauncherOptionsCommand(StartupPreference, CloseAfterGameLaunch, _loadedEditorStyle), cancellationToken);
 
             if (result.IsError)
             {

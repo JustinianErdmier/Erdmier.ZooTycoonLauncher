@@ -164,8 +164,8 @@ public static class IniEditorFriendlyCatalogue
                     [
                         new IniFieldDescriptor(Id: null, Label: "Game language", IniControlKind.LanguagePicker, Hint: "The language of the game's text",
                                                Help: "The language the game's text appears in."),
-                        Hidden(IniEditorCatalogue.LanguageId, help: "Windows primary language identifier (LANGID). Set by the language picker."),
-                        Hidden(IniEditorCatalogue.SubLanguageId, help: "Windows sub-language identifier (SUBLANGID). Set by the language picker.")
+                        Hidden(IniEditorCatalogue.LanguageId, label: "Language code", help: "Windows primary language identifier (LANGID). Set by the language picker."),
+                        Hidden(IniEditorCatalogue.SubLanguageId, label: "Region code", help: "Windows sub-language identifier (SUBLANGID). Set by the language picker.")
                     ])
             ]),
         new(Section: "troubleshooting",
@@ -216,8 +216,8 @@ public static class IniEditorFriendlyCatalogue
     private static IniFieldDescriptor Slider(string section, string key, string label, string help, IniValueConversion conversion)
         => new(new IniKeyId(section, key), label, IniControlKind.Slider, VolumeHint, help) { Conversion = conversion };
 
-    private static IniFieldDescriptor Hidden(IniKeyId id, string help)
-        => new(id, id.Key, IniControlKind.Number, Hint: null, help)
+    private static IniFieldDescriptor Hidden(IniKeyId id, string label, string help)
+        => new(id, label, IniControlKind.Number, Hint: null, help)
         {
             IsReadOnly = true,
             IsHidden   = true

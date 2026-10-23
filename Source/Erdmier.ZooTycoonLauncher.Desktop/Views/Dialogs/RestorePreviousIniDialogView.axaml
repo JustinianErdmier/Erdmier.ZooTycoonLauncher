@@ -128,9 +128,9 @@
                                               Margin="{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}"
                                               TextElement.FontFamily="{StaticResource FontFamilyMono}"
                                               TextElement.FontSize="{StaticResource FontSizeBase}">
-                                            <TextBlock>
+                                            <TextBlock TextWrapping="Wrap">
                                                 <Run Foreground="{StaticResource ForegroundMuted}"
-                                                     Text="{Binding SectionText}" /><Run Text="/" /><Run Text="{Binding KeyText}" />
+                                                     Text="{Binding SectionText}" /><Run Text="{Binding SeparatorText}" /><Run Text="{Binding KeyText}" />
                                             </TextBlock>
 
                                             <TextBlock Foreground="{StaticResource AccentMaroon}"

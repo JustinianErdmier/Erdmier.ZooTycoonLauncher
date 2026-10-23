@@ -234,11 +234,11 @@ field VM's `CodesText` if it changes shape); the blank-line nits: `ViewModels/Ta
 `NullIniEditorStyleState`), `LauncherOptionsTests.cs`, `IniSliderFieldViewModelTests.cs`, `IniEditorStyleHeadlessTests.cs`, `Docs/TestPlans/manual-end-to-end-tests.md`
 (blank line before the *Editor Styles* case's closing `---`).
 
-- [ ] **Step 1: Failing tests:** `CashHelp_IsTheSameMeaningInBothLayouts` (each cash key's help in both layouts speaks of the new-zoo starting cash, per spec §6.6:
+- [x] **Step 1: Failing tests:** `CashHelp_IsTheSameMeaningInBothLayouts` (each cash key's help in both layouts speaks of the new-zoo starting cash, per spec §6.6:
   starting cash = default offered, changeable; step = how much the starting cash moves per step; min/max = the least/most starting cash that can be chosen);
   `LanguageCodes_SitOnTheirOwnLine` (the codes text is two lines: *Windows language codes:* then *LANGID n · SUBLANGID n*).
-- [ ] **Step 2: Run** → fail. **Step 3: Implement** spec §6.6 (cash help wording in both catalogues; the codes line split so the pair never wraps apart) and the nits.
-- [ ] **Step 4: Run** Desktop + Architecture + full build → pass. **Commit** — `fix(🐛): correct the cash help and keep the language codes together`
+- [x] **Step 2: Run** → fail. **Step 3: Implement** spec §6.6 (cash help wording in both catalogues; the codes line split so the pair never wraps apart) and the nits.
+- [x] **Step 4: Run** Desktop + Architecture + full build → pass. **Commit** — `fix(🐛): correct the cash help and keep the language codes together`
 
 ---
 
@@ -249,13 +249,13 @@ tests in `Tests/…Desktop.Tests.Unit/` (the MainWindowViewModel test files).
 
 **Interfaces — Consumes:** `IIniEditorStyleState` (`Style`, `StyleChanged`), `GetLauncherOptionsQuery`, `SaveLauncherOptionsCommand`, `IDialogService.ShowErrorAsync`.
 
-- [ ] **Step 1: Failing tests:** `ChooseFriendlyStyle_SavesAndApplies` / `ChooseIniStyle_SavesAndApplies` (loads the stored options, saves them with only the style
+- [x] **Step 1: Failing tests:** `ChooseFriendlyStyle_SavesAndApplies` / `ChooseIniStyle_SavesAndApplies` (loads the stored options, saves them with only the style
   changed, then sets `IIniEditorStyleState.Style`); `ChooseStyle_FailedSave_ShowsErrorAndChangesNothing`; `StyleMenuChecks_FollowTheState` (`IsFriendlyStyle` /
   `IsIniStyle` raise change notifications when the state changes from elsewhere, e.g. Options); choosing the already-active style does nothing.
-- [ ] **Step 2: Run** → fail. **Step 3: Implement** spec §6.6: the two items as a Win9x radio pair (`ToggleType="Radio"`, one `GroupName`, `IsChecked` bound
+- [x] **Step 2: Run** → fail. **Step 3: Implement** spec §6.6: the two items as a Win9x radio pair (`ToggleType="Radio"`, one `GroupName`, `IsChecked` bound
   one-way to the state) bound to two commands; enabled whenever the menu is visible. `MainWindow.axaml` must stay ≤ 100 lines (the architecture test): keep the
   maintainer's attribute-per-line formatting and recover the lines elsewhere (blank lines, or moving the menu into a view of its own if that is the only way).
-- [ ] **Step 4: Run** Desktop + Architecture + full build → pass. **Commit** — `feat(✨): switch the INI editor style from the View menu`
+- [x] **Step 4: Run** Desktop + Architecture + full build → pass. **Commit** — `feat(✨): switch the INI editor style from the View menu`
 
 ---
 
@@ -263,21 +263,21 @@ tests in `Tests/…Desktop.Tests.Unit/` (the MainWindowViewModel test files).
 
 **Files:** `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`, `Docs/UserInterfaceDesign/conventions.md`.
 
-- [ ] **Step 1:** SDD §9.10 — add the **View** menu (*Config layout ▸ Friendly style / INI style*, radio bullet, saves and applies at once) and drop "`View` menus
+- [x] **Step 1:** SDD §9.10 — add the **View** menu (*Config layout ▸ Friendly style / INI style*, radio bullet, saves and applies at once) and drop "`View` menus
   are not present"; §9.3.3 — mention the View menu; §9.7 — the Friendly key column uses the system face (ruling R9); §11.4 — list every test this milestone added
   (incl. the final wave's Page Up / Down, layout parity, footnote, dispose, options-failure and off-step tests, and Tasks 9–10's); the cash help and language line
   where described; extend the 1.16 revision row. conventions §3.6 — the slider sits at its 120 px `MinWidth` in a row (as built; the maintainer is happy with
   it), up to `MaxWidth` 200; §5 / menus — the radio-bullet pattern for a mutually exclusive menu pair. Prose ≤ 180.
-- [ ] **Step 2: Commit** — `docs(📝): bring the SDD and conventions up to date with the View menu and the final wave`
+- [x] **Step 2: Commit** — `docs(📝): bring the SDD and conventions up to date with the View menu and the final wave`
 
 ---
 
 ## Task 12: Check the follow-ups in the running app (controller)
 
-- [ ] **Step 1:** New Zoos page cash help (both styles); the language codes line on its own line; View ▸ Config layout switches both ways with the bullet
+- [x] **Step 1:** New Zoos page cash help (both styles); the language codes line on its own line; View ▸ Config layout switches both ways with the bullet
   following, and Options' radios agree afterwards. Restore the style left in use.
 
 ## Verification (follow-ups)
 
-- [ ] Clean build with 0 warnings; every test project passes.
-- [ ] Task 12 checked in the running app.
+- [x] Clean build with 0 warnings; every test project passes.
+- [x] Task 12 checked in the running app.

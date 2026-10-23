@@ -23,6 +23,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IMessenger _messenger;
 
+    private readonly IIniEditorStyleState _styleState;
+
     private readonly ILogger<IniEditorViewModel> _iniEditorLogger;
 
     private readonly ILogger<IniPlaceholderViewModel> _iniPlaceholderLogger;
@@ -42,6 +44,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="iniTabLogger">Logger passed on to the INI Config tab of each <see cref="PlayViewModel" />.</param>
     /// <param name="iniEditorLogger">Logger passed on to the INI editor of each <see cref="PlayViewModel" />.</param>
     /// <param name="iniPlaceholderLogger">Logger passed on to the INI tab's No INI placeholder of each <see cref="PlayViewModel" />.</param>
+    /// <param name="styleState">The shared INI editor style, passed on to the INI Config tab of each <see cref="PlayViewModel" />.</param>
     public MainWindowViewModel(IMediator                          mediator,
                                IApplicationLifecycle              lifecycle,
                                IDialogService                     dialogs,
@@ -51,7 +54,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                ILogger<PlayViewModel>             playLogger,
                                ILogger<IniConfigTabViewModel>     iniTabLogger,
                                ILogger<IniEditorViewModel>        iniEditorLogger,
-                               ILogger<IniPlaceholderViewModel>   iniPlaceholderLogger)
+                               ILogger<IniPlaceholderViewModel>   iniPlaceholderLogger,
+                               IIniEditorStyleState               styleState)
     {
         _mediator   = mediator;
         _lifecycle  = lifecycle;
@@ -64,6 +68,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _iniTabLogger         = iniTabLogger;
         _iniEditorLogger      = iniEditorLogger;
         _iniPlaceholderLogger = iniPlaceholderLogger;
+        _styleState           = styleState;
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
@@ -395,6 +400,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                  _iniEditorLogger,
                                                                  _iniPlaceholderLogger,
                                                                  ct => RunBootAsync(result.ActiveInstallation!.Id, ct, PlayViewModel.IniConfigTabIndex),
+                                                                 _styleState,
                                                                  iniErrorMessage: result.IniErrorMessage,
                                                                  writeAccess: result.WriteAccess,
                                                                  initialTabIndex: initialTabIndex),
@@ -410,6 +416,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                 _iniEditorLogger,
                                                                 _iniPlaceholderLogger,
                                                                 ct => RunBootAsync(result.ActiveInstallation!.Id, ct, PlayViewModel.IniConfigTabIndex),
+                                                                _styleState,
                                                                 iniErrorMessage: result.IniErrorMessage,
                                                                 writeAccess: result.WriteAccess,
                                                                 initialTabIndex: initialTabIndex),

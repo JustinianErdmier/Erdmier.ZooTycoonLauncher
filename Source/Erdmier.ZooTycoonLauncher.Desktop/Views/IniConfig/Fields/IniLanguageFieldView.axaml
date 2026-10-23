@@ -4,15 +4,21 @@
              xmlns:models="using:Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.Fields.IniLanguageFieldView"
              x:DataType="vm:IniLanguageFieldViewModel">
-    <ComboBox DropDownClosed="OnDropDownClosed"
-              ItemsSource="{Binding Options}"
-              MaxWidth="260"
-              MinWidth="200"
-              SelectedItem="{Binding SelectedOption}">
-        <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="models:IniLanguageOption">
-                <TextBlock Text="{Binding Label}" />
-            </DataTemplate>
-        </ComboBox.ItemTemplate>
-    </ComboBox>
+    <StackPanel Spacing="{StaticResource GapRelated}">
+        <ComboBox DropDownClosed="OnDropDownClosed"
+                  ItemsSource="{Binding Options}"
+                  MaxWidth="260"
+                  MinWidth="200"
+                  SelectedItem="{Binding SelectedOption}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="models:IniLanguageOption">
+                    <TextBlock Text="{Binding Label}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                   IsVisible="{Binding ShowCodesText}"
+                   Text="{Binding CodesText}" />
+    </StackPanel>
 </UserControl>

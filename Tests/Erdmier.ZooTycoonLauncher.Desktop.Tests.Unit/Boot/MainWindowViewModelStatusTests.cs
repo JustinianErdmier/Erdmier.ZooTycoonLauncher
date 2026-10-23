@@ -73,5 +73,6 @@ public sealed class MainWindowViewModelStatusTests
                NullLogger<PlayViewModel>.Instance,
                NullLogger<IniConfigTabViewModel>.Instance,
                NullLogger<IniEditorViewModel>.Instance,
-               NullLogger<IniPlaceholderViewModel>.Instance);
+               NullLogger<IniPlaceholderViewModel>.Instance,
+               new IniEditorStyleState());
 }

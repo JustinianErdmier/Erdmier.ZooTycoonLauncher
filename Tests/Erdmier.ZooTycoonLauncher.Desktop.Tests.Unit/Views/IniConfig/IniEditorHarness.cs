@@ -35,12 +35,15 @@ internal sealed class IniEditorHarness
     public IInputElement? FocusedElement => Window.FocusManager?.GetFocusedElement();
 
     /// <summary>Shows the editor in a new headless window and lets it lay out.</summary>
+    /// <param name="style">The editor style; the INI style by default, which the focus tests drive by key.</param>
     /// <returns>The harness.</returns>
-    public static IniEditorHarness Show()
+    public static IniEditorHarness Show(IniEditorStyle? style = null)
     {
+        style ??= IniEditorStyle.Ini;
+
         IniEditorViewModel editor = new(Guid.CreateVersion7(), Substitute.For<IMediator>(), Substitute.For<IDialogService>(),
                                         IniEditorTestData.Result(("user", "fullscreen", "1"), ("user", "screenwidth", "800")),
-                                        NullLogger<IniEditorViewModel>.Instance);
+                                        NullLogger<IniEditorViewModel>.Instance, style);
 
         IniEditorView view = new() { DataContext = editor };
 

@@ -75,6 +75,15 @@ public abstract class IniKeyedFieldViewModel : IniFieldViewModel
         return true;
     }
 
+    /// <summary>Sets the control to an edited raw value, keeping the baseline; used to carry a pending edit across a rebuild of the editor.</summary>
+    /// <param name="raw">The raw value the row held as an edit.</param>
+    public void ApplyEdit(string raw)
+    {
+        ApplyValue(raw);
+
+        NotifyValueChanged();
+    }
+
     /// <summary>Sets the control from an effective raw value.</summary>
     /// <param name="effectiveValue">The value to show.</param>
     protected abstract void ApplyValue(string? effectiveValue);

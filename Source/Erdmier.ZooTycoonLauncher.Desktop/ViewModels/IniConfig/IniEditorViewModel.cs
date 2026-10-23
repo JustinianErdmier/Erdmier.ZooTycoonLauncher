@@ -28,36 +28,43 @@ public sealed partial class IniEditorViewModel : ViewModelBase
     /// <param name="dialogs">Chrome service for the error dialogue.</param>
     /// <param name="initial">The values to load.</param>
     /// <param name="logger">Logger for save, reload and restore failures.</param>
-    public IniEditorViewModel(Guid installationId, IMediator mediator, IDialogService dialogs, IniConfigResult initial, ILogger<IniEditorViewModel> logger)
-        : this(installationId, dialogs, initial, logger)
+    /// <param name="style">The style to render in: the INI sections or the Friendly pages.</param>
+    public IniEditorViewModel(Guid                        installationId,
+                              IMediator                   mediator,
+                              IDialogService              dialogs,
+                              IniConfigResult             initial,
+                              ILogger<IniEditorViewModel> logger,
+                              IniEditorStyle              style)
+        : this(installationId, dialogs, initial, logger, style)
         => _mediator = mediator;
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public IniEditorViewModel()
-        : this(Guid.Empty, new NoOpDialogService(), new IniConfigResult(new Dictionary<IniKeyId, string?>(), DateTime.UtcNow, HistoricalCount: 0),
-               NullLogger<IniEditorViewModel>.Instance)
+        : this(Guid.Empty,
+               new NoOpDialogService(),
+               new IniConfigResult(new Dictionary<IniKeyId, string?>(), DateTime.UtcNow, HistoricalCount: 0),
+               NullLogger<IniEditorViewModel>.Instance,
+               IniEditorStyle.Ini)
     { }
 
     // Mediator-less core (the GeneralTabViewModel pattern): the designer leaves _mediator null, which disables Save, Reset and Restore defaults.
-    private IniEditorViewModel(Guid installationId, IDialogService dialogs, IniConfigResult initial, ILogger<IniEditorViewModel> logger)
+    private IniEditorViewModel(Guid installationId, IDialogService dialogs, IniConfigResult initial, ILogger<IniEditorViewModel> logger, IniEditorStyle style)
     {
         _installationId = installationId;
         _dialogs        = dialogs;
         _logger         = logger;
 
-        Sections        = IniFieldFactory.CreateSections();
+        Sections        = IniFieldFactory.CreateSections(style);
         SelectedSection = Sections[0];
 
-        foreach (IniFieldViewModel field in AllFields)
-        {
-            field.PropertyChanged += OnFieldPropertyChanged;
-        }
+        WireFields();
 
         Load(initial);
     }
 
-    /// <summary>The seven sections, in SDD §9.3 order.</summary>
-    public IReadOnlyList<IniSectionViewModel> Sections { get; }
+    /// <summary>The seven INI sections (SDD §9.3 order) or the eight Friendly pages (spec §6.1 order).</summary>
+    [ ObservableProperty ]
+    public partial IReadOnlyList<IniSectionViewModel> Sections { get; private set; }
 
     /// <summary>The section shown in the form pane.</summary>
     [ ObservableProperty ]
@@ -117,6 +124,56 @@ public sealed partial class IniEditorViewModel : ViewModelBase
             if (field.Id is { } id)
             {
                 field.Load(result.Values.GetValueOrDefault(id));
+            }
+        }
+
+        RaiseDirtyChanged();
+    }
+
+    /// <summary>
+    ///     Re-renders the editor in another style without touching the file or sending a command. Each keyed row's baseline and pending edit are captured by key, the sections
+    ///     are rebuilt from the new layout, the baselines are loaded and the edits re-applied, so the editor stays dirty exactly as before (spec §7). The first section or page
+    ///     is then selected (spec C7), and any hover or focus held by the old rows is dropped.
+    /// </summary>
+    /// <param name="style">The style to render in.</param>
+    public void ApplyStyle(IniEditorStyle style)
+    {
+        Dictionary<IniKeyId, (string? Baseline, string? Edit)> captured = [];
+
+        foreach (IniKeyedFieldViewModel field in AllFields.OfType<IniKeyedFieldViewModel>())
+        {
+            if (field.Id is { } id)
+            {
+                captured[id] = (field.Baseline, field.TryGetEdit(out string? raw) ? raw : null);
+            }
+        }
+
+        foreach (IniFieldViewModel field in AllFields)
+        {
+            field.PropertyChanged -= OnFieldPropertyChanged;
+        }
+
+        // The old rows leave the tree with the old sections; their hover and focus must not linger in the footer.
+        ClearActiveRow();
+
+        Sections        = IniFieldFactory.CreateSections(style);
+        SelectedSection = Sections[0];
+
+        WireFields();
+
+        foreach (IniKeyedFieldViewModel field in AllFields.OfType<IniKeyedFieldViewModel>())
+        {
+            if (field.Id is not { } id
+                || !captured.TryGetValue(id, out (string? Baseline, string? Edit) state))
+            {
+                continue;
+            }
+
+            field.Load(state.Baseline);
+
+            if (state.Edit is { } edit)
+            {
+                field.ApplyEdit(edit);
             }
         }
 
@@ -218,7 +275,17 @@ public sealed partial class IniEditorViewModel : ViewModelBase
 
     // A keyboard section switch can move the visual tree's focus away from the hovered/focused row without it ever raising PointerExited (or losing focus in the way
     // OnFieldPropertyChanged expects), leaving the footer's help line stuck over "● Unsaved changes"; clearing it here whenever the section changes closes that gap.
-    partial void OnSelectedSectionChanged(IniSectionViewModel value)
+    partial void OnSelectedSectionChanged(IniSectionViewModel value) => ClearActiveRow();
+
+    private void WireFields()
+    {
+        foreach (IniFieldViewModel field in AllFields)
+        {
+            field.PropertyChanged += OnFieldPropertyChanged;
+        }
+    }
+
+    private void ClearActiveRow()
     {
         // Otherwise the old row's flags stay true, and the first hover or focus on that row after switching back raises no change (its value already matches), so
         // the footer never picks the help back up.

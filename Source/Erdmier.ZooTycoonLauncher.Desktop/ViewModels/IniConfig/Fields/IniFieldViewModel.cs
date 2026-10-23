@@ -14,6 +14,8 @@ public abstract partial class IniFieldViewModel : ViewModelBase
         Label = descriptor.Label;
         Hint  = descriptor.Hint;
         Help  = descriptor.Help;
+
+        IsHidden = descriptor.IsHidden;
     }
 
     /// <summary>The key the row edits, or <see langword="null" /> for a derived row (the language picker).</summary>
@@ -30,6 +32,29 @@ public abstract partial class IniFieldViewModel : ViewModelBase
 
     /// <summary>The help text: the row tooltip and the footer line while the row is hovered or focused.</summary>
     public string Help { get; }
+
+    /// <summary>
+    ///     Whether the row exists only to carry its key's value and edits and is rendered nowhere (the Friendly layout's language codes, which the picker drives).
+    /// </summary>
+    public bool IsHidden { get; }
+
+    /// <summary>Whether the editor is in the INI style: the label and hint use the monospace key face. Set by <see cref="IniFieldFactory" /> when it builds the row.</summary>
+    public bool IsIniStyle { get; set; }
+
+    /// <summary>Whether the row's own control carries the label, so the row has no left-hand label column (a Friendly style check box, spec C4).</summary>
+    public virtual bool UsesCaptionAsLabel => false;
+
+    /// <summary>Whether the row has a left-hand label column.</summary>
+    public bool ShowLabelColumn => !UsesCaptionAsLabel;
+
+    /// <summary>Whether the hint shows under the row's control, because the row has no label column to carry it.</summary>
+    public bool ShowHintBelowControl => !ShowLabelColumn && HasHint;
+
+    /// <summary>The grid column the row's control sits in.</summary>
+    public int ControlColumn => ShowLabelColumn ? 1 : 0;
+
+    /// <summary>The number of grid columns the row's control spans.</summary>
+    public int ControlColumnSpan => ShowLabelColumn ? 1 : 2;
 
     /// <summary>Whether the pointer is over the row; set by <c>IniSectionView</c>, observed by the editor to drive the footer help line.</summary>
     [ ObservableProperty ]

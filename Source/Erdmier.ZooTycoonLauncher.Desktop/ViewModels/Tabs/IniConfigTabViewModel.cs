@@ -5,13 +5,15 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 ///     editor reflects anything the game wrote while the launcher stayed open; a failed load is retried on the next activation. When a reload fails while the editor already
 ///     holds pending edits, the editor stays on screen (never dropping unsaved work) and the failure is shown as an error dialogue instead.
 /// </summary>
-public sealed partial class IniConfigTabViewModel : ViewModelBase
+public sealed partial class IniConfigTabViewModel : ViewModelBase, IDisposable
 {
     private readonly IDialogService _dialogs;
 
     private readonly ILogger<IniEditorViewModel> _editorLogger;
 
     private readonly bool _hasIni;
+
+    private readonly IIniEditorStyleState _styleState;
 
     private readonly Guid _installationId;
 
@@ -20,6 +22,8 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
     private readonly IMediator? _mediator;
 
     private Task? _activation;
+
+    private bool _hasLoadedStyle;
 
     private IniEditorViewModel? _editor;
 
@@ -32,6 +36,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
     /// <param name="editorLogger">Logger handed to the editor this tab creates.</param>
     /// <param name="placeholderLogger">Logger handed to the No INI placeholder's Create / Locate actions.</param>
     /// <param name="reopenOnIniTabAsync">Re-boots the open installation and reopens on this tab (called after a successful Create / Locate).</param>
+    /// <param name="styleState">The shared INI editor style; the editor this tab creates follows it live.</param>
     /// <param name="writeAccess">The boot's write-access probe result; a read-only result shows the warning strip above the tab's content.</param>
     public IniConfigTabViewModel(InstallationSummary              installation,
                                  string?                          iniErrorMessage,
@@ -41,10 +46,12 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
                                  ILogger<IniEditorViewModel>      editorLogger,
                                  ILogger<IniPlaceholderViewModel> placeholderLogger,
                                  Func<CancellationToken, Task>    reopenOnIniTabAsync,
+                                 IIniEditorStyleState             styleState,
                                  InstallationWriteAccess          writeAccess)
         : this(installation.Id,
                installation.Validity.HasIni,
                dialogs,
+               styleState,
                logger,
                editorLogger,
                InitialContent(installation, iniErrorMessage, mediator, dialogs, reopenOnIniTabAsync, placeholderLogger))
@@ -59,6 +66,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
         : this(Guid.Empty,
                hasIni: true,
                new NoOpDialogService(),
+               new IniEditorStyleState(),
                NullLogger<IniConfigTabViewModel>.Instance,
                NullLogger<IniEditorViewModel>.Instance,
                new IniEditorViewModel())
@@ -67,6 +75,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
     private IniConfigTabViewModel(Guid                           installationId,
                                   bool                           hasIni,
                                   IDialogService                 dialogs,
+                                  IIniEditorStyleState           styleState,
                                   ILogger<IniConfigTabViewModel> logger,
                                   ILogger<IniEditorViewModel>    editorLogger,
                                   ViewModelBase                  content)
@@ -74,10 +83,13 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
         _installationId = installationId;
         _hasIni         = hasIni;
         _dialogs        = dialogs;
+        _styleState     = styleState;
         _logger         = logger;
         _editorLogger   = editorLogger;
 
         Content = content;
+
+        _styleState.StyleChanged += OnStyleChanged;
     }
 
     /// <summary>The editor or a placeholder.</summary>
@@ -117,6 +129,9 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
         return _activation.WaitAsync(cancellationToken);
     }
 
+    /// <summary>Stops following the shared editor style, so a tab the launcher has navigated away from is no longer re-rendered by Options.</summary>
+    public void Dispose() => _styleState.StyleChanged -= OnStyleChanged;
+
     /// <summary>Saves the editor's edits (used by the pending-changes guard).</summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns><see langword="true" /> when nothing is left unsaved.</returns>
@@ -154,7 +169,9 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
 
             if (_editor is null)
             {
-                _editor = new IniEditorViewModel(_installationId, mediator, _dialogs, result.Value, _editorLogger);
+                await EnsureStyleLoadedAsync(mediator, cancellationToken);
+
+                _editor = new IniEditorViewModel(_installationId, mediator, _dialogs, result.Value, _editorLogger, _styleState.Style);
 
                 _editor.PropertyChanged += OnEditorPropertyChanged;
             }
@@ -173,6 +190,40 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase
             await ReportUnreadableAsync(placeholderMessage: ex.Message, dialogDescription: $"zoo.ini could not be reloaded: {ex.Message}");
         }
     }
+
+    // The boot does not load the launcher options, so the first editor of this tab reads the stored style itself, once, before it is built. A failure keeps the style already in
+    // force: the editor is still usable in either style, and the options dialogue reports its own errors.
+    private async Task EnsureStyleLoadedAsync(IMediator mediator, CancellationToken cancellationToken)
+    {
+        if (_hasLoadedStyle)
+        {
+            return;
+        }
+
+        _hasLoadedStyle = true;
+
+        try
+        {
+            ErrorOr<LauncherOptions> options = await mediator.Send(new GetLauncherOptionsQuery(), cancellationToken);
+
+            if (!options.IsError
+                && options.Value is { } value)
+            {
+                _styleState.Style = value.EditorStyle;
+            }
+            else if (options.IsError)
+            {
+                _logger.LogWarning(message: "The INI Config tab could not read the editor style: {Error}", options.FirstError.Description);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, message: "The INI Config tab could not read the editor style");
+        }
+    }
+
+    // A style change from Options re-renders the open editor in place: no command, no reload; the editor carries its pending edits across.
+    private void OnStyleChanged(object? sender, EventArgs eventArgs) => _editor?.ApplyStyle(_styleState.Style);
 
     // A reload can fail while the editor already holds pending edits (the user started typing while the reload was in flight); dropping the editor for the placeholder would
     // silently discard that work, so the editor stays on screen and the failure is surfaced as a dialogue instead.

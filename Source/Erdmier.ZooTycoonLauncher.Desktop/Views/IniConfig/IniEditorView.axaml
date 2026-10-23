@@ -4,6 +4,14 @@
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.IniEditorView"
              x:DataType="vm:IniEditorViewModel">
+    <UserControl.Styles>
+        <!-- The INI style lists its sections by their bracketed names in the monospace key face; the Friendly style leaves the system face. -->
+        <Style Selector="TextBlock.Mono">
+            <Setter Property="FontFamily"
+                    Value="{StaticResource FontFamilyMono}" />
+        </Style>
+    </UserControl.Styles>
+
     <Grid ColumnDefinitions="170,*"
           ColumnSpacing="{StaticResource GapRelated}"
           Margin="{tokens:Space MarginDialog}"
@@ -12,11 +20,20 @@
         <TextBlock Foreground="{StaticResource ForegroundMuted}"
                    Grid.Column="0"
                    Grid.Row="0"
+                   IsVisible="{Binding SelectedSection.IsIniStyle}"
                    Text="Section" />
 
         <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                   Grid.Column="0"
+                   Grid.Row="0"
+                   IsVisible="{Binding SelectedSection.IsFriendlyStyle}"
+                   Text="Page" />
+
+        <!-- The Friendly style shows the description in the page header, so only the INI style repeats it here. -->
+        <TextBlock Foreground="{StaticResource ForegroundMuted}"
                    Grid.Column="1"
                    Grid.Row="0"
+                   IsVisible="{Binding SelectedSection.IsIniStyle}"
                    Text="{Binding SelectedSection.Descriptor}" />
 
         <ListBox Grid.Column="0"
@@ -27,8 +44,8 @@
                  SelectionMode="AlwaysSelected">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:IniSectionViewModel">
-                    <TextBlock FontFamily="{StaticResource FontFamilyMono}"
-                               Text="{Binding Header}" />
+                    <TextBlock Classes.Mono="{Binding IsIniStyle}"
+                               Text="{Binding Title}" />
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

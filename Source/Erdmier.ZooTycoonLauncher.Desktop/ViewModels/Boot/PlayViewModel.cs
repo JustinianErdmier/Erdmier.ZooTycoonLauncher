@@ -6,7 +6,7 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 ///     identical layout, so there is one view and one view model. The flag is carried down into the tab view models, which render the difference. Routes launch outcomes from
 ///     the General tab to chrome capabilities. Implements <see cref="IPendingChangesGuard" /> for the INI Config tab's unsaved edits. SDD §7.10, §9.2.
 /// </summary>
-public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
+public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard, IDisposable
 {
     /// <summary>The <see cref="SelectedTabIndex" /> of the INI Config tab.</summary>
     public const int IniConfigTabIndex = 1;
@@ -34,6 +34,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
     /// <param name="iniEditorLogger">Logger passed on to the INI editor the tab creates.</param>
     /// <param name="iniPlaceholderLogger">Logger passed on to the No INI placeholder the tab may show.</param>
     /// <param name="reopenOnIniTabAsync">Delegate that re-boots this installation and reopens on the INI Config tab (after a successful Create / Locate).</param>
+    /// <param name="styleState">The shared INI editor style, passed to the INI Config tab.</param>
     /// <param name="iniErrorMessage">The boot's INI synchronisation error, or <see langword="null" />; shown on both tabs.</param>
     /// <param name="writeAccess">The boot's write-access probe result, passed to the INI Config tab for its read-only warning.</param>
     /// <param name="initialTabIndex">The tab to select once the tabs are built (0 = General, <see cref="IniConfigTabIndex" /> = INI Config).</param>
@@ -49,6 +50,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
                          ILogger<IniEditorViewModel>      iniEditorLogger,
                          ILogger<IniPlaceholderViewModel> iniPlaceholderLogger,
                          Func<CancellationToken, Task>    reopenOnIniTabAsync,
+                         IIniEditorStyleState             styleState,
                          string?                          iniErrorMessage = null,
                          InstallationWriteAccess          writeAccess     = InstallationWriteAccess.Unknown,
                          int                              initialTabIndex = 0)
@@ -70,6 +72,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
                                                  iniEditorLogger,
                                                  iniPlaceholderLogger,
                                                  reopenOnIniTabAsync,
+                                                 styleState,
                                                  writeAccess);
 
         GeneralTab.LaunchOutcomeRaised += OnLaunchOutcomeRaised;
@@ -94,6 +97,9 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard
         GeneralTab.LaunchOutcomeRaised += OnLaunchOutcomeRaised;
         IniConfigTab.PropertyChanged   += OnIniConfigTabPropertyChanged;
     }
+
+    /// <summary>Releases the INI Config tab's subscription to the shared editor style when the launcher navigates away from the Play state.</summary>
+    public void Dispose() => IniConfigTab.Dispose();
 
     /// <summary>General tab view model.</summary>
     public GeneralTabViewModel GeneralTab { get; }

@@ -13,14 +13,21 @@ becomes *Config editor*. Code identifiers, folders and namespaces containing `In
 - **R1 — Alt-C in the SDD.** SDD §9.1 lists the tab as Alt-I, but no access key is wired up in the code. With General already on G, the SDD changes to Alt-C (the `C` of
   *Config*). Nothing in the code changes. Cost if wrong: one access-key letter in the SDD, to be changed when access keys are actually wired up.
 
+
+## Defects found in the plan
+
+
 ## Defects found in the plan
 
 None so far.
 
 ## Incidents
 
-None so far.
+- **Task 1 had no running-app check.** The computer-use `request_access` call could not resolve the launcher as an application, so the implementer could not drive it
+  and took no screenshots.
 
 ## Outstanding items
 
-None so far.
+### Before the PR
+
+- Verify in the running app that the Game Config tab header fits on one line and the Options *Config editor* group box reads correctly.

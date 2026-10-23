@@ -64,10 +64,10 @@ choice so nobody "fixes" the mismatch later.
 - Consumes: the designer (parameterless) constructors of `PlayViewModel` and `OptionsDialogViewModel`.
 - Produces: nothing later tasks call.
 
-- [ ] **Step 1: Open the ledger.** Create `milestone-13-ledger.md` in the shape of `milestone-12-ledger.md` (title, `**Date:**`, plan link, branch
+- [x] **Step 1: Open the ledger.** Create `milestone-13-ledger.md` in the shape of `milestone-12-ledger.md` (title, `**Date:**`, plan link, branch
   `feat/milestone-13-game-config-tab-rename`), with ruling **R1 — Alt-C in the SDD** pre-filled from *Review Focus*. Register it in the `.slnx`.
 
-- [ ] **Step 2: Write the failing tests.** `GameConfigTabWordingTests` (`[ AvaloniaFact ]`, headless, following the setup in `MainWindowStyleMenuTests`) shows each view
+- [x] **Step 2: Write the failing tests.** `GameConfigTabWordingTests` (`[ AvaloniaFact ]`, headless, following the setup in `MainWindowStyleMenuTests`) shows each view
   in a `Window` with its designer view model and runs `Dispatcher.UIThread.RunJobs()`:
 
 ```csharp
@@ -104,21 +104,21 @@ public void OptionsDialog_EditorStyleGroup_IsHeadedConfigEditor()
   In `GeneralTabViewModelTests.GeneralTab_MissingOnlyIni_PointsAtTheIniTab`, change the expected text to `"Use the Game Config tab to create or locate zoo.ini."`
   (keep the test's name).
 
-- [ ] **Step 3: Run the tests and confirm they fail.**
+- [x] **Step 3: Run the tests and confirm they fail.**
   Run: `dotnet test Tests/Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit --filter "FullyQualifiedName~GameConfigTabWordingTests|FullyQualifiedName~GeneralTabViewModelTests"`
   Expected: four failures, each showing the old text (`INI Config` / `INI editor`) still in place.
 
-- [ ] **Step 4: Change the four strings.** The tab header becomes `Header="Game Config"`. The Options group box becomes `Header="Config editor"` and its line becomes
+- [x] **Step 4: Change the four strings.** The tab header becomes `Header="Game Config"`. The Options group box becomes `Header="Config editor"` and its line becomes
   `Show settings in the Game Config tab:`. The message ends `Use the Game Config tab to create or locate zoo.ini.` Nothing else in these files changes in this task.
 
-- [ ] **Step 5: Run the tests and confirm they pass.** Same command as step 3. Expected: all pass. Then run the whole `Desktop.Tests.Unit` project (it includes
+- [x] **Step 5: Run the tests and confirm they pass.** Same command as step 3. Expected: all pass. Then run the whole `Desktop.Tests.Unit` project (it includes
   `ViewLoadTests` and `PlayViewModelTests`). Expected: all green.
 
 - [ ] **Step 6: Check the running app.** Launch the Desktop project against `SampleInstallations/Zoo Tycoon` and open an installation. Screenshot the tab strip (it should
   read *General | Game Config*, with the header on one line and not clipped). Screenshot `File → Options…` (a *Config editor* group box saying "Show settings in the Game
   Config tab:"). Close the app.
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 git add Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Boot/PlayView.axaml Source/Erdmier.ZooTycoonLauncher.Desktop/Views/Dialogs/OptionsDialogView.axaml Source/Erdmier.ZooTycoonLauncher.Desktop/ViewModels/Tabs/GeneralTabViewModel.cs Tests/Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit/Views/GameConfigTabWordingTests.cs Tests/Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit/Tabs/GeneralTabViewModelTests.cs Docs/Ledgers/Epic-1-MVP/milestone-13-ledger.md Erdmier.ZooTycoonLauncher.slnx

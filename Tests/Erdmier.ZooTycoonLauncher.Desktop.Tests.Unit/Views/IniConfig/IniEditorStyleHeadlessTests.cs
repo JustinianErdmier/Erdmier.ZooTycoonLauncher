@@ -94,9 +94,13 @@ public sealed class IniEditorStyleHeadlessTests
 
         Slider slider = harness.Find<Slider>(volume);
 
+        int before = volume.Percent;
+
         harness.TabTo(slider);
-        harness.Press(Key.Right);
-        harness.Press(Key.Right);
+        harness.Press(Key.Left);
+        harness.Press(Key.Left);
+
+        volume.Percent.ShouldNotBe(before);
 
         harness.FocusedElement.ShouldBeSameAs(slider);
         volume.IsFocused.ShouldBeTrue();

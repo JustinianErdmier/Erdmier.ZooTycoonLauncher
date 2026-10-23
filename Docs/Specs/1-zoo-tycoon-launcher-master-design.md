@@ -1380,20 +1380,20 @@ covers what the Friendly style changes. Both read and write the same keys — th
 
 The INI Config tab uses a two-pane split layout rather than the long vertically-scrolled accordion of the Ref launcher:
 
-- **Section list (left).** A list of the seven sections in INI order: `[user]`, `[UI]`, `[advanced]`, `[ai]`, `[debug]`, `[language]`, `[Map]`. The caption above it reads
-  `Section`.
+- **Section list (left).** A list of the seven sections in INI order: `[user]`, `[UI]`, `[advanced]`, `[ai]`, `[debug]`, `[language]`, `[Map]`; `[scenario]` joins as the eighth
+  after the Phase 0 research (§7.8, DW-04). The caption above it reads `Section`.
 - **Form pane (right).** Hosts a single section's controls and scrolls vertically when content overflows. The header names the section and a muted descriptor underneath gives
   the prose summary (`Display and performance`, `Audio, gameplay, and interface`, etc.). Width discipline (`MaxWidth` on inputs, `ScrollViewer` on the form) keeps wide combos
   from blowing out the layout; the prototype hit this with the long language labels.
 - **Footer row.** Hover / dirty status label on the left (§9.3.2), then `Restore previous…`, `Restore defaults`, `Save` (default), `Reset`.
   `Save` and `Reset` are disabled when there are no pending changes.
-  `Restore previous…` opens the Restore Previous INI dialogue (§7.3.3) and is disabled when there is no history. `Restore defaults` loads every visible
+  `Restore previous…` opens the Restore Previous INI dialogue (§7.3.3) and is disabled when there is no history. `Restore defaults` loads every setting the layout holds
   setting's default into the form as unsaved edits (no prompt, nothing written); it is enabled when some field is not already at its default, and `Reset` undoes it. `Reset`
   reloads the editor from disk. Button labels follow the Win9x ellipsis rule (conventions §5).
 
 `[UI]` is internally split into three sub-headers (`Audio`, `Gameplay (cash)`, `Interface`); other sections render as flat row lists. Each row is a label + value control, with
-an optional muted hint sub-line (`px`, `1–60 ticks/sec`, `-10000 silent → 0 full`, etc.). The `[scenario]` section organises its checkboxes by `ScenarioCampaignTier`
-(Tutorial → Beginner → Intermediate → Advanced → Expert → Expansion → Unknown).
+an optional muted hint sub-line (`px`, `1–60 ticks/sec`, `-10000 silent → 0 full`, etc.). The `[scenario]` section, once it joins, will organise its checkboxes by
+`ScenarioCampaignTier` (Tutorial → Beginner → Intermediate → Advanced → Expert → Expansion → Unknown).
 
 The four `[UI]` cash rows (`MSStartingCash`, `MSCashIncrement`, `MSMinCash`, `MSMaxCash`) display as dollars — `$1,000,000`, always `$` with `,` grouping and no decimals,
 whatever the OS culture. Typing `250000` or `$250,000` both commit `250000`; a typed fraction is dropped (`$1,000.75` commits as `$1,000`), so the box always shows what is
@@ -1459,8 +1459,9 @@ switch, and the editor returns to its first section or page. Hover and keyboard-
 (§9.3.1) behave the same in both styles.
 
 The style reaches the editor through `IIniEditorStyleState`, a singleton in the composition root that holds the current style, a `Version` and a `StyleChanged` event. The
-launcher does not read its options at start-up, so the INI tab loads them once, lazily, before it builds its first editor; a failed read keeps the default. `Version` guards the
-race with a save: a load that was in flight when Options saved a style does not overwrite it. A save in Options calls `IniEditorViewModel.ApplyStyle` on an open editor.
+launcher does not read its options at start-up, so the INI tab loads them once, lazily, before it builds its first editor; a failed read keeps the style already in force.
+`Version` guards the race with a save: a load that was in flight when Options saved a style does not overwrite it. A save in Options sets the state; its `StyleChanged` event makes
+the INI tab call `IniEditorViewModel.ApplyStyle` on an open editor.
 
 - **INI style** — §9.3 as written, with every control following the file literally: the inverted `[UI]/noMenuMusic` is a plain check box (`No menu music`, ticked when the file
   holds `1`), and the attenuation and movie-volume keys are raw number boxes.

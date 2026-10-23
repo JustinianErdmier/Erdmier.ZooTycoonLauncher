@@ -207,9 +207,9 @@ The Friendly style (SDD §9.3.3) reuses the standard row (§3) under a different
 continuation, and the editor does not repeat the description above the form pane. The list caption above the page list reads `Page` where the INI style reads `Section`.
 
 Below the header, each group is a Classic.Avalonia `GroupBox` whose header is the group's name (*Screen*, *Performance*), with `Padding="{StaticResource GroupBoxPadding}"` and
-`GapRelated` between its rows, so the inset follows §1.4. A `GroupBox` takes the place of the INI style's bold sub-header (§3.4). A group's footnote is a muted wrapping line
-at the foot of its box; a page's footnote follows the last box. The rows inside use the §3 grid with the label and hint in the system face rather than the mono face
-(`Classes.Mono` is bound to the INI style only).
+each row carrying a `GapSmallest` vertical margin and `GapRelated` separating the rows from the footnote, so the inset follows §1.4. A `GroupBox` takes the place of the INI
+style's bold sub-header (§3.4). A group's footnote is a muted wrapping line at the foot of its box; a page's footnote follows the last box. The rows inside use the §3 grid with
+the label and hint in the system face rather than the mono face (`Classes.Mono` is bound to the INI style only).
 
 A check box carries its own label (*Enable menu music*), so a Friendly check-box row drops the label column and spans both columns; it has no hint line either. Its tooltip and
 footer help are unchanged (§3.3).
@@ -218,9 +218,9 @@ footer help are unchanged (§3.3).
 
 A volume key in the Friendly style renders as a slider row in the control column: a `Slider` 0–100, `Width="200"`, `SmallChange="1"`, `LargeChange="10"`, `TickFrequency="10"`
 with `TickPlacement="BottomRight"`, and beside it a mono `TextBlock` (`MinWidth="40"`) reading the percentage (`75 %`), with `GapRelated` between them. The muted hint under
-the label reads `Silent – Full`. Louder is to the right. The row takes the standard help wiring (§3.3): a Tab-focused slider keeps focus and the footer help while the arrow keys move it,
-and a pointer drag gives the focus back on release (`IniFieldFocusRelease.AfterCommit`, listening for handled events too because the thumb captures the pointer). No new token
-or style is involved.
+the label reads `Silent – Full`. Louder is to the right. The row takes the standard help wiring (§3.3): a Tab-focused slider keeps focus and the footer help while the arrow keys
+move it, and a pointer drag gives the focus back on release (`IniFieldFocusRelease.AfterCommit`, listening for handled events too because the thumb captures the pointer). No new
+token or style is involved.
 
 ---
 

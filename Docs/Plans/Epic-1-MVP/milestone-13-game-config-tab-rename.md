@@ -168,25 +168,26 @@ git commit -m "feat(✨): rename the INI Config tab to Game Config"
 
 **Interfaces:** none.
 
-- [ ] **Step 1: SDD present-tense references.** Rename every reference to the tab outside the revision history and the deferred-work *Source* column, following *Global
+- [x] **Step 1: SDD present-tense references.** Rename every reference to the tab outside the revision history and the deferred-work *Source* column, following *Global
   Constraints*. At the time of writing that means lines 140, 176, 184, 391 (the inline code comment), the §7.3 / §7.4 / §7.5 headings (919, 983, 1012), 1007, 1238, 1265,
   1267, 1282 (the quoted message must match Task 1 exactly), 1376 (§9.3 heading), 1381, 1404 (§9.3.1 heading), 1569 (the quoted Options line must match Task 1 exactly),
   1628, 1844, and DW-04's description (1896). On 1569 the group box's bold name becomes **Config editor**, and on 1725 *INI editor* group becomes *Config editor*
   group; 1721's "INI editor style" names the setting, not the group box, so it stays. On line 1267, change `(Alt-I)` to `(Alt-C)`. Keep line 637 ("INI Config core
   slice") and 1533 (the "formerly" note). Update any `§` anchor links whose heading text changed.
 
-- [ ] **Step 2: SDD naming note.** At the start of §9.3, add a short paragraph in this sense: *The tab is labelled* Game Config *for players, but its code keeps the*
+- [x] **Step 2: SDD naming note.** At the start of §9.3, add a short paragraph in this sense: *The tab is labelled* Game Config *for players, but its code keeps the*
   `IniConfig` *names (`IniConfigTabViewModel`, `Views/IniConfig/`, the Application `IniConfig` slice) on purpose: the tab only ever shows `zoo.ini`, so the code names
   describe it accurately. Do not rename them to match the label.*
 
-- [ ] **Step 3: SDD revision row.** Add version **1.17**, `23 October 2026`, `Justinian`: milestone 13 renames the INI Config tab to Game Config (§7.3–§7.5, §9.1, §9.3,
+- [x] **Step 3: SDD revision row.** Add version **1.17**, `23 October 2026`, `Justinian`: milestone 13 renames the INI Config tab to Game Config (§7.3–§7.5, §9.1, §9.3,
   §9.8 Options copy, whose group box becomes *Config editor*), moves its documented access key to Alt-C, and records in §9.3 why code identifiers keep `IniConfig`.
 
-- [ ] **Step 4: Manual test plan.** Rename references to the tab in instructions, expected results and run notes, including the §9 heading at line 1493 and the step under
-  it, where the *INI editor* group box also becomes *Config editor*. Keep the `# INI Config Core` section title (it names the milestone), and keep any sentence
-  describing what the *mock-up* shows, because the prototype still says INI Config (for example line 61's "the mockup renders … the General / INI Config tab strip"). Where a sentence compares the two, name each one correctly.
+- [x] **Step 4: Manual test plan.** Rename references to the tab in instructions, expected results and run notes, including the §9 heading at line 1493 and the step under
+  it, where the *INI editor* group box also becomes *Config editor*. Keep the `# INI Config Core` section title (it names the milestone), and keep any sentence describing what the
+  *mock-up* shows, because the prototype still says INI Config (for example line 61's "the mockup renders … the General / INI Config tab strip"). Where a sentence compares the two,
+  name each one correctly.
 
-- [ ] **Step 5: Verify.** Run:
+- [x] **Step 5: Verify.** Run:
 
 ```bash
 rg -n "INI Config" Docs/Specs/1-zoo-tycoon-launcher-master-design.md Docs/UserInterfaceDesign/conventions.md Docs/TestPlans/manual-end-to-end-tests.md
@@ -195,7 +196,7 @@ rg -n "INI Config" Docs/Specs/1-zoo-tycoon-launcher-master-design.md Docs/UserIn
   Check by eye that every survivor is a revision-history row, a *Source* cell, a slice or milestone name, the "formerly" note, or a mock-up description. Check the
   wrap of every edited Markdown line with PowerShell `[string].Length` (≤ 180).
 
-- [ ] **Step 6: Commit.** Message: `docs(📝): rename the tab to Game Config in the SDD, conventions and test plan`
+- [x] **Step 6: Commit.** Message: `docs(📝): rename the tab to Game Config in the SDD, conventions and test plan`
 
-- [ ] **Step 7: Close the ledger.** Clean the ledger into its final shape (rulings, plan defects, outstanding items, incidents), tick this plan's boxes, and commit.
+- [x] **Step 7: Close the ledger.** Clean the ledger into its final shape (rulings, plan defects, outstanding items, incidents), tick this plan's boxes, and commit.
   Message: `docs(📝): close the milestone 13 ledger and plan`

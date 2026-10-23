@@ -1,10 +1,10 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
 /// <summary>
-///     View model for the modal Options dialogue (<c>File → Options…</c>): what the launcher opens at start-up, whether it closes after the game starts and which style the Game Config
-///     tab uses. Loads the stored values in <see cref="InitialiseAsync" />; <see cref="OkCommand" /> saves all three in one <see cref="SaveLauncherOptionsCommand" />, applies the
-///     chosen style to <see cref="IIniEditorStyleState" /> once the save has succeeded, and raises <see cref="CloseRequested" />; <see cref="CancelCommand" /> raises it without
-///     saving.
+///     View model for the modal Options dialogue (<c>File → Options…</c>): what the launcher opens at start-up, whether it closes after the game starts and which style the
+///     Game Config tab uses. Loads the stored values in <see cref="InitialiseAsync" />; <see cref="OkCommand" /> saves all three in one <see cref="SaveLauncherOptionsCommand" />,
+///     applies the chosen style to <see cref="IIniEditorStyleState" /> once the save has succeeded, and raises <see cref="CloseRequested" />;
+///     <see cref="CancelCommand" /> raises it without saving.
 /// </summary>
 public sealed partial class OptionsDialogViewModel : ViewModelBase
 {

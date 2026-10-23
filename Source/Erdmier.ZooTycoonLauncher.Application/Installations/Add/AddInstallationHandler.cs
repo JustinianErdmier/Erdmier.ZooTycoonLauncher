@@ -95,7 +95,7 @@ public sealed class AddInstallationHandler : ICommandHandler<AddInstallationComm
                 // verification.HasIni was true above (otherwise row.HasIni is false and CaptureOriginalAsync's own HasIni-false shortcut returns success without ever
                 // reaching this branch), so an error here is one of two things: zoo.ini could not be read, or the snapshot store failed — IniSnapshotService logs both
                 // itself; or zoo.ini vanished between verification and capture, which IniSnapshotService reports as Missing without logging. Either way, the
-                // installation is persisted with its database left empty, and the next synchronise (at boot or when the INI tab opens) retries the first import.
+                // installation is persisted with its database left empty, and the next synchronise (at boot or when the Game Config tab opens) retries the first import.
                 _ = snapshotResult; // Discard: failure surfaced to caller via SnapshotFailed flag if needed in future.
             }
         }

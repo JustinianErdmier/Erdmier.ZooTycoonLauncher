@@ -274,9 +274,9 @@ file its view uses today; a site whose view does not exist yet is marked *(not b
 | Confirmation and Save-changes prompts · body       | `warning32.gif`                             |                                                               |
 | Error message · body                               | `error32.gif`                               |                                                               |
 | Launch error · body                                | `cancel32.gif`                              |                                                               |
-| INI tab · No INI sub-state                         | `warning32.gif`                             |                                                               |
-| INI tab · read-only strip                          | `warning32.gif`                             | Drawn at 16 px                                                |
-| INI tab placeholder (disabled)                     | *(no icon)*                                 | Muted helper text only                                        |
+| Game Config tab · No INI sub-state                 | `warning32.gif`                             |                                                               |
+| Game Config tab · read-only strip                  | `warning32.gif`                             | Drawn at 16 px                                                |
+| Game Config tab placeholder (disabled)             | *(no icon)*                                 | Muted helper text only                                        |
 | Options · title bar                                | `controls32.ico`                            |                                                               |
 | About · title bar *(not built)*                    | *(none chosen)*                             | No view yet; body keeps the app logo                          |
 

@@ -1345,7 +1345,7 @@ stays responsive rather than crashing.
 
 ### Notes/Thoughts
 
-## 4. Game Session Drift: launcher open while ZT1 runs, then the INI tab is re-activated
+## 4. Game Session Drift: launcher open while ZT1 runs, then the Game Config tab is re-activated
 
 ### Testing Strategy
 
@@ -1922,7 +1922,7 @@ stays responsive rather than crashing.
 
 ### Notes/Thoughts
 
-## 4. Read-only: a read-only folder or a read-only `zoo.ini` shows the INI tab strip, and a failed Save explains it
+## 4. Read-only: a read-only folder or a read-only `zoo.ini` shows the Game Config tab's read-only strip, and a failed Save explains it
 
 ### Testing Strategy
 

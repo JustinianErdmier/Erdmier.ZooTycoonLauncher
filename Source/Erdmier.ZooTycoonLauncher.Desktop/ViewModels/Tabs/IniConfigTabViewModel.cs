@@ -1,8 +1,8 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 
 /// <summary>
-///     The Game Config tab (SDD §9.3.1). Hosts either the editor or a placeholder (loading / no INI / unreadable). Each activation reloads from disk unless edits are pending, so the
-///     editor reflects anything the game wrote while the launcher stayed open; a failed load is retried on the next activation. When a reload fails while the editor already
+///     The Game Config tab (SDD §9.3.1). Hosts either the editor or a placeholder (loading / no INI / unreadable). Each activation reloads from disk unless edits are pending, so
+///     the editor reflects anything the game wrote while the launcher stayed open; a failed load is retried on the next activation. When a reload fails while the editor already
 ///     holds pending edits, the editor stays on screen (never dropping unsaved work) and the failure is shown as an error dialogue instead.
 /// </summary>
 public sealed partial class IniConfigTabViewModel : ViewModelBase, IDisposable

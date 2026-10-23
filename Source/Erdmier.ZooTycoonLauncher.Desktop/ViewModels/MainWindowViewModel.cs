@@ -47,7 +47,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="playLogger">Logger passed to freshly-built <see cref="PlayViewModel" /> instances so their last-resort catches are recorded.</param>
     /// <param name="iniTabLogger">Logger passed on to the Game Config tab of each <see cref="PlayViewModel" />.</param>
     /// <param name="iniEditorLogger">Logger passed on to the INI editor of each <see cref="PlayViewModel" />.</param>
-    /// <param name="iniPlaceholderLogger">Logger passed on to the INI tab's No INI placeholder of each <see cref="PlayViewModel" />.</param>
+    /// <param name="iniPlaceholderLogger">Logger passed on to the Game Config tab's No INI placeholder of each <see cref="PlayViewModel" />.</param>
     /// <param name="styleState">The shared INI editor style, passed on to the Game Config tab of each <see cref="PlayViewModel" />.</param>
     public MainWindowViewModel(IMediator                          mediator,
                                IApplicationLifecycle              lifecycle,
@@ -365,7 +365,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     // The boot does not otherwise load the launcher options, so the stored editor style is read once here, after the Looking state and status text are set and before any editor
-    // exists: the View menu's bullet is then right in every state, whether or not an INI editor ever opens. A failure keeps the style already in force; the Game Config tab's own lazy load stays harmless beside this one.
+    // exists: the View menu's bullet is then right in every state, whether or not an INI editor ever opens. A failure keeps the style already in force; the Game Config tab's own lazy load stays harmless
+    // beside this one.
     private async Task LoadStoredStyleAsync(CancellationToken cancellationToken)
     {
         if (_hasLoadedStyle)

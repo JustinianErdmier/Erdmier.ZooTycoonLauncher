@@ -1459,16 +1459,16 @@ are held by INI key, so they survive the switch, and the editor returns to its f
 strip and the sub-states (§9.3.1) behave the same in both styles.
 
 The style reaches the editor through `IIniEditorStyleState`, a singleton in the composition root that holds the current style, a `Version` and a `StyleChanged` event. The
-main window loads the stored style once, at the top of the first boot, before any editor can exist; a failed read is logged and ignored, keeping the default. The INI tab's own
-lazy load before it builds its first editor remains as a guarded fallback; a failed read keeps the style already in force.
-`Version` guards the race with a save: a load that was in flight when Options saved a style does not overwrite it. A save in Options, or a choice in the View menu, sets the state;
-its `StyleChanged` event makes the INI tab call `IniEditorViewModel.ApplyStyle` on an open editor.
+main window loads the stored style once, during the first boot, after the Looking-for-Zoo-Tycoon state and status text are set and before any editor exists, with the same `Version`
+guard; a failed or throwing read is logged and ignored, keeping the default, and the boot completes. The INI tab's own lazy load before it builds its first editor remains as a
+guarded fallback; a failed read keeps the style already in force. `Version` guards the race with a save: a load that was in flight when Options saved a style does not overwrite it.
+A save in Options, or a choice in the View menu, sets the state; its `StyleChanged` event makes the INI tab call `IniEditorViewModel.ApplyStyle` on an open editor.
 
 - **INI style** — §9.3 as written, with every control following the file literally: the inverted `[UI]/noMenuMusic` is a plain check box (`No menu music`, ticked when the file
   holds `1`), and the attenuation and movie-volume keys are raw number boxes.
 - **Cash keys (both styles)** — the four `[UI]` cash keys (`MSStartingCash`, `MSCashIncrement`, `MSMinCash`, `MSMaxCash`) are worded as the new-zoo starting-cash picker: the
-  default starting cash, how much it moves per step, and the least and most you can choose. None of them limits cash during play. The INI style words this tersely, the Friendly
-  style to "you".
+  default starting cash, how much it moves per step, and the least and most you can choose. None of them limits cash during play. Both styles address "you"; the INI style
+  words it as terse fragments, the Friendly style as full sentences.
 - **Friendly style** — for a player who has never seen `zoo.ini`:
   - **Pages by purpose.** Eight pages — Display, Graphics, Sound, New Zoos, Controls, Help & Messages, Language, Troubleshooting — gather keys from any INI section. Each page
     shows a title (no brackets, no "section of zoo.ini") and a one-line description, then labelled group boxes (Display: *Screen*, *Performance*). The full map is in the
@@ -1585,7 +1585,8 @@ descriptor line, a separator, and an attribution line naming the principal libra
 
 ### 9.10 Menu structure
 
-Three top-level menus. The menu bar is hidden while the launcher boots. Only `Options…` has an accelerator so far (Alt+P); the items below are as `MainWindow.axaml` builds them.
+Three top-level menus. The menu bar is hidden while the launcher boots. Only `Options…` has an access key so far (P, once File is open); the items below are as `MainWindow.axaml`
+builds them.
 
 | Menu     | Item                           | Command                         | Notes                                                                                                                       |
 |----------|--------------------------------|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
@@ -1602,7 +1603,7 @@ Three top-level menus. The menu bar is hidden while the launcher boots. Only `Op
 |          | —                              |                                 |                                                                                                                             |
 |          | About                          |                                 | Stub for now; it will open the §9.9 dialogue. No "Zoo Tycoon Launcher" suffix — the dialogue title already carries it.      |
 
-An `Edit` menu is not present. The **View** menu holds one submenu, *Config layout*, whose two items form a mutually exclusive radio pair (conventions §11): the bullet follows the
+An `Edit` menu is not present. The **View** menu holds one submenu, *Config layout*, whose two items form a mutually exclusive radio pair (conventions §10): the bullet follows the
 INI editor style in force, so a change made in Options moves it too. The stored style is loaded at start-up (§9.3.3), so the bullet is right in every state after boot. A choice is
 compared with the stored style: if it already holds, nothing is saved and only the shared state is synced; otherwise it is stored through the same load-then-save path as Options,
 changing only the style. When the save fails the style is unchanged, the error dialogue **Cannot Save Options** appears and the bullet snaps back to the active style. The toolbar
@@ -1734,8 +1735,11 @@ tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`
   does nothing; the checks follow the state, Options changes included; the stored style is loaded at start-up before any editor, `StartupLoadsTheStoredStyleBeforeAnyEditor`; a
   choice equal to the stored style saves nothing, `ChooseStyle_AlreadyStored_SavesNothing`, and over a stale state only syncs it,
   `ChoosingTheStoredStyleOverAStaleState_SavesNothingButSyncsTheState`; a different choice over a stale state is saved,
-  `ChoosingFriendlyWhenIniIsStoredButTheStateIsStale_SavesTheChoice`). `MainWindowStyleMenuTests` (headless) opens the real `MainWindow`, clicks the *INI style* radio item with a
-  failing save and checks the bullet returns to *Friendly style*, which only the real toggle exercises.
+  `ChoosingFriendlyWhenIniIsStoredButTheStateIsStale_SavesTheChoice`; the start-up load keeps a style set while its query is in flight,
+  `Startup_AStyleSetWhileTheQueryIsInFlight_IsKept`, lets the boot complete when the query fails or throws, `Startup_AFailingQuery_LeavesTheStyleAndTheBootCompletes` and
+  `Startup_AThrowingQuery_LeavesTheStyleAndTheBootCompletes`, and runs once across a reboot, `Startup_TheStoredStyleIsLoadedOnlyOnceAcrossAReboot`). `MainWindowStyleMenuTests`
+  (headless) opens the real `MainWindow`, clicks the *INI style* radio item with a failing save and checks the bullet returns to *Friendly style*, which only the real toggle
+  exercises.
 - **Editor behaviour added with the styles:** `IniEditorStyleHeadlessTests` also covers Page Up / Page Down on a Tab-focused slider, moving it 10 %
   (`FriendlySlider_PageKeysMoveTenPercent`). `IniEditorLayoutsTests` checks that the two layouts agree on each key's control and currency apart from the four volumes
   (`Layouts_AgreeOnEachKeysControlAndCurrencyExceptTheFourVolumes`), that the Friendly *Guests* and *Map size* groups carry a footnote (`FriendlyLayout_FootnotesSitOnTheirGroups`)

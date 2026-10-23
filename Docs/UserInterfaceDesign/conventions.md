@@ -355,7 +355,19 @@ The INI editor's own footer shows unsaved-change state (§6). The full set of st
 
 ---
 
-## 10. Open questions for future revisions
+## 10. Menus
+
+### 10.1 Mutually exclusive menu items
+
+A menu pair that picks one of several states (View ▸ Config layout ▸ Friendly style / INI style) uses the Win9x radio bullet: each `MenuItem` sets `ToggleType="Radio"` and the same
+`GroupName`, and `IsChecked` binds `Mode=TwoWay` to a stored property on the view model, one per item (`IsFriendlyStyle`, `IsIniStyle`). The item writes its own check when clicked,
+so the properties must be reset from the source of truth, not left to follow the click: after every choice, successful or not, assign each property from the real state. A failed
+save then changes the property back and the binding pushes the bullet back; re-raising an unchanged value would be dropped and leave the wrong bullet. Each item also carries a
+`Command` that stores the choice, disabled while a save is in flight so a second click is not lost.
+
+---
+
+## 11. Open questions for future revisions
 
 Captured here so the SDD doesn't accumulate UI-shaped notes:
 
@@ -366,15 +378,3 @@ Captured here so the SDD doesn't accumulate UI-shaped notes:
   request.
 - **Tooltip styling.** Classic.Avalonia's default tooltip is close to the prototype's yellow OS tooltip but not identical. Worth pinning during Phase 1 if it reads wrong
   against the Windows 95 original.
-
----
-
-## 11. Menus
-
-### 11.1 Mutually exclusive menu items
-
-A menu pair that picks one of several states (View ▸ Config layout ▸ Friendly style / INI style) uses the Win9x radio bullet: each `MenuItem` sets `ToggleType="Radio"` and the same
-`GroupName`, and `IsChecked` binds `Mode=TwoWay` to a stored property on the view model, one per item (`IsFriendlyStyle`, `IsIniStyle`). The item writes its own check when clicked,
-so the properties must be reset from the source of truth, not left to follow the click: after every choice, successful or not, assign each property from the real state. A failed
-save then changes the property back and the binding pushes the bullet back; re-raising an unchanged value would be dropped and leave the wrong bullet. Each item also carries a
-`Command` that stores the choice, disabled while a save is in flight so a second click is not lost.

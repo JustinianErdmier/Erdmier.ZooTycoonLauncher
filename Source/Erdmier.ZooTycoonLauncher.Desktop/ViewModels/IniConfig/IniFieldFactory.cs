@@ -34,7 +34,7 @@ public static class IniFieldFactory
             IniControlKind.Number => new IniNumberFieldViewModel(descriptor),
             IniControlKind.Text   => new IniTextFieldViewModel(descriptor),
             IniControlKind.Choice => new IniChoiceFieldViewModel(descriptor),
-            IniControlKind.Slider => throw new NotSupportedException($"'{descriptor.Label}' is a slider, which has no view model yet."),
+            IniControlKind.Slider => new IniSliderFieldViewModel(descriptor),
             var control           => throw new InvalidOperationException($"'{descriptor.Label}' has control {control}, which needs no key.")
         };
 

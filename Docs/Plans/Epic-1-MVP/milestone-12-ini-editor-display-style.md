@@ -202,19 +202,19 @@ the dialogue reads `IIniEditorStyleState.Style` when it builds its rows.
 **Files:** `Tests/…Desktop.Tests.Unit/Views/` (headless editor tests, beside `IniEditorHarness`); `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`;
 `Docs/UserInterfaceDesign/conventions.md`.
 
-- [ ] **Step 1: Headless tests:** `Editor_RendersInBothStyles` (every section/page selected in turn, no logged warning); `FriendlySoundPage_EnableMenuMusicTicked`
+- [x] **Step 1: Headless tests:** `Editor_RendersInBothStyles` (every section/page selected in turn, no logged warning); `FriendlySoundPage_EnableMenuMusicTicked`
   when the file holds `noMenuMusic=0`; `FriendlySlider_DragReleasesFocus` and `FriendlySlider_TabKeepsFocus`. Prove one bites (break a conversion), revert.
-- [ ] **Step 2: Docs.** The SDD already carries the design (revision 1.16, §5.1, §5.2, §5.5, §6.2, §9.3.3, §9.7, §9.8, §13.2): correct anything the build
+- [x] **Step 2: Docs.** The SDD already carries the design (revision 1.16, §5.1, §5.2, §5.5, §6.2, §9.3.3, §9.7, §9.8, §13.2): correct anything the build
   changed, and list the new tests in §11.4. conventions: the Friendly page header and group-box pattern, and the slider row. Prose ≤ 180.
-- [ ] **Step 3: Run** every test project + full build → pass. **Commit** — `test(✅): cover both editor styles headlessly and document them`
+- [x] **Step 3: Run** every test project + full build → pass. **Commit** — `test(✅): cover both editor styles headlessly and document them`
 
 ---
 
 ## Task 8: Check it in the running app (controller)
 
-- [ ] **Step 1:** Every Friendly page and every INI section; Options switches the style live with unsaved edits kept; Save in Friendly style and confirm `zoo.ini`
+- [x] **Step 1:** Every Friendly page and every INI section; Options switches the style live with unsaved edits kept; Save in Friendly style and confirm `zoo.ini`
   holds raw values; the sliders (drag, arrows, Page Up/Down, an off-step value untouched); the Restore dialogue in both styles. Restore any value changed.
-- [ ] **Step 2:** Close the launcher.
+- [x] **Step 2:** Close the launcher.
 
 ## Verification
 

@@ -119,6 +119,12 @@ Commit per logical task, not per file.
 commit** (via `AskUserQuestion` or an inline yes/no): propose the conventional-commit message you would use, list the files that would be staged, and wait for explicit approval
 before running `git commit`. Either way, stage only the files the task touched; never `git add -A` over a tree you have not inspected.
 
+**Merging a pull request** (only once the user says to merge) uses a **merge commit**, never a squash by default:
+`gh pr merge <N> --repo JustinianErdmier/Erdmier.ZooTycoonNexus --merge --subject "feat(🔀): merge pull request #<N>"`. A merge commit keeps the branch's commits —
+the ones the milestone ledger cites — reachable from `main`, and keeps pure-rename commits separate so Git's rename detection and `git log --follow` stay reliable. Then
+check out `main`, bring it up to date, and delete the feature branch locally and on the remote. **Squash is reserved for special cases when needed** (for example, a branch
+whose commit subjects need tidying) and only when the user asks for it.
+
 ## Architecture (summary)
 
 Clean Architecture + Vertical Slice Architecture + CQRS via source-generated `Mediator` (martinothamar). Handlers return `ErrorOr<T>`; expected failures are values, not exceptions.

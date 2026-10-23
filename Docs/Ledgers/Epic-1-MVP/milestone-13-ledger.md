@@ -14,6 +14,8 @@ becomes *Config editor*. Code identifiers, folders and namespaces containing `In
   *Config*). Nothing in the code changes. Cost if wrong: one access-key letter in the SDD, to be changed when access keys are actually wired up.
 - **R2 — Task 1 also renamed two XML doc comments in `GeneralTabViewModel.cs`.** They were Task 2's scope, but sat in the same file and fell under the same rule. Cost if
   wrong: none.
+- **R3 — "the INI tab" becomes "the Game Config tab" in the final fix wave.** The documents' shorthand "the INI tab" names the tab, so the controller ruled it is renamed with
+  the rest. Cost if wrong: one wording revert.
 
 ## Defects found in the plan
 
@@ -24,21 +26,18 @@ becomes *Config editor*. Code identifiers, folders and namespaces containing `In
 ## Incidents
 
 - **Task 1 had no running-app check.** The computer-use `request_access` call could not resolve the launcher as an application, so the implementer could not drive it
-  and took no screenshots.
+  and took no screenshots. Resolved: the controller captured the window through user32 instead; the tab strip reads "General | Game Config" on one line, unclipped, and
+  File → Options shows the *Config editor* group box with "Show settings in the Game Config tab:". The app was closed.
 
 ## Outstanding items
 
 ### Before the PR
 
-- Verify in the running app that the Game Config tab header fits on one line and the Options *Config editor* group box reads correctly.
+Nothing outstanding: the running-app check is done (see Incidents).
 
 ### Revisit in the final review
 
 - **A few edited C# doc and comment lines grew one character past their file's previous widest line** (`IniConfigTabViewModel.cs:4` and `:163`, `OptionsDialogViewModel.cs:4`,
   `IniDisplayText.cs:3`, `MainWindowViewModel.cs:368`). This is cosmetic; the final review will triage it.
-
-### Decision for the maintainer, any time
-
-- **The documents' shorthand "the INI tab" was left alone.** The SDD (for example §3.1, §7.1, §9.3.1, §9.5, §14.5 and the glossary), `conventions.md` and the manual test plan
-  use it as a short name for the same tab in dozens of places. The plan asked only for the `INI Config` wording, so those stay; a later pass can rename them if the
-  documents should say *Game Config* throughout.
+- **Rename the documents' shorthand "the INI tab" to "the Game Config tab"** (R3). The SDD (for example §3.1, §7.1, §9.3.1, §9.5, §14.5 and the glossary), `conventions.md` and
+  the manual test plan use it in dozens of places.

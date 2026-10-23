@@ -891,7 +891,7 @@ Enabled only when validity is not `Valid`. Per-validity flow:
 
 - **`InvalidNoExe`** → folder picker rooted at current `Path`. If the chosen folder contains `zoo.exe`, update `Path`, recompute `HasExe` / `HasIni`, set `ModifiedUtc = now`. If  
   still no `zoo.exe`, surface a non-blocking error in the dialogue.
-- **`InvalidNoIni`** → the *Fix INI* group offers the same two actions as the **No INI Present** group box ([Section 7.4](#74-ini-config-tab--no-ini-present-state)):
+- **`InvalidNoIni`** → the *Fix INI* group offers the same two actions as the **No INI Present** group box ([Section 7.4](#74-game-config-tab--no-ini-present-state)):
   `Create` and `Locate…`. They share the INI tab's commands; a successful fix writes `Original` and `Current` snapshots (or archives a surviving `Current`, §7.4), the group
   flips to *INI present*, and closing the dialogue re-boots the installation. A failure shows inline in maroon and leaves the group in place. Copy From Another Installation
   is not offered (DW-40).

@@ -114,7 +114,7 @@ public void OptionsDialog_EditorStyleGroup_IsHeadedConfigEditor()
 - [x] **Step 5: Run the tests and confirm they pass.** Same command as step 3. Expected: all pass. Then run the whole `Desktop.Tests.Unit` project (it includes
   `ViewLoadTests` and `PlayViewModelTests`). Expected: all green.
 
-- [ ] **Step 6: Check the running app.** Launch the Desktop project against `SampleInstallations/Zoo Tycoon` and open an installation. Screenshot the tab strip (it should
+- [x] **Step 6: Check the running app.** Launch the Desktop project against `SampleInstallations/Zoo Tycoon` and open an installation. Screenshot the tab strip (it should
   read *General | Game Config*, with the header on one line and not clipped). Screenshot `File → Options…` (a *Config editor* group box saying "Show settings in the Game
   Config tab:"). Close the app.
 

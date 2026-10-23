@@ -343,13 +343,13 @@ There is no theming: the launcher has one, light, appearance, and the dark-mode 
 
 Cell 1 of the status bar carries the primary message; cell 2 carries the secondary detail; cell 3 carries the version. Cell 2's text comes from this table.
 
-| State           | Cell 1                                 | Cell 2                                                   | Notes                                 |
-|-----------------|----------------------------------------|----------------------------------------------------------|---------------------------------------|
-| Looking         | `Discovering installations…`           | `Reading registry…`                                      | Cell 2 updates as boot phases advance |
-| Ready           | `Ready — <installation name>`          | `Display: <w>×<h>` (General) / `INI loaded` (INI Config) |                                       |
-| Cannot Play     | `Cannot launch — installation invalid` | `Fix required` (`AccentRed`)                             |                                       |
-| No Installation | `No installation registered`           | *(empty)*                                                |                                       |
-| Open Picker     | `Choose an installation to open`       | *(empty)*                                                |                                       |
+| State           | Cell 1                                 | Cell 2                                                    | Notes                                 |
+|-----------------|----------------------------------------|-----------------------------------------------------------|---------------------------------------|
+| Looking         | `Discovering installations…`           | `Reading registry…`                                       | Cell 2 updates as boot phases advance |
+| Ready           | `Ready — <installation name>`          | `Display: <w>×<h>` (General) / `INI loaded` (Game Config) |                                       |
+| Cannot Play     | `Cannot launch — installation invalid` | `Fix required` (`AccentRed`)                              |                                       |
+| No Installation | `No installation registered`           | *(empty)*                                                 |                                       |
+| Open Picker     | `Choose an installation to open`       | *(empty)*                                                 |                                       |
 
 The INI editor's own footer shows unsaved-change state (§6). The full set of state strings is fixed and tested.
 

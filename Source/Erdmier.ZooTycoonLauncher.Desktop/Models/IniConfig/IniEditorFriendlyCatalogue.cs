@@ -20,9 +20,9 @@ public static class IniEditorFriendlyCatalogue
                     [
                         Choice(section: "user", key: "fullscreen", label: "Screen mode", hint: "Fullscreen or windowed", help: "Run the game full screen or in a window.",
                                IniEditorCatalogue.FullscreenOptions),
-                        Number(section: "user", key: "screenwidth", label: "Width (pixels)", hint: "Pixels",
+                        Number(section: "user", key: "screenwidth", label: "Width (pixels)", hint: "1–16384, default 800",
                                help: "How wide the game's picture is, in pixels. Must be a size your display adapter supports."),
-                        Number(section: "user", key: "screenheight", label: "Height (pixels)", hint: "Pixels",
+                        Number(section: "user", key: "screenheight", label: "Height (pixels)", hint: "1–16384, default 600",
                                help: "How tall the game's picture is, in pixels. Must be a size your display adapter supports.")
                     ]),
                 new(SubHeader: "Performance",
@@ -91,9 +91,9 @@ public static class IniEditorFriendlyCatalogue
                 new(SubHeader: "Money",
                     [
                         Cash(section: "UI", key: "MSStartingCash", label: "Starting cash", hint: "$0–$10,000,000", help: "The cash you start a new zoo with."),
-                        Cash(section: "UI", key: "MSCashIncrement", label: "Cash step", hint: "$100–$1,000,000", help: "The step by which cash amounts move when you adjust them."),
-                        Cash(section: "UI", key: "MSMinCash", label: "Minimum cash", hint: "$0–$10,000,000", help: "The least cash you can choose to start a zoo with."),
-                        Cash(section: "UI", key: "MSMaxCash", label: "Maximum cash", hint: "$0–$10,000,000", help: "The most cash you can choose to start a zoo with.")
+                        Cash(section: "UI", key: "MSCashIncrement", label: "Cash step", hint: "$100–$1,000,000", help: "The denomination in which cash amounts are awarded."),
+                        Cash(section: "UI", key: "MSMinCash", label: "Minimum cash", hint: "$0–$10,000,000", help: "The minimum cash the player may hold."),
+                        Cash(section: "UI", key: "MSMaxCash", label: "Maximum cash", hint: "$0–$10,000,000", help: "The maximum cash the player may hold.")
                     ]),
                 new(SubHeader: "Map size",
                     [

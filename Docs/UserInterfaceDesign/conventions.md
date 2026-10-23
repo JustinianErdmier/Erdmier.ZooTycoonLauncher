@@ -216,9 +216,9 @@ footer help are unchanged (§3.3).
 
 ### 3.6 Slider row
 
-A volume key in the Friendly style renders as a slider row in the control column: a `Slider` 0–100, `Width="200"`, `SmallChange="1"`, `LargeChange="10"`, `TickFrequency="10"`
-with `TickPlacement="BottomRight"`, and beside it a mono `TextBlock` (`MinWidth="40"`) reading the percentage (`75 %`), with `GapRelated` between them. The muted hint under
-the label reads `Silent – Full`. Louder is to the right. The row takes the standard help wiring (§3.3): a Tab-focused slider keeps focus and the footer help while the arrow keys
+A volume key in the Friendly style renders as a slider row in the control column: a `Grid` with columns `"*,Auto"` and `GapRelated` between them: a stretching `Slider` 0–100 (`MinWidth="120"`, `MaxWidth="200"`, `SmallChange="1"`,
+`LargeChange="10"`, `TickFrequency="10"`, `TickPlacement="BottomRight"`) and a mono `TextBlock` (`MinWidth="48"`) reading the percentage (`75 %`), so the readout always
+fits the column. The muted hint under the label reads `Silent – Full`. Louder is to the right. The row takes the standard help wiring (§3.3): a Tab-focused slider keeps focus and the footer help while the arrow keys
 move it, and a pointer drag gives the focus back on release (`IniFieldFocusRelease.AfterCommit`, listening for handled events too because the thumb captures the pointer). No new
 token or style is involved.
 

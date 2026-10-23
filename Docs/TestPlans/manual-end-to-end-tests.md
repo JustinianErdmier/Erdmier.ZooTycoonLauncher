@@ -19,7 +19,7 @@ remained visible until the terminal state replaced it.
 
 > Explain what the expected outcome for this stage in the process should be.
 
-The INI Config tab should be disabled. In the General tab, a single group box labelled "Status" should display the "Looking for Zoo Tycoon" message and an intermediate progress
+The Game Config tab should be disabled. In the General tab, a single group box labelled "Status" should display the "Looking for Zoo Tycoon" message and an intermediate progress
 bar, and cycle through a list of status messages. Unless the process is artificially extended, the view should almost never actually display — modern computers are so fast that the
 boot command completes before the view is even rendered.
 
@@ -77,7 +77,7 @@ matter — but it was worth running a test in both states to confirm the branch 
 
 > Explain what the expected outcome for this stage in the process should be.
 
-The main window should have the INI Config tab disabled, and the General tab should display a status group box conveying the current state. Underneath the status group box should
+The main window should have the Game Config tab disabled, and the General tab should display a status group box conveying the current state. Underneath the status group box should
 be a data grid showing the user's registered installations for them to open as well as an option to add a new one.
 
 ### Actual Outcome
@@ -156,7 +156,7 @@ launched the app. I confirmed the located path is surfaced on the resulting scre
 
 Because no installation rows exist and the stored `DefaultInstallationId` is null, the handler should fall through to the auto-locator and probe each of its known locations. Since
 a real installation was deliberately placed where one of those probes can reach it, the locator should return a candidate, and the resulting `NoGameInstallationFound` screen should
-surface that discovered path so the user can register it in a single step. The INI Config tab should be disabled — no installation is open — and the General tab should present a
+surface that discovered path so the user can register it in a single step. The Game Config tab should be disabled — no installation is open — and the General tab should present a
 status group box carrying the error state (a "No Game Installation Found" heading, an explanatory message, and an `Add Installation` action) above an "Auto-locate trail" group box
 that lists every probe that was attempted and why each did or did not yield the game.
 
@@ -177,7 +177,7 @@ under test.
 
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
 
-Consistent with the two previous states, I removed the tab control — there is still no open installation, so the INI Config tab has nothing to bind to — and promoted the status
+Consistent with the two previous states, I removed the tab control — there is still no open installation, so the Game Config tab has nothing to bind to — and promoted the status
 group box contents to be top-level. The title menu stays visible, matching the Open Game Installation view, so the settings dialogue and the menu-driven equivalents of the
 on-screen actions remain reachable. I kept the "Auto-locate trail" as a genuine group box, since unlike the redundant "Status" frame, it is a real informational grouping. The main
 addition over the mockup is the candidate field: because this path is specifically the "locator found something" case, I added the "A potential candidate has been located at the
@@ -233,7 +233,7 @@ Because no installation rows exist and the stored `DefaultInstallationId` is nul
 as in the previous section. This time, however, none of those probes reaches a real installation, so the locator should return no candidate. The resulting `NoGameInstallationFound`
 screen should therefore present the same error state as the candidate-found variant — a "No Game Installation Found" heading, an explanatory message, and an `Add Installation`
 action, above the "Auto-locate trail" group box that lists every probe attempted and why each yielded nothing — but crucially it should _not_ surface a candidate field, because
-there is no discovered path to show. The INI Config tab should be disabled (no installation is open) and the General tab should carry the status content.
+there is no discovered path to show. The Game Config tab should be disabled (no installation is open) and the General tab should carry the status content.
 
 ### Actual Outcome
 
@@ -295,18 +295,18 @@ the settings row now held the promoted installation's id.
 Because installation rows exist but no `DefaultInstallationId` is stored, the handler should fall through to the promotion branch: pick a row, persist its id into the settings row
 as the new default, verify it (zoo.exe and zoo.ini both present), synchronise its INI, and — since the promoted row is valid — resolve to `ReadyToPlay`. This is the first genuinely
 _terminal, successful_ state in the flow, and the first in which an installation is actually open, so unlike the earlier chrome-light placeholder states the full application shell
-should return: the General / INI Config tab strip should be present and, crucially, the INI Config tab should now be _enabled_ rather than disabled. The General tab should show the
-installation profile name, a "Status" group box carrying the success state — a green tick, a "Ready to Play" heading, "EXE: Found" and "INI: Found" rows, the installation path, and
-an enabled `Launch Game` button — followed by a "Display" group summarising the current screen mode, a "Your System" group summarising the host, and a "Last played" stamp in the
-bottom-right corner. After boot, the settings row should hold the promoted installation's id, proving the promotion was persisted rather than merely applied in memory for the one
-render.
+should return: the General / Game Config tab strip should be present and, crucially, the Game Config tab should now be _enabled_ rather than disabled. The General tab should show
+the installation profile name, a "Status" group box carrying the success state — a green tick, a "Ready to Play" heading, "EXE: Found" and "INI: Found" rows, the installation path,
+and an enabled `Launch Game` button — followed by a "Display" group summarising the current screen mode, a "Your System" group summarising the host, and a "Last played" stamp in
+the bottom-right corner. After boot, the settings row should hold the promoted installation's id, proving the promotion was persisted rather than merely applied in memory for the
+one render.
 
 ### Actual Outcome
 
 > Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
 > "Actual Outcome" sections) and then go into more detail in the next section.
 
-The test passed and everything worked as expected. For the first time in the flow the full tabbed shell returned — both the General and INI Config tabs are present, and the INI
+The test passed and everything worked as expected. For the first time in the flow the full tabbed shell returned — both the General and Game Config tabs are present, and the Game
 Config tab is now enabled rather than greyed out, because an installation is finally open. The General tab shows Installation Profile "Main"; the "Status" group renders the green
 tick, the "Ready to Play" heading, "EXE: Found" and "INI: Found" in green, the installation path, and an enabled `Launch Game` button. The "Display" and "Your System" group boxes
 render beneath, and a muted "Last played" line sits in the bottom-right — now bound to the row's real `LastPlayedUtc`, reading "Never" here only because the freshly promoted row
@@ -319,7 +319,7 @@ verify → synchronise → `ReadyToPlay` sequence, and the persistence of the pr
 > Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
 
 No structural changes were required to make this path pass; the notable point is a design decision that is visible here for the first time. This is the state where the tab control
-returns — the earlier states stripped it because no installation was open, whereas here one is, so the General / INI Config tabs are finally meaningful. Because the `ReadyToPlay`
+returns — the earlier states stripped it because no installation was open, whereas here one is, so the General / Game Config tabs are finally meaningful. Because the `ReadyToPlay`
 and `CannotPlay` outcomes share an identical layout, they are served by a single `PlayView` / `PlayViewModel` pair rather than one view apiece; the earlier `ReadyToPlayViewModel`
 and `CannotPlayViewModel` were consolidated into `PlayViewModel`. A single `CanPlay` flag is threaded down into the tab view models, and that one flag toggles the difference
 between the two outcomes — the tick versus the warning icon, the "Ready to Play" versus "Cannot Play" heading, and the status-row colours — so the `CannotPlay` sibling test
@@ -340,9 +340,9 @@ between the two outcomes — the tick versus the warning icon, the "Ready to Pla
 > Does the implemented UI/UX align with that of the mockup? If not, explain why.
 
 Yes — and this is the first state whose implementation closely tracks the mockup, precisely because it is a real terminal state with an open installation rather than the
-chrome-light placeholder the earlier states deliberately became. Both the mockup and the implementation keep the full tabbed shell (General / INI Config), the title menu, the
-"Status", "Display", and "Your System" group boxes, and the status bar; structurally they line up. The remaining differences are cosmetic or data-level rather than structural, and
-all trace back to features that are not yet implemented:
+chrome-light placeholder the earlier states deliberately became. Both the mockup and the implementation keep the full tabbed shell (General / INI Config in the mockup, General /
+Game Config in the implementation), the title menu, the "Status", "Display", and "Your System" group boxes, and the status bar; structurally they line up. The remaining differences
+are cosmetic or data-level rather than structural, and all trace back to features that are not yet implemented:
 
 - The "Display" and "Your System" groups display hard-coded values in the implementation. The screen-mode enumeration and host/system detection that would populate them are not yet
   built, so the figures shown (resolution, adapter, screen-mode counts, OS, processor, graphics, memory) are placeholders that happen to mirror the mockup's.
@@ -388,9 +388,9 @@ the flow should resolve to `CannotPlay` rather than `ReadyToPlay`. Crucially, th
 was chosen — so the settings row should hold the promoted id afterwards.
 
 Because an installation is now open, the full application shell should return just as it does for `ReadyToPlay`, rather than the chrome-light placeholder of the earlier
-no-installation states: the General / INI Config tab strip should be present and the INI Config tab enabled. The General tab should carry the failure state — a warning icon, a red
-"Cannot Play" heading, an "EXE: Not found" row (red) above an "INI: Found" row (green), the installation path, and a muted explanatory line naming the missing `zoo.exe` — followed
-by the "Display" and "Your System" groups and a "Last played" stamp in the bottom-right corner. The status bar should surface a "Fix required" cue.
+no-installation states: the General / Game Config tab strip should be present and the Game Config tab enabled. The General tab should carry the failure state — a warning icon, a
+red "Cannot Play" heading, an "EXE: Not found" row (red) above an "INI: Found" row (green), the installation path, and a muted explanatory line naming the missing `zoo.exe` —
+followed by the "Display" and "Your System" groups and a "Last played" stamp in the bottom-right corner. The status bar should surface a "Fix required" cue.
 
 ### Actual Outcome
 
@@ -401,8 +401,8 @@ The test passed and the correct state was reached. Renaming `zoo.exe` drove the 
 variant of `CannotPlay` rather than promoting a different row. After boot, I inspected the settings row and confirmed it held the promoted installation's id, so — as expected — the
 failed verification did not roll back the promotion itself.
 
-The full tabbed shell returned, matching `ReadyToPlay`: both the General and INI Config tabs are present and the INI Config tab is enabled, because an installation is open. On the
-General tab the profile reads "Main"; the "Status" group renders the yellow warning icon, the red "Cannot Play" heading, "EXE: Not found" in red and "INI: Found" in green, the
+The full tabbed shell returned, matching `ReadyToPlay`: both the General and Game Config tabs are present and the Game Config tab is enabled, because an installation is open. On
+the General tab the profile reads "Main"; the "Status" group renders the yellow warning icon, the red "Cannot Play" heading, "EXE: Not found" in red and "INI: Found" in green, the
 installation path, and the muted line "zoo.exe is missing from this installation's directory. The game cannot be started because it technically doesn't exist. Open the installation
 manager to try fixing the problem." In the top-right of the status group, in the slot the launch button occupies on `ReadyToPlay`, sits an enabled "Open Installation Manager…"
 button instead. The "Display" and "Your System" groups render beneath with their (still hard-coded) values, each carrying a state-specific footnote described below, and the muted
@@ -611,7 +611,7 @@ startup preference set to `DefaultInstallation`, I launched the app and confirme
 This is the steady-state happy path — the boot the launcher performs on almost every ordinary run once a default has been chosen. Because the startup preference is
 `DefaultInstallation` and a `DefaultInstallationId` is stored *and* still resolves to a real row, the handler should read that id, call `GetByIdAsync`, get the row back, and pass
 straight through the `row is not null` gate to verify it — with no promotion step, since the pointer is already valid. Verification finds zoo.exe and zoo.ini both present, the INI
-synchronises, and the flow resolves to `ReadyToPlay`. The resulting screen is the same terminal, successful state documented in section 5: the full tabbed shell returns, the INI
+synchronises, and the flow resolves to `ReadyToPlay`. The resulting screen is the same terminal, successful state documented in section 5: the full tabbed shell returns, the Game
 Config tab is enabled, and the General tab shows the installation profile, a "Status" group with a green tick, "EXE: Found" and "INI: Found" rows, the installation path, and an
 enabled `Launch Game` button, followed by the "Display" and "Your System" groups and a "Last played" stamp. The only thing distinguishing this path from section 5 is the *route*
 in — the default resolves directly rather than being promoted — so the settings row should still hold the same id afterwards that it held before boot (nothing is re-persisted,
@@ -689,8 +689,8 @@ This is the direct-resolution counterpart to section 6, standing to it exactly a
 `DefaultInstallationId` is stored *and* still resolves to a real row, the handler should read that id, call `GetByIdAsync`, get the row back, and pass straight through the
 `row is not null` gate to verify it — with no promotion step, since the pointer is already valid. This time verification finds zoo.exe missing (`HasExe = false`) whilst zoo.ini is
 present, so the row is invalid and the flow should resolve to `CannotPlay` rather than `ReadyToPlay`. The screen is the same failure state documented in section 6: the full
-tabbed shell returns with the INI Config tab enabled, and the General tab shows a warning icon, a red "Cannot Play" heading, an "EXE: Not found" row (red) above an "INI: Found" row
-(green), the installation path, a muted line naming the missing zoo.exe, and — in the slot the launch button occupies on `ReadyToPlay` — an enabled "Open Installation Manager…"
+tabbed shell returns with the Game Config tab enabled, and the General tab shows a warning icon, a red "Cannot Play" heading, an "EXE: Not found" row (red) above an "INI: Found"
+row (green), the installation path, a muted line naming the missing zoo.exe, and — in the slot the launch button occupies on `ReadyToPlay` — an enabled "Open Installation Manager…"
 button, followed by the "Display" and "Your System" groups with their state-specific footnotes and a "Last played" stamp. The status bar should surface a "Fix required" cue. The
 only thing distinguishing this path from section 6 is the *route* in — the default resolves directly rather than being promoted — so the settings row should still hold the same id
 afterwards that it held before boot.
@@ -1345,7 +1345,7 @@ stays responsive rather than crashing.
 
 ### Notes/Thoughts
 
-## 4. Game Session Drift: launcher open while ZT1 runs, then the INI tab is re-activated
+## 4. Game Session Drift: launcher open while ZT1 runs, then the Game Config tab is re-activated
 
 ### Testing Strategy
 
@@ -1490,12 +1490,12 @@ stays responsive rather than crashing.
 
 ### Notes/Thoughts
 
-## 9. Editor Styles: the Options dialogue switches the INI Config tab between the Friendly and INI styles, live and without losing edits
+## 9. Editor Styles: the Options dialogue switches the Game Config tab between the Friendly and INI styles, live and without losing edits
 
 ### Testing Strategy
 
-1. Open an installation with a `zoo.ini` and choose `File → Options…`. In the *INI editor* group box select `Friendly style` (the default) and press `OK`. Open the INI Config tab:
-   the left list is captioned `Page` and holds eight pages (Display, Graphics, Sound, New Zoos, Controls, Help & Messages, Language, Troubleshooting), each setting sits in a
+1. Open an installation with a `zoo.ini` and choose `File → Options…`. In the *Config editor* group box select `Friendly style` (the default) and press `OK`. Open the Game Config
+   tab: the left list is captioned `Page` and holds eight pages (Display, Graphics, Sound, New Zoos, Controls, Help & Messages, Language, Troubleshooting), each setting sits in a
    group box with a plain-language label.
 2. On the Sound page confirm `Enable menu music` is ticked when the file holds `noMenuMusic=0`, and that the four volumes (menu music, game sound, first and second movie) are
    sliders reading `Silent – Full` with a `0 %`–`100 %` readout that is never clipped. Drag a slider, then Tab to another slider and press the arrow keys (1 %), `Page Up` and
@@ -1922,7 +1922,7 @@ stays responsive rather than crashing.
 
 ### Notes/Thoughts
 
-## 4. Read-only: a read-only folder or a read-only `zoo.ini` shows the INI tab strip, and a failed Save explains it
+## 4. Read-only: a read-only folder or a read-only `zoo.ini` shows the Game Config tab's read-only strip, and a failed Save explains it
 
 ### Testing Strategy
 

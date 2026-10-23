@@ -4,11 +4,11 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Boot;
 ///     The view model for the playable states — the active installation is open and its tabs are shown. A single <see cref="CanPlay" /> flag distinguishes the
 ///     <c>ReadyToPlay</c> outcome (the game can be launched) from the <c>CannotPlay</c> outcome (the installation is invalid or synchronisation failed); the two share an
 ///     identical layout, so there is one view and one view model. The flag is carried down into the tab view models, which render the difference. Routes launch outcomes from
-///     the General tab to chrome capabilities. Implements <see cref="IPendingChangesGuard" /> for the INI Config tab's unsaved edits. SDD §7.10, §9.2.
+///     the General tab to chrome capabilities. Implements <see cref="IPendingChangesGuard" /> for the Game Config tab's unsaved edits. SDD §7.10, §9.2.
 /// </summary>
 public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard, IDisposable
 {
-    /// <summary>The <see cref="SelectedTabIndex" /> of the INI Config tab.</summary>
+    /// <summary>The <see cref="SelectedTabIndex" /> of the Game Config tab.</summary>
     public const int IniConfigTabIndex = 1;
 
     private readonly IDialogService _dialogs;
@@ -29,15 +29,15 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard,
     /// <param name="lifecycle">Chrome service for requesting application shutdown.</param>
     /// <param name="dialogs">Chrome service for opening modeless dialogues.</param>
     /// <param name="mediator">The Mediator dispatcher (passed to the General tab).</param>
-    /// <param name="logger">Logger for unexpected failures whilst activating the INI Config tab and whilst handling a launch outcome.</param>
-    /// <param name="iniTabLogger">Logger passed to the INI Config tab.</param>
+    /// <param name="logger">Logger for unexpected failures whilst activating the Game Config tab and whilst handling a launch outcome.</param>
+    /// <param name="iniTabLogger">Logger passed to the Game Config tab.</param>
     /// <param name="iniEditorLogger">Logger passed on to the INI editor the tab creates.</param>
     /// <param name="iniPlaceholderLogger">Logger passed on to the No INI placeholder the tab may show.</param>
-    /// <param name="reopenOnIniTabAsync">Delegate that re-boots this installation and reopens on the INI Config tab (after a successful Create / Locate).</param>
-    /// <param name="styleState">The shared INI editor style, passed to the INI Config tab.</param>
+    /// <param name="reopenOnIniTabAsync">Delegate that re-boots this installation and reopens on the Game Config tab (after a successful Create / Locate).</param>
+    /// <param name="styleState">The shared INI editor style, passed to the Game Config tab.</param>
     /// <param name="iniErrorMessage">The boot's INI synchronisation error, or <see langword="null" />; shown on both tabs.</param>
-    /// <param name="writeAccess">The boot's write-access probe result, passed to the INI Config tab for its read-only warning.</param>
-    /// <param name="initialTabIndex">The tab to select once the tabs are built (0 = General, <see cref="IniConfigTabIndex" /> = INI Config).</param>
+    /// <param name="writeAccess">The boot's write-access probe result, passed to the Game Config tab for its read-only warning.</param>
+    /// <param name="initialTabIndex">The tab to select once the tabs are built (0 = General, <see cref="IniConfigTabIndex" /> = Game Config).</param>
     public PlayViewModel(InstallationSummary              installation,
                          bool                             canPlay,
                          Func<CancellationToken, Task>    rebootAsync,
@@ -98,7 +98,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard,
         IniConfigTab.PropertyChanged   += OnIniConfigTabPropertyChanged;
     }
 
-    /// <summary>Releases the INI Config tab's subscription to the shared editor style when the launcher navigates away from the Play state.</summary>
+    /// <summary>Releases the Game Config tab's subscription to the shared editor style when the launcher navigates away from the Play state.</summary>
     public void Dispose() => IniConfigTab.Dispose();
 
     /// <summary>General tab view model.</summary>
@@ -107,7 +107,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard,
     /// <inheritdoc />
     public bool HasPendingChanges => IniConfigTab.HasPendingChanges;
 
-    /// <summary>INI Config tab view model.</summary>
+    /// <summary>Game Config tab view model.</summary>
     public IniConfigTabViewModel IniConfigTab { get; }
 
     /// <summary><see langword="true" /> when the active installation can be launched (the ReadyToPlay outcome); <see langword="false" /> for CannotPlay.</summary>
@@ -116,7 +116,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard,
     /// <summary>The identifier of the open installation — used by the main window to re-verify it after the Installation Manager reports a change.</summary>
     public Guid InstallationId { get; }
 
-    /// <summary>The selected tab (0 = General, 1 = INI Config). Selecting the INI Config tab (re)loads it from disk.</summary>
+    /// <summary>The selected tab (0 = General, 1 = Game Config). Selecting the Game Config tab (re)loads it from disk.</summary>
     [ ObservableProperty ]
     public partial int SelectedTabIndex { get; set; }
 
@@ -180,7 +180,7 @@ public sealed partial class PlayViewModel : ViewModelBase, IPendingChangesGuard,
         {
             // ActivateAsync already turns a load failure into either the placeholder or a dialogue; this catch only stops an unexpected fault escaping the
             // fire-and-forget call.
-            _logger.LogError(ex, "Unexpected failure whilst activating the INI Config tab.");
+            _logger.LogError(ex, "Unexpected failure whilst activating the Game Config tab.");
         }
     }
 

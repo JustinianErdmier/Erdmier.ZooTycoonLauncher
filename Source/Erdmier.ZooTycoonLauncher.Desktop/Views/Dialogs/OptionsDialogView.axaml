@@ -46,12 +46,12 @@
             </StackPanel>
         </controls:GroupBox>
 
-        <controls:GroupBox Header="INI editor"
+        <controls:GroupBox Header="Config editor"
                            Padding="{StaticResource GroupBoxPadding}">
             <StackPanel Orientation="Vertical"
                         Spacing="{StaticResource GapRelated}">
                 <TextBlock Classes="MutedText"
-                           Text="Show settings in the INI Config tab:" />
+                           Text="Show settings in the Game Config tab:" />
 
                 <RadioButton Content="{Binding FriendlyStyleName}"
                              GroupName="EditorStyle"

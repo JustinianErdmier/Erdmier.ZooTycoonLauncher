@@ -1,6 +1,8 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig;
 
-/// <summary>Renders a key and its raw value the way the INI Config editor shows them in the chosen style, for read-only displays such as the Restore Previous INI differences.</summary>
+/// <summary>
+///     Renders a key and its raw value the way the Game Config editor shows them in the chosen style, for read-only displays such as the Restore Previous INI differences.
+/// </summary>
 public static class IniDisplayText
 {
     private const string Breadcrumb = " › ";

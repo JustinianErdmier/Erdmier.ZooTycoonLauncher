@@ -1,7 +1,7 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig;
 
 /// <summary>
-///     The INI Config tab's non-editor sub-state: loading, no INI present (with Create / Locate actions), or unreadable INI (SDD §9.3.1; milestone 10 spec C5, C9, §5.3).
+///     The Game Config tab's non-editor sub-state: loading, no INI present (with Create / Locate actions), or unreadable INI (SDD §9.3.1; milestone 10 spec C5, C9, §5.3).
 /// </summary>
 public sealed partial class IniPlaceholderViewModel : ViewModelBase
 {
@@ -93,7 +93,7 @@ public sealed partial class IniPlaceholderViewModel : ViewModelBase
     /// <param name="hasExe">Whether the installation has <c>zoo.exe</c>; both actions are disabled without it, as in the Fix dialogue.</param>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="dialogs">Chrome service for the file picker and error dialogue.</param>
-    /// <param name="reopenOnIniTabAsync">Re-boots the open installation and reopens on the INI Config tab (called after a successful action).</param>
+    /// <param name="reopenOnIniTabAsync">Re-boots the open installation and reopens on the Game Config tab (called after a successful action).</param>
     /// <param name="logger">Logger for failures.</param>
     /// <returns>The placeholder.</returns>
     public static IniPlaceholderViewModel NoIni(Guid                             installationId,

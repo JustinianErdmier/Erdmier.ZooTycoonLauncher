@@ -45,10 +45,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="logger">Logger for unexpected boot-dispatch and picker-initialisation failures.</param>
     /// <param name="gridLogger">Logger passed to freshly-built picker grids so their message-driven reload failures are recorded.</param>
     /// <param name="playLogger">Logger passed to freshly-built <see cref="PlayViewModel" /> instances so their last-resort catches are recorded.</param>
-    /// <param name="iniTabLogger">Logger passed on to the INI Config tab of each <see cref="PlayViewModel" />.</param>
+    /// <param name="iniTabLogger">Logger passed on to the Game Config tab of each <see cref="PlayViewModel" />.</param>
     /// <param name="iniEditorLogger">Logger passed on to the INI editor of each <see cref="PlayViewModel" />.</param>
-    /// <param name="iniPlaceholderLogger">Logger passed on to the INI tab's No INI placeholder of each <see cref="PlayViewModel" />.</param>
-    /// <param name="styleState">The shared INI editor style, passed on to the INI Config tab of each <see cref="PlayViewModel" />.</param>
+    /// <param name="iniPlaceholderLogger">Logger passed on to the Game Config tab's No INI placeholder of each <see cref="PlayViewModel" />.</param>
+    /// <param name="styleState">The shared INI editor style, passed on to the Game Config tab of each <see cref="PlayViewModel" />.</param>
     public MainWindowViewModel(IMediator                          mediator,
                                IApplicationLifecycle              lifecycle,
                                IDialogService                     dialogs,
@@ -86,7 +86,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ NotifyCanExecuteChangedFor(nameof(CloseInstallationCommand)) ]
     public partial object? ActiveContent { get; set; }
 
-    // Disposes the outgoing state view model when it holds disposable resources (the picker's grid, and PlayViewModel, whose INI Config tab follows the
+    // Disposes the outgoing state view model when it holds disposable resources (the picker's grid, and PlayViewModel, whose Game Config tab follows the
     // shared editor style), so it unregisters from the messenger and the style state as soon as the main window navigates away from it.
     partial void OnActiveContentChanged(object? oldValue, object? newValue)
     {
@@ -365,7 +365,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     // The boot does not otherwise load the launcher options, so the stored editor style is read once here, after the Looking state and status text are set and before any editor
-    // exists: the View menu's bullet is then right in every state, whether or not an INI editor ever opens. A failure keeps the style already in force; the INI Config tab's own lazy load stays harmless beside this one.
+    // exists: the View menu's bullet is then right in every state, whether or not an INI editor ever opens. A failure keeps the style already in force; the Game Config tab's own lazy load stays harmless
+    // beside this one.
     private async Task LoadStoredStyleAsync(CancellationToken cancellationToken)
     {
         if (_hasLoadedStyle)

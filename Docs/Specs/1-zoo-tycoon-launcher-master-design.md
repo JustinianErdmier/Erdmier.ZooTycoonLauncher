@@ -39,6 +39,7 @@
 | 1.14    | 22 October 2026   | Justinian | Milestone 11.1 (style tokens and follow-ups; spec `milestone-11.1-style-tokens-and-follow-ups-design.md`). Typography, spacing and the repeated control sizes join colours as named tokens: `Styles/Typography.axaml`, `Styles/Spacing.axaml` and `Styles/Controls.axaml` sit beside `Colours.axaml`, with `SpaceExtension` building margins and paddings from token names, an architecture test per group, a `TokenReferencesTests` check that every token and resource reference resolves, and an `AvaloniaProperties_ArePublic` check (§9.2.2, §9.11, §11.5). Spacing snaps onto the Windows 9x guideline values (dialog units converted to pixels), with measured icon-gap tokens and a group-box padding derived from the tokens. Faded text uses one method, the muted grey (`MutedText`); icons draw pixel-crisp; the Options dialogue refuses Cancel and close while a save is in flight, and the Restore dialogue guards its Cancel; the colour test covers every `*Brush` attribute, element content and split setters; the persistence test helpers share one `ProjectPaths`. §9 and conventions.md describe the tokens, and DW-24 keeps only its second half (reusable stack and dock panel controls). Follow-ups: only keyboard focus keeps an INI field focused (a pointer-focused field releases once its value is set; a click elsewhere or Esc clears it); `ForegroundMuted` darkens to `#666666`; the installation grid's headers are inert (`InertHeaders`) and its columns no longer resize; and the colour registry in conventions.md is trimmed to the 11 keys `Colours.axaml` defines, checked by `ColourRegistryTests`. |
 | 1.15    | 22 October 2026   | Justinian | Headless view-load test. §11.4 adds `ViewLoadTests`, which loads every view under the real application resources with its designer view model and fails on a load-time exception or an Avalonia warning; §11.5 notes that a missing `{StaticResource}` on a control property stays silent at run time, so `TokenReferencesTests` remains its guard; §11.7 lists `Avalonia.Headless.XUnit`. §11.4 also adds `IniFieldFocusTests`, which drives the real INI editor with keyboard and pointer input; they found that `IniFieldFocusRelease.IsWithin` missed a drop-down's items when the pop-up is an overlay, and §9.3.2 now says it walks logical parents first. |
 | 1.16    | 22 October 2026   | Justinian | Milestone 12 (INI editor display style; spec `milestone-12-ini-editor-display-style-design.md`). The INI Config editor gains two display styles chosen in Options: a Friendly style (the default) that groups settings into eight pages by purpose with plain labels, meaning-based values and volume sliders, and an INI style that shows `zoo.ini` literally (the inverted `noMenuMusic` included). §5.1 / §5.2 / §5.5 / §6.2 add `LauncherSettings.IniEditorStyle` and the `IniEditorStyle` SmartEnum; §9.3 gains §9.3.3 *Display styles*; §9.7 makes the diff follow the style; §9.8 adds the *INI editor* group box, which applies on `OK`; §13.2 names both styles. Follow-ups: a **View** menu (*Config layout* ▸ *Friendly style* / *INI style*) switches the style from the main window (§9.10, §9.3.3); the Friendly cash keys describe the new-zoo starting-cash picker; the language codes sit on their own line; the Restore dialogue's Friendly key column uses the system face (§9.7). |
+| 1.17    | 23 October 2026   | Justinian | Milestone 13 (Game Config tab rename). The INI Config tab is renamed Game Config for players throughout (§2.2, §3.1, §5.1, §7.1, §7.2, §7.3–§7.5, §9, §9.1, §9.3, §9.3.1, §9.3.3, §9.8 Options copy, whose group box becomes *Config editor*, §9.12, §11.4, §13.2, §13.5.1, §14.5, §15), and its documented access key moves to Alt-C. §9.3 records why the code identifiers keep `IniConfig`. |
 
   
 ---  
@@ -137,7 +138,7 @@ launcher tracks three kinds: `Original` (captured once when the installation was
 
 **Drift.** A difference between the `Current` snapshot's values and the actual `zoo.ini` on disk. Drift is tiered: a changed user setting archives `Current` to `Historical`  
 (`Trigger = Manual`) before the new values are adopted; game-managed and unrecognised changes are adopted silently, with no archive. Detection runs whenever the installation  
-opens (at boot, or when switching installations), when the INI Config tab is activated, and when saving.
+opens (at boot, or when switching installations), when the Game Config tab is activated, and when saving.
 
 **Scenarios.** The `[scenario]` section of `zoo.ini` is a list of two-letter keys whose values control which scenarios are flagged complete or locked. The full mapping (key →  
 scenario, value → state) is unverified at the time of writing and is a Phase 0 research deliverable ([Section 7.8](#78-scenarios-research-workflow)).
@@ -173,18 +174,18 @@ a 32-bit Windows executable from 2001; Avalonia's cross-platform UI capability i
 4. **Persist per-installation INI state** to a per-installation SQLite database, modelled as EAV snapshots with `Original`, `Current`, and `Historical` tables.
 5. **Parse `zoo.ini`** into an `IniDocument` and extract every recognised key's raw value via `ZooIniDefaults`, preserving comments, blank lines, key ordering, and  
    unrecognised keys for byte-fidelity round-trip writes.
-6. **Edit every recognised INI setting** through a dedicated INI Config tab, grouped by section, with strongly typed inputs (checkbox, NumericUpDown, TextBox, ComboBox).
+6. **Edit every recognised INI setting** through a dedicated Game Config tab, grouped by section, with strongly typed inputs (checkbox, NumericUpDown, TextBox, ComboBox).
 7. **Atomic INI writes** with crash-recoverable ordering: archive `Current` → write the file → replace `Current`, in a single EF transaction; the file write operation itself is a
    temp-file +  
    `Move(overwrite: true)`.
-8. **Manual-edit detection.** When `zoo.ini` is mutated outside the launcher, the launcher detects the drift (on next open, on INI tab activation, and on save) and applies the  
-   tiered rule: a changed user setting archives the prior `Current` to `Historical` before adopting the file's values; game-managed and unrecognised changes are adopted  
+8. **Manual-edit detection.** When `zoo.ini` is mutated outside the launcher, the launcher detects the drift (on next open, on Game Config tab activation, and on save) and applies 
+   the tiered rule: a changed user setting archives the prior `Current` to `Historical` before adopting the file's values; game-managed and unrecognised changes are adopted  
    silently, with no archive.
-9. **Historical restore.** The `Restore previous…` button on the INI tab opens a dialogue listing every prior version (timestamped) and lets the user restore any of them.
-10. **INI Config tab** that hosts either the editor or a placeholder — Loading, No INI, or could-not-be-read — based on the installation's state, with `Create` and `Locate`
+9. **Historical restore.** The `Restore previous…` button on the Game Config tab opens a dialogue listing every prior version (timestamped) and lets the user restore any of them.
+10. **Game Config tab** that hosts either the editor or a placeholder — Loading, No INI, or could-not-be-read — based on the installation's state, with `Create` and `Locate`
     recovery actions on the No INI placeholder (the could-not-be-read placeholder has none yet). A missing `zoo.ini` resolves the main window to **Cannot Play** with the
     Launch Game button disabled — the launcher will not start the game without a parsed INI.
-11. **Scenarios section** within the INI tab with verified key→scenario→tier mapping (Phase 0 research) rendered as a checkbox grid.
+11. **Scenarios section** within the Game Config tab with verified key→scenario→tier mapping (Phase 0 research) rendered as a checkbox grid.
 12. **Screen modes panel** on the General tab showing the total available display modes and the ZT1-compatible subset, with a research-driven filter predicate (Phase 0).
 13. **Launch Game** kicks the game off as a child process with the correct working directory and respects the `CloseAfterGameLaunch` setting.
 
@@ -388,7 +389,7 @@ public sealed class LauncherSettings
         = LauncherStartupPreference.DefaultInstallation;  
     public bool CloseAfterGameLaunch { get; set; }  
     public Guid? DefaultInstallationId { get; set; }  
-    public IniEditorStyle IniEditorStyle { get; set; } = IniEditorStyle.Friendly; // How the INI Config editor presents zoo.ini (§9.3.3)  
+    public IniEditorStyle IniEditorStyle { get; set; } = IniEditorStyle.Friendly; // How the Game Config editor presents zoo.ini (§9.3.3)  
 }  
 ```  
 
@@ -699,8 +700,8 @@ stateDiagram
   vlo --> pi:has zoo.exe
   vlo --> cp:missing zoo.exe
   pi --> rtp:parse OK (Current updated if drift detected)
-  pi --> cp:HasIni = false (INI tab shows the No INI placeholder)
-  pi --> cp:read or snapshot error (INI tab shows the could-not-be-read placeholder)
+  pi --> cp:HasIni = false (Game Config tab shows the No INI placeholder)
+  pi --> cp:read or snapshot error (Game Config tab shows the could-not-be-read placeholder)
   rtp --> [*]
   cp --> [*]
   ogi --> [*]
@@ -736,12 +737,12 @@ stateDiagram
     - **Write probe.** When `zoo.exe` is present, `IInstallationWriteProbe` also tests whether the folder accepts writes: it creates and deletes a throwaway
       `zoo.ini.tmp.<guid>` file (the pattern Save's orphan cleanup already removes) and reads `zoo.ini`'s Read-only attribute. The result is `Writable`, `FolderReadOnly`
       (the create is denied), `FileReadOnly` (`zoo.ini` carries the Read-only attribute) or `Unknown` (any other failure; the launcher says nothing). The probe never fails
-      the boot; the boot result carries the outcome to the INI tab (§9.3.1).
+      the boot; the boot result carries the outcome to the Game Config tab (§9.3.1).
     - In this scope, "candidate" refers to any game installation path, whether it was already registered, being added, or discovered by the auto-locate process.
 - **ParseIni**:
     - Runs only when the installation has `HasExe = true`.
-    - When `HasIni = false`, the window settles to **Cannot Play** with the Launch Game button disabled; the INI tab shows the No INI placeholder.
-    - When reading `zoo.ini` or the INI snapshot store fails, the window settles to **Cannot Play** with the Launch Game button disabled; the INI tab shows the
+    - When `HasIni = false`, the window settles to **Cannot Play** with the Launch Game button disabled; the Game Config tab shows the No INI placeholder.
+    - When reading `zoo.ini` or the INI snapshot store fails, the window settles to **Cannot Play** with the Launch Game button disabled; the Game Config tab shows the
       could-not-be-read placeholder, carrying the failure's description. Malformed content is parsed leniently and never produces this error.
 - **`LastOpenedUtc` semantics.**:
     - Set every time an installation becomes the active installation in the main window — auto-resolved at startup, picked from the picker, or selected from the Installation
@@ -852,9 +853,9 @@ Changes propagate via `IMessenger.Send(InstallationChangedMessage | Installation
 Installation Manager dialogue's grid, the main window's tab content, the picker's grid (the `OpenGameInstallation` state).
 
 When the dialogue closes having reported a change, the main window's response depends on what it is currently showing. From **Ready to Play** or **Cannot Play**, the §7.3.2  
-guard runs first if the INI tab has unsaved edits — declining keeps the edits and the view as it is; otherwise the launcher re-verifies the open installation with a pointed  
-boot (§7.2.7), so a rename shows, `Cannot Play` becomes `Ready to Play` after a fix, and a deleted installation falls back to the normal resolution (§7.2.4). From **No Game  
-Installation Found**, the launcher re-runs the normal boot, so a first installation added via the manager is picked up without requiring a restart. The picker needs nothing  
+guard runs first if the Game Config tab has unsaved edits — declining keeps the edits and the view as it is; otherwise the launcher re-verifies the open installation with a 
+pointed boot (§7.2.7), so a rename shows, `Cannot Play` becomes `Ready to Play` after a fix, and a deleted installation falls back to the normal resolution (§7.2.4). From **No 
+Game Installation Found**, the launcher re-runs the normal boot, so a first installation added via the manager is picked up without requiring a restart. The picker needs nothing  
 beyond its own grid refresh. Opening the manager and closing it without a change never prompts.
 
 #### 7.2.3 Edit Installation
@@ -890,8 +891,8 @@ Enabled only when validity is not `Valid`. Per-validity flow:
 
 - **`InvalidNoExe`** → folder picker rooted at current `Path`. If the chosen folder contains `zoo.exe`, update `Path`, recompute `HasExe` / `HasIni`, set `ModifiedUtc = now`. If  
   still no `zoo.exe`, surface a non-blocking error in the dialogue.
-- **`InvalidNoIni`** → the *Fix INI* group offers the same two actions as the **No INI Present** group box ([Section 7.4](#74-ini-config-tab--no-ini-present-state)):
-  `Create` and `Locate…`. They share the INI tab's commands; a successful fix writes `Original` and `Current` snapshots (or archives a surviving `Current`, §7.4), the group
+- **`InvalidNoIni`** → the *Fix INI* group offers the same two actions as the **No INI Present** group box ([Section 7.4](#74-game-config-tab--no-ini-present-state)):
+  `Create` and `Locate…`. They share the Game Config tab's commands; a successful fix writes `Original` and `Current` snapshots (or archives a surviving `Current`, §7.4), the group
   flips to *INI present*, and closing the dialogue re-boots the installation. A failure shows inline in maroon and leaves the group in place. Copy From Another Installation
   is not offered (DW-40).
 - **`InvalidNoExeOrIni`** → relocation prompt first; the *Fix INI* buttons stay disabled until `zoo.exe` is found, then offer the same two actions without closing.
@@ -916,7 +917,7 @@ click), the boot falls back to the normal startup resolution (§7.1) instead.
 No unsaved-changes guard is needed here: the picker only appears when no installation is active (§7.1), so there is never a pending edit to lose. The guard applies  
 instead when switching installations from the Installation Manager (§7.3.2).
 
-### 7.3 INI Config tab — Ini Present state
+### 7.3 Game Config tab — Ini Present state
 
 The default state when `HasIni = true` and the last parse succeeded. Sections rendered top-to-bottom in the order: **User**, **UI**, **Map**, **Advanced**, **AI**, **Debug**, *
 *Language**, **Scenarios**. Each section is a collapsible group with controls matched to its values' `IniValueKind`:
@@ -980,7 +981,7 @@ A two-column grid of checkboxes, one per scenario key:
 - Tier grouping: checkboxes are grouped by `ScenarioCampaignTier` (Tutorial first, then Beginner / Intermediate / Advanced / Expert, then Expansion content, then Unknown). Tier  
   labels are rendered as small read-only headers between groups.
 
-### 7.4 INI Config tab — No INI Present state
+### 7.4 Game Config tab — No INI Present state
 
 The tab is cleared and replaced with a single group box labelled **No INI Present**, explaining that `zoo.ini` is missing and is required to play. It offers two buttons,
 `Create zoo.ini from defaults` (the default) and `Locate existing zoo.ini…` (§9.3.1). Both are disabled while either runs, and while the installation has no `zoo.exe`
@@ -1004,15 +1005,15 @@ The shared step:
   carrying the read-only strip's explanation (§9.3.1). Otherwise, and for any other IO failure, it is `Ini.WriteFailed` with the OS message.
 
 On success, on `Ini.AlreadyExists`, or when the installation has vanished (a not-found error), the launcher re-boots the open installation (a pointed boot, §7.2.7) and
-reopens on the INI Config tab with the editor showing. Any other failure appears in a `Cannot Create zoo.ini` / `Cannot Copy zoo.ini` dialogue and the box stays.
+reopens on the Game Config tab with the editor showing. Any other failure appears in a `Cannot Create zoo.ini` / `Cannot Copy zoo.ini` dialogue and the box stays.
 
 > **Not built.** A third action, **Copy From Another Installation** (a selector listing the other registered installations; it would copy the chosen installation's
 > `zoo.ini`), is deferred as DW-40.
 
-### 7.5 INI Config tab — Corrupted INI state
+### 7.5 Game Config tab — Corrupted INI state
 
 > **MVP note.** Not materialised (§9.3.1). A read or snapshot-store failure resolves to Cannot Play with the error shown on the General tab and in a
-> `zoo.ini could not be read` placeholder on the INI tab; the recovery actions below are future work.
+> `zoo.ini could not be read` placeholder on the Game Config tab; the recovery actions below are future work.
 
 The tab is cleared and replaced with a single group box labelled **Corrupted INI**, explaining the launcher cannot read or write the file. Three buttons:
 
@@ -1235,7 +1236,7 @@ The locator returns `LocatedDirectory(path) | NotFound`. It never opens any dial
 
 ## 9. User interface
 
-The MVP UI uses **Avalonia 11 + `Classic.Avalonia`** for a Windows 95/98 aesthetic. The main window is a single `ClassicWindow` with tabs along the top (General, INI Config).
+The MVP UI uses **Avalonia 11 + `Classic.Avalonia`** for a Windows 95/98 aesthetic. The main window is a single `ClassicWindow` with tabs along the top (General, Game Config).
 Modal  
 dialogues use `ClassicWindow` too so they get proper title bars (a fix established in the Ref build).  
 Cross-cutting UI conventions — colour registry, standard INI row layout, group-box + icon header pattern, dialogue footer rules, status-bar help wiring,  
@@ -1253,7 +1254,7 @@ Every colour, font, spacing and repeated control size the views use is a named t
 The authoritative visual reference for the MVP is the **live hi-fi prototype in Claude Design** (HTML/CSS/JS; built from the Claude Design handoff bundle that produced this  
 revision of the SDD). A single screen-recording GIF at [  
 `Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](../UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) is committed to the repo as a quick reference  
-covering every state, every dialogue and the INI tab help affordance (it also shows a dark/light theme switch, which the launcher does not have). The prototype is
+covering every state, every dialogue and the Game Config tab help affordance (it also shows a dark/light theme switch, which the launcher does not have). The prototype is
 *not* a production target — match the visual output, not its internal structure.
 
 ### 9.1 Main window and chrome
@@ -1262,9 +1263,9 @@ covering every state, every dialogue and the INI tab help affordance (it also sh
   fixed-size utility window. `ClassicWindow.CanMinimise` / `.CanMaximise` resolve to `false`, and an explicit style on the caption-button template collapses the minimise and
   restore visuals (the Classic theme honours those properties only for `:fullscreen` / `:dialog:cantresize`).
 - **Window width.** **480 px** while booting (the Looking for Zoo Tycoon state) and **720 px** once booted, driven by `MainWindowViewModel.IsBooting`. The booted width is fixed
-  by the INI Config tab's footer button row needing to sit on a single line; height tracks content (`SizeToContent="Height"`). Neither dimension is user-resizable.
+  by the Game Config tab's footer button row needing to sit on a single line; height tracks content (`SizeToContent="Height"`). Neither dimension is user-resizable.
 - **Menu strip.** Just **File** and **Help** — Edit and View are removed. See §9.10 for the full item list.
-- **Tab strip.** Two tabs along the top edge of the content area for the `ReadyToPlay` and `CannotPlay` states: **General** (Alt-G) and **INI Config** (Alt-I). The strip is
+- **Tab strip.** Two tabs along the top edge of the content area for the `ReadyToPlay` and `CannotPlay` states: **General** (Alt-G) and **Game Config** (Alt-C). The strip is
   absent — not just disabled — in the `LookingForZooTycoon`, `NoGameInstallationFound`, and `OpenGameInstallation` states; with no installation open, there is nothing to edit.
 - **Status bar.** Two cells while booting (primary message + version label); three cells once booted (primary message + secondary detail + version label). `MainWindowViewModel`
   owns the message text and an `IsStatusError` flag; `ErrorToBrushConverter` tints the secondary cell `AccentRed` for `Fix required` (Cannot Play only).
@@ -1279,7 +1280,7 @@ The five states reflect the startup state machine (§7.1). The hi-fi prototype (
   confirmation. A footer line shows `Last played: <localised UTC>` or `Never`.
 - **Cannot Play** — same overall shape as Ready to Play. The Status group box headlines the failure with a per-sub-state message keyed off `(HasExe, HasIni)` — missing EXE,
   missing INI, or missing both — and swaps the `Launch Game` slot for an `Open Installation Manager…` default button (there is no longer a separate disabled Launch Game button
-  or duplicated Fix control). The missing-INI-only message ends "Use the INI Config tab to create or locate zoo.ini." The Display and Your System group boxes stay **un-muted** —
+  or duplicated Fix control). The missing-INI-only message ends "Use the Game Config tab to create or locate zoo.ini." The Display and Your System group boxes stay **un-muted** —
   detection still ran — each carrying a state-specific footnote (e.g. "Display detection succeeded, but the game cannot launch until the EXE is restored"). The
   `Last played` footer line is still shown.
 - **No Game Installation Found** — a heading explaining the auto-locate scan came up empty, an `Add Installation` default button, and an `Auto-locate trail` group box listing
@@ -1373,12 +1374,15 @@ folder, and vice versa. New section, tab, or state? Adding the pair is a single 
 The hi-fi prototype GIF at [`Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](../UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) — and the live  
 prototype it was recorded from — are the visual reference. They are reference, not pixel-perfect contracts; minor affordances may be added during implementation.
 
-### 9.3 INI Config tab
+### 9.3 Game Config tab
+
+The tab is labelled *Game Config* for players, but its code keeps the `IniConfig` names (`IniConfigTabViewModel`, `Views/IniConfig/`, the Application `IniConfig` slice)
+on purpose: the tab only ever shows `zoo.ini`, so the code names describe it accurately. Do not rename them to match the label.
 
 The editor has two display styles, chosen in Options (§9.8) or from the View menu (§9.10): the **Friendly style** (the default) and the **INI style**. This section describes the
 INI style; §9.3.3 covers what the Friendly style changes. Both read and write the same keys — the style changes only how settings are shown.
 
-The INI Config tab uses a two-pane split layout rather than the long vertically-scrolled accordion of the Ref launcher:
+The Game Config tab uses a two-pane split layout rather than the long vertically-scrolled accordion of the Ref launcher:
 
 - **Section list (left).** A list of the seven sections in INI order: `[user]`, `[UI]`, `[advanced]`, `[ai]`, `[debug]`, `[language]`, `[Map]`; `[scenario]` joins as the eighth
   after the Phase 0 research (§7.8, DW-04). The caption above it reads `Section`.
@@ -1401,7 +1405,7 @@ saved, and `zoo.ini` keeps the plain integer. The hints read `$0–$10,000,000` 
 read-only grey, no spinner): the curated language picker is the only way to change them, and a pair the picker does not list shows both numbers with the picker blank. Reset,
 Restore defaults and Restore previous still update both rows.
 
-#### 9.3.1 INI Config sub-states
+#### 9.3.1 Game Config sub-states
 
 `IniConfigTabView` hosts a `ContentControl` bound to `IniConfigTabViewModel.Content` (§9.2.1), which is either the editor or one of three `IniPlaceholderViewModel` cases:
 
@@ -1460,9 +1464,10 @@ strip and the sub-states (§9.3.1) behave the same in both styles.
 
 The style reaches the editor through `IIniEditorStyleState`, a singleton in the composition root that holds the current style, a `Version` and a `StyleChanged` event. The
 main window loads the stored style once, during the first boot, after the Looking-for-Zoo-Tycoon state and status text are set and before any editor exists, with a `Version` guard
-(below); a failed or throwing read is logged and ignored, keeping the default, and the boot completes. The INI tab's own lazy load before it builds its first editor remains as a
-guarded fallback; a failed read keeps the style already in force. `Version` guards the race with a save: a load that was in flight when Options saved a style does not overwrite it.
-A save in Options, or a choice in the View menu, sets the state; its `StyleChanged` event makes the INI tab call `IniEditorViewModel.ApplyStyle` on an open editor.
+(below); a failed or throwing read is logged and ignored, keeping the default, and the boot completes. The Game Config tab's own lazy load before it builds its first editor 
+remains as a guarded fallback; a failed read keeps the style already in force. `Version` guards the race with a save: a load that was in flight when Options saved a style does not 
+overwrite it. A save in Options, or a choice in the View menu, sets the state; its `StyleChanged` event makes the Game Config tab call `IniEditorViewModel.ApplyStyle` on an 
+open editor.
 
 - **INI style** — §9.3 as written, with every control following the file literally: the inverted `[UI]/noMenuMusic` is a plain check box (`No menu music`, ticked when the file
   holds `1`), and the attenuation and movie-volume keys are raw number boxes.
@@ -1566,7 +1571,7 @@ exactly *N* keys written.
 
 - **Startup** — a muted line, *"When the launcher opens, restore:"*, then a four-radio group bound to `LauncherStartupPreference`. Labels: `The default installation`,
   `The installation I last played`, `The installation I last opened in the launcher`, `No installation — show the picker`.
-- **INI editor** — a muted line, *"Show settings in the INI Config tab:"*, then two radios bound to `IniEditorStyle`: `Friendly style` and `INI style`. Under them, a muted
+- **Config editor** — a muted line, *"Show settings in the Game Config tab:"*, then two radios bound to `IniEditorStyle`: `Friendly style` and `INI style`. Under them, a muted
   description of the selected one: *"Settings are grouped by what they do, with plain names and volumes that go up as they get louder."* or *"Settings appear exactly as
   zoo.ini stores them: its sections, key names and raw values."* (§9.3.3).
 - **Game launch** — single checkbox: `Close launcher after the game starts`. Muted helper, indented under the checkbox: *"When ticked, the launcher exits as soon as `zoo.exe`
@@ -1625,7 +1630,7 @@ one way only, by the muted grey (`MutedText` or `ForegroundMuted`), and icons dr
 
 A single screen-recording GIF — [`Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](../UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) — captures
 every  
-state, every dialogue and the INI Config tab help affordance in one pass (its dark/light theme switch no longer exists). The recording is the in-repo glance; the
+state, every dialogue and the Game Config tab help affordance in one pass (its dark/light theme switch no longer exists). The recording is the in-repo glance; the
 **live hi-fi prototype in Claude Design** remains the authoritative visual reference (it surfaces hover behaviour, transitions, and the help-on-hover footer affordance that
 a static frame can't show).
 
@@ -1705,7 +1710,7 @@ EF Core against an ephemeral SQLite database per test (`Filename=:memory:` for n
 
 ### 11.4 `Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit`
 
-View-model logic without an Avalonia runtime, plus several headless view tests: INI field view models, the editor (change tracking, footer, save / reset / restore), the INI
+View-model logic without an Avalonia runtime, plus several headless view tests: INI field view models, the editor (change tracking, footer, save / reset / restore), the Game Config
 tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`, and a catalogue-integrity check against `ZooIniDefaults`.
 
 - `IniConfigTabViewModel` sub-state selection — editor / loading / no-INI / could-not-be-read, from `HasIni` and the `GetIniConfigQuery` load result or error.
@@ -1722,7 +1727,7 @@ tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`
   picker plus two hidden code rows; conversions round-trip and follow the spec formulae; the volume rows are sliders and `noMenuMusic` is literal in the INI layout; footnotes
   sit on their groups; every visible Friendly row has a label and help), `IniSliderFieldViewModelTests` (percentage mapping both ways, steps of 100, an off-step file value
   kept and the row clean until the slider moves), `IniLanguageFieldViewModelTests`, the style cases in `IniEditorViewModelTests` and `IniFieldViewModelTests`,
-  `IniDisplayTextTests` and `RestorePreviousIniDialogViewModelTests` (the Restore diff in each style), `OptionsDialogViewModelTests` (the *INI editor* group applies on `OK`),
+  `IniDisplayTextTests` and `RestorePreviousIniDialogViewModelTests` (the Restore diff in each style), `OptionsDialogViewModelTests` (the *Config editor* group applies on `OK`),
   `IniConfigTabViewModelTests` (the lazy options load and its stale-read guard) and `MainWindowViewModel*Tests`. `IniEditorStyleTests` (Domain), `LauncherOptionsTests`
   (Application) and `LauncherDbContextTests` (Infrastructure) cover the SmartEnum, the options round trip and the `'Friendly'` column default.
 - **Both editor styles (headless):** `IniFriendlyEditorViewTests` hosts the real `IniEditorView` in the Friendly style and checks that a drop-down, a check box (its own
@@ -1841,8 +1846,8 @@ will be written.
   delete rule), Installation Manager dialogue (DataGrid + actions), Installation Info dialogue.
 - **Startup flow.** Boot pipeline + state machine, Looking for Zoo Tycoon / Ready to Play / Cannot Play / No Game Installation Found / Open Game Installation wireframes wired to  
   states, last-opened / last-played timestamping.
-- **INI Config tab.** The editor (split layout, seven sections with `[scenario]` joining as the eighth after Phase 0, hover + status help — §9.3.2), the No INI placeholder with its
-  recovery actions (§7.4), the read-only strip (§9.3.1), Restore Previous INI dialogue with inline diff (§9.7), tooltip parity fix, atomic save with snapshot archiving, and the
+- **Game Config tab.** The editor (split layout, seven sections with `[scenario]` joining as the eighth after Phase 0, hover + status help — §9.3.2), the No INI placeholder with
+  its recovery actions (§7.4), the read-only strip (§9.3.1), Restore Previous INI dialogue with inline diff (§9.7), tooltip parity fix, atomic save with snapshot archiving, and the
   Friendly / INI display styles (§9.3.3).
 - **Screen modes on the General tab.** Available modes count, ZT1-compatible modes count, resolution dropdown sourced from the filtered list.
 - **Launch Game.** Process start with working-directory and arguments matched to the Ref launcher; `CloseAfterGameLaunch` honoured.
@@ -1893,8 +1898,8 @@ Planned phases (§13.3, §13.4), permanent non-goals (§3.2) and risks (§14.5) 
 
 | ID    | Item                                                                                                                                                                                                                                                                                                                                                                                                                                          | Origin                           |
 |-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|
-| DW-04 | The `[scenario]` section of the INI Config tab (§5.4, §7.8), after the Phase 0 scenarios spike (§13.1).                                                                                                                                                                                                                                                                                                                                       | INI Config core spec             |
-| DW-05 | The General tab keeps its boot-time Cannot Play / "could not read `zoo.ini`" message after a later INI-tab retry succeeds; it should recover without a reopen.                                                                                                                                                                                                                                                                                | PR #6 (ruling R10)               |
+| DW-04 | The `[scenario]` section of the Game Config tab (§5.4, §7.8), after the Phase 0 scenarios spike (§13.1).                                                                                                                                                                                                                                                                                                                                      | INI Config core spec             |
+| DW-05 | The General tab keeps its boot-time Cannot Play / "could not read `zoo.ini`" message after a later Game Config tab retry succeeds; it should recover without a reopen.                                                                                                                                                                                                                                                                        | PR #6 (ruling R10)               |
 | DW-06 | Open an installation from the Installation Manager (an **Open** button and row double-click), and File → Open Installation… as the Manager focused on Open (§9.10). The Manager footer already promises "Double-click a row to open", which does nothing yet.                                                                                                                                                                                 | PR #4, PR #5                     |
 | DW-07 | Deleting the last installation while the picker shows leaves an empty picker. With the *No Installation* startup preference, `BootHandler` returns the picker even when no installations exist; it should fall through to auto-locate and No Game Installation Found. The picker's `Manage…` bypasses the main window, so the main window never reboots after those changes.                                                                  | PR #4, PR #5                     |
 | DW-09 | The status bar's display cell is hard-coded as "Display: 1920 × 1080" (`MainWindowViewModel`, a `TODO`). Source it from the screen-modes work (§7.9).                                                                                                                                                                                                                                                                                         | Code `TODO`; maintainer's note 4 |
@@ -1987,7 +1992,7 @@ an Avalonia-12 fork is not planned.
 | 6  | Carried-over library licences/versions     | Assumption       | Re-verify "confirm" entries in §4.6 at implementation.                                                                                                                                                                                                                                                                                                                                                                      |  
 | 7  | Antivirus / SmartScreen flagging           | Risk (mitigated) | The launcher itself is a signed-on-build-machine binary; ZT1 launch failures due to AV are surfaced as a non-blocking error.                                                                                                                                                                                                                                                                                                |  
 | 8  | Out-of-band INI edits between sessions     | Risk (mitigated) | Tiered drift detection (§2.2, §7.1.3, §7.7) archives `Current` → `Historical` for changed user settings before adopting the on-disk values; game-managed and unrecognised changes are adopted silently.                                                                                                                                                                                                                     |  
-| 9  | Read-only installation folder              | Risk (confirmed) | Observed 24 Sept 2026. One install's folder gave ordinary users read-only access, so every Save failed with "access denied" (the launcher and Zookini alike; only admin rights worked). Reinstalling restored the installer's normal write access, after which saves succeeded. MVP (implemented, milestone 10): the boot's write probe (§7.1.2) detects it and the INI tab's strip explains it, recommending a reinstall (a read-only attribute on `zoo.ini` gets its own advice). V2.0.0: a VirtualStore copy as the fix, after proving the game reads it (DW-36). |  
+| 9  | Read-only installation folder              | Risk (confirmed) | Observed 24 Sept 2026. One install's folder gave ordinary users read-only access, so every Save failed with "access denied" (the launcher and Zookini alike; only admin rights worked). Reinstalling restored the installer's normal write access, after which saves succeeded. MVP (implemented, milestone 10): the boot's write probe (§7.1.2) detects it and the Game Config tab's strip explains it, recommending a reinstall (a read-only attribute on `zoo.ini` gets its own advice). V2.0.0: a VirtualStore copy as the fix, after proving the game reads it (DW-36). |  
 | 10 | Edits saved while ZT1 is running           | Risk (accepted)  | The game may overwrite them on exit; the next activation shows what it wrote, and the launcher's version is archived as `Manual` drift.                                                                                                                                                                                                                                                                                     |  
 
   
@@ -2004,7 +2009,7 @@ an Avalonia-12 fork is not planned.
 | **Structure blob**                  | The raw INI file text captured on a snapshot, used to re-emit the file with comments, blanks, and key ordering preserved.                                                                                                                                                                       |  
 | **Source flag (per value)**         | `OriginalImport`, `LauncherGui`, or `Manual` — how the value got into the current snapshot.                                                                                                                                                                                                     |  
 | **Atomic write**                    | The temp-file + `Move(overwrite: true)` pattern, wrapped in an EF transaction that archives `Current` → `Historical` before replacing `Current`.                                                                                                                                                |  
-| **Drift**                           | A difference between `Current` snapshot values and the actual `zoo.ini` on disk. Tiered: a changed user setting archives `Current` to `Historical` (`Manual`) before adopting; game-managed and unrecognised changes are adopted silently. Detected on open/boot, INI tab activation, and save. |  
+| **Drift**                           | A difference between `Current` snapshot values and the actual `zoo.ini` on disk. Tiered: a changed user setting archives `Current` to `Historical` (`Manual`) first; game-managed and unrecognised changes are adopted silently. Detected on open/boot, Game Config tab activation, and save.   |  
 | **Validity**                        | `Valid`, `Invalid — No EXE`, `Invalid — No INI`, or `Invalid — No EXE or INI`; derived from `HasExe` and `HasIni`.                                                                                                                                                                              |  
 | **Scenarios (in-game)**             | The campaign challenges shipped with ZT1, configured via the `[scenario]` section using two-letter keys.                                                                                                                                                                                        |  
 | **Display mode / screen mode**      | A `(width, height, colour depth, refresh rate, orientation)` tuple Windows reports via `EnumDisplaySettingsEx`.                                                                                                                                                                                 |  

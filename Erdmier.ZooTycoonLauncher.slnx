@@ -16,6 +16,7 @@
         <File Path="Docs/Ledgers/Epic-1-MVP/milestone-11-ledger.md" />
         <File Path="Docs/Ledgers/Epic-1-MVP/milestone-11.1-ledger.md" />
         <File Path="Docs/Ledgers/Epic-1-MVP/milestone-12-ledger.md" />
+        <File Path="Docs/Ledgers/Epic-1-MVP/milestone-13-ledger.md" />
     </Folder>
     <Folder Name="/Docs/Plans/" />
     <Folder Name="/Docs/Plans/Epic-1-MVP/">
@@ -34,6 +35,7 @@
         <File Path="Docs/Plans/Epic-1-MVP/milestone-11-options-and-colour-cleanup.md" />
         <File Path="Docs/Plans/Epic-1-MVP/milestone-11.1-style-tokens-and-follow-ups.md" />
         <File Path="Docs/Plans/Epic-1-MVP/milestone-12-ini-editor-display-style.md" />
+        <File Path="Docs/Plans/Epic-1-MVP/milestone-13-game-config-tab-rename.md" />
     </Folder>
     <Folder Name="/Docs/Specs/">
         <File Path="Docs/Specs/1-zoo-tycoon-launcher-master-design.md" />

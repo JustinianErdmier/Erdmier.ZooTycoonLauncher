@@ -1,7 +1,7 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig;
 
 /// <summary>
-///     The INI Config editor's presentation catalogue: for every recognised user setting, its control, hint, and help text, grouped by section (SDD §9.3). Game-managed keys
+///     The Game Config editor's presentation catalogue: for every recognised user setting, its control, hint, and help text, grouped by section (SDD §9.3). Game-managed keys
 ///     have no entry, so they never render.
 /// </summary>
 public static class IniEditorCatalogue

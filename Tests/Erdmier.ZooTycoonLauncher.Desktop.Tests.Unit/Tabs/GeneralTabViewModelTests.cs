@@ -53,7 +53,7 @@ public sealed class GeneralTabViewModelTests
         GeneralTabViewModel tab = new(installation, canPlay: false, _mediator, _ => Task.CompletedTask);
 
         tab.IsMissingOnlyIni.ShouldBeTrue();
-        tab.MissingIniMessage.ShouldContain("Use the INI Config tab to create or locate zoo.ini.");
+        tab.MissingIniMessage.ShouldContain("Use the Game Config tab to create or locate zoo.ini.");
     }
 
     private GeneralTabViewModel Create(bool canPlay) => new(IniEditorTestData.Installation(), canPlay, _mediator, _ => Task.CompletedTask);

@@ -1,8 +1,8 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Tabs;
 
 /// <summary>
-///     The INI Config tab (SDD §9.3.1). Hosts either the editor or a placeholder (loading / no INI / unreadable). Each activation reloads from disk unless edits are pending, so the
-///     editor reflects anything the game wrote while the launcher stayed open; a failed load is retried on the next activation. When a reload fails while the editor already
+///     The Game Config tab (SDD §9.3.1). Hosts either the editor or a placeholder (loading / no INI / unreadable). Each activation reloads from disk unless edits are pending, so
+///     the editor reflects anything the game wrote while the launcher stayed open; a failed load is retried on the next activation. When a reload fails while the editor already
 ///     holds pending edits, the editor stays on screen (never dropping unsaved work) and the failure is shown as an error dialogue instead.
 /// </summary>
 public sealed partial class IniConfigTabViewModel : ViewModelBase, IDisposable
@@ -160,7 +160,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase, IDisposable
 
             if (result.IsError)
             {
-                _logger.LogWarning(message: "The INI Config tab could not load zoo.ini for installation {InstallationId}: {Error}", _installationId, result.FirstError.Description);
+                _logger.LogWarning(message: "The Game Config tab could not load zoo.ini for installation {InstallationId}: {Error}", _installationId, result.FirstError.Description);
 
                 await ReportUnreadableAsync(placeholderMessage: result.FirstError.Description, dialogDescription: result.FirstError.Description);
 
@@ -185,7 +185,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase, IDisposable
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogError(ex, message: "The INI Config tab failed to load zoo.ini for installation {InstallationId}", _installationId);
+            _logger.LogError(ex, message: "The Game Config tab failed to load zoo.ini for installation {InstallationId}", _installationId);
 
             await ReportUnreadableAsync(placeholderMessage: ex.Message, dialogDescription: $"zoo.ini could not be reloaded: {ex.Message}");
         }
@@ -220,12 +220,12 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase, IDisposable
             }
             else if (options.IsError)
             {
-                _logger.LogWarning(message: "The INI Config tab could not read the editor style: {Error}", options.FirstError.Description);
+                _logger.LogWarning(message: "The Game Config tab could not read the editor style: {Error}", options.FirstError.Description);
             }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogWarning(ex, message: "The INI Config tab could not read the editor style");
+            _logger.LogWarning(ex, message: "The Game Config tab could not read the editor style");
         }
     }
 

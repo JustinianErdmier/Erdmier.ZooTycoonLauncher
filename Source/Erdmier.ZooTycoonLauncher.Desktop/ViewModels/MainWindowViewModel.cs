@@ -27,6 +27,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IIniEditorStyleState _styleState;
 
+    private bool _hasLoadedStyle;
+
     private readonly ILogger<IniEditorViewModel> _iniEditorLogger;
 
     private readonly ILogger<IniPlaceholderViewModel> _iniPlaceholderLogger;
@@ -236,13 +238,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // assigned from the real style: the binding then sees a changed value and pushes it back, which re-raising an unchanged value would not do.
     private async Task ChooseStyleAsync(IniEditorStyle style, CancellationToken cancellationToken)
     {
-        if (_styleState.Style == style)
-        {
-            RaiseStyleMenuChecks();
-
-            return;
-        }
-
         IsStyleSaving = true;
 
         try
@@ -259,6 +254,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             }
 
             LauncherOptions options = loaded.Value;
+
+            // Compared with what is stored, not with the in-memory style, so a stale in-memory value can never swallow the choice. Choosing what is already stored saves nothing
+            // but brings the shared state into line with it.
+            if (options.EditorStyle == style)
+            {
+                _styleState.Style = style;
+
+                return;
+            }
 
             ErrorOr<Success> saved = await _mediator.Send(new SaveLauncherOptionsCommand(options.StartupPreference, options.CloseAfterGameLaunch, style), cancellationToken);
 
@@ -360,8 +364,40 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         SetPickerStatusMessages();
     }
 
+    // The boot does not load the launcher options, so the stored editor style is read once here, before the first state is built: the View menu's bullet is then right in
+    // every state, whether or not an INI editor ever opens. A failure keeps the style already in force; the INI Config tab's own lazy load stays harmless beside this one.
+    private async Task LoadStoredStyleAsync(CancellationToken cancellationToken)
+    {
+        if (_hasLoadedStyle)
+        {
+            return;
+        }
+
+        _hasLoadedStyle = true;
+
+        // Anything that sets the state while the query is in flight (an Options save, a menu choice) is newer than what the query reads, so it wins.
+        int versionBeforeQuery = _styleState.Version;
+
+        try
+        {
+            ErrorOr<LauncherOptions> options = await _mediator.Send(new GetLauncherOptionsQuery(), cancellationToken);
+
+            if (!options.IsError
+                && _styleState.Version == versionBeforeQuery)
+            {
+                _styleState.Style = options.Value.EditorStyle;
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Could not read the stored INI editor style at start-up.");
+        }
+    }
+
     private async Task RunBootAsync(Guid? installationId, CancellationToken cancellationToken, int initialTabIndex = 0)
     {
+        await LoadStoredStyleAsync(cancellationToken);
+
         ActiveContent              = new LookingForZooTycoonViewModel();
         IsBooting                  = true;
         StatusMessagePrimaryText   = installationId is null ? "Discovering installations…" : "Opening installation…";

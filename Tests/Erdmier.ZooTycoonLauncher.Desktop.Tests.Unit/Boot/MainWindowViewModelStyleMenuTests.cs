@@ -157,15 +157,70 @@ public sealed class MainWindowViewModelStyleMenuTests
     }
 
     [ Fact ]
-    public async Task ChooseStyle_AlreadyActive_DoesNothing()
+    public async Task ChooseStyle_AlreadyStored_SavesNothing()
     {
+        ReturnsStored(new LauncherOptions(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, IniEditorStyle.Friendly));
+
         MainWindowViewModel window = CreateWindow();
 
         await window.ChooseFriendlyStyleCommand.ExecuteAsync(parameter: null);
 
-        await _mediator.DidNotReceive().Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>());
         await _mediator.DidNotReceive().Send(Arg.Any<SaveLauncherOptionsCommand>(), Arg.Any<CancellationToken>());
         await _dialogs.DidNotReceive().ShowErrorAsync(Arg.Any<string>(), Arg.Any<string>());
+
+        window.IsFriendlyStyle.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public async Task ChoosingTheStoredStyleOverAStaleState_SavesNothingButSyncsTheState()
+    {
+        ReturnsStored(new LauncherOptions(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, IniEditorStyle.Friendly));
+
+        _styleState.Style = IniEditorStyle.Ini;
+
+        MainWindowViewModel window = CreateWindow();
+
+        await window.ChooseFriendlyStyleCommand.ExecuteAsync(parameter: null);
+
+        await _mediator.DidNotReceive().Send(Arg.Any<SaveLauncherOptionsCommand>(), Arg.Any<CancellationToken>());
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
+        window.IsFriendlyStyle.ShouldBeTrue();
+        window.IsIniStyle.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task ChoosingFriendlyWhenIniIsStoredButTheStateIsStale_SavesTheChoice()
+    {
+        ReturnsStored(new LauncherOptions(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, IniEditorStyle.Ini));
+        ReturnsSave(Result.Success);
+
+        MainWindowViewModel window = CreateWindow();
+
+        await window.ChooseFriendlyStyleCommand.ExecuteAsync(parameter: null);
+
+        await _mediator.Received(requiredNumberOfCalls: 1)
+                       .Send(new SaveLauncherOptionsCommand(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, IniEditorStyle.Friendly),
+                             Arg.Any<CancellationToken>());
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
+    }
+
+    [ Fact ]
+    public async Task StartupLoadsTheStoredStyleBeforeAnyEditor()
+    {
+        ReturnsStored(new LauncherOptions(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, IniEditorStyle.Ini));
+
+        _mediator.Send(Arg.Any<BootCommand>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<BootResult>>(new BootResult(BootOutcome.NoGameInstallationFound, ActiveInstallation: null, LocatedCandidatePath: null)));
+
+        MainWindowViewModel window = CreateWindow();
+
+        await window.BootCommand.ExecuteAsync(parameter: null);
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Ini);
+        window.IsIniStyle.ShouldBeTrue();
+        window.IsFriendlyStyle.ShouldBeFalse();
     }
 
     [ Fact ]

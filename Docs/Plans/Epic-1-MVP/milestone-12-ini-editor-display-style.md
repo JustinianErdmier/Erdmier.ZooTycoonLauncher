@@ -48,7 +48,7 @@ it before any task; decisions 1–12 and calls C1–C16 are binding; the §6.1 p
 
 ## Task 0: Before screenshots (controller)
 
-- [ ] **Step 1:** Create the branch and ledger; capture the INI Config tab (every section) and the Restore and Options dialogues from the current build.
+- [x] **Step 1:** Create the branch and ledger; capture the INI Config tab (every section) and the Restore and Options dialogues from the current build.
 
 ---
 
@@ -66,15 +66,15 @@ it before any task; decisions 1–12 and calls C1–C16 are binding; the §6.1 p
 - `LauncherOptions(LauncherStartupPreference StartupPreference, bool CloseAfterGameLaunch, IniEditorStyle EditorStyle)`.
 - `SaveLauncherOptionsCommand(LauncherStartupPreference StartupPreference, bool CloseAfterGameLaunch, IniEditorStyle EditorStyle)`.
 
-- [ ] **Step 1: Failing tests:** `IniEditorStyle_HasFriendlyAndIni` (names, ids, display names); `LauncherSettings_DefaultsToFriendly`;
+- [x] **Step 1: Failing tests:** `IniEditorStyle_HasFriendlyAndIni` (names, ids, display names); `LauncherSettings_DefaultsToFriendly`;
   `Save_StoresTheEditorStyle` and `Get_ReturnsTheEditorStyle` (Application); `Migration_AddsIniEditorStyleWithFriendlyDefault` (an existing row reads
   `Friendly`, `pragma_table_info` default `'Friendly'`) and `Migration_Down_RemovesIniEditorStyle` (Infrastructure).
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement.** Column stored as the SmartEnum name (as `LauncherStartupPreference`), not null, default `'Friendly'`; generate the migration with
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement.** Column stored as the SmartEnum name (as `LauncherStartupPreference`), not null, default `'Friendly'`; generate the migration with
   `dotnet ef migrations add AddIniEditorStyle --project Source/Erdmier.ZooTycoonLauncher.Infrastructure --context LauncherDbContext --output-dir Persistence/Launcher/Migrations`.
   Update every existing `LauncherOptions` / `SaveLauncherOptionsCommand` construction (Desktop's Options dialogue passes `IniEditorStyle.Friendly` until Task 5).
-- [ ] **Step 4: Run** Domain, Application, Infrastructure, Architecture + full build (0 warnings) → pass.
-- [ ] **Step 5: Commit** — `feat(✨): store the INI editor display style in the launcher settings`
+- [x] **Step 4: Run** Domain, Application, Infrastructure, Architecture + full build (0 warnings) → pass.
+- [x] **Step 5: Commit** — `feat(✨): store the INI editor display style in the launcher settings`
 
 ---
 
@@ -100,15 +100,15 @@ it before any task; decisions 1–12 and calls C1–C16 are binding; the §6.1 p
 - `IniEditorLayouts.Sections(IniEditorStyle style)` and `IniEditorLayouts.TryLocate(IniEditorStyle style, IniKeyId id, out IniFieldLocation? location)` with
   `public sealed record IniFieldLocation(IniSectionDescriptor Section, IniFieldGroupDescriptor Group, IniFieldDescriptor Field, int Order)`.
 
-- [ ] **Step 1: Failing tests:** `EachLayout_ShowsEveryUserSettingKeyOnce` (theory over both styles; compare against the user-setting keys of
+- [x] **Step 1: Failing tests:** `EachLayout_ShowsEveryUserSettingKeyOnce` (theory over both styles; compare against the user-setting keys of
   `ZooIniDefaults`, minus `[scenario]`; the language picker counts for `lang` and `sublang`); `FriendlyLayout_MatchesTheSpecPageOrder` (the eight titles in
   order); `Conversion_RoundTrips` (theory: every conversion, every raw value in its key's range: 0–10000, −10000–0, 0/1); `IniLayout_NoMenuMusicIsLiteral`
   (no conversion, caption *No menu music*, hint *1 = no menu music*); `FriendlyLayout_VolumeRowsAreSliders`.
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement.** Draft the Friendly hints and help from today's help (spec §12), each describing the value as the Friendly control shows it; volume
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement.** Draft the Friendly hints and help from today's help (spec §12), each describing the value as the Friendly control shows it; volume
   hints *Silent – Full*. Keep the INI layout's text as today except `noMenuMusic` (spec §5).
-- [ ] **Step 4: Run** Desktop + Architecture + full build → pass.
-- [ ] **Step 5: Commit** — `feat(✨): add the Friendly and INI editor layouts over one catalogue`
+- [x] **Step 4: Run** Desktop + Architecture + full build → pass.
+- [x] **Step 5: Commit** — `feat(✨): add the Friendly and INI editor layouts over one catalogue`
 
 ---
 
@@ -121,15 +121,15 @@ code-behind for focus release; tests under `Tests/…Desktop.Tests.Unit/IniConfi
 **Interfaces — Produces:** `public sealed partial class IniSliderFieldViewModel : IniKeyedFieldViewModel` with `[ObservableProperty] int Percent` (0–100) and
 `string PercentText` (*75 %*).
 
-- [ ] **Step 1: Failing tests:** `Load_ShowsThePercentOfTheConvertedValue` (`menuMusicAttenuation=2500` → 75 %; `movievolume1=-10000` → 0 %);
+- [x] **Step 1: Failing tests:** `Load_ShowsThePercentOfTheConvertedValue` (`menuMusicAttenuation=2500` → 75 %; `movievolume1=-10000` → 0 %);
   `MovingTheSlider_WritesRawInStepsOf100` (75 % → attenuation `2500`; movie 30 % → `-7000`); `OffStepValue_IsKeptUntilMoved` (`1234` loads at 88 %,
   `TryGetEdit` false, `IsDirty` false; after `Percent = 87` the edit is `1300`); `Reset_RestoresTheRawBaseline`.
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement.** Raw stays the source of truth (spec C5, C16). The view: Classic `Slider` 0–100, `SmallChange` 1, `LargeChange` 10,
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement.** Raw stays the source of truth (spec C5, C16). The view: Classic `Slider` 0–100, `SmallChange` 1, `LargeChange` 10,
   `TickFrequency` 10 with ticks shown, the percentage readout beside it; a pointer drag that ends releases focus through `IniFieldFocusRelease.AfterCommit`, a
   Tab-focused slider keeps it (spec §6.4).
-- [ ] **Step 4: Run** Desktop + Architecture + full build → pass.
-- [ ] **Step 5: Commit** — `feat(✨): show the Friendly volumes as sliders`
+- [x] **Step 4: Run** Desktop + Architecture + full build → pass.
+- [x] **Step 5: Commit** — `feat(✨): show the Friendly volumes as sliders`
 
 ---
 
@@ -150,14 +150,14 @@ language field VM; the boot path that loads options; tests.
   whether it renders as a sub-header (INI) or a group box (Friendly).
 - The language field VM exposes `CodesText` (*Windows language codes: LANGID 9 · SUBLANGID 1*, current values) and `ShowCodeRows` (INI only).
 
-- [ ] **Step 1: Failing tests:** `ApplyStyle_KeepsPendingEditsByKey` (edit `screenwidth` and `noMenuMusic` in INI style, switch to Friendly: same raw edits,
+- [x] **Step 1: Failing tests:** `ApplyStyle_KeepsPendingEditsByKey` (edit `screenwidth` and `noMenuMusic` in INI style, switch to Friendly: same raw edits,
   `HasPendingChanges` true, no mediator send); `ApplyStyle_SelectsTheFirstSection`; `FriendlyEditor_SaveWritesRawValues` (tick *Enable menu music* → the save
   command carries `noMenuMusic=0`); `IniConfigTab_ReappliesStyleWhenStateChanges`; `LanguageField_CodesTextShowsCurrentValues`.
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement** the views: Friendly page header (title, description, no suffix), group boxes with footnotes, labels in the system face, check boxes
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement** the views: Friendly page header (title, description, no suffix), group boxes with footnotes, labels in the system face, check boxes
   captioned with their label; INI style unchanged apart from the literal `noMenuMusic`. Keep the milestone 11.1 focus wiring on every row.
-- [ ] **Step 4: Run** Desktop + Architecture + full build → pass (the headless view-load suite included).
-- [ ] **Step 5: Commit** — `feat(✨): render the INI editor in the chosen style and switch live`
+- [x] **Step 4: Run** Desktop + Architecture + full build → pass (the headless view-load suite included).
+- [x] **Step 5: Commit** — `feat(✨): render the INI editor in the chosen style and switch live`
 
 ---
 
@@ -168,13 +168,13 @@ language field VM; the boot path that loads options; tests.
 
 **Interfaces — Consumes:** `IIniEditorStyleState` (Task 4), `LauncherOptions.EditorStyle` (Task 1).
 
-- [ ] **Step 1: Failing tests:** `Initialise_LoadsTheEditorStyle`; `Ok_SavesTheEditorStyleAndAppliesIt` (state set after a successful save, not before);
+- [x] **Step 1: Failing tests:** `Initialise_LoadsTheEditorStyle`; `Ok_SavesTheEditorStyleAndAppliesIt` (state set after a successful save, not before);
   `FailedSave_DoesNotApplyTheStyle`; `StyleDescription_FollowsTheSelection` (the two §4 strings verbatim).
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement** the *INI editor* group box between *Startup* and *Game launch*: the muted line *"Show settings in the INI Config tab:"*, radios
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement** the *INI editor* group box between *Startup* and *Game launch*: the muted line *"Show settings in the INI Config tab:"*, radios
   `Friendly style` / `INI style`, the selected option's muted description beneath (spec §4, C15).
-- [ ] **Step 4: Run** Desktop + Architecture + full build → pass.
-- [ ] **Step 5: Commit** — `feat(✨): choose the INI editor style in Options`
+- [x] **Step 4: Run** Desktop + Architecture + full build → pass.
+- [x] **Step 5: Commit** — `feat(✨): choose the INI editor style in Options`
 
 ---
 
@@ -186,14 +186,14 @@ column needs width); tests in `Tests/…Desktop.Tests.Unit/IniConfig/IniDisplayT
 **Interfaces — Produces:** `IniDisplayText.KeyText(IniEditorStyle style, IniKeyId id)` and `IniDisplayText.Format(IniEditorStyle style, IniKeyId id, string value)`;
 the dialogue reads `IIniEditorStyleState.Style` when it builds its rows.
 
-- [ ] **Step 1: Failing tests:** `KeyText_Ini_IsSectionSlashKey`; `KeyText_Friendly_IsPageGroupLabel` (*Sound › Intro movies › Play the first movie*;
+- [x] **Step 1: Failing tests:** `KeyText_Ini_IsSectionSlashKey`; `KeyText_Friendly_IsPageGroupLabel` (*Sound › Intro movies › Play the first movie*;
   `lang` → *Language › Language › Language code*, `sublang` → *… › Region code*); `Format_Friendly_Toggle_IsOnOffByMeaning` (`noMenuMusic=1` → `Off`);
   `Format_Friendly_Volume_IsPercent` (`userAttenuation=2500` → `75 %`); `Format_Ini_IsUnchanged`; `Rows_SameCountInBothStyles` (a snapshot differing in
   `lang`, `sublang` and three others: 5 rows either way); `Rows_Friendly_FollowPageOrder`; `KeptKeysNote_NamesKeysInTheStyle`.
-- [ ] **Step 2: Run** → fail.
-- [ ] **Step 3: Implement** (spec §8, C8, C9, C11, C14). `(not set)` and unmappable raw values stay verbatim.
-- [ ] **Step 4: Run** Desktop + Architecture + full build → pass.
-- [ ] **Step 5: Commit** — `feat(✨): show the Restore diff in the chosen style`
+- [x] **Step 2: Run** → fail.
+- [x] **Step 3: Implement** (spec §8, C8, C9, C11, C14). `(not set)` and unmappable raw values stay verbatim.
+- [x] **Step 4: Run** Desktop + Architecture + full build → pass.
+- [x] **Step 5: Commit** — `feat(✨): show the Restore diff in the chosen style`
 
 ---
 

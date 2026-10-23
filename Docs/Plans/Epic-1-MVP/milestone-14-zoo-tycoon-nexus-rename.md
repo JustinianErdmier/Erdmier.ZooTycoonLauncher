@@ -65,30 +65,30 @@ the old folder (the maintainer moves the files by hand). The app is still *a* la
 
 - Produces: the new project paths (`Source/Erdmier.ZooTycoonNexus.<Layer>/Erdmier.ZooTycoonNexus.<Layer>.csproj`) and namespaces every later task uses.
 
-- [ ] **Step 1: Open the ledger.** Create `milestone-14-ledger.md` in the shape of `milestone-13-ledger.md` (title, `**Date:**`, plan link, branch
+- [x] **Step 1: Open the ledger.** Create `milestone-14-ledger.md` in the shape of `milestone-13-ledger.md` (title, `**Date:**`, plan link, branch
   `feat/milestone-14-zoo-tycoon-nexus-rename`). Rulings go in as they are taken.
 
-- [ ] **Step 2: Clear build output.** Delete every `bin/` and `obj/` folder under `Source/` and `Tests/` (untracked; they hold the old names).
+- [x] **Step 2: Clear build output.** Delete every `bin/` and `obj/` folder under `Source/` and `Tests/` (untracked; they hold the old names).
 
-- [ ] **Step 3: Rename folders and files.** Rename each project folder and its `.csproj`, the `.slnx` and the `.idea` folder, with `git mv` so history follows. Only
+- [x] **Step 3: Rename folders and files.** Rename each project folder and its `.csproj`, the `.slnx` and the `.idea` folder, with `git mv` so history follows. Only
   `Erdmier.ZooTycoonLauncher` changes in each name.
 
-- [ ] **Step 4: Replace the prefix in file contents.** Replace `Erdmier.ZooTycoonLauncher` with `Erdmier.ZooTycoonNexus` in every tracked file under `Source/`, `Tests/`,
+- [x] **Step 4: Replace the prefix in file contents.** Replace `Erdmier.ZooTycoonLauncher` with `Erdmier.ZooTycoonNexus` in every tracked file under `Source/`, `Tests/`,
   `.idea/` and in the `.slnx` (project entries only; its `Docs/` entries keep their paths until Task 3). Write files back as UTF-8 **without** adding a BOM where there
   was none, and never through a double-quoted PowerShell string (backticks in content would be expanded). Do not touch `Docs/`, `CLAUDE.md` or `SampleInstallations/`.
 
-- [ ] **Step 5: Verify no old prefix remains in code.**
+- [x] **Step 5: Verify no old prefix remains in code.**
   Run: `git grep -n "Erdmier.ZooTycoonLauncher" -- Source Tests .idea Erdmier.ZooTycoonNexus.slnx`
   Expected: no output. (A plain `ZooTycoonLauncher` still appears in the storage folder name in `AppStorageLocations.cs` and in XML docs that name
   `%LOCALAPPDATA%\ZooTycoonLauncher\`; Task 2 changes those, test-first.)
 
-- [ ] **Step 6: Build and test everything.**
+- [x] **Step 6: Build and test everything.**
   Run: `dotnet build Erdmier.ZooTycoonNexus.slnx` then `dotnet test Erdmier.ZooTycoonNexus.slnx`.
   Expected: 0 warnings, 0 errors; Domain 140, Application 205, Infrastructure integration (all), Desktop 373 and Architecture 27 pass — the same counts as on `main`.
   Then prove the architecture tests are not vacuous: temporarily add a second public type to any Domain file, run `Tests.Architecture`, see `OneTypePerFileTests` fail,
   and revert the change (do not commit it). Record the failing output in the report.
 
-- [ ] **Step 7: Commit.** Stage the renames and edits (`git add` the new paths and the deletions of the old ones; never `git add -A` across the repo).
+- [x] **Step 7: Commit.** Stage the renames and edits (`git add` the new paths and the deletions of the old ones; never `git add -A` across the repo).
   Message: `refactor(♻️): rename the solution and projects to Erdmier.ZooTycoonNexus`
 
 ---
@@ -110,7 +110,7 @@ the old folder (the maintainer moves the files by hand). The app is still *a* la
 - Consumes: Task 1's project paths and namespaces.
 - Produces: `IAppStorageLocations` unchanged in shape; `LauncherDatabasePath` now ends `\ZooTycoonNexus\Data\Nexus.db`, `LauncherLogPath` ends `\ZooTycoonNexus\Logs\Nexus.log`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 `AppStorageLocationsTests` (`[ Fact ]`, constructs `new AppStorageLocations(new MockFileSystem())`):
 
@@ -130,25 +130,25 @@ locations.InstallationLogPath(id).ShouldBe(Path.Combine(locations.AppDataRoot, "
 (build it with its designer view model). `LookingForZooTycoonViewModel`'s status text is covered by a third fact asserting its messages contain `"Loading Nexus.db…"`
 and none contains `"Launcher.db"` — use whatever public surface exposes those messages today; if none does, drop this fact and note it in the report.
 
-- [ ] **Step 2: Run them and confirm they fail.**
+- [x] **Step 2: Run them and confirm they fail.**
   Run: `dotnet test Tests/Erdmier.ZooTycoonNexus.Infrastructure.Tests.Integration --filter "FullyQualifiedName~AppStorageLocationsTests"` and
   `dotnet test Tests/Erdmier.ZooTycoonNexus.Desktop.Tests.Unit --filter "FullyQualifiedName~ProductNameTests"`.
   Expected: failures showing `ZooTycoonLauncher`, `Launcher.db` / `Launcher.log` and `Zoo Tycoon Launcher`.
 
-- [ ] **Step 3: Make the changes.** `AppFolderName = "ZooTycoonNexus"`; file names `"Nexus.db"` and `"Nexus.log"`; the two titles; the loading text; every XML doc that
+- [x] **Step 3: Make the changes.** `AppFolderName = "ZooTycoonNexus"`; file names `"Nexus.db"` and `"Nexus.log"`; the two titles; the loading text; every XML doc that
   names the storage folder or `Launcher.db` / `Launcher.log` now names `ZooTycoonNexus` / `Nexus.db` / `Nexus.log`. Keep the property names (`LauncherDatabasePath`,
   `LauncherLogPath`).
 
-- [ ] **Step 4: Run the tests and confirm they pass.** The same two commands; then the whole `Infrastructure.Tests.Integration` and `Desktop.Tests.Unit` projects.
+- [x] **Step 4: Run the tests and confirm they pass.** The same two commands; then the whole `Infrastructure.Tests.Integration` and `Desktop.Tests.Unit` projects.
   Expected: all green, 0 warnings.
 
-- [ ] **Step 5: Check nothing still names the old product or files in code.**
+- [x] **Step 5: Check nothing still names the old product or files in code.**
   Run: `git grep -n -i "Zoo Tycoon Launcher\|ZooTycoonLauncher\|Launcher\.db\|Launcher\.log" -- Source Tests`
   Expected: no output.
 
-- [ ] **Step 6: Commit.** Message: `feat(✨): name the app Zoo Tycoon Nexus and keep its data under ZooTycoonNexus`
+- [x] **Step 6: Commit.** Message: `feat(✨): name the app Zoo Tycoon Nexus and keep its data under ZooTycoonNexus`
 
-- [ ] **Step 7: Check the running app.** Launch `Source/Erdmier.ZooTycoonNexus.Desktop` (it starts fresh, as on a new machine). Capture the window — computer use cannot
+- [x] **Step 7: Check the running app.** Launch `Source/Erdmier.ZooTycoonNexus.Desktop` (it starts fresh, as on a new machine). Capture the window — computer use cannot
   resolve this app by name, so capture it through user32 (`GetWindowRect` + `Graphics.CopyFromScreen`) — and confirm the title bar reads *Zoo Tycoon Nexus V1.0.0*.
   Confirm a `ZooTycoonNexus\Data\Nexus.db` and `ZooTycoonNexus\Logs\Nexus.log` now exist (a shell-launched app may write under the Claude package's redirected
   `LocalCache` rather than the real `%LOCALAPPDATA%`; look in both and report where). Close the app. Record the outcome in the ledger.

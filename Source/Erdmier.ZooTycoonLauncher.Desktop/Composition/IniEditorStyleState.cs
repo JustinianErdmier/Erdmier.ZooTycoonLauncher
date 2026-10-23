@@ -19,7 +19,7 @@ public sealed class IniEditorStyleState : IIniEditorStyleState
         {
             Version++;
 
-            if (ReferenceEquals(_style, value))
+            if (_style == value)
             {
                 return;
             }

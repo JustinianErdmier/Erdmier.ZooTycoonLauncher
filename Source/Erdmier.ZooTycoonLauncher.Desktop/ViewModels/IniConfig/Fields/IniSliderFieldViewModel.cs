@@ -6,8 +6,6 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig.Fields;
 /// </summary>
 public sealed partial class IniSliderFieldViewModel : IniKeyedFieldViewModel
 {
-    private const int UnitsPerPercent = 100;
-
     private readonly IniValueConversion _conversion;
 
     private bool _isApplying;
@@ -44,10 +42,8 @@ public sealed partial class IniSliderFieldViewModel : IniKeyedFieldViewModel
     {
         _raw = effectiveValue;
 
-        int display = int.TryParse(effectiveValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed) ? _conversion.ToDisplay(parsed) : 0;
-
         _isApplying = true;
-        Percent     = Math.Clamp((int)Math.Round(display / (double)UnitsPerPercent, MidpointRounding.AwayFromZero), min: 0, max: 100);
+        Percent     = int.TryParse(effectiveValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed) ? IniVolumePercent.FromRaw(_conversion, parsed) : 0;
         _isApplying = false;
     }
 
@@ -60,7 +56,7 @@ public sealed partial class IniSliderFieldViewModel : IniKeyedFieldViewModel
             return;
         }
 
-        _raw = _conversion.ToRaw(value * UnitsPerPercent)
+        _raw = _conversion.ToRaw(value * IniVolumePercent.UnitsPerPercent)
                           .ToString(CultureInfo.InvariantCulture);
 
         NotifyValueChanged();

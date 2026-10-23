@@ -21,7 +21,7 @@ public abstract partial class IniFieldViewModel : ViewModelBase
     /// <summary>The key the row edits, or <see langword="null" /> for a derived row (the language picker).</summary>
     public IniKeyId? Id { get; }
 
-    /// <summary>The row label — the literal INI key.</summary>
+    /// <summary>The row label in the active layout: the literal INI key in the INI style, the plain-language label in the Friendly style.</summary>
     public string Label { get; }
 
     /// <summary>The muted sub-line, or <see langword="null" />.</summary>

@@ -49,7 +49,7 @@ public sealed class LauncherOptionsTests
     }
 
     [ Fact ]
-    public async Task Save_WritesBothValues_AndKeepsTheDefaultInstallation()
+    public async Task Save_WritesTheStartupAndCloseValues_AndKeepsTheDefaultInstallation()
     {
         Guid             defaultId = Guid.CreateVersion7();
         LauncherSettings stored    = new() { DefaultInstallationId = defaultId };
@@ -87,7 +87,8 @@ public sealed class LauncherOptionsTests
         LauncherSettings stored = new()
         {
             LauncherStartupPreference = LauncherStartupPreference.DefaultInstallation,
-            CloseAfterGameLaunch      = false
+            CloseAfterGameLaunch      = false,
+            IniEditorStyle            = IniEditorStyle.Friendly
         };
 
         _repository.GetAsync(Arg.Any<CancellationToken>()).Returns(stored);
@@ -97,15 +98,20 @@ public sealed class LauncherOptionsTests
         SaveLauncherOptionsHandler handler = new(_repository);
 
         await Should.ThrowAsync<InvalidOperationException>(async () => await handler.Handle(
-                                                               new SaveLauncherOptionsCommand(LauncherStartupPreference.NoInstallation, CloseAfterGameLaunch: true, EditorStyle: IniEditorStyle.Friendly),
+                                                               new SaveLauncherOptionsCommand(LauncherStartupPreference.NoInstallation, CloseAfterGameLaunch: true, EditorStyle: IniEditorStyle.Ini),
                                                                CancellationToken.None));
 
         stored.LauncherStartupPreference.ShouldBe(LauncherStartupPreference.DefaultInstallation);
         stored.CloseAfterGameLaunch.ShouldBeFalse();
+        stored.IniEditorStyle.ShouldBe(IniEditorStyle.Friendly);
     }
 
     [ Fact ]
     public void Validator_NullPreference_Fails()
         => new SaveLauncherOptionsValidator().Validate(new SaveLauncherOptionsCommand(StartupPreference: null!, CloseAfterGameLaunch: false, EditorStyle: IniEditorStyle.Friendly))
                                              .Errors.ShouldContain(error => error.ErrorMessage == "Choose what the launcher opens at start-up.");
+    [ Fact ]
+    public void Validator_NullEditorStyle_Fails()
+        => new SaveLauncherOptionsValidator().Validate(new SaveLauncherOptionsCommand(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, EditorStyle: null!))
+                                             .Errors.ShouldContain(error => error.ErrorMessage == "Choose how the INI editor presents its settings.");
 }

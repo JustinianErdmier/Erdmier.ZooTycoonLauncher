@@ -35,7 +35,7 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public RestorePreviousIniDialogViewModel()
-        : this(null!, null!, new IniEditorStyleState(), NullLogger<RestorePreviousIniDialogViewModel>.Instance)
+        : this(null!, null!, new NullIniEditorStyleState(), NullLogger<RestorePreviousIniDialogViewModel>.Instance)
     { }
 
     /// <summary>Whether a user-initiated close (the title-bar button) is allowed: <see langword="false" /> while a restore is in flight. It is already <see langword="true" /> by the time <see cref="CloseRequested" /> is raised.</summary>
@@ -232,7 +232,10 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
         return new IniHistoryDiffRow(named ? string.Empty : $"[{row.Id.Section}]",
                                      named ? IniDisplayText.KeyText(style, row.Id) : row.Id.Key,
                                      row.Current is null ? NotSet : IniDisplayText.Format(style, row.Id, row.Current),
-                                     IniDisplayText.Format(style, row.Id, row.Snapshot));
+                                     IniDisplayText.Format(style, row.Id, row.Snapshot))
+        {
+            UsesSystemFace = named
+        };
     }
 
     private IReadOnlyList<IniHistoryDiffRow> ToDiffRows(IniSnapshotComparison comparison)
@@ -259,4 +262,17 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
 
     /// <summary>Raised when the dialogue should close.</summary>
     public event EventHandler? CloseRequested;
+}
+
+file sealed class NullIniEditorStyleState : IIniEditorStyleState
+{
+    public IniEditorStyle Style { get; set; } = IniEditorStyle.Friendly;
+
+    public int Version => 0;
+
+    public event EventHandler? StyleChanged
+    {
+        add { }
+        remove { }
+    }
 }

@@ -66,7 +66,7 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase, IDisposable
         : this(Guid.Empty,
                hasIni: true,
                new NoOpDialogService(),
-               new IniEditorStyleState(),
+               new NullIniEditorStyleState(),
                NullLogger<IniConfigTabViewModel>.Instance,
                NullLogger<IniEditorViewModel>.Instance,
                new IniEditorViewModel())
@@ -286,4 +286,16 @@ file sealed class NoOpDialogService : IDialogService
     public Task ShowOptionsAsync() => Task.CompletedTask;
 
     public Task ShowErrorAsync(string title, string message) => Task.CompletedTask;
+}
+file sealed class NullIniEditorStyleState : IIniEditorStyleState
+{
+    public IniEditorStyle Style { get; set; } = IniEditorStyle.Friendly;
+
+    public int Version => 0;
+
+    public event EventHandler? StyleChanged
+    {
+        add { }
+        remove { }
+    }
 }

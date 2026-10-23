@@ -7,6 +7,9 @@ namespace Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig;
 /// <param name="SnapshotText">The value the snapshot holds.</param>
 public sealed record IniHistoryDiffRow(string SectionText, string KeyText, string CurrentText, string SnapshotText)
 {
+    /// <summary>Whether the key column uses the system face (a Friendly-style name in words) rather than the monospace face (an INI key). The values always use the monospace face.</summary>
+    public bool UsesSystemFace { get; init; }
+
     /// <summary>The separator between <see cref="SectionText" /> and <see cref="KeyText" />: <c>/</c>, or nothing when there is no section header.</summary>
     public string SeparatorText => SectionText.Length == 0 ? string.Empty : "/";
 }

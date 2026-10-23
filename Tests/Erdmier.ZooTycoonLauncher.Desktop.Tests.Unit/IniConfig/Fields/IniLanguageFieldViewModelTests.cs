@@ -23,13 +23,6 @@ public sealed class IniLanguageFieldViewModelTests
     }
 
     [ Fact ]
-    public void LanguageField_ShowsCodeRowsOnlyInTheIniStyle()
-    {
-        Language(Editor(IniEditorStyle.Friendly)).ShowCodeRows.ShouldBeFalse();
-        Language(Editor(IniEditorStyle.Ini)).ShowCodeRows.ShouldBeTrue();
-    }
-
-    [ Fact ]
     public void FriendlyLanguagePage_BuildsButHidesTheCodeRows()
     {
         IniEditorViewModel editor = Editor(IniEditorStyle.Friendly);

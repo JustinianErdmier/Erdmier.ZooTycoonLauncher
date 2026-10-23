@@ -459,7 +459,8 @@ public sealed class RestorePreviousIniDialogViewModelTests
                      "Language › Language › Region code"
                  ]);
         viewModel.DiffRows.Select(row => row.SectionText).ShouldAllBe(text => text.Length == 0);
-        viewModel.DiffRows[1].ShouldBe(new IniHistoryDiffRow(SectionText: "", KeyText: "Sound › Menu music › Enable menu music", CurrentText: "On", SnapshotText: "Off"));
+        viewModel.DiffRows[1].ShouldBe(new IniHistoryDiffRow(SectionText: "", KeyText: "Sound › Menu music › Enable menu music", CurrentText: "On", SnapshotText: "Off") { UsesSystemFace = true });
+        viewModel.DiffRows.ShouldAllBe(row => row.UsesSystemFace);
         viewModel.DiffRows[2].SnapshotText.ShouldBe(expected: "75 %");
         viewModel.DiffRows[0].CurrentText.ShouldBe(expected: "(not set)");
     }
@@ -471,6 +472,7 @@ public sealed class RestorePreviousIniDialogViewModelTests
 
         viewModel.DiffRows.Select(row => row.KeyText).ShouldBe([ "sublang", "userAttenuation", "fullscreen", "lang", "noMenuMusic" ]);
         viewModel.DiffRows[4].SnapshotText.ShouldBe(expected: "true");
+        viewModel.DiffRows.ShouldAllBe(row => !row.UsesSystemFace);
     }
 
     [ Fact ]

@@ -88,6 +88,12 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
         set => ChooseStyle(value, IniEditorStyle.Ini);
     }
 
+    /// <summary>The caption of the Friendly style radio: the domain's display name for <see cref="IniEditorStyle.Friendly" />.</summary>
+    public string FriendlyStyleName => IniEditorStyle.Friendly.DisplayName;
+
+    /// <summary>The caption of the INI style radio: the domain's display name for <see cref="IniEditorStyle.Ini" />.</summary>
+    public string IniStyleName => IniEditorStyle.Ini.DisplayName;
+
     /// <summary>The muted description of the selected INI editor style.</summary>
     public string StyleDescription
         => EditorStyle == IniEditorStyle.Ini

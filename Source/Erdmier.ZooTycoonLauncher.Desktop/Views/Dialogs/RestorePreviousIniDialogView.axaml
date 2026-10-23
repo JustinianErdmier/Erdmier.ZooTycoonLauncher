@@ -12,6 +12,14 @@
                CanResize="False"
                WindowStartupLocation="CenterOwner"
                ShowInTaskbar="False">
+    <ClassicWindow.Styles>
+        <!-- An INI key reads in the monospace key face; a Friendly-style name in words keeps the system face (ruling R9). -->
+        <Style Selector="TextBlock.Mono">
+            <Setter Property="FontFamily"
+                    Value="{StaticResource FontFamilyMono}" />
+        </Style>
+    </ClassicWindow.Styles>
+
     <StackPanel Margin="{tokens:Space MarginDialog}"
                 Orientation="Vertical"
                 Spacing="{StaticResource GapUnrelated}">
@@ -126,18 +134,20 @@
                                     <StackPanel>
                                         <Grid ColumnDefinitions="45*, 27.5*, 27.5*"
                                               Margin="{tokens:Space Horizontal=GapRelated, Vertical=GapSmallest}"
-                                              TextElement.FontFamily="{StaticResource FontFamilyMono}"
                                               TextElement.FontSize="{StaticResource FontSizeBase}">
-                                            <TextBlock TextWrapping="Wrap">
+                                            <TextBlock Classes.Mono="{Binding !UsesSystemFace}"
+                                                       TextWrapping="Wrap">
                                                 <Run Foreground="{StaticResource ForegroundMuted}"
                                                      Text="{Binding SectionText}" /><Run Text="{Binding SeparatorText}" /><Run Text="{Binding KeyText}" />
                                             </TextBlock>
 
-                                            <TextBlock Foreground="{StaticResource AccentMaroon}"
+                                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                                                       Foreground="{StaticResource AccentMaroon}"
                                                        Grid.Column="1"
                                                        Text="{Binding CurrentText}" />
 
-                                            <TextBlock Foreground="{StaticResource AccentNavy}"
+                                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                                                       Foreground="{StaticResource AccentNavy}"
                                                        Grid.Column="2"
                                                        Text="{Binding SnapshotText}" />
                                         </Grid>

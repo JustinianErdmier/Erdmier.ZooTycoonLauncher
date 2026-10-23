@@ -53,11 +53,11 @@
                 <TextBlock Classes="MutedText"
                            Text="Show settings in the INI Config tab:" />
 
-                <RadioButton Content="Friendly style"
+                <RadioButton Content="{Binding FriendlyStyleName}"
                              GroupName="EditorStyle"
                              IsChecked="{Binding IsFriendlyStyle}" />
 
-                <RadioButton Content="INI style"
+                <RadioButton Content="{Binding IniStyleName}"
                              GroupName="EditorStyle"
                              IsChecked="{Binding IsIniStyle}" />
 

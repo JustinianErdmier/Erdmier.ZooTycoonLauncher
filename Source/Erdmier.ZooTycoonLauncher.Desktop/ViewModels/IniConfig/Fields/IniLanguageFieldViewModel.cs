@@ -43,9 +43,6 @@ public sealed class IniLanguageFieldViewModel : IniFieldViewModel
     /// <summary>The curated languages.</summary>
     public IReadOnlyList<IniLanguageOption> Options { get; }
 
-    /// <summary>Whether the two read-only code rows are shown (the INI style); the Friendly style shows <see cref="CodesText" /> under the picker instead.</summary>
-    public bool ShowCodeRows => IsIniStyle;
-
     /// <summary>Whether the muted codes line under the picker is shown (the Friendly style).</summary>
     public bool ShowCodesText => !IsIniStyle;
 

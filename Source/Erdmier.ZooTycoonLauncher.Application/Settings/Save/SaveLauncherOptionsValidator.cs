@@ -5,7 +5,13 @@ public sealed class SaveLauncherOptionsValidator : AbstractValidator<SaveLaunche
 {
     /// <summary>Initialises a new instance.</summary>
     public SaveLauncherOptionsValidator()
-        => RuleFor(command => command.StartupPreference)
-           .NotNull()
-           .WithMessage(errorMessage: "Choose what the launcher opens at start-up.");
+    {
+        RuleFor(command => command.StartupPreference)
+            .NotNull()
+            .WithMessage(errorMessage: "Choose what the launcher opens at start-up.");
+
+        RuleFor(command => command.EditorStyle)
+            .NotNull()
+            .WithMessage(errorMessage: "Choose how the INI editor presents its settings.");
+    }
 }

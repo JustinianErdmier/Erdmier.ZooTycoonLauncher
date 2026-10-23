@@ -71,9 +71,7 @@ public static class IniDisplayText
                 return field.Conversion.ToDisplay(truth ? 1 : 0) != 0 ? "On" : "Off";
 
             case IniControlKind.Slider when friendly && int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int raw):
-                int percent = Math.Clamp((int)Math.Round(field.Conversion.ToDisplay(raw) / 100d, MidpointRounding.AwayFromZero), min: 0, max: 100);
-
-                return $"{percent} %";
+                return $"{IniVolumePercent.FromRaw(field.Conversion, raw)} %";
 
             case IniControlKind.Number when field.IsCurrency
                                             && int.TryParse(value, IniCurrencyFormat.ParsingNumberStyle, IniCurrencyFormat.NumberFormat, out int amount):

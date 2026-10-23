@@ -77,8 +77,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ NotifyCanExecuteChangedFor(nameof(CloseInstallationCommand)) ]
     public partial object? ActiveContent { get; set; }
 
-    // Disposes the outgoing state view model when it holds disposable resources (currently only OpenGameInstallationViewModel's grid), so it unregisters from the
-    // messenger as soon as the main window navigates away from it.
+    // Disposes the outgoing state view model when it holds disposable resources (the picker's grid, and PlayViewModel, whose INI Config tab follows the
+    // shared editor style), so it unregisters from the messenger and the style state as soon as the main window navigates away from it.
     partial void OnActiveContentChanged(object? oldValue, object? newValue)
     {
         if (oldValue is IDisposable disposable)

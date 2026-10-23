@@ -1380,7 +1380,8 @@ covers what the Friendly style changes. Both read and write the same keys — th
 
 The INI Config tab uses a two-pane split layout rather than the long vertically-scrolled accordion of the Ref launcher:
 
-- **Section list (left).** A list of the eight sections in INI order: `[user]`, `[UI]`, `[advanced]`, `[ai]`, `[debug]`, `[language]`, `[Map]`, `[scenario]`.
+- **Section list (left).** A list of the seven sections in INI order: `[user]`, `[UI]`, `[advanced]`, `[ai]`, `[debug]`, `[language]`, `[Map]`. The caption above it reads
+  `Section`.
 - **Form pane (right).** Hosts a single section's controls and scrolls vertically when content overflows. The header names the section and a muted descriptor underneath gives
   the prose summary (`Display and performance`, `Audio, gameplay, and interface`, etc.). Width discipline (`MaxWidth` on inputs, `ScrollViewer` on the form) keeps wide combos
   from blowing out the layout; the prototype hit this with the long language labels.
@@ -1457,20 +1458,28 @@ that owns both label and input is what carries `ToolTip.Tip` so the whole row tr
 switch, and the editor returns to its first section or page. Hover and keyboard-focus help (§9.3.2), the footer, the buttons, the read-only strip and the sub-states
 (§9.3.1) behave the same in both styles.
 
+The style reaches the editor through `IIniEditorStyleState`, a singleton in the composition root that holds the current style, a `Version` and a `StyleChanged` event. The
+launcher does not read its options at start-up, so the INI tab loads them once, lazily, before it builds its first editor; a failed read keeps the default. `Version` guards the
+race with a save: a load that was in flight when Options saved a style does not overwrite it. A save in Options calls `IniEditorViewModel.ApplyStyle` on an open editor.
+
 - **INI style** — §9.3 as written, with every control following the file literally: the inverted `[UI]/noMenuMusic` is a plain check box (`No menu music`, ticked when the file
   holds `1`), and the attenuation and movie-volume keys are raw number boxes.
 - **Friendly style** — for a player who has never seen `zoo.ini`:
   - **Pages by purpose.** Eight pages — Display, Graphics, Sound, New Zoos, Controls, Help & Messages, Language, Troubleshooting — gather keys from any INI section. Each page
     shows a title (no brackets, no "section of zoo.ini") and a one-line description, then labelled group boxes (Display: *Screen*, *Performance*). The full map is in the
     milestone 12 spec (`milestone-12-ini-editor-display-style-design.md` §6.1); the `[ai]` and `[Map]` footnotes move with their groups.
-  - **Plain labels** in the system face, saying what the control does (*Width (pixels)*, *Enable menu music*); a check box carries its label as its caption.
+  - **Plain labels** in the system face, saying what the control does (*Width (pixels)*, *Enable menu music*); a check box carries its label as its caption, so its row has
+    no label column and no hint line. The list caption above the pages reads `Page`, and the description sits only in the page header, not above the form pane.
   - **Values by meaning.** `noMenuMusic` is inverted (*Enable menu music*); the four volume keys are **sliders** from 0 % to 100 % with a percentage readout, louder to the
     right — the attenuation keys as `10000 − attenuation`, the movie volumes as `raw + 10000`, in steps of 100 raw units. An off-step file value is kept until the slider moves.
-  - **Language.** Only the language drop-down shows; a muted line under it gives the current LANGID / SUBLANGID.
+  - **Language.** Only the language drop-down shows; a muted line under it gives the current LANGID / SUBLANGID. `lang` and `sublang` stay in the layout as hidden rows
+    (`IniFieldDescriptor.IsHidden`, labelled *Language code* and *Region code*, rendered nowhere) so that the picker's edits, dirty tracking and Restore defaults reach them.
   - Each row's hint and help describe the value as that style shows it.
 
-`IniEditorCatalogue` holds each key's control, bounds and choice options once; each style is a layout over it, and a test asserts that each layout shows every user-setting key
-exactly once.
+`IniEditorCatalogue` is the INI layout and `IniEditorFriendlyCatalogue` the Friendly one; both reuse the same control kinds, bounds and choice options, and
+`IniEditorLayouts` selects a layout by style and locates a key in it (`IniFieldLocation`). A test asserts that each layout places every user-setting key exactly once: one
+descriptor per key that carries its `Id`, the language picker (which has none) not counted. Value conversions (`IniValueConversion`: `None`, `Invert`,
+`VolumeFromAttenuation`, `VolumeFromMovieVolume`) are applied only at the control, so the raw value stays the source of truth and what is read and written never changes.
 
 ### 9.4 Installation Manager dialogue
 
@@ -1695,6 +1704,18 @@ tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`
   and moves its resources, styles and data templates across, so the tests see the shipped theme and tokens without running the launcher's start-up. A missing
   `{StaticResource}` on a control property is invisible here: Avalonia defers the lookup and leaves the property unset without logging, so `TokenReferencesTests` (§11.5)
   remains the guard for that case.
+- **INI editor style (view models and layouts):** `IniEditorLayoutsTests` (each layout places every user-setting key once; the Friendly page order; the language page is the
+  picker plus two hidden code rows; conversions round-trip and follow the spec formulae; the volume rows are sliders and `noMenuMusic` is literal in the INI layout; footnotes
+  sit on their groups; every visible Friendly row has a label and help), `IniSliderFieldViewModelTests` (percentage mapping both ways, steps of 100, an off-step file value
+  kept and the row clean until the slider moves), `IniLanguageFieldViewModelTests`, the style cases in `IniEditorViewModelTests` and `IniFieldViewModelTests`,
+  `IniDisplayTextTests` and `RestorePreviousIniDialogViewModelTests` (the Restore diff in each style), `OptionsDialogViewModelTests` (the *INI editor* group applies on `OK`),
+  `IniConfigTabViewModelTests` (the lazy options load and its stale-read guard) and `MainWindowViewModel*Tests`. `IniEditorStyleTests` (Domain), `LauncherOptionsTests`
+  (Application) and `LauncherDbContextTests` (Infrastructure) cover the SmartEnum, the options round trip and the `'Friendly'` column default.
+- **Both editor styles (headless):** `IniFriendlyEditorViewTests` hosts the real `IniEditorView` in the Friendly style and checks that a drop-down, a check box (its own
+  label, no label column) and a slider keep the focus wiring, that the language page renders only the picker and its codes line, and that `ApplyStyle` re-renders an open editor
+  with the pending edit kept. `IniEditorStyleHeadlessTests` adds `Editor_RendersInBothStyles` (every section or page selected in turn, laid out, and nothing logged by
+  Avalonia), `FriendlySoundPage_EnableMenuMusicTicked` (`noMenuMusic=0` shows *Enable menu music* ticked and clean), `FriendlySlider_DragReleasesFocus` (a pointer drag moves
+  the slider and gives the focus back) and `FriendlySlider_TabKeepsFocus` (a Tab-focused slider keeps it through arrow-key steps).
 - **INI field focus (headless):** `IniFieldFocusTests` hosts the real `IniEditorView` in a headless window (`IniEditorHarness`) and drives it with keyboard and pointer
   input, checking §9.3.2's focus rules end to end: the `fullscreen` drop-down reached with Tab, opened with F4 or Alt+Down and confirmed with Enter keeps focus and the
   footer help; an item picked with the pointer, a toggle click and a spinner-button click release focus; a click that opens a drop-down does not, nor does a `Click` raised

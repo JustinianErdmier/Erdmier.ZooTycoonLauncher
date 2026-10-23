@@ -4,7 +4,7 @@
 > **Date:** 2026-10-22
 > **Author:** Justinian
 > **Status:** Approved for implementation (maintainer decisions 1–12 incl. 1a–1b; calls C1–C6; §6a added after the first review)
-> **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §9, §11.5, §13.5
+> **Authoritative spec:** [1-zoo-tycoon-nexus-master-design.md](../1-zoo-tycoon-nexus-master-design.md) §9, §11.5, §13.5
 > **Source of items:** [milestone-11 ledger](../../Ledgers/Epic-1-MVP/milestone-11-ledger.md) *Outstanding items → Polish*
 > **Deferred work taken:** DW-24 (consistent spacing, padding and margins)
 > **Design references:** `Docs/UserInterfaceDesign/conventions.md` §1–§2; Microsoft's Windows design guidelines, *Layout* (spacing in dialog units) and *Layout

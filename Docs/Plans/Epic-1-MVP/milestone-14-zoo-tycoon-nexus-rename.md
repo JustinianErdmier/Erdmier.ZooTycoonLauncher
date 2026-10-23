@@ -159,17 +159,17 @@ and none contains `"Launcher.db"` — use whatever public surface exposes those 
 
 **Files:**
 
-- Rename: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md` → `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`
+- Rename: `Docs/Specs/1-zoo-tycoon-nexus-master-design.md` → `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`
 - Modify: the SDD; `CLAUDE.md`; `Docs/UserInterfaceDesign/conventions.md`; `Docs/TestPlans/manual-end-to-end-tests.md`; `Erdmier.ZooTycoonNexus.slnx` (the SDD's entry)
-- Modify (link paths only): every milestone 1–13 plan or spec that links `1-zoo-tycoon-launcher-master-design.md`
+- Modify (link paths only): every milestone 1–13 plan or spec that links `1-zoo-tycoon-nexus-master-design.md`
 - Modify: `Docs/Ledgers/Epic-1-MVP/milestone-14-ledger.md`, this plan (ticks)
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Rename the SDD** with `git mv`, update its `.slnx` entry, and repair every link to it: `git grep -l "1-zoo-tycoon-launcher-master-design"` lists them.
+- [x] **Step 1: Rename the SDD** with `git mv`, update its `.slnx` entry, and repair every link to it: `git grep -l "1-zoo-tycoon-nexus-master-design"` lists them.
   In milestone 1–13 documents change only the link path, never the prose around it; record that as a ruling in the ledger.
 
-- [ ] **Step 2: SDD content.** Product name `Zoo Tycoon Launcher` → `Zoo Tycoon Nexus` (title line 1, the metadata table, §1, §2, §9.1 title bar
+- [x] **Step 2: SDD content.** Product name `Zoo Tycoon Launcher` → `Zoo Tycoon Nexus` (title line 1, the metadata table, §1, §2, §9.1 title bar
   `Zoo Tycoon Nexus V<version>`, §9.9 `About Zoo Tycoon Nexus`, and every other place it names the product); `Erdmier.ZooTycoonLauncher` → `Erdmier.ZooTycoonNexus` in
   project, namespace and path references; storage `%LOCALAPPDATA%\ZooTycoonLauncher\` → `%LOCALAPPDATA%\ZooTycoonNexus\`, `Launcher.db` → `Nexus.db`, `Launcher.log` →
   `Nexus.log` (§4.7, §6, and elsewhere). Rewrite the §1 naming paragraph (about line 78) so it says, in this sense: *Zoo Tycoon Nexus. The application is a launcher in the
@@ -177,28 +177,28 @@ and none contains `"Launcher.db"` — use whatever public surface exposes those 
   (`LauncherDbContext`, `LauncherSettings`, `LauncherOptions`) keeps it.* Keep revision rows before 1.18 and the `Ref` prototype's name (`Erdmier.ZooTycoonLauncherRef`)
   as they are.
 
-- [ ] **Step 3: SDD revision row.** Add **1.18**, `23 October 2026`, `Justinian`: milestone 14 renames the application Zoo Tycoon Nexus — solution, projects and
+- [x] **Step 3: SDD revision row.** Add **1.18**, `23 October 2026`, `Justinian`: milestone 14 renames the application Zoo Tycoon Nexus — solution, projects and
   namespaces `Erdmier.ZooTycoonNexus.*`, storage `%LOCALAPPDATA%\ZooTycoonNexus\` with `Nexus.db` / `Nexus.log` and no migration of the old folder — and moves this
   document to `1-zoo-tycoon-nexus-master-design.md`. List the sections changed.
 
-- [ ] **Step 4: CLAUDE.md.** The project description names Zoo Tycoon Nexus; every `Erdmier.ZooTycoonLauncher` project, solution and command path becomes
+- [x] **Step 4: CLAUDE.md.** The project description names Zoo Tycoon Nexus; every `Erdmier.ZooTycoonLauncher` project, solution and command path becomes
   `Erdmier.ZooTycoonNexus`; the SDD link follows the rename; storage paths and log paths use `ZooTycoonNexus` / `Nexus.db`. Keep `Erdmier.ZooTycoonLauncherRef` (a
   historical name), the GIF's file name, and any wording about the local checkout folder.
 
-- [ ] **Step 5: conventions.md and the manual test plan.** Project paths, `xmlns` examples and the SDD link follow the rename; `Zoo Tycoon Launcher` as a window title
+- [x] **Step 5: conventions.md and the manual test plan.** Project paths, `xmlns` examples and the SDD link follow the rename; `Zoo Tycoon Launcher` as a window title
   example (conventions.md about line 334) becomes `Zoo Tycoon Nexus`; any storage path or `Launcher.db` mention in the test plan becomes `ZooTycoonNexus` / `Nexus.db`.
   Keep `ZooTycoonLauncherHiFiUIPrototype.gif` and every mock-up description.
 
-- [ ] **Step 6: Verify.** Run:
+- [x] **Step 6: Verify.** Run:
 
 ```bash
 git grep -n -i "Zoo Tycoon Launcher\|ZooTycoonLauncher\|Launcher\.db\|Launcher\.log\|zoo-tycoon-launcher" -- CLAUDE.md Docs/Specs/1-zoo-tycoon-nexus-master-design.md Docs/UserInterfaceDesign/conventions.md Docs/TestPlans Erdmier.ZooTycoonNexus.slnx
 ```
 
   Expected: only revision rows before 1.18, `ZooTycoonLauncherRef`, `ZooTycoonLauncherHiFiUIPrototype.gif`, and the 1.18 row itself. Then
-  `git grep -n "1-zoo-tycoon-launcher-master-design"` returns nothing. Check the wrap of every edited Markdown line (≤ 180).
+  `git grep -n "1-zoo-tycoon-nexus-master-design"` returns nothing. Check the wrap of every edited Markdown line (≤ 180).
 
-- [ ] **Step 7: Commit.** Message: `docs(📝): rename the app to Zoo Tycoon Nexus in the SDD, CLAUDE.md and current docs`
+- [x] **Step 7: Commit.** Message: `docs(📝): rename the app to Zoo Tycoon Nexus in the SDD, CLAUDE.md and current docs`
 
 - [ ] **Step 8: Close the ledger.** Clean it into its final shape (rulings with costs, plan defects, outstanding items grouped by when to revisit — including, for the
   maintainer after the merge: move and rename the old data files, rename the local checkout folder, reopen Rider on `Erdmier.ZooTycoonNexus.slnx` — and incidents), tick

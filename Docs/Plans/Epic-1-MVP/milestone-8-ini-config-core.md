@@ -17,7 +17,7 @@ pending-changes guard wired into the main window.
 FluentValidation 12.1.1, Ardalis.SmartEnum 8.2.0, EF Core 10.0.9 + SQLite, System.IO.Abstractions 22.1.1, xUnit + Shouldly + NSubstitute.
 
 **Spec:** [`Docs/Specs/Epic-1-MVP/milestone-8-ini-config-core-design.md`](../../Specs/Epic-1-MVP/milestone-8-ini-config-core-design.md) — read it before starting any task. The SDD
-([`1-zoo-tycoon-launcher-master-design.md`](../../Specs/1-zoo-tycoon-launcher-master-design.md)) remains authoritative for anything this plan does not cover.
+([`1-zoo-tycoon-nexus-master-design.md`](../../Specs/1-zoo-tycoon-nexus-master-design.md)) remains authoritative for anything this plan does not cover.
 
 ## Global Constraints
 
@@ -7502,7 +7502,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ## Task 19: Documentation — SDD revision 1.7, conventions, manual test stubs
 
 **Files:**
-- Modify: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`
+- Modify: `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`
 - Modify: `Docs/UserInterfaceDesign/conventions.md`
 - Modify: `Docs/TestPlans/manual-end-to-end-tests.md`
 
@@ -7655,7 +7655,7 @@ Each stub section has only these sub-headings and prompt quotes, copied from the
 Run the 180-character check (above) on all three files; fix any line it reports. Then:
 
 ```powershell
-git add Docs/Specs/1-zoo-tycoon-launcher-master-design.md Docs/UserInterfaceDesign/conventions.md Docs/TestPlans/manual-end-to-end-tests.md
+git add Docs/Specs/1-zoo-tycoon-nexus-master-design.md Docs/UserInterfaceDesign/conventions.md Docs/TestPlans/manual-end-to-end-tests.md
 git commit -m @'
 docs(📝): amend the SDD to v1.7 for the INI Config core slice
 

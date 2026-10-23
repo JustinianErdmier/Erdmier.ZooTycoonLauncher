@@ -286,7 +286,7 @@ wrapping, visible only when `HasReadOnlyWarning`. General tab, Cannot Play with 
 ## Task 8: Documentation
 
 **Files:**
-- Modify: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md`, `Docs/UserInterfaceDesign/conventions.md` (§4.1 icon table: the read-only strip's icon; only if a new
+- Modify: `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`, `Docs/UserInterfaceDesign/conventions.md` (§4.1 icon table: the read-only strip's icon; only if a new
   icon site exists), `Docs/TestPlans/manual-end-to-end-tests.md` (add a short "INI recovery" stub in the existing stub style)
 
 - [x] **Step 1: SDD** per the spec's §8: §7.4 (replace the MVP note and button list with the two actions as built, C2–C4), §7.2.5 (*Fix INI* options; Copy From

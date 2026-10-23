@@ -4,7 +4,7 @@
 > **Date:** 2026-10-21
 > **Author:** Justinian
 > **Status:** Approved for implementation (written from the SDD at the maintainer's request; calls C1–C10 accepted)
-> **Authoritative spec:** [1-zoo-tycoon-launcher-master-design.md](../1-zoo-tycoon-launcher-master-design.md) §7.1.2, §7.2.5, §7.4, §7.7, §8.2, §9.3.1, §9.5, §14.5 row 9
+> **Authoritative spec:** [1-zoo-tycoon-nexus-master-design.md](../1-zoo-tycoon-nexus-master-design.md) §7.1.2, §7.2.5, §7.4, §7.7, §8.2, §9.3.1, §9.5, §14.5 row 9
 > **Deferred work taken:** DW-01 (No-INI recovery actions), DW-12 (detect a read-only installation folder)
 > **Design reference:** `Docs/UserInterfaceDesign/HiFiPrototype/src/ini-config.jsx` (`IniMissingState`), `src/dialogs.jsx` (Fix Installation, *Fix INI*)
 > **Branch:** `feat/milestone-10-ini-recovery-and-read-only-detection`

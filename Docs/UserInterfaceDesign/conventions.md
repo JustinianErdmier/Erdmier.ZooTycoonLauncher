@@ -1,6 +1,6 @@
 # UI conventions
 
-> Companion to [SDD §9](../Specs/1-zoo-tycoon-launcher-master-design.md#9-user-interface). Where §9 describes **what** each view contains, this doc fixes the recurring
+> Companion to [SDD §9](../Specs/1-zoo-tycoon-nexus-master-design.md#9-user-interface). Where §9 describes **what** each view contains, this doc fixes the recurring
 > **how** — tokens, layout primitives and icon names — so an agent implementing one slice can do it without reverse-engineering the prototype.
 
 ---
@@ -22,7 +22,7 @@ This doc is opinionated, not exhaustive. It captures the things that recur **acr
 ## 1. Token registry
 
 The launcher overlays a small set of named values on top of `Classic.Avalonia.Theme`. They live in four files under
-`Source/Erdmier.ZooTycoonLauncher.Desktop/Styles/`, all merged in `App.axaml`, and views reach for a key through `{StaticResource …}`:
+`Source/Erdmier.ZooTycoonNexus.Desktop/Styles/`, all merged in `App.axaml`, and views reach for a key through `{StaticResource …}`:
 `Colours.axaml` (§1.1, §1.2), `Typography.axaml` (§1.3), `Spacing.axaml` (§1.4) and `Controls.axaml` (§2). A literal in a view is a defect, and an architecture test
 per group (named in each section; §7 lists every colour attribute) fails on it. The colours come first. There is one, light, appearance, so nothing needs dynamic
 resolution. View models hold no brushes: a converter turns a state into a brush.
@@ -108,7 +108,7 @@ arithmetic):
   Auto-locate trail, a `HeaderedContentControl` drawn as a group box, takes `Padding="{StaticResource GroupBoxPadding}"`.
 
 **Writing a margin or padding.** A `Spacing` takes `{StaticResource GapRelated}`. A `Margin` or `Padding` is a `Thickness`, built from token names by the `{tokens:Space …}`
-markup extension (`Styles/SpaceExtension.cs`, `xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"`), so no per-combination resource is needed:
+markup extension (`Styles/SpaceExtension.cs`, `xmlns:tokens="using:Erdmier.ZooTycoonNexus.Desktop.Styles"`), so no per-combination resource is needed:
 
 ```xml
 <StackPanel Margin="{tokens:Space MarginDialog}" Spacing="{StaticResource GapRelated}" />
@@ -247,7 +247,7 @@ Used by the Status / Display / INI status / Fix-EXE / Fix-INI / Auto-locate-trai
 
 ### 4.1 Icon vocabulary
 
-The icons are the Windows 95 set committed under `Source/Erdmier.ZooTycoonLauncher.Desktop/Assets/Win95Icons/`, referenced from XAML as
+The icons are the Windows 95 set committed under `Source/Erdmier.ZooTycoonNexus.Desktop/Assets/Win95Icons/`, referenced from XAML as
 `/Assets/Win95Icons/<name>` (an `Image Source=` or a window `Icon=`). The file name carries the artwork's native size (`ok32.gif`, `foldercatalog16.ico`), but the
 `Height` / `Width` on the `Image` decide the rendered size. The launcher's own mark lives in `Assets/BrandIcons/` and `Assets/Images/`. The table maps each site to the
 file its view uses today; a site whose view does not exist yet is marked *(not built)* and has no file yet.
@@ -331,7 +331,7 @@ There is no theming: the launcher has one, light, appearance, and the dark-mode 
 - **British English everywhere** (`Behaviour`, `Colour`, `Minimise`, `Initialise`). Don't switch a US spelling that comes from a Windows API surface (`Color`, `Initialize` on
   `IInitializable`).
 - **Sentence case** in labels and headings, not Title Case. `Restore previous INI`, not `Restore Previous INI` — *except* when the phrase is itself a proper noun (window titles
-  like `Installation Manager`, `Zoo Tycoon Launcher`).
+  like `Installation Manager`, `Zoo Tycoon Nexus`).
   - SDD §9 currently writes some titles in Title Case; treat the SDD's title as the canonical window title text. Body copy and inline buttons remain sentence case.
 - **Ellipses follow the Win9x rule** (see §5), on buttons and menu items alike (`Browse…`, `Open Installation…`, `Installation Manager…`).
 - **No periods at the end of single-sentence muted prose** unless the prose is multi-sentence. (Match the prototype.)

@@ -264,7 +264,7 @@ Add or tighten (spec §3.7), each as its own named test or assertion:
 
 **Files:**
 - Modify: `Docs/UserInterfaceDesign/conventions.md` (§4.1, ~lines 170-195), `Docs/Specs/Epic-1-MVP/milestone-9-restore-previous-ini-design.md` (§7.4 ~line 225),
-  `Docs/Specs/1-zoo-tycoon-launcher-master-design.md` (§9.3.2 ~1382; §13.5 DW-17, DW-18, DW-27; revision 1.10 row), `Docs/TestPlans/manual-end-to-end-tests.md`
+  `Docs/Specs/1-zoo-tycoon-nexus-master-design.md` (§9.3.2 ~1382; §13.5 DW-17, DW-18, DW-27; revision 1.10 row), `Docs/TestPlans/manual-end-to-end-tests.md`
 
 - conventions §4.1: icons live in `Desktop/Assets/Win95Icons/` under their committed names; remove "not yet committed" and the `Assets/Icons/` copy task; the table
   maps each site to the file its view actually uses (read each view's `Icon=`/`Source=`), marking sites whose view does not exist yet.

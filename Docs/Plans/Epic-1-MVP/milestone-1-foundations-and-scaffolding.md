@@ -10,7 +10,7 @@
 
 **Tech Stack:** .NET 10, C# 13, Avalonia 11.3, Classic.Avalonia 11.3, CommunityToolkit.Mvvm 8.4, Mediator (martinothamar) 2.x, ErrorOr, FluentValidation, Ardalis.SmartEnum, Serilog (file sink), Microsoft.EntityFrameworkCore.Sqlite 10.x (or current stable at implementation), System.IO.Abstractions, JetBrains.Annotations. Tests: xUnit, Shouldly, NSubstitute, NetArchTest.Rules.
 
-**Reference SDD:** [`Docs/Specs/1-zoo-tycoon-launcher-master-design.md`](../../Specs/1-zoo-tycoon-launcher-master-design.md). Where this plan says "per SDD §X.Y", read the linked section for the rationale; this plan only specifies the *what* and the *how*.
+**Reference SDD:** [`Docs/Specs/1-zoo-tycoon-nexus-master-design.md`](../../Specs/1-zoo-tycoon-nexus-master-design.md). Where this plan says "per SDD §X.Y", read the linked section for the rationale; this plan only specifies the *what* and the *how*.
 
 **Reference build:** the renamed `References/Erdmier.ZooTycoonLauncherRef/` project. It's read-only inspiration — *never* `git mv` or copy-paste from it. Cite a Ref file inline only as a "for inspiration" pointer; rewrite the moral equivalent fresh.
 
@@ -242,7 +242,7 @@ Replace the contents of `Erdmier.ZooTycoonLauncher.slnx` with:
         <File Path="Directory.Packages.props" />
     </Folder>
     <Folder Name="/SolutionItems/Docs/Specs/">
-        <File Path="Docs/Specs/1-zoo-tycoon-launcher-master-design.md" />
+        <File Path="Docs/Specs/1-zoo-tycoon-nexus-master-design.md" />
     </Folder>
     <Folder Name="/SolutionItems/Docs/Plans/Epic-1-MVP/">
         <File Path="Docs/Plans/Epic-1-MVP/milestone-1-foundations-and-scaffolding.md" />

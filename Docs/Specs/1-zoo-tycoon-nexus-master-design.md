@@ -1,4 +1,4 @@
-# Zoo Tycoon Launcher — Software Design Document
+# Zoo Tycoon Nexus — Software Design Document
 
 > A native Windows desktop launcher for **Zoo Tycoon (2001)**: multi-installation discovery and management, exhaustive INI configuration with full historical versioning, and  
 > one-click launch. Avalonia 11 + Classic.Avalonia, .NET 10.
@@ -9,12 +9,12 @@
 
 | Field                    | Value                             |
 |--------------------------|-----------------------------------|
-| **Project**              | Zoo Tycoon Launcher               |
+| **Project**              | Zoo Tycoon Nexus                  |
 | **Document**             | Software Design Document (SDD)    |
-| **Version**              | 1.16                              |
+| **Version**              | 1.18                              |
 | **Status**               | Draft for implementation          |
 | **Author**               | Justinian                         |
-| **Last updated**         | 22 October 2026                   |
+| **Last updated**         | 23 October 2026                   |
 | **Language conventions** | Standard Southern British English |
 
 ### Revision history
@@ -40,6 +40,7 @@
 | 1.15    | 22 October 2026   | Justinian | Headless view-load test. §11.4 adds `ViewLoadTests`, which loads every view under the real application resources with its designer view model and fails on a load-time exception or an Avalonia warning; §11.5 notes that a missing `{StaticResource}` on a control property stays silent at run time, so `TokenReferencesTests` remains its guard; §11.7 lists `Avalonia.Headless.XUnit`. §11.4 also adds `IniFieldFocusTests`, which drives the real INI editor with keyboard and pointer input; they found that `IniFieldFocusRelease.IsWithin` missed a drop-down's items when the pop-up is an overlay, and §9.3.2 now says it walks logical parents first. |
 | 1.16    | 22 October 2026   | Justinian | Milestone 12 (INI editor display style; spec `milestone-12-ini-editor-display-style-design.md`). The INI Config editor gains two display styles chosen in Options: a Friendly style (the default) that groups settings into eight pages by purpose with plain labels, meaning-based values and volume sliders, and an INI style that shows `zoo.ini` literally (the inverted `noMenuMusic` included). §5.1 / §5.2 / §5.5 / §6.2 add `LauncherSettings.IniEditorStyle` and the `IniEditorStyle` SmartEnum; §9.3 gains §9.3.3 *Display styles*; §9.7 makes the diff follow the style; §9.8 adds the *INI editor* group box, which applies on `OK`; §13.2 names both styles. Follow-ups: a **View** menu (*Config layout* ▸ *Friendly style* / *INI style*) switches the style from the main window (§9.10, §9.3.3); the Friendly cash keys describe the new-zoo starting-cash picker; the language codes sit on their own line; the Restore dialogue's Friendly key column uses the system face (§9.7). |
 | 1.17    | 23 October 2026   | Justinian | Milestone 13 (Game Config tab rename). The INI Config tab is renamed Game Config for players throughout (§2.2, §3.1, §5.1, §7.1, §7.2, §7.3–§7.5, §9, §9.1, §9.3, §9.3.1, §9.3.3, §9.8 Options copy, whose group box becomes *Config editor*, §9.12, §11.4, §13.2, §13.5.1, §14.5, §15), and its documented access key moves to Alt-C. §9.3 records why the code identifiers keep `IniConfig`. |
+| 1.18    | 23 October 2026   | Justinian | Milestone 14 renames the application Zoo Tycoon Nexus: the solution, projects and namespaces become `Erdmier.ZooTycoonNexus.*`, and storage moves to `%LOCALAPPDATA%\ZooTycoonNexus\` with `Nexus.db` / `Nexus.log` and no migration of the old folder. This document moves to `1-zoo-tycoon-nexus-master-design.md`. Sections changed: the title, the document control table and §1.1–§1.2 (the name; "launcher" stays the ordinary word for the role, and the `Launcher*` code names keep it), §2.4, §3.1, §4.2, §4.5, §4.7, §5.5, §6.1, §6.2, §6.4, §7.1.1, §7.2.4, §9, §9.1 (title bar `Zoo Tycoon Nexus V<version>`), §9.9 (`About Zoo Tycoon Nexus`), §9.10, §10, §11.1–§11.5 and §13.2. |
 
   
 ---  
@@ -69,14 +70,15 @@
 
 ### 1.1 Purpose of this document
 
-This document specifies the design of the **Zoo Tycoon Launcher**, a native Windows desktop application that discovers, configures, and launches **Zoo Tycoon (2001)** game  
+This document specifies the design of the **Zoo Tycoon Nexus**, a native Windows desktop application that discovers, configures, and launches **Zoo Tycoon (2001)** game  
 installations. It is intended to be an implementation-ready reference covering architecture, the domain and data models, the principal workflows, the supporting algorithms, the  
 user interface, and the phased delivery plan.
 
 ### 1.2 The name
 
-*Zoo Tycoon Launcher.* The name is descriptive rather than evocative; the application is a launcher in the established game-launcher tradition (think GoG Galaxy, Steam, MO2) but  
-narrowly focused on the 2001 game and its INI-driven configuration surface.
+*Zoo Tycoon Nexus.* The application is a launcher in the established game-launcher tradition (think GoG Galaxy, Steam, MO2), narrowly focused on the 2001 game and its  
+INI-driven configuration surface, but its name is *Zoo Tycoon Nexus*. "Launcher" stays the ordinary word for what the application is, and code that names that role  
+(`LauncherDbContext`, `LauncherSettings`, `LauncherOptions`) keeps it.
 
 ### 1.3 Scope
 
@@ -157,7 +159,7 @@ predicate is a Phase 0 deliverable ([Section 7.9](#79-screen-modes-calculation))
 
 ### 2.4 Windows-only is deliberate, not provisional
 
-The Zoo Tycoon Launcher is **permanently Windows-only**. The game binary is  
+The Zoo Tycoon Nexus is **permanently Windows-only**. The game binary is  
 a 32-bit Windows executable from 2001; Avalonia's cross-platform UI capability is incidental, retained only because Classic.Avalonia (the chosen theme library) builds on Avalonia
 
 > See [Section 12](#12-cross-platform-readiness).
@@ -170,7 +172,7 @@ a 32-bit Windows executable from 2001; Avalonia's cross-platform UI capability i
 
 1. **Discover installations** automatically (registry, hard-coded vendor paths, persisted last-known directory) and let the user add more by folder selection.
 2. **Manage installations** through a dedicated dialogue: add, edit (rename, change default), delete, fix invalid, view info.
-3. **Persist launcher state** to SQLite under `%LOCALAPPDATA%\ZooTycoonLauncher\Data\` with code-first EF Core migrations.
+3. **Persist launcher state** to SQLite under `%LOCALAPPDATA%\ZooTycoonNexus\Data\` with code-first EF Core migrations.
 4. **Persist per-installation INI state** to a per-installation SQLite database, modelled as EAV snapshots with `Original`, `Current`, and `Historical` tables.
 5. **Parse `zoo.ini`** into an `IniDocument` and extract every recognised key's raw value via `ZooIniDefaults`, preserving comments, blank lines, key ordering, and  
    unrecognised keys for byte-fidelity round-trip writes.
@@ -217,23 +219,23 @@ The launcher adheres to the following principles:
 ### 4.2 Solution structure
 
 ```text  
-Erdmier.ZooTycoonLauncher.slnx  
+Erdmier.ZooTycoonNexus.slnx  
 ├── Source/  
-│   ├── Erdmier.ZooTycoonLauncher.Domain/         # POCO entities, smart enums, INI key registry, scenario key registry  
-│   ├── Erdmier.ZooTycoonLauncher.Application/    # VSA slices: commands, queries, handlers, validators, abstractions  
-│   ├── Erdmier.ZooTycoonLauncher.Infrastructure/ # EF Core + SQLite, INI parser, Win32 P/Invoke, Serilog  
-│   └── Erdmier.ZooTycoonLauncher.Desktop/        # Avalonia views (AXAML), view models, DI composition root  
+│   ├── Erdmier.ZooTycoonNexus.Domain/         # POCO entities, smart enums, INI key registry, scenario key registry  
+│   ├── Erdmier.ZooTycoonNexus.Application/    # VSA slices: commands, queries, handlers, validators, abstractions  
+│   ├── Erdmier.ZooTycoonNexus.Infrastructure/ # EF Core + SQLite, INI parser, Win32 P/Invoke, Serilog  
+│   └── Erdmier.ZooTycoonNexus.Desktop/        # Avalonia views (AXAML), view models, DI composition root  
 ├── Tests/  
-│   ├── Erdmier.ZooTycoonLauncher.Domain.Tests.Unit/  
-│   ├── Erdmier.ZooTycoonLauncher.Application.Tests.Unit/  
-│   ├── Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration/  
-│   ├── Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit/  
-│   └── Erdmier.ZooTycoonLauncher.Tests.Architecture/  
+│   ├── Erdmier.ZooTycoonNexus.Domain.Tests.Unit/  
+│   ├── Erdmier.ZooTycoonNexus.Application.Tests.Unit/  
+│   ├── Erdmier.ZooTycoonNexus.Infrastructure.Tests.Integration/  
+│   ├── Erdmier.ZooTycoonNexus.Desktop.Tests.Unit/  
+│   └── Erdmier.ZooTycoonNexus.Tests.Architecture/  
 ```
 
-The root namespace for every project is `Erdmier.ZooTycoonLauncher`. Production projects live under `Source/`; test projects under `Tests/`. Test projects follow
-`<Project/Assembly Name>.Tests.<Category>` where the category is `Unit`, `Integration`, `Architecture` (e.g. `Erdmier.ZooTycoonLauncher.Domain.Tests.Unit`); solution-spanning
-architecture tests attach to the root name (`Erdmier.ZooTycoonLauncher.Tests.Architecture`).
+The root namespace for every project is `Erdmier.ZooTycoonNexus`. Production projects live under `Source/`; test projects under `Tests/`. Test projects follow
+`<Project/Assembly Name>.Tests.<Category>` where the category is `Unit`, `Integration`, `Architecture` (e.g. `Erdmier.ZooTycoonNexus.Domain.Tests.Unit`); solution-spanning
+architecture tests attach to the root name (`Erdmier.ZooTycoonNexus.Tests.Architecture`).
 
 Dependency direction: `Desktop → Application → Domain`, and `Infrastructure → Application/Domain`, with `Desktop` composing `Infrastructure` only at the composition root. The  
 Application layer defines interfaces (e.g. `IInstallationRepository`, `IIniSnapshotRepository`, `IIniSnapshotTransaction`, `ILauncherSettingsRepository`, `IInstallationVerifier`,  
@@ -248,9 +250,9 @@ config:
   layout: elk  
 ---  
 flowchart TB  
-    Desktop["Erdmier.ZooTycoonLauncher.Desktop<br>(Avalonia + MVVM)"] --> App["Erdmier.ZooTycoonLauncher.Application<br>(slices, CQRS, abstractions)"]  
-    App --> Domain["Erdmier.ZooTycoonLauncher.Domain<br>(POCO entities, smart enums)"]  
-    Infra["Erdmier.ZooTycoonLauncher.Infrastructure<br>(EF Core, INI, P/Invoke)"] --> App & Domain  
+    Desktop["Erdmier.ZooTycoonNexus.Desktop<br>(Avalonia + MVVM)"] --> App["Erdmier.ZooTycoonNexus.Application<br>(slices, CQRS, abstractions)"]  
+    App --> Domain["Erdmier.ZooTycoonNexus.Domain<br>(POCO entities, smart enums)"]  
+    Infra["Erdmier.ZooTycoonNexus.Infrastructure<br>(EF Core, INI, P/Invoke)"] --> App & Domain  
     Desktop -. composition root only .-> Infra
 ```  
 
@@ -279,7 +281,7 @@ errors) are values, not exceptions.
 - **ErrorOr** (Amichai Mantinband) — discriminated result type for handler return values.
 - **FluentValidation** — request validation, executed in a mediator pipeline behaviour.
 - **Ardalis.SmartEnum** — richer enumerations.
-- **Serilog** — structured logging with a **file-only** sink under `%LOCALAPPDATA%\ZooTycoonLauncher\Logs\`.
+- **Serilog** — structured logging with a **file-only** sink under `%LOCALAPPDATA%\ZooTycoonNexus\Logs\`.
 - **Microsoft.Extensions.DependencyInjection** — DI container, composed in `App.OnFrameworkInitializationCompleted` and exposed as `App.Services`.
 - **System.IO.Abstractions** — `IFileSystem` for testable file-system access.
 - **JetBrains.Annotations** — `[UsedImplicitly]` on designer/runtime-only types to keep ReSharper/Rider quiet.
@@ -306,15 +308,15 @@ errors) are values, not exceptions.
 
 ### 4.7 Configuration and storage locations
 
-All launcher data lives under `%LOCALAPPDATA%\ZooTycoonLauncher\`:
+All launcher data lives under `%LOCALAPPDATA%\ZooTycoonNexus\`:
 
 ```text  
-%LOCALAPPDATA%\ZooTycoonLauncher\  
+%LOCALAPPDATA%\ZooTycoonNexus\  
 ├── Data\  
-│   ├── Launcher.db                                     # Settings + installation registry  
+│   ├── Nexus.db                                        # Settings + installation registry  
 │   └── {installationId}.db                             # One per GameInstallation row  
 └── Logs\  
-    ├── Launcher.log                                    # Rolling daily, Serilog file sink  
+    ├── Nexus.log                                       # Rolling daily, Serilog file sink  
     └── Installations\  
         └── {installationId}.log                        # Per-installation log  
 ```  
@@ -326,11 +328,11 @@ All path construction goes through `IAppStorageLocations` so the locations are s
 ```csharp  
 public interface IAppStorageLocations  
 {  
-    string AppDataRoot { get; }                                 // %LOCALAPPDATA%\ZooTycoonLauncher  
+    string AppDataRoot { get; }                                 // %LOCALAPPDATA%\ZooTycoonNexus  
     string DataRoot { get; }                                    // ...\Data  
     string LogsRoot { get; }                                    // ...\Logs  
-    string LauncherDatabasePath { get; }                        // ...\Data\Launcher.db  
-    string LauncherLogPath { get; }                             // ...\Logs\Launcher.log  
+    string LauncherDatabasePath { get; }                        // ...\Data\Nexus.db  
+    string LauncherLogPath { get; }                             // ...\Logs\Nexus.log  
     string InstallationDatabasePath(Guid installationId);  
     string InstallationLogPath(Guid installationId);  
 }  
@@ -575,7 +577,7 @@ erDiagram
     Snapshots ||--o{ IniValues : "owns"  
 ```  
 
-`LauncherSettings` and `GameInstallations` live in `Launcher.db`. `Snapshots` and `IniValues` live in `{installationId}.db`; no cross-database foreign key is modelled (SQLite  
+`LauncherSettings` and `GameInstallations` live in `Nexus.db`. `Snapshots` and `IniValues` live in `{installationId}.db`; no cross-database foreign key is modelled (SQLite  
 doesn't support it; the application layer enforces existence).
   
 ---  
@@ -585,10 +587,10 @@ doesn't support it; the application layer enforces existence).
 ### 6.1 Engine and approach
 
 - **SQLite** via **EF Core**, **code-first** with migrations.
-- **One database per scope:** `Launcher.db` holds launcher-global state (settings, installation registry); each installation gets its own `{installationId}.db` holding only that  
+- **One database per scope:** `Nexus.db` holds launcher-global state (settings, installation registry); each installation gets its own `{installationId}.db` holding only that  
   installation's INI snapshots. There is no global "all installations' INI history in one place" table.
 
-### 6.2 `Launcher.db` schema
+### 6.2 `Nexus.db` schema
 
 | Table               | Column                      | Type             | Constraints                                                                        |  
 |---------------------|-----------------------------|------------------|------------------------------------------------------------------------------------|  
@@ -644,7 +646,7 @@ The `Original` / `Current` partial unique indexes and the `(Kind, CapturedUtc DE
 
 EF Core code-first. `Database.Migrate()` runs:
 
-- on `Launcher.db` at app start;
+- on `Nexus.db` at app start;
 - on each `{installationId}.db` when its installation is opened for the first time in a session (cached for subsequent opens to avoid repeated work).
 
 Two `DbContext` types — `LauncherDbContext` and `InstallationDbContext` — with separate migration histories. The installation context takes a `string connectionString` in its  
@@ -677,7 +679,7 @@ config:
 stateDiagram
   direction LR
   [*] --> lfzt
-  lfzt --> rp:Launcher.db migrated, settings loaded
+  lfzt --> rp:Nexus.db migrated, settings loaded
   rp --> vd:pref = DefaultInstallation and DefaultId is set
   rp --> al:pref = DefaultInstallation and DefaultId is null and no rows exist
   rp --> pd:pref = DefaultInstallation and DefaultId is null and rows exist
@@ -871,7 +873,7 @@ happens through Fix (§7.2.5). Submitting runs `UpdateInstallationCommand` which
 
 #### 7.2.4 Delete Installation
 
-Opens a `ConfirmDialog`. On confirm, in one transaction on `Launcher.db`:
+Opens a `ConfirmDialog`. On confirm, in one transaction on `Nexus.db`:
 
 1. Remove the `GameInstallations` row.
 2. If the removed row was the default:
@@ -1246,7 +1248,7 @@ expected reading order is **SDD §9.x → conventions.md → glance at the proto
 the  
 conventions doc for everything that recurs.
 
-Every colour, font, spacing and repeated control size the views use is a named token, defined once in `Source/Erdmier.ZooTycoonLauncher.Desktop/Styles/`:
+Every colour, font, spacing and repeated control size the views use is a named token, defined once in `Source/Erdmier.ZooTycoonNexus.Desktop/Styles/`:
 `Colours.axaml`, `Typography.axaml`, `Spacing.axaml` (the Windows 9x guideline distances in pixels; `SpaceExtension` builds a `Margin` or `Padding` from token names, as
 `{tokens:Space GapRelated}`) and `Controls.axaml` (the shared `DialogButton`, `IconLarge` / `IconSmall`, `MutedText` and `InertHeaders` styles). Views reference them with
 `StaticResource`; an architecture test per group (§11.5) fails on a literal. The values and their uses are in conventions §1 and §2.
@@ -1259,7 +1261,7 @@ covering every state, every dialogue and the Game Config tab help affordance (it
 
 ### 9.1 Main window and chrome
 
-- **Title bar.** Launcher icon + title (`Zoo Tycoon Launcher V<version>`) + **close-only** caption buttons. Minimise and maximise are intentionally absent — the launcher is a
+- **Title bar.** Launcher icon + title (`Zoo Tycoon Nexus V<version>`) + **close-only** caption buttons. Minimise and maximise are intentionally absent — the launcher is a
   fixed-size utility window. `ClassicWindow.CanMinimise` / `.CanMaximise` resolve to `false`, and an explicit style on the caption-button template collapses the minimise and
   restore visuals (the Classic theme honours those properties only for `:fullscreen` / `:dialog:cantresize`).
 - **Window width.** **480 px** while booting (the Looking for Zoo Tycoon state) and **720 px** once booted, driven by `MainWindowViewModel.IsBooting`. The booted width is fixed
@@ -1584,7 +1586,7 @@ next start and the close setting at the next launch. The INI editor style is the
 
 ### 9.9 About dialogue
 
-`ClassicWindow` modal titled `About Zoo Tycoon Launcher`. The body shows the launcher's app logo alongside product name, `Version <n.n.n> (build <YYYY.MM.DD>)`, a short
+`ClassicWindow` modal titled `About Zoo Tycoon Nexus`. The body shows the launcher's app logo alongside product name, `Version <n.n.n> (build <YYYY.MM.DD>)`, a short
 descriptor line, a separator, and an attribution line naming the principal libraries (`.NET 10`, `Avalonia 11.3`, `Classic.Avalonia`, `SQLite via EF Core`, `Serilog`) plus
 `© <year> <author>`. Footer: `OK` (default).
 
@@ -1606,7 +1608,7 @@ builds them.
 |          | Config layout ▸ INI style      | `ChooseIniStyleCommand`         | The other half of the radio pair. Both are enabled whenever the menu is visible, and disabled only while a style save runs. |
 | **Help** | Contents                       |                                 | Stub for the MVP: opens nothing but is kept so the eventual CHM/manual has a home. Surfacing it now communicates intent.    |
 |          | —                              |                                 |                                                                                                                             |
-|          | About                          |                                 | Stub for now; it will open the §9.9 dialogue. No "Zoo Tycoon Launcher" suffix — the dialogue title already carries it.      |
+|          | About                          |                                 | Stub for now; it will open the §9.9 dialogue. No "Zoo Tycoon Nexus" suffix — the dialogue title already carries it.      |
 
 An `Edit` menu is not present. The **View** menu holds one submenu, *Config layout*, whose two items form a mutually exclusive radio pair (conventions §10): the bullet follows the
 INI editor style in force, so a change made in Options moves it too. The stored style is loaded at start-up (§9.3.3), so the bullet is right in every state after boot. A choice is
@@ -1644,7 +1646,7 @@ Bordered boxes in the recording for action panels or metadata regions are visual
   and are logged at error level.
 - **Validation:** FluentValidation validators run in a mediator pipeline behaviour ahead of each handler. Commands with no validation needs ship without a validator (no  
   empty-validator boilerplate).
-- **Logging:** Serilog with a **file-only** sink. `Launcher.log` rolls daily; per-installation logs are written on demand (when an installation operation runs) under  
+- **Logging:** Serilog with a **file-only** sink. `Nexus.log` rolls daily; per-installation logs are written on demand (when an installation operation runs) under  
   `Logs/Installations/{id}.log`. Long-running operations (parse, write, P/Invoke enumeration) log start/progress/completion at information level and failures at error level. No  
   console sink — the launcher is a UI app, not a terminal tool.
 - **Background work and cancellation:** The boot pipeline, INI parse, INI write, and display-mode enumeration all support `CancellationToken`. The main window's loaded handler  
@@ -1665,7 +1667,7 @@ Bordered boxes in the recording for action panels or metadata regions are visual
 
 Five test projects, one per layer:
 
-### 11.1 `Erdmier.ZooTycoonLauncher.Domain.Tests.Unit`
+### 11.1 `Erdmier.ZooTycoonNexus.Domain.Tests.Unit`
 
 Pure POCO logic with xUnit + Shouldly + NSubstitute.
 
@@ -1676,7 +1678,7 @@ Pure POCO logic with xUnit + Shouldly + NSubstitute.
 - `InstallationNameSuggester` — collision resolution (`Installation 2` taken → `Installation 3`); zero-existing case yields `Main`.
 - `IniDocument` — parse → emit produces byte-identical output for a fixture file with comments, blanks, unknown keys, and varied casing.
 
-### 11.2 `Erdmier.ZooTycoonLauncher.Application.Tests.Unit`
+### 11.2 `Erdmier.ZooTycoonNexus.Application.Tests.Unit`
 
 Slice handlers with fakes for every Infrastructure interface.
 
@@ -1692,11 +1694,11 @@ Slice handlers with fakes for every Infrastructure interface.
   stored value as the default; is a no-op when nothing differs; returns `Ini.SnapshotNotFound`; rolls back on write failure; swallows a post-write store failure; reconciles
   external drift first.
 
-### 11.3 `Erdmier.ZooTycoonLauncher.Infrastructure.Tests.Integration`
+### 11.3 `Erdmier.ZooTycoonNexus.Infrastructure.Tests.Integration`
 
 EF Core against an ephemeral SQLite database per test (`Filename=:memory:` for non-migration tests, a temp file when migrations need to run).
 
-- `Database.Migrate()` runs cleanly on a brand-new `Launcher.db` and on a brand-new `{installationId}.db`.
+- `Database.Migrate()` runs cleanly on a brand-new `Nexus.db` and on a brand-new `{installationId}.db`.
 - Unique constraints — `Name`, `Path` (case-insensitive collation), single-row `LauncherSettings`, `(SnapshotId, Section, Key)`, partial unique on `Snapshots(Kind)` for
   `Original`  
   and `Current`.
@@ -1708,7 +1710,7 @@ EF Core against an ephemeral SQLite database per test (`Filename=:memory:` for n
   `Historical` with `Trigger = Manual`.
 - P/Invoke smoke test — `ScreenModeEnumerator` returns at least one mode on the test host; skipped under headless CI when no display device is present.
 
-### 11.4 `Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit`
+### 11.4 `Erdmier.ZooTycoonNexus.Desktop.Tests.Unit`
 
 View-model logic without an Avalonia runtime, plus several headless view tests: INI field view models, the editor (change tracking, footer, save / reset / restore), the Game Config
 tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`, and a catalogue-integrity check against `ZooIniDefaults`.
@@ -1759,13 +1761,13 @@ tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`
   from inside one; Esc and a press on a row label clear focus; and `IniFieldFocusRelease.IsWithin` counts an open drop-down's items as inside their row and another row as
   outside. The headless platform has no pop-up windows, so its drop-downs are overlays on the main window, the case a visual-only walk misses.
 
-### 11.5 `Erdmier.ZooTycoonLauncher.Tests.Architecture`
+### 11.5 `Erdmier.ZooTycoonNexus.Tests.Architecture`
 
 Solution-spanning rules using `NetArchTest.Rules`:
 
 - `Domain` references nothing outside `System.*`, `Ardalis.SmartEnum`, `ErrorOr`.
 - `Application` does not reference `Microsoft.EntityFrameworkCore.*`, `Serilog.*`, Avalonia, or Win32 types.
-- `Desktop` references `Infrastructure` only from the composition root namespace (`Erdmier.ZooTycoonLauncher.Desktop.Composition`).
+- `Desktop` references `Infrastructure` only from the composition root namespace (`Erdmier.ZooTycoonNexus.Desktop.Composition`).
 - One-type-per-file: every public type's file name equals the type name (strict convention; reported as test failures per offender).
 - No files at any project root: every file lives under a subfolder mirroring its namespace.
 - **View composition pairing (§9.2):** every public class in `Desktop` whose name ends in `ViewModel` has a sibling file in the parallel `Views/…` folder whose name is the same  
@@ -1839,7 +1841,7 @@ will be written.
 
 ### 13.2 Phase 1 — MVP
 
-- **Foundations.** Four-project solution scaffold, DI composition, Serilog file sink, EF Core + SQLite, `Launcher.db` migrations, `IAppStorageLocations`, architecture tests
+- **Foundations.** Four-project solution scaffold, DI composition, Serilog file sink, EF Core + SQLite, `Nexus.db` migrations, `IAppStorageLocations`, architecture tests
   pinned  
   from day one.
 - **Installation lifecycle.** Auto-locator (registry + Program Files + persisted path), Add / Edit / Delete / Fix installations, default-installation promotion (the corrected  

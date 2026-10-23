@@ -74,4 +74,39 @@ public sealed class IniSliderFieldViewModelTests
         field.TryGetEdit(out string? _).ShouldBeFalse();
         field.Percent.ShouldBe(expected: 88);
     }
+    [ Fact ]
+    public void ResetToDefault_GoesThroughTheConversion()
+    {
+        IniSliderFieldViewModel music = Create(key: "menuMusicAttenuation");
+        IniSliderFieldViewModel movie = Create(key: "movievolume1");
+
+        music.Load(raw: "0");
+        movie.Load(raw: "0");
+
+        music.ResetToDefault();
+        movie.ResetToDefault();
+
+        music.Percent.ShouldBe(expected: 85);
+        music.IsAtDefault.ShouldBeTrue();
+        music.IsDirty.ShouldBeTrue();
+        music.TryGetEdit(out string? musicEdit).ShouldBeTrue();
+        musicEdit.ShouldBe(expected: "1500");
+        movie.Percent.ShouldBe(expected: 90);
+        movie.IsAtDefault.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public void MovingBackToTheLoadedPosition_StillWritesTheStepValue()
+    {
+        IniSliderFieldViewModel field = Create(key: "menuMusicAttenuation");
+
+        field.Load(raw: "1234");
+
+        field.Percent = 87;
+        field.Percent = 88;
+
+        field.IsDirty.ShouldBeTrue();
+        field.TryGetEdit(out string? edit).ShouldBeTrue();
+        edit.ShouldBe(expected: "1200");
+    }
 }

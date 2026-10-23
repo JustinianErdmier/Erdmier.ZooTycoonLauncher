@@ -124,6 +124,48 @@ public sealed class IniEditorLayoutsTests
     }
 
     [ Fact ]
+    public void FriendlyLayout_GuestsAndMapSizeFootnotesEqualTheIniSectionFootnotes()
+    {
+        IniFieldGroupDescriptor[] groups = IniEditorLayouts.Sections(IniEditorStyle.Friendly).SelectMany(section => section.Groups).ToArray();
+        IniSectionDescriptor[]    pages  = IniEditorLayouts.Sections(IniEditorStyle.Ini).ToArray();
+
+        string? ai  = pages.Single(section => section.Section == "ai").Footnote;
+        string? map = pages.Single(section => section.Section == "Map").Footnote;
+
+        ai.ShouldNotBeNullOrWhiteSpace();
+        map.ShouldNotBeNullOrWhiteSpace();
+        groups.Single(group => group.SubHeader == "Guests").Footnote.ShouldBe(ai);
+        groups.Single(group => group.SubHeader == "Map size").Footnote.ShouldBe(map);
+    }
+
+    [ Fact ]
+    public void Layouts_AgreeOnEachKeysControlAndCurrencyExceptTheFourVolumes()
+    {
+        string[] volumes = [ "menuMusicAttenuation", "userAttenuation", "movievolume1", "movievolume2" ];
+
+        foreach (IniFieldDescriptor friendly in FieldsOf(IniEditorStyle.Friendly).Where(field => field.Id is not null))
+        {
+            IniKeyId id = friendly.Id!.Value;
+
+            IniEditorLayouts.TryLocate(IniEditorStyle.Ini, id, out IniFieldLocation? location).ShouldBeTrue(id.ToString());
+
+            IniFieldDescriptor ini = location!.Field;
+
+            ini.IsCurrency.ShouldBe(friendly.IsCurrency, id.ToString());
+
+            if (volumes.Contains(id.Key))
+            {
+                friendly.Control.ShouldBe(IniControlKind.Slider, id.ToString());
+                ini.Control.ShouldBe(IniControlKind.Number, id.ToString());
+            }
+            else
+            {
+                friendly.Control.ShouldBe(ini.Control, id.ToString());
+            }
+        }
+    }
+
+    [ Fact ]
     public void FriendlyLayout_EveryVisibleRowHasLabelAndHelp()
         => FieldsOf(IniEditorStyle.Friendly).Where(field => !field.IsHidden).ShouldAllBe(field => !string.IsNullOrWhiteSpace(field.Label) && !string.IsNullOrWhiteSpace(field.Help));
 }

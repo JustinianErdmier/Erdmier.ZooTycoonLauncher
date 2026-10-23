@@ -64,6 +64,44 @@ public sealed class IniConfigTabViewModelTests
     }
 
     [ Fact ]
+    public async Task OptionsQueryFailure_KeepsTheStyleInForce()
+    {
+        _styleState.Style = IniEditorStyle.Ini;
+
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<LauncherOptions>>((ErrorOr<LauncherOptions>)Error.Failure(description: "The options could not be read.")));
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
+
+        await tab.ActivateAsync(CancellationToken.None);
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Ini);
+        ((IniEditorViewModel)tab.Content).Sections[0].IsIniStyle.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public async Task Dispose_UnsubscribesFromStyleChanges()
+    {
+        _styleState.Style = IniEditorStyle.Ini;
+
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
+
+        await tab.ActivateAsync(CancellationToken.None);
+
+        IniEditorViewModel editor = (IniEditorViewModel)tab.Content;
+
+        tab.Dispose();
+
+        _styleState.Style = IniEditorStyle.Friendly;
+
+        editor.Sections[0].IsIniStyle.ShouldBeTrue();
+        editor.Sections[0].Title.ShouldNotBe(expected: "Display");
+    }
+
+    [ Fact ]
     public async Task IniConfigTab_ReappliesStyleWhenStateChanges()
     {
         _styleState.Style = IniEditorStyle.Ini;

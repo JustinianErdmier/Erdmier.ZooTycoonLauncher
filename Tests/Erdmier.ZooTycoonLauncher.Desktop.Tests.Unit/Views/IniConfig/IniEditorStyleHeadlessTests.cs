@@ -13,7 +13,10 @@ public sealed class IniEditorStyleHeadlessTests
     /// <summary>Both editor styles.</summary>
     public static TheoryData<string> Styles => new() { IniEditorStyle.Ini.Name, IniEditorStyle.Friendly.Name };
 
-    /// <summary>Every section (INI) or page (Friendly) can be selected in turn and laid out without Avalonia logging a warning or error, such as a binding that cannot convert.</summary>
+    /// <summary>
+    ///     Every section (INI) or page (Friendly) can be selected in turn and laid out without Avalonia logging a warning or error, such as a binding that cannot convert, and
+    ///     without the file's off-step volumes making the real <c>Slider.Value</c> ↔ <c>Percent</c> binding mark the editor dirty.
+    /// </summary>
     /// <param name="styleName">The name of the editor style under test.</param>
     [ AvaloniaTheory ]
     [ MemberData(nameof(Styles)) ]
@@ -23,7 +26,7 @@ public sealed class IniEditorStyleHeadlessTests
 
         IniEditorStyle style = IniEditorStyle.FromName(styleName);
 
-        IniEditorHarness harness = IniEditorHarness.Show(style);
+        IniEditorHarness harness = IniEditorHarness.Show(style, [ ("UI", "menuMusicAttenuation", "3450"), ("UI", "movievolume1", "-1234") ]);
 
         harness.Editor.Sections.ShouldNotBeEmpty();
 
@@ -35,6 +38,8 @@ public sealed class IniEditorStyleHeadlessTests
 
             harness.View.IsMeasureValid.ShouldBeTrue($"The {section.Title} section was not laid out.");
         }
+
+        harness.Editor.HasPendingChanges.ShouldBeFalse($"Visiting every page of the {style} editor marked it dirty.");
 
         harness.Close();
 
@@ -64,7 +69,7 @@ public sealed class IniEditorStyleHeadlessTests
     [ AvaloniaFact ]
     public void FriendlySlider_DragReleasesFocus()
     {
-        IniEditorHarness harness = IniEditorHarness.Show(IniEditorStyle.Friendly, [ ("UI", "userAttenuation", "-5000") ]);
+        IniEditorHarness harness = IniEditorHarness.Show(IniEditorStyle.Friendly, [ ("UI", "userAttenuation", "8000") ]);
 
         IniSliderFieldViewModel volume = IniEditorTestData.Field<IniSliderFieldViewModel>(harness.Editor, section: "UI", key: "userAttenuation");
 
@@ -105,6 +110,31 @@ public sealed class IniEditorStyleHeadlessTests
         harness.FocusedElement.ShouldBeSameAs(slider);
         volume.IsFocused.ShouldBeTrue();
         harness.Editor.IsFooterHelp.ShouldBeTrue();
+
+        harness.Close();
+    }
+    /// <summary>A Friendly slider reached with Tab moves ten per cent on Page Up and Page Down (<c>LargeChange</c>).</summary>
+    [ AvaloniaFact ]
+    public void FriendlySlider_PageKeysMoveTenPercent()
+    {
+        IniEditorHarness harness = IniEditorHarness.Show(IniEditorStyle.Friendly, [ ("UI", "userAttenuation", "5000") ]);
+
+        IniSliderFieldViewModel volume = IniEditorTestData.Field<IniSliderFieldViewModel>(harness.Editor, section: "UI", key: "userAttenuation");
+
+        harness.ShowSectionOf(volume);
+
+        harness.TabTo(harness.Find<Slider>(volume));
+
+        volume.Percent.ShouldBe(expected: 50);
+
+        harness.Press(Key.PageUp);
+
+        volume.Percent.ShouldBe(expected: 60);
+
+        harness.Press(Key.PageDown);
+        harness.Press(Key.PageDown);
+
+        volume.Percent.ShouldBe(expected: 40);
 
         harness.Close();
     }

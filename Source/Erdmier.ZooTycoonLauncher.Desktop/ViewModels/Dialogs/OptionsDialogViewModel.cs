@@ -1,9 +1,10 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
 /// <summary>
-///     View model for the modal Options dialogue (<c>File → Options…</c>): what the launcher opens at start-up and whether it closes after the game starts. Loads the
-///     stored values in <see cref="InitialiseAsync" />; <see cref="OkCommand" /> saves both in one <see cref="SaveLauncherOptionsCommand" /> and raises
-///     <see cref="CloseRequested" />, <see cref="CancelCommand" /> raises it without saving.
+///     View model for the modal Options dialogue (<c>File → Options…</c>): what the launcher opens at start-up, whether it closes after the game starts and which style the INI Config
+///     tab uses. Loads the stored values in <see cref="InitialiseAsync" />; <see cref="OkCommand" /> saves all three in one <see cref="SaveLauncherOptionsCommand" />, applies the
+///     chosen style to <see cref="IIniEditorStyleState" /> once the save has succeeded, and raises <see cref="CloseRequested" />; <see cref="CancelCommand" /> raises it without
+///     saving.
 /// </summary>
 public sealed partial class OptionsDialogViewModel : ViewModelBase
 {
@@ -15,20 +16,24 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
 
     private readonly IMediator _mediator;
 
+    private readonly IIniEditorStyleState _styleState;
+
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="dialogs">The dialogue service, used to report a failed save.</param>
+    /// <param name="styleState">The INI editor style in force, set after a successful save so an open editor re-renders at once.</param>
     /// <param name="logger">Logger for load and save failures.</param>
-    public OptionsDialogViewModel(IMediator mediator, IDialogService dialogs, ILogger<OptionsDialogViewModel> logger)
+    public OptionsDialogViewModel(IMediator mediator, IDialogService dialogs, IIniEditorStyleState styleState, ILogger<OptionsDialogViewModel> logger)
     {
-        _mediator = mediator;
-        _dialogs  = dialogs;
-        _logger   = logger;
+        _mediator   = mediator;
+        _dialogs    = dialogs;
+        _styleState = styleState;
+        _logger     = logger;
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public OptionsDialogViewModel()
-        : this(null!, null!, NullLogger<OptionsDialogViewModel>.Instance)
+        : this(null!, null!, null!, NullLogger<OptionsDialogViewModel>.Instance)
     { }
 
     /// <summary>Whether a user-initiated close (the title-bar button) is allowed: <see langword="false" /> while a save is in flight.</summary>
@@ -61,6 +66,39 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
     [ NotifyPropertyChangedFor(nameof(IsLastOpenedInstallation)) ]
     [ NotifyPropertyChangedFor(nameof(IsNoInstallation)) ]
     public partial LauncherStartupPreference StartupPreference { get; set; } = LauncherStartupPreference.DefaultInstallation;
+
+    /// <summary>Which style the INI Config tab renders in. The two <c>Is…Style</c> radio properties are views of this value.</summary>
+    [ ObservableProperty ]
+    [ NotifyPropertyChangedFor(nameof(IsFriendlyStyle)) ]
+    [ NotifyPropertyChangedFor(nameof(IsIniStyle)) ]
+    [ NotifyPropertyChangedFor(nameof(StyleDescription)) ]
+    public partial IniEditorStyle EditorStyle { get; set; } = IniEditorStyle.Friendly;
+
+    /// <summary>Radio: the friendly INI editor style. Setting <see langword="false" /> is ignored.</summary>
+    public bool IsFriendlyStyle
+    {
+        get => EditorStyle == IniEditorStyle.Friendly;
+        set => ChooseStyle(value, IniEditorStyle.Friendly);
+    }
+
+    /// <summary>Radio: the INI editor style that mirrors <c>zoo.ini</c>. Setting <see langword="false" /> is ignored.</summary>
+    public bool IsIniStyle
+    {
+        get => EditorStyle == IniEditorStyle.Ini;
+        set => ChooseStyle(value, IniEditorStyle.Ini);
+    }
+
+    /// <summary>The caption of the Friendly style radio: the domain's display name for <see cref="IniEditorStyle.Friendly" />.</summary>
+    public string FriendlyStyleName => IniEditorStyle.Friendly.DisplayName;
+
+    /// <summary>The caption of the INI style radio: the domain's display name for <see cref="IniEditorStyle.Ini" />.</summary>
+    public string IniStyleName => IniEditorStyle.Ini.DisplayName;
+
+    /// <summary>The muted description of the selected INI editor style.</summary>
+    public string StyleDescription
+        => EditorStyle == IniEditorStyle.Ini
+               ? "Settings appear exactly as zoo.ini stores them: its sections, key names and raw values."
+               : "Settings are grouped by what they do, with plain names and volumes that go up as they get louder.";
 
     /// <summary>Radio: restore the default installation. Setting <see langword="false" /> is ignored — the radio group clears the previous choice that way.</summary>
     public bool IsDefaultInstallation
@@ -115,6 +153,7 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
 
             StartupPreference    = result.Value.StartupPreference;
             CloseAfterGameLaunch = result.Value.CloseAfterGameLaunch;
+            EditorStyle          = result.Value.EditorStyle;
             IsLoaded             = true;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -132,7 +171,7 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
 
         try
         {
-            ErrorOr<Success> result = await _mediator.Send(new SaveLauncherOptionsCommand(StartupPreference, CloseAfterGameLaunch), cancellationToken);
+            ErrorOr<Success> result = await _mediator.Send(new SaveLauncherOptionsCommand(StartupPreference, CloseAfterGameLaunch, EditorStyle), cancellationToken);
 
             if (result.IsError)
             {
@@ -142,6 +181,9 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
 
                 return;
             }
+
+            // Applied only now that the save has stored it, so a failed save leaves an open editor as it was.
+            _styleState.Style = EditorStyle;
 
             // Release the busy flag first so CanClose is true when the window's Closing handler runs in response to CloseRequested.
             IsBusy = false;
@@ -182,6 +224,14 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
         if (isChecked)
         {
             StartupPreference = preference;
+        }
+    }
+
+    private void ChooseStyle(bool isChecked, IniEditorStyle style)
+    {
+        if (isChecked)
+        {
+            EditorStyle = style;
         }
     }
 

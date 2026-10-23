@@ -11,7 +11,7 @@
 |--------------------------|-----------------------------------|
 | **Project**              | Zoo Tycoon Launcher               |
 | **Document**             | Software Design Document (SDD)    |
-| **Version**              | 1.15                              |
+| **Version**              | 1.16                              |
 | **Status**               | Draft for implementation          |
 | **Author**               | Justinian                         |
 | **Last updated**         | 22 October 2026                   |
@@ -38,6 +38,7 @@
 | 1.13    | 22 October 2026   | Justinian | Milestone 11 (Options dialogue and colour cleanup; spec `milestone-11-options-and-colour-cleanup-design.md`). Dark mode and themes are scrapped: §5.1 / §5.2 / §6.2 drop `LauncherSettings.Theme`, the `LauncherTheme` enum and its column, and §5.2 drops `InstallationValidity.ColourToken` (a colour is presentation, not domain); §9.11 is reduced to a removal note. §9.8 describes the Options dialogue as built (Startup and Game launch only) and §9.10 renames the File menu item to `O<u>p</u>tions…`; §9.12 and §13.2 follow. The launcher's colours are defined once in `Styles/Colours.axaml` and guarded by an architecture test (conventions §1). §13.5 deletes DW-20, DW-37 and DW-39, which this milestone delivers. |
 | 1.14    | 22 October 2026   | Justinian | Milestone 11.1 (style tokens and follow-ups; spec `milestone-11.1-style-tokens-and-follow-ups-design.md`). Typography, spacing and the repeated control sizes join colours as named tokens: `Styles/Typography.axaml`, `Styles/Spacing.axaml` and `Styles/Controls.axaml` sit beside `Colours.axaml`, with `SpaceExtension` building margins and paddings from token names, an architecture test per group, a `TokenReferencesTests` check that every token and resource reference resolves, and an `AvaloniaProperties_ArePublic` check (§9.2.2, §9.11, §11.5). Spacing snaps onto the Windows 9x guideline values (dialog units converted to pixels), with measured icon-gap tokens and a group-box padding derived from the tokens. Faded text uses one method, the muted grey (`MutedText`); icons draw pixel-crisp; the Options dialogue refuses Cancel and close while a save is in flight, and the Restore dialogue guards its Cancel; the colour test covers every `*Brush` attribute, element content and split setters; the persistence test helpers share one `ProjectPaths`. §9 and conventions.md describe the tokens, and DW-24 keeps only its second half (reusable stack and dock panel controls). Follow-ups: only keyboard focus keeps an INI field focused (a pointer-focused field releases once its value is set; a click elsewhere or Esc clears it); `ForegroundMuted` darkens to `#666666`; the installation grid's headers are inert (`InertHeaders`) and its columns no longer resize; and the colour registry in conventions.md is trimmed to the 11 keys `Colours.axaml` defines, checked by `ColourRegistryTests`. |
 | 1.15    | 22 October 2026   | Justinian | Headless view-load test. §11.4 adds `ViewLoadTests`, which loads every view under the real application resources with its designer view model and fails on a load-time exception or an Avalonia warning; §11.5 notes that a missing `{StaticResource}` on a control property stays silent at run time, so `TokenReferencesTests` remains its guard; §11.7 lists `Avalonia.Headless.XUnit`. §11.4 also adds `IniFieldFocusTests`, which drives the real INI editor with keyboard and pointer input; they found that `IniFieldFocusRelease.IsWithin` missed a drop-down's items when the pop-up is an overlay, and §9.3.2 now says it walks logical parents first. |
+| 1.16    | 22 October 2026   | Justinian | Milestone 12 (INI editor display style; spec `milestone-12-ini-editor-display-style-design.md`). The INI Config editor gains two display styles chosen in Options: a Friendly style (the default) that groups settings into eight pages by purpose with plain labels, meaning-based values and volume sliders, and an INI style that shows `zoo.ini` literally (the inverted `noMenuMusic` included). §5.1 / §5.2 / §5.5 / §6.2 add `LauncherSettings.IniEditorStyle` and the `IniEditorStyle` SmartEnum; §9.3 gains §9.3.3 *Display styles*; §9.7 makes the diff follow the style; §9.8 adds the *INI editor* group box, which applies on `OK`; §13.2 names both styles. Follow-ups: a **View** menu (*Config layout* ▸ *Friendly style* / *INI style*) switches the style from the main window (§9.10, §9.3.3); the Friendly cash keys describe the new-zoo starting-cash picker; the language codes sit on their own line; the Restore dialogue's Friendly key column uses the system face (§9.7). |
 
   
 ---  
@@ -387,6 +388,7 @@ public sealed class LauncherSettings
         = LauncherStartupPreference.DefaultInstallation;  
     public bool CloseAfterGameLaunch { get; set; }  
     public Guid? DefaultInstallationId { get; set; }  
+    public IniEditorStyle IniEditorStyle { get; set; } = IniEditorStyle.Friendly; // How the INI Config editor presents zoo.ini (§9.3.3)  
 }  
 ```  
 
@@ -415,6 +417,14 @@ public sealed class LauncherStartupPreference : SmartEnum<LauncherStartupPrefere
     public static readonly LauncherStartupPreference NoInstallation         = new("NoInstallation",         4);  
   
     private LauncherStartupPreference(string name, int id) : base(name, id) { }  
+}  
+  
+public sealed class IniEditorStyle : SmartEnum<IniEditorStyle>  
+{  
+    public static readonly IniEditorStyle Friendly = new("Friendly", 1);         // the default; display name "Friendly style"  
+    public static readonly IniEditorStyle Ini      = new("Ini",      2);         // display name "INI style"  
+  
+    private IniEditorStyle(string name, int id) : base(name, id) { }  
 }  
   
 public sealed class IniSnapshotKind : SmartEnum<IniSnapshotKind>  
@@ -530,6 +540,7 @@ erDiagram
         int Id PK  
         text LauncherStartupPreference  
         bool CloseAfterGameLaunch  
+        text IniEditorStyle  
         guid DefaultInstallationId FK  
     }  
     GameInstallations {  
@@ -583,6 +594,7 @@ doesn't support it; the application layer enforces existence).
 | `LauncherSettings`  | `Id`                        | INTEGER          | PK, `CHECK (Id = 1)`                                                               |  
 |                     | `LauncherStartupPreference` | TEXT (SmartEnum) | Not null                                                                           |  
 |                     | `CloseAfterGameLaunch`      | INTEGER (bool)   | Not null, default `0`                                                              |  
+|                     | `IniEditorStyle`            | TEXT (SmartEnum) | Not null, default `'Friendly'` (§9.3.3)                                             |  
 |                     | `DefaultInstallationId`     | TEXT (GUID)      | Nullable; FK → `GameInstallations.Id` `ON DELETE SET NULL` (defensive; see §7.2.4) |  
 | `GameInstallations` | `Id`                        | TEXT (GUID)      | PK                                                                                 |  
 |                     | `Name`                      | TEXT             | Not null, **unique**                                                               |  
@@ -1363,21 +1375,25 @@ prototype it was recorded from — are the visual reference. They are reference,
 
 ### 9.3 INI Config tab
 
+The editor has two display styles, chosen in Options (§9.8) or from the View menu (§9.10): the **Friendly style** (the default) and the **INI style**. This section describes the
+INI style; §9.3.3 covers what the Friendly style changes. Both read and write the same keys — the style changes only how settings are shown.
+
 The INI Config tab uses a two-pane split layout rather than the long vertically-scrolled accordion of the Ref launcher:
 
-- **Section list (left).** A list of the eight sections in INI order: `[user]`, `[UI]`, `[advanced]`, `[ai]`, `[debug]`, `[language]`, `[Map]`, `[scenario]`.
+- **Section list (left).** A list of the seven sections in INI order: `[user]`, `[UI]`, `[advanced]`, `[ai]`, `[debug]`, `[language]`, `[Map]`; `[scenario]` joins as the eighth
+  after the Phase 0 research (§7.8, DW-04). The caption above it reads `Section`.
 - **Form pane (right).** Hosts a single section's controls and scrolls vertically when content overflows. The header names the section and a muted descriptor underneath gives
   the prose summary (`Display and performance`, `Audio, gameplay, and interface`, etc.). Width discipline (`MaxWidth` on inputs, `ScrollViewer` on the form) keeps wide combos
   from blowing out the layout; the prototype hit this with the long language labels.
 - **Footer row.** Hover / dirty status label on the left (§9.3.2), then `Restore previous…`, `Restore defaults`, `Save` (default), `Reset`.
   `Save` and `Reset` are disabled when there are no pending changes.
-  `Restore previous…` opens the Restore Previous INI dialogue (§7.3.3) and is disabled when there is no history. `Restore defaults` loads every visible
-  setting's default into the form as unsaved edits (no prompt, nothing written); it is enabled when some field is not already at its default, and `Reset` undoes it. `Reset`
-  reloads the editor from disk. Button labels follow the Win9x ellipsis rule (conventions §5).
+  `Restore previous…` opens the Restore Previous INI dialogue (§7.3.3) and is disabled when there is no history. `Restore defaults` loads the default of every setting the layout
+  holds into the form as unsaved edits (no prompt, nothing written); it is enabled when some field is not already at its default, and `Reset` undoes it. `Reset` reloads the editor
+  from disk. Button labels follow the Win9x ellipsis rule (conventions §5).
 
 `[UI]` is internally split into three sub-headers (`Audio`, `Gameplay (cash)`, `Interface`); other sections render as flat row lists. Each row is a label + value control, with
-an optional muted hint sub-line (`px`, `1–60 ticks/sec`, `-10000 silent → 0 full`, etc.). The `[scenario]` section organises its checkboxes by `ScenarioCampaignTier`
-(Tutorial → Beginner → Intermediate → Advanced → Expert → Expansion → Unknown).
+an optional muted hint sub-line (`px`, `1–60 ticks/sec`, `-10000 silent → 0 full`, etc.). The `[scenario]` section, once it joins, will organise its checkboxes by
+`ScenarioCampaignTier` (Tutorial → Beginner → Intermediate → Advanced → Expert → Expansion → Unknown).
 
 The four `[UI]` cash rows (`MSStartingCash`, `MSCashIncrement`, `MSMinCash`, `MSMaxCash`) display as dollars — `$1,000,000`, always `$` with `,` grouping and no decimals,
 whatever the OS culture. Typing `250000` or `$250,000` both commit `250000`; a typed fraction is dropped (`$1,000.75` commits as `$1,000`), so the box always shows what is
@@ -1436,6 +1452,41 @@ Defaults stay on the input controls themselves (placeholders and bounds), not in
 panel  
 that owns both label and input is what carries `ToolTip.Tip` so the whole row triggers the tip.
 
+#### 9.3.3 Display styles
+
+`LauncherSettings.IniEditorStyle` (§5.1) picks the style; changing it in Options, or from the main window's **View** menu (§9.10), re-renders an open editor at once. Pending edits
+are held by INI key, so they survive the switch, and the editor returns to its first section or page. Hover and keyboard-focus help (§9.3.2), the footer, the buttons, the read-only
+strip and the sub-states (§9.3.1) behave the same in both styles.
+
+The style reaches the editor through `IIniEditorStyleState`, a singleton in the composition root that holds the current style, a `Version` and a `StyleChanged` event. The
+main window loads the stored style once, during the first boot, after the Looking-for-Zoo-Tycoon state and status text are set and before any editor exists, with a `Version` guard
+(below); a failed or throwing read is logged and ignored, keeping the default, and the boot completes. The INI tab's own lazy load before it builds its first editor remains as a
+guarded fallback; a failed read keeps the style already in force. `Version` guards the race with a save: a load that was in flight when Options saved a style does not overwrite it.
+A save in Options, or a choice in the View menu, sets the state; its `StyleChanged` event makes the INI tab call `IniEditorViewModel.ApplyStyle` on an open editor.
+
+- **INI style** — §9.3 as written, with every control following the file literally: the inverted `[UI]/noMenuMusic` is a plain check box (`No menu music`, ticked when the file
+  holds `1`), and the attenuation and movie-volume keys are raw number boxes.
+- **Cash keys (both styles)** — the four `[UI]` cash keys (`MSStartingCash`, `MSCashIncrement`, `MSMinCash`, `MSMaxCash`) are worded as the new-zoo starting-cash picker: the
+  default starting cash, how much it moves per step, and the least and most you can choose. None of them limits cash during play. Both styles address "you"; the INI style
+  words it as terse fragments, the Friendly style as full sentences.
+- **Friendly style** — for a player who has never seen `zoo.ini`:
+  - **Pages by purpose.** Eight pages — Display, Graphics, Sound, New Zoos, Controls, Help & Messages, Language, Troubleshooting — gather keys from any INI section. Each page
+    shows a title (no brackets, no "section of zoo.ini") and a one-line description, then labelled group boxes (Display: *Screen*, *Performance*). The full map is in the
+    milestone 12 spec (`milestone-12-ini-editor-display-style-design.md` §6.1); the `[ai]` and `[Map]` footnotes move with their groups.
+  - **Plain labels** in the system face, saying what the control does (*Width (pixels)*, *Enable menu music*); a check box carries its label as its caption, so its row has
+    no label column and no hint line. The list caption above the pages reads `Page`, and the description sits only in the page header, not above the form pane.
+  - **Values by meaning.** `noMenuMusic` is inverted (*Enable menu music*); the four volume keys are **sliders** from 0 % to 100 % with a percentage readout, louder to the
+    right — the attenuation keys as `10000 − attenuation`, the movie volumes as `raw + 10000`, in steps of 100 raw units. An off-step file value is kept until the slider moves.
+  - **Language.** Only the language drop-down shows; a muted note under it gives the current codes on two lines that never wrap: *Windows language codes:*, then `LANGID n ·
+    SUBLANGID n`. `lang` and `sublang` stay in the layout as hidden rows (`IniFieldDescriptor.IsHidden`, labelled *Language code* and *Region code*, rendered nowhere) so that the
+    picker's edits, dirty tracking and Restore defaults reach them.
+  - Each row's hint and help describe the value as that style shows it.
+
+`IniEditorCatalogue` is the INI layout and `IniEditorFriendlyCatalogue` the Friendly one; both reuse the same control kinds, bounds and choice options, and
+`IniEditorLayouts` selects a layout by style and locates a key in it (`IniFieldLocation`). A test asserts that each layout places every user-setting key exactly once: one
+descriptor per key that carries its `Id`, the language picker (which has none) not counted. Value conversions (`IniValueConversion`: `None`, `Invert`,
+`VolumeFromAttenuation`, `VolumeFromMovieVolume`) are applied only at the control, so the raw value stays the source of truth and what is read and written never changes.
+
 ### 9.4 Installation Manager dialogue
 
 `ClassicWindow` modal titled `Installation Manager` (renamed from the previous "Installation Management" — the singular form reads as a proper noun naming the dialogue).
@@ -1490,6 +1541,7 @@ the dialogue now focuses on **comparing snapshots to current**:
   between current and the selected snapshot (game-managed keys and `[scenario]` are never listed or restored). A key `Current` has but the snapshot lacks is not a row; a key
   the snapshot has but `Current` lacks is a row whose `Current` cell reads "(not set)". Header text labels the columns so any colour treatment is supplementary, not
   required. When the diff is empty, the panel shows a centred message: *"No differences — this snapshot matches the current state."*
+  In the INI style the `Key` cell is the `[section]/keyname` text in the monospace key face; in the Friendly style it is the page, group and label in words, in the system face.
   Each `Current` and `Snapshot` cell shows the value as the editor row does: a choice by its option label, a check-box key as `true` / `false` (the key's own value, so the
   inverted `[UI]/noMenuMusic` reads `true` when the INI holds `1`), a cash key as dollars, and anything else verbatim; `(not set)` is unchanged. A value the formatter cannot map —
   for example `fullscreen=7` — is shown verbatim.
@@ -1499,6 +1551,10 @@ the dialogue now focuses on **comparing snapshots to current**:
 
 The history is loaded before the window shows, so the dialogue has no visible loading state; a load error is shown as a line above the (empty) grid with `Restore` disabled.
 
+The diff viewer follows the editor's display style (§9.3.3). The INI style is as described above. The Friendly style names each key *Page › Group › Label* (*Sound › Intro
+movies › Play the first movie*), shows check boxes as `On` / `Off` by meaning, volumes as percentages and choices by label, and orders rows by page; the language pair stays two
+rows (*Language code*, *Region code*). Both styles keep one row per changed key, so the change count is the same in either.
+
 The diff is computed by comparing the effective values (`IniKeySpec.EffectiveValue`) of every user-setting key and emitting rows where they disagree (kind-aware comparison —
 `Bool` `true` / `1` are equivalent; `NullableInt` empty `==` empty). The same function decides what the dialogue shows and what a restore writes, so *N changes* on screen is
 exactly *N* keys written.
@@ -1506,17 +1562,20 @@ exactly *N* keys written.
 ### 9.8 Options dialogue
 
 `ClassicWindow` modal titled `  Options` (two leading spaces, conventions §4.1) with the `controls32.ico` title-bar icon, opened from `File → Options…`
-(`OptionsDialogViewModel` / `OptionsDialogView`). Two group boxes:
+(`OptionsDialogViewModel` / `OptionsDialogView`). Three group boxes:
 
 - **Startup** — a muted line, *"When the launcher opens, restore:"*, then a four-radio group bound to `LauncherStartupPreference`. Labels: `The default installation`,
   `The installation I last played`, `The installation I last opened in the launcher`, `No installation — show the picker`.
+- **INI editor** — a muted line, *"Show settings in the INI Config tab:"*, then two radios bound to `IniEditorStyle`: `Friendly style` and `INI style`. Under them, a muted
+  description of the selected one: *"Settings are grouped by what they do, with plain names and volumes that go up as they get louder."* or *"Settings appear exactly as
+  zoo.ini stores them: its sections, key names and raw values."* (§9.3.3).
 - **Game launch** — single checkbox: `Close launcher after the game starts`. Muted helper, indented under the checkbox: *"When ticked, the launcher exits as soon as `zoo.exe`
   reports started."*
 
 Footer: `OK` (default) and `Cancel`, right-aligned, both `DialogButton` (`MinWidth="75"`). The dialogue loads the stored values when it opens, and `OK` stays disabled until they
-have loaded. `OK` saves both values in one `SaveLauncherOptionsCommand` and closes; `Cancel`, `Esc` and the title-bar close discard. A failed save shows `Cannot Save Options` with
-the error and keeps the dialogue open. The dialogue never touches `LauncherSettings.DefaultInstallationId`, and nothing applies live: the startup preference is read at the next
-start and the close setting at the next launch.
+have loaded. `OK` saves all three values in one `SaveLauncherOptionsCommand` and closes; `Cancel`, `Esc` and the title-bar close discard. A failed save shows `Cannot Save Options`
+with the error and keeps the dialogue open. The dialogue never touches `LauncherSettings.DefaultInstallationId`, and nothing applies live: the startup preference is read at the
+next start and the close setting at the next launch. The INI editor style is the exception: it applies as soon as `OK` saves.
 
 ### 9.9 About dialogue
 
@@ -1526,22 +1585,29 @@ descriptor line, a separator, and an attribution line naming the principal libra
 
 ### 9.10 Menu structure
 
-Two top-level menus only. Accelerators in `<u>` underscores match Win95 convention.
+Three top-level menus. The menu bar is hidden while the launcher boots. Only `Options…` has an access key so far (P, once File is open); the items below are as `MainWindow.axaml`
+builds them.
 
-| Menu     | Item                         | Command         | Shortcut | Notes                                                                                                                        |  
-|----------|------------------------------|-----------------|----------|------------------------------------------------------------------------------------------------------------------------------|  
-| **File** | <u>O</u>pen Installation…    | `open-install`  |          | Opens the Installation Manager focused on `Open`.                                                                            |  
-|          | Installation <u>M</u>anager… | `manage`        |          | Opens the §9.4 dialogue.                                                                                                     |  
-|          | <u>C</u>lose Installation    | `close-install` |          | Disabled when no installation is open. No separator before this item.                                                        |  
-|          | —                            |                 |          |                                                                                                                              |  
-|          | O<u>p</u>tions…              | `options`       |          | Opens the §9.8 dialogue. Enabled in every state after boot (the menu is hidden while booting).                               |
-|          | —                            |                 |          |                                                                                                                              |  
-|          | E<u>x</u>it                  | `exit`          | Alt+F4   |                                                                                                                              |  
-| **Help** | <u>C</u>ontents              | `help`          | F1       | Stubbed for the MVP — opens nothing but is kept so the eventual CHM/manual has a home. Surfacing it now communicates intent. |  
-|          | —                            |                 |          |                                                                                                                              |  
-|          | <u>A</u>bout                 | `about`         |          | Opens the §9.9 dialogue. No "Zoo Tycoon Launcher" suffix in the menu item — the dialogue title already carries it.           |  
+| Menu     | Item                           | Command                         | Notes                                                                                                                       |
+|----------|--------------------------------|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| **File** | Open Installation…             | `OpenInstallationPickerCommand` | Opens the Installation Manager focused on `Open`.                                                                           |
+|          | Installation Manager…          | `ManageInstallationsCommand`    | Opens the §9.4 dialogue.                                                                                                    |
+|          | Close Installation             | `CloseInstallationCommand`      | Disabled when no installation is open. No separator before this item.                                                       |
+|          | —                              |                                 |                                                                                                                             |
+|          | O<u>p</u>tions…                | `OpenOptionsCommand`            | Opens the §9.8 dialogue. Enabled in every state after boot.                                                                 |
+|          | —                              |                                 |                                                                                                                             |
+|          | Exit                           | `ExitCommand`                   | Alt+F4 also closes the window, as for any window.                                                                           |
+| **View** | Config layout ▸ Friendly style | `ChooseFriendlyStyleCommand`    | Radio item (Win9x bullet on the active style). Saves the style with the other launcher options and applies it at once.      |
+|          | Config layout ▸ INI style      | `ChooseIniStyleCommand`         | The other half of the radio pair. Both are enabled whenever the menu is visible, and disabled only while a style save runs. |
+| **Help** | Contents                       |                                 | Stub for the MVP: opens nothing but is kept so the eventual CHM/manual has a home. Surfacing it now communicates intent.    |
+|          | —                              |                                 |                                                                                                                             |
+|          | About                          |                                 | Stub for now; it will open the §9.9 dialogue. No "Zoo Tycoon Launcher" suffix — the dialogue title already carries it.      |
 
-`Edit` and `View` menus are not present. The toolbar from the Ref launcher is also dropped — actions belong in the menu, the tab content, and the dialogues, not in a third place.
+An `Edit` menu is not present. The **View** menu holds one submenu, *Config layout*, whose two items form a mutually exclusive radio pair (conventions §10): the bullet follows the
+INI editor style in force, so a change made in Options moves it too. The stored style is loaded at start-up (§9.3.3), so the bullet is right in every state after boot. A choice is
+compared with the stored style: if it already holds, nothing is saved and only the shared state is synced; otherwise it is stored through the same load-then-save path as Options,
+changing only the style. When the save fails the style is unchanged, the error dialogue **Cannot Save Options** appears and the bullet snaps back to the active style. The toolbar
+from the Ref launcher is also dropped — actions belong in the menu, the tab content, and the dialogues, not in a third place.
 
 ### 9.11 Theming and dark mode (removed)
 
@@ -1639,7 +1705,7 @@ EF Core against an ephemeral SQLite database per test (`Filename=:memory:` for n
 
 ### 11.4 `Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit`
 
-View-model logic without an Avalonia runtime, plus one headless view-load test: INI field view models, the editor (change tracking, footer, save / reset / restore), the INI
+View-model logic without an Avalonia runtime, plus several headless view tests: INI field view models, the editor (change tracking, footer, save / reset / restore), the INI
 tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`, and a catalogue-integrity check against `ZooIniDefaults`.
 
 - `IniConfigTabViewModel` sub-state selection — editor / loading / no-INI / could-not-be-read, from `HasIni` and the `GetIniConfigQuery` load result or error.
@@ -1652,6 +1718,36 @@ tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`
   and moves its resources, styles and data templates across, so the tests see the shipped theme and tokens without running the launcher's start-up. A missing
   `{StaticResource}` on a control property is invisible here: Avalonia defers the lookup and leaves the property unset without logging, so `TokenReferencesTests` (§11.5)
   remains the guard for that case.
+- **INI editor style (view models and layouts):** `IniEditorLayoutsTests` (each layout places every user-setting key once; the Friendly page order; the language page is the
+  picker plus two hidden code rows; conversions round-trip and follow the spec formulae; the volume rows are sliders and `noMenuMusic` is literal in the INI layout; footnotes
+  sit on their groups; every visible Friendly row has a label and help), `IniSliderFieldViewModelTests` (percentage mapping both ways, steps of 100, an off-step file value
+  kept and the row clean until the slider moves), `IniLanguageFieldViewModelTests`, the style cases in `IniEditorViewModelTests` and `IniFieldViewModelTests`,
+  `IniDisplayTextTests` and `RestorePreviousIniDialogViewModelTests` (the Restore diff in each style), `OptionsDialogViewModelTests` (the *INI editor* group applies on `OK`),
+  `IniConfigTabViewModelTests` (the lazy options load and its stale-read guard) and `MainWindowViewModel*Tests`. `IniEditorStyleTests` (Domain), `LauncherOptionsTests`
+  (Application) and `LauncherDbContextTests` (Infrastructure) cover the SmartEnum, the options round trip and the `'Friendly'` column default.
+- **Both editor styles (headless):** `IniFriendlyEditorViewTests` hosts the real `IniEditorView` in the Friendly style and checks that a drop-down, a check box (its own
+  label, no label column) and a slider keep the focus wiring, that the language page renders only the picker and its codes line, and that `ApplyStyle` re-renders an open editor
+  with the pending edit kept. `IniEditorStyleHeadlessTests` adds `Editor_RendersInBothStyles` (every section or page selected in turn, laid out, and nothing logged by
+  Avalonia), `FriendlySoundPage_EnableMenuMusicTicked` (`noMenuMusic=0` shows *Enable menu music* ticked and clean), `FriendlySlider_DragReleasesFocus` (a pointer drag moves
+  the slider and gives the focus back) and `FriendlySlider_TabKeepsFocus` (a Tab-focused slider keeps it through arrow-key steps).
+- **View menu (style switching):** `MainWindowViewModelStyleMenuTests` (choosing either style saves only the style and applies it; a failed save, a query error and an
+  unexpected exception each show *Cannot Save Options*, change nothing and snap the checks back; a second choice is blocked while a save is in flight; choosing the active style
+  does nothing; the checks follow the state, Options changes included; the stored style is loaded at start-up before any editor, `StartupLoadsTheStoredStyleBeforeAnyEditor`; a
+  choice equal to the stored style saves nothing, `ChooseStyle_AlreadyStored_SavesNothing`, and over a stale state only syncs it,
+  `ChoosingTheStoredStyleOverAStaleState_SavesNothingButSyncsTheState`; a different choice over a stale state is saved,
+  `ChoosingFriendlyWhenIniIsStoredButTheStateIsStale_SavesTheChoice`; the start-up load keeps a style set while its query is in flight,
+  `Startup_AStyleSetWhileTheQueryIsInFlight_IsKept`, lets the boot complete when the query fails or throws, `Startup_AFailingQuery_LeavesTheStyleAndTheBootCompletes` and
+  `Startup_AThrowingQuery_LeavesTheStyleAndTheBootCompletes`, and runs once across a reboot, `Startup_TheStoredStyleIsLoadedOnlyOnceAcrossAReboot`). `MainWindowStyleMenuTests`
+  (headless) opens the real `MainWindow`, clicks the *INI style* radio item with a failing save and checks the bullet returns to *Friendly style*, which only the real toggle
+  exercises.
+- **Editor behaviour added with the styles:** `IniEditorStyleHeadlessTests` also covers Page Up / Page Down on a Tab-focused slider, moving it 10 %
+  (`FriendlySlider_PageKeysMoveTenPercent`). `IniEditorLayoutsTests` checks that the two layouts agree on each key's control and currency apart from the four volumes
+  (`Layouts_AgreeOnEachKeysControlAndCurrencyExceptTheFourVolumes`), that the Friendly *Guests* and *Map size* groups carry a footnote (`FriendlyLayout_FootnotesSitOnTheirGroups`)
+  and that those footnotes equal the INI `[ai]` and `[Map]` ones (`FriendlyLayout_GuestsAndMapSizeFootnotesEqualTheIniSectionFootnotes`).
+  `IniEditorCatalogueTests.CashHelp_IsTheSameMeaningInBothLayouts` checks the cash help in both catalogues. `IniLanguageFieldViewModelTests` pins the codes to two lines
+  (`LanguageCodes_SitOnTheirOwnLine`). `IniSliderFieldViewModelTests` covers an off-step file value that neither dirties the row nor changes the file until the slider moves
+  (`OffStepValue_IsKeptUntilMoved`, `MovingBackToTheLoadedPosition_StillWritesTheStepValue`). `IniConfigTabViewModelTests` covers a failed options read
+  (`OptionsQueryFailure_KeepsTheStyleInForce`) and disposal (`Dispose_UnsubscribesFromStyleChanges`).
 - **INI field focus (headless):** `IniFieldFocusTests` hosts the real `IniEditorView` in a headless window (`IniEditorHarness`) and drives it with keyboard and pointer
   input, checking §9.3.2's focus rules end to end: the `fullscreen` drop-down reached with Tab, opened with F4 or Alt+Down and confirmed with Enter keeps focus and the
   footer help; an item picked with the pointer, a toggle click and a spinner-button click release focus; a click that opens a drop-down does not, nor does a `Click` raised
@@ -1745,12 +1841,13 @@ will be written.
   delete rule), Installation Manager dialogue (DataGrid + actions), Installation Info dialogue.
 - **Startup flow.** Boot pipeline + state machine, Looking for Zoo Tycoon / Ready to Play / Cannot Play / No Game Installation Found / Open Game Installation wireframes wired to  
   states, last-opened / last-played timestamping.
-- **INI Config tab.** The editor (split layout, eight sections, hover + status help — §9.3.2), the No INI placeholder with its recovery actions (§7.4), the read-only
-  strip (§9.3.1), Restore Previous INI dialogue with inline diff (§9.7), tooltip parity fix, atomic save with snapshot archiving.
+- **INI Config tab.** The editor (split layout, seven sections with `[scenario]` joining as the eighth after Phase 0, hover + status help — §9.3.2), the No INI placeholder with its
+  recovery actions (§7.4), the read-only strip (§9.3.1), Restore Previous INI dialogue with inline diff (§9.7), tooltip parity fix, atomic save with snapshot archiving, and the
+  Friendly / INI display styles (§9.3.3).
 - **Screen modes on the General tab.** Available modes count, ZT1-compatible modes count, resolution dropdown sourced from the filtered list.
 - **Launch Game.** Process start with working-directory and arguments matched to the Ref launcher; `CloseAfterGameLaunch` honoured.
-- **Options.** Options dialogue (§9.8) covers `LauncherStartupPreference` and `CloseAfterGameLaunch`. There is no theming: the launcher has one, light, appearance with its
-  colours defined once (§9.11).
+- **Options.** Options dialogue (§9.8) covers `LauncherStartupPreference`, `CloseAfterGameLaunch` and the INI editor style (`IniEditorStyle`). There is no theming: the launcher has
+  one, light, appearance with its colours defined once (§9.11).
 
 ### 13.3 Phase 2 — Saves & Mods (deferred; SDD sketch only)
 

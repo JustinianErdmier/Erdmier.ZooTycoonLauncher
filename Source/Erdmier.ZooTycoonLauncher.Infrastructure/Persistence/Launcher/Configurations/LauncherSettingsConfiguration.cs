@@ -18,6 +18,12 @@ public sealed class LauncherSettingsConfiguration : IEntityTypeConfiguration<Lau
                               static v => LauncherStartupPreference.FromName(v, ignoreCase: false))
                .IsRequired();
 
+        builder.Property(s => s.IniEditorStyle)
+               .HasConversion(static v => v.Name,
+                              static v => IniEditorStyle.FromName(v, ignoreCase: false))
+               .HasDefaultValue(IniEditorStyle.Friendly)
+               .IsRequired();
+
         builder.Property(s => s.CloseAfterGameLaunch)
                .IsRequired();
 

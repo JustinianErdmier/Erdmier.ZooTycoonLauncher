@@ -28,8 +28,8 @@ public sealed class RestorePreviousIniDialogViewModelTests
             Entry(NewestUtc.AddDays(-2), IniSnapshotTrigger.OriginalImport, [ ])
         ]);
 
-    private RestorePreviousIniDialogViewModel CreateViewModel(ILogger<RestorePreviousIniDialogViewModel>? logger = null)
-        => new(_mediator, _dialogs, logger ?? NullLogger<RestorePreviousIniDialogViewModel>.Instance);
+    private RestorePreviousIniDialogViewModel CreateViewModel(ILogger<RestorePreviousIniDialogViewModel>? logger = null, IniEditorStyle? style = null)
+        => new(_mediator, _dialogs, new IniEditorStyleState { Style = style ?? IniEditorStyle.Ini }, logger ?? NullLogger<RestorePreviousIniDialogViewModel>.Instance);
 
     private async Task<RestorePreviousIniDialogViewModel> LoadedAsync()
     {
@@ -404,6 +404,85 @@ public sealed class RestorePreviousIniDialogViewModelTests
 
         entry.Level.ShouldBe(LogLevel.Warning);
         entry.Exception.ShouldBeNull();
+    }
+
+    private static IniHistoryResult MixedHistory()
+        => new([
+            Entry(NewestUtc,
+                  IniSnapshotTrigger.Manual,
+                  [
+                      new IniDiffRow(new IniKeyId(Section: "language", Key: "sublang"), Current: "1", Snapshot: "2"),
+                      new IniDiffRow(new IniKeyId(Section: "UI", Key: "userAttenuation"), Current: "0", Snapshot: "2500"),
+                      new IniDiffRow(new IniKeyId(Section: "user", Key: "fullscreen"), Current: null, Snapshot: "1"),
+                      new IniDiffRow(new IniKeyId(Section: "language", Key: "lang"), Current: "9", Snapshot: "12"),
+                      new IniDiffRow(new IniKeyId(Section: "UI", Key: "noMenuMusic"), Current: "0", Snapshot: "1")
+                  ],
+                  new IniKeyId(Section: "UI", Key: "playMovie"),
+                  new IniKeyId(Section: "ai", Key: "foo"))
+        ]);
+
+    private async Task<RestorePreviousIniDialogViewModel> LoadedMixedAsync(IniEditorStyle style)
+    {
+        _mediator.Send(Arg.Any<GetIniHistoryQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniHistoryResult>>(MixedHistory()));
+
+        RestorePreviousIniDialogViewModel viewModel = CreateViewModel(style: style);
+
+        await viewModel.InitialiseAsync(InstallationId);
+
+        return viewModel;
+    }
+
+    [ Fact ]
+    public async Task Rows_SameCountInBothStyles()
+    {
+        RestorePreviousIniDialogViewModel ini      = await LoadedMixedAsync(IniEditorStyle.Ini);
+        RestorePreviousIniDialogViewModel friendly = await LoadedMixedAsync(IniEditorStyle.Friendly);
+
+        ini.DiffRows.Count.ShouldBe(expected: 5);
+        friendly.DiffRows.Count.ShouldBe(expected: 5);
+        friendly.ChangeCountText.ShouldBe(ini.ChangeCountText);
+        friendly.RestoreCommand.CanExecute(parameter: null).ShouldBe(ini.RestoreCommand.CanExecute(parameter: null));
+    }
+
+    [ Fact ]
+    public async Task Rows_Friendly_FollowPageOrder()
+    {
+        RestorePreviousIniDialogViewModel viewModel = await LoadedMixedAsync(IniEditorStyle.Friendly);
+
+        viewModel.DiffRows.Select(row => row.KeyText)
+                 .ShouldBe([
+                     "Display › Screen › Screen mode",
+                     "Sound › Menu music › Enable menu music",
+                     "Sound › Game sound › Game sound volume",
+                     "Language › Language › Language code",
+                     "Language › Language › Region code"
+                 ]);
+        viewModel.DiffRows.Select(row => row.SectionText).ShouldAllBe(text => text.Length == 0);
+        viewModel.DiffRows[1].ShouldBe(new IniHistoryDiffRow(SectionText: "", KeyText: "Sound › Menu music › Enable menu music", CurrentText: "On", SnapshotText: "Off") { UsesSystemFace = true });
+        viewModel.DiffRows.ShouldAllBe(row => row.UsesSystemFace);
+        viewModel.DiffRows[2].SnapshotText.ShouldBe(expected: "75 %");
+        viewModel.DiffRows[0].CurrentText.ShouldBe(expected: "(not set)");
+    }
+
+    [ Fact ]
+    public async Task Rows_Ini_KeepTheDiffOrder()
+    {
+        RestorePreviousIniDialogViewModel viewModel = await LoadedMixedAsync(IniEditorStyle.Ini);
+
+        viewModel.DiffRows.Select(row => row.KeyText).ShouldBe([ "sublang", "userAttenuation", "fullscreen", "lang", "noMenuMusic" ]);
+        viewModel.DiffRows[4].SnapshotText.ShouldBe(expected: "true");
+        viewModel.DiffRows.ShouldAllBe(row => !row.UsesSystemFace);
+    }
+
+    [ Fact ]
+    public async Task KeptKeysNote_NamesKeysInTheStyle()
+    {
+        RestorePreviousIniDialogViewModel ini      = await LoadedMixedAsync(IniEditorStyle.Ini);
+        RestorePreviousIniDialogViewModel friendly = await LoadedMixedAsync(IniEditorStyle.Friendly);
+
+        ini.KeptKeysText.ShouldBe(expected: "Not in this snapshot, so they keep their current values: [UI]/playMovie, [ai]/foo");
+        friendly.KeptKeysText.ShouldBe(expected: "Not in this snapshot, so they keep their current values: Sound › Intro movies › Play the first movie, [ai]/foo");
     }
 
     [ Fact ]

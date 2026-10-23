@@ -15,6 +15,6 @@ public sealed class GetLauncherOptionsHandler : IQueryHandler<GetLauncherOptions
     {
         LauncherSettings settings = await _settings.GetAsync(cancellationToken);
 
-        return new LauncherOptions(settings.LauncherStartupPreference, settings.CloseAfterGameLaunch);
+        return new LauncherOptions(settings.LauncherStartupPreference, settings.CloseAfterGameLaunch, settings.IniEditorStyle);
     }
 }

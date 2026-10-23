@@ -15,6 +15,7 @@
         <File Path="Docs/Ledgers/Epic-1-MVP/milestone-10-ledger.md" />
         <File Path="Docs/Ledgers/Epic-1-MVP/milestone-11-ledger.md" />
         <File Path="Docs/Ledgers/Epic-1-MVP/milestone-11.1-ledger.md" />
+        <File Path="Docs/Ledgers/Epic-1-MVP/milestone-12-ledger.md" />
     </Folder>
     <Folder Name="/Docs/Plans/" />
     <Folder Name="/Docs/Plans/Epic-1-MVP/">
@@ -32,6 +33,7 @@
         <File Path="Docs/Plans/Epic-1-MVP/milestone-10-ini-recovery-and-read-only-detection.md" />
         <File Path="Docs/Plans/Epic-1-MVP/milestone-11-options-and-colour-cleanup.md" />
         <File Path="Docs/Plans/Epic-1-MVP/milestone-11.1-style-tokens-and-follow-ups.md" />
+        <File Path="Docs/Plans/Epic-1-MVP/milestone-12-ini-editor-display-style.md" />
     </Folder>
     <Folder Name="/Docs/Specs/">
         <File Path="Docs/Specs/1-zoo-tycoon-launcher-master-design.md" />
@@ -48,6 +50,7 @@
         <File Path="Docs/Specs/Epic-1-MVP/milestone-10-ini-recovery-and-read-only-detection-design.md" />
         <File Path="Docs/Specs/Epic-1-MVP/milestone-11-options-and-colour-cleanup-design.md" />
         <File Path="Docs/Specs/Epic-1-MVP/milestone-11.1-style-tokens-and-follow-ups-design.md" />
+        <File Path="Docs/Specs/Epic-1-MVP/milestone-12-ini-editor-display-style-design.md" />
     </Folder>
     <Folder Name="/Docs/TestPlans/">
         <File Path="Docs/TestPlans/manual-end-to-end-tests.md" />

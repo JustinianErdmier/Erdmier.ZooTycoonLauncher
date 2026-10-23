@@ -28,5 +28,5 @@ public sealed partial class IniEditorView : UserControl
     }
 
     private static bool IsInput(Visual source)
-        => source.GetSelfAndVisualAncestors().Any(visual => visual is TextBox or ComboBox or NumericUpDown or ToggleButton or ScrollBar);
+        => source.GetSelfAndVisualAncestors().Any(visual => visual is TextBox or ComboBox or NumericUpDown or Slider or ToggleButton or ScrollBar);
 }

@@ -6,9 +6,11 @@ public sealed class OptionsDialogViewModelTests
 
     private readonly IMediator _mediator = Substitute.For<IMediator>();
 
-    private void ReturnsStored(LauncherStartupPreference preference, bool closeAfterGameLaunch)
+    private readonly IniEditorStyleState _styleState = new();
+
+    private void ReturnsStored(LauncherStartupPreference preference, bool closeAfterGameLaunch, IniEditorStyle? editorStyle = null)
         => _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
-                    .Returns(new ValueTask<ErrorOr<LauncherOptions>>(new LauncherOptions(preference, closeAfterGameLaunch)));
+                    .Returns(new ValueTask<ErrorOr<LauncherOptions>>(new LauncherOptions(preference, closeAfterGameLaunch, editorStyle ?? IniEditorStyle.Friendly)));
 
     private void ReturnsSave(ErrorOr<Success> result)
         => _mediator.Send(Arg.Any<SaveLauncherOptionsCommand>(), Arg.Any<CancellationToken>())
@@ -18,7 +20,7 @@ public sealed class OptionsDialogViewModelTests
     {
         ReturnsStored(LauncherStartupPreference.LastPlayedInstallation, closeAfterGameLaunch: true);
 
-        OptionsDialogViewModel viewModel = new(_mediator, _dialogs, logger ?? new RecordingLogger<OptionsDialogViewModel>());
+        OptionsDialogViewModel viewModel = new(_mediator, _dialogs, _styleState, logger ?? new RecordingLogger<OptionsDialogViewModel>());
 
         await viewModel.InitialiseAsync();
 
@@ -54,6 +56,105 @@ public sealed class OptionsDialogViewModelTests
                                                                            && !command.CloseAfterGameLaunch),
                              Arg.Any<CancellationToken>());
         closed.ShouldBe(expected: 1);
+    }
+
+    [ Fact ]
+    public async Task Ok_PassesBackTheLoadedEditorStyle()
+    {
+        ReturnsStored(LauncherStartupPreference.DefaultInstallation, closeAfterGameLaunch: false, editorStyle: IniEditorStyle.Ini);
+        ReturnsSave(Result.Success);
+
+        OptionsDialogViewModel viewModel = new(_mediator, _dialogs, _styleState, new RecordingLogger<OptionsDialogViewModel>());
+
+        await viewModel.InitialiseAsync();
+        await viewModel.OkCommand.ExecuteAsync(parameter: null);
+
+        await _mediator.Received(requiredNumberOfCalls: 1)
+                       .Send(Arg.Is<SaveLauncherOptionsCommand>(command => command.EditorStyle == IniEditorStyle.Ini), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public async Task Initialise_LoadsTheEditorStyle()
+    {
+        ReturnsStored(LauncherStartupPreference.DefaultInstallation, closeAfterGameLaunch: false, editorStyle: IniEditorStyle.Ini);
+
+        OptionsDialogViewModel viewModel = new(_mediator, _dialogs, _styleState, new RecordingLogger<OptionsDialogViewModel>());
+
+        await viewModel.InitialiseAsync();
+
+        viewModel.EditorStyle.ShouldBe(IniEditorStyle.Ini);
+        viewModel.IsIniStyle.ShouldBeTrue();
+        viewModel.IsFriendlyStyle.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task Ok_SavesTheEditorStyleAndAppliesItAfterTheSave()
+    {
+        OptionsDialogViewModel viewModel = await LoadedAsync();
+        IniEditorStyle?        appliedAtSave = null;
+
+        _mediator.Send(Arg.Any<SaveLauncherOptionsCommand>(), Arg.Any<CancellationToken>())
+                 .Returns(_ =>
+                          {
+                              appliedAtSave = _styleState.Style;
+
+                              return new ValueTask<ErrorOr<Success>>(Result.Success);
+                          });
+
+        viewModel.IsIniStyle = true;
+
+        await viewModel.OkCommand.ExecuteAsync(parameter: null);
+
+        await _mediator.Received(requiredNumberOfCalls: 1)
+                       .Send(Arg.Is<SaveLauncherOptionsCommand>(command => command.EditorStyle == IniEditorStyle.Ini), Arg.Any<CancellationToken>());
+        appliedAtSave.ShouldBe(IniEditorStyle.Friendly);
+        _styleState.Style.ShouldBe(IniEditorStyle.Ini);
+    }
+
+    [ Fact ]
+    public async Task FailedSave_DoesNotApplyTheStyle()
+    {
+        OptionsDialogViewModel viewModel = await LoadedAsync();
+
+        ReturnsSave(Error.Failure(code: "Settings.WriteFailed", description: "disk full"));
+
+        viewModel.IsIniStyle = true;
+
+        await viewModel.OkCommand.ExecuteAsync(parameter: null);
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
+    }
+
+    [ Fact ]
+    public async Task Cancel_DoesNotApplyTheStyle()
+    {
+        OptionsDialogViewModel viewModel = await LoadedAsync();
+
+        viewModel.IsIniStyle = true;
+        viewModel.CancelCommand.Execute(parameter: null);
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
+    }
+
+    [ Fact ]
+    public async Task StyleDescription_FollowsTheSelection()
+    {
+        OptionsDialogViewModel viewModel = await LoadedAsync();
+
+        viewModel.StyleDescription.ShouldBe("Settings are grouped by what they do, with plain names and volumes that go up as they get louder.");
+
+        viewModel.IsIniStyle = true;
+
+        viewModel.StyleDescription.ShouldBe("Settings appear exactly as zoo.ini stores them: its sections, key names and raw values.");
+
+        viewModel.IsFriendlyStyle = true;
+
+        viewModel.StyleDescription.ShouldBe("Settings are grouped by what they do, with plain names and volumes that go up as they get louder.");
+
+        // An unchecked radio (the group clearing the previous choice) must not change the style.
+        viewModel.IsIniStyle = false;
+
+        viewModel.EditorStyle.ShouldBe(IniEditorStyle.Friendly);
     }
 
     [ Fact ]
@@ -189,7 +290,7 @@ public sealed class OptionsDialogViewModelTests
         _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
                  .Returns(new ValueTask<ErrorOr<LauncherOptions>>(Error.Failure(code: "Settings.ReadFailed", description: "unreadable")));
 
-        OptionsDialogViewModel viewModel = new(_mediator, _dialogs, new RecordingLogger<OptionsDialogViewModel>());
+        OptionsDialogViewModel viewModel = new(_mediator, _dialogs, _styleState, new RecordingLogger<OptionsDialogViewModel>());
 
         await viewModel.InitialiseAsync();
 
@@ -205,7 +306,7 @@ public sealed class OptionsDialogViewModelTests
         _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
                  .Returns<ValueTask<ErrorOr<LauncherOptions>>>(_ => throw new InvalidOperationException("boom"));
 
-        OptionsDialogViewModel viewModel = new(_mediator, _dialogs, logger);
+        OptionsDialogViewModel viewModel = new(_mediator, _dialogs, _styleState, logger);
 
         await viewModel.InitialiseAsync();
 

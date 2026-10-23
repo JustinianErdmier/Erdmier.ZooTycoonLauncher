@@ -22,6 +22,7 @@ internal static class PlayTestData
                NullLogger<IniEditorViewModel>.Instance,
                NullLogger<IniPlaceholderViewModel>.Instance,
                _ => Task.CompletedTask,
+               new IniEditorStyleState(),
                iniErrorMessage,
                writeAccess,
                initialTabIndex);

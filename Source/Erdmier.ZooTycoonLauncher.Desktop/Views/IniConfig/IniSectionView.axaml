@@ -1,68 +1,119 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
              xmlns:tokens="using:Erdmier.ZooTycoonLauncher.Desktop.Styles"
              xmlns:vm="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig"
              xmlns:fields="using:Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig.Fields"
              x:Class="Erdmier.ZooTycoonLauncher.Desktop.Views.IniConfig.IniSectionView"
              x:DataType="vm:IniSectionViewModel">
+    <UserControl.Styles>
+        <!-- The INI style shows keys in the monospace key face; the Friendly style leaves the system face. -->
+        <Style Selector="TextBlock.Mono">
+            <Setter Property="FontFamily"
+                    Value="{StaticResource FontFamilyMono}" />
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <!-- One row for both styles: the label column and hint (omitted for a Friendly check box, which carries its own caption), then the field view. -->
+        <DataTemplate x:Key="FieldRow"
+                      x:DataType="fields:IniFieldViewModel">
+            <Grid Background="Transparent"
+                  Button.Click="OnRowButtonClick"
+                  ColumnDefinitions="190,*"
+                  GotFocus="OnRowGotFocus"
+                  KeyDown="OnRowKeyDown"
+                  LostFocus="OnRowLostFocus"
+                  Margin="{tokens:Space Vertical=GapSmallest}"
+                  PointerEntered="OnRowPointerEntered"
+                  PointerExited="OnRowPointerExited"
+                  ToolTip.Tip="{Binding Help}">
+                <StackPanel Grid.Column="0"
+                            IsVisible="{Binding ShowLabelColumn}">
+                    <TextBlock Classes.Mono="{Binding IsIniStyle}"
+                               Text="{Binding Label}" />
+
+                    <TextBlock Classes.Mono="{Binding IsIniStyle}"
+                               Foreground="{StaticResource ForegroundMuted}"
+                               IsVisible="{Binding HasHint}"
+                               Text="{Binding Hint}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="{Binding ControlColumn}"
+                            Grid.ColumnSpan="{Binding ControlColumnSpan}">
+                    <ContentControl Content="{Binding}"
+                                    HorizontalAlignment="Left"
+                                    MinWidth="0"
+                                    VerticalAlignment="Top" />
+
+                    <TextBlock Classes.Mono="{Binding IsIniStyle}"
+                               Foreground="{StaticResource ForegroundMuted}"
+                               IsVisible="{Binding ShowHintBelowControl}"
+                               Text="{Binding Hint}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
     <StackPanel Spacing="{StaticResource GapRelated}">
         <StackPanel Orientation="Horizontal"
                     Spacing="{StaticResource GapRelated}">
-            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+            <TextBlock Classes.Mono="{Binding IsIniStyle}"
                        FontWeight="{StaticResource FontWeightStrong}"
-                       Text="{Binding Header}" />
+                       Text="{Binding Title}" />
 
             <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                       IsVisible="{Binding IsIniStyle}"
                        Text="section of zoo.ini" />
         </StackPanel>
+
+        <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                   IsVisible="{Binding IsFriendlyStyle}"
+                   Text="{Binding Descriptor}"
+                   TextWrapping="Wrap" />
 
         <Border Background="{StaticResource Surface}"
                 Height="1" />
 
-        <ItemsControl ItemsSource="{Binding Groups}">
+        <ItemsControl ItemsSource="{Binding IniStyleGroups}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:IniFieldGroup">
                     <StackPanel Margin="{tokens:Space Top=GapRelated}"
                                 Spacing="{StaticResource GapRelated}">
-                        <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                        <TextBlock Classes="Mono"
                                    FontWeight="{StaticResource FontWeightStrong}"
                                    Foreground="{StaticResource ForegroundDim}"
-                                   IsVisible="{Binding HasSubHeader}"
+                                   IsVisible="{Binding ShowSubHeaderLine}"
                                    Text="{Binding SubHeader}" />
 
-                        <ItemsControl ItemsSource="{Binding Fields}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="fields:IniFieldViewModel">
-                                    <Grid Background="Transparent"
-                                          Button.Click="OnRowButtonClick"
-                                          ColumnDefinitions="190,*"
-                                          GotFocus="OnRowGotFocus"
-                                          KeyDown="OnRowKeyDown"
-                                          LostFocus="OnRowLostFocus"
-                                          Margin="{tokens:Space Vertical=GapSmallest}"
-                                          PointerEntered="OnRowPointerEntered"
-                                          PointerExited="OnRowPointerExited"
-                                          ToolTip.Tip="{Binding Help}">
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
-                                                       Text="{Binding Label}" />
+                        <ItemsControl ItemTemplate="{StaticResource FieldRow}"
+                                      ItemsSource="{Binding VisibleFields}" />
 
-                                            <TextBlock FontFamily="{StaticResource FontFamilyMono}"
-                                                       Foreground="{StaticResource ForegroundMuted}"
-                                                       IsVisible="{Binding HasHint}"
-                                                       Text="{Binding Hint}" />
-                                        </StackPanel>
-
-                                        <ContentControl Content="{Binding}"
-                                                        Grid.Column="1"
-                                                        HorizontalAlignment="Left"
-                                                        MinWidth="0"
-                                                        VerticalAlignment="Top" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                                   IsVisible="{Binding HasFootnote}"
+                                   Text="{Binding Footnote}"
+                                   TextWrapping="Wrap" />
                     </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ItemsControl ItemsSource="{Binding FriendlyStyleGroups}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:IniFieldGroup">
+                    <controls:GroupBox Header="{Binding SubHeader}"
+                                       Margin="{tokens:Space Top=GapRelated}"
+                                       Padding="{StaticResource GroupBoxPadding}">
+                        <StackPanel Spacing="{StaticResource GapRelated}">
+                            <ItemsControl ItemTemplate="{StaticResource FieldRow}"
+                                          ItemsSource="{Binding VisibleFields}" />
+
+                            <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                                       IsVisible="{Binding HasFootnote}"
+                                       Text="{Binding Footnote}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </controls:GroupBox>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

@@ -10,6 +10,9 @@ public sealed class LauncherSettings
     /// <summary>The id of the default installation (nullable when no installations are registered).</summary>
     public Guid? DefaultInstallationId { get; set; }
 
+    /// <summary>The style of the INI editor's tabs; default is <see cref="Settings.IniEditorStyle.Friendly" />.</summary>
+    public IniEditorStyle IniEditorStyle { get; set; } = IniEditorStyle.Friendly;
+
     /// <summary>Fixed primary key; always <c>1</c>.</summary>
     public int Id { get; init; } = 1;
 

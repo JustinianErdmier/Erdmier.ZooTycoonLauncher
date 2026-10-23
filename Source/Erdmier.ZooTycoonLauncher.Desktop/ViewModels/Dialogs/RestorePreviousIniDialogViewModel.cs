@@ -16,22 +16,26 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
 
     private readonly IMediator _mediator;
 
+    private readonly IIniEditorStyleState _styleState;
+
     private Guid _installationId;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
     /// <param name="dialogs">The dialogue service, used for the confirmation and error prompts.</param>
+    /// <param name="styleState">The INI editor style, read when the difference rows are built.</param>
     /// <param name="logger">Logger for history-load and restore failures.</param>
-    public RestorePreviousIniDialogViewModel(IMediator mediator, IDialogService dialogs, ILogger<RestorePreviousIniDialogViewModel> logger)
+    public RestorePreviousIniDialogViewModel(IMediator mediator, IDialogService dialogs, IIniEditorStyleState styleState, ILogger<RestorePreviousIniDialogViewModel> logger)
     {
-        _mediator = mediator;
-        _dialogs  = dialogs;
-        _logger   = logger;
+        _mediator   = mediator;
+        _dialogs    = dialogs;
+        _styleState = styleState;
+        _logger     = logger;
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
     public RestorePreviousIniDialogViewModel()
-        : this(null!, null!, NullLogger<RestorePreviousIniDialogViewModel>.Instance)
+        : this(null!, null!, new NullIniEditorStyleState(), NullLogger<RestorePreviousIniDialogViewModel>.Instance)
     { }
 
     /// <summary>Whether a user-initiated close (the title-bar button) is allowed: <see langword="false" /> while a restore is in flight. It is already <see langword="true" /> by the time <see cref="CloseRequested" /> is raised.</summary>
@@ -65,7 +69,7 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
     /// <summary>The keys the selected snapshot lacks, which keep their current values; empty when there are none.</summary>
     public string KeptKeysText
         => SelectedRow is { Entry.Comparison.KeptKeys: { Count: > 0 } keys }
-            ? "Not in this snapshot, so they keep their current values: " + string.Join(separator: ", ", keys.Select(key => key.ToString()))
+            ? "Not in this snapshot, so they keep their current values: " + string.Join(separator: ", ", keys.Select(key => IniDisplayText.KeyText(_styleState.Style, key)))
             : string.Empty;
 
     /// <summary>The caption above the difference grid, for example <c>2 changes</c>.</summary>
@@ -220,15 +224,35 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
                entry.Trigger.Name,
                entry.Comparison.Rows.Count.ToString(DisplayCulture));
 
-    private static IniHistoryDiffRow ToDiffRow(IniDiffRow row)
-        => new($"[{row.Id.Section}]",
-               row.Id.Key,
-               row.Current is null ? NotSet : IniDisplayText.Format(row.Id, row.Current),
-               IniDisplayText.Format(row.Id, row.Snapshot));
+    private static IniHistoryDiffRow ToDiffRow(IniEditorStyle style, IniDiffRow row)
+    {
+        // Friendly style names the whole key in one text; a key the Friendly layout does not place reads as in INI style.
+        bool named = style == IniEditorStyle.Friendly && IniEditorLayouts.TryLocate(style, row.Id, out _);
+
+        return new IniHistoryDiffRow(named ? string.Empty : $"[{row.Id.Section}]",
+                                     named ? IniDisplayText.KeyText(style, row.Id) : row.Id.Key,
+                                     row.Current is null ? NotSet : IniDisplayText.Format(style, row.Id, row.Current),
+                                     IniDisplayText.Format(style, row.Id, row.Snapshot))
+        {
+            UsesSystemFace = named
+        };
+    }
+
+    private IReadOnlyList<IniHistoryDiffRow> ToDiffRows(IniSnapshotComparison comparison)
+    {
+        IniEditorStyle style = _styleState.Style;
+
+        // One row per diff row in both styles; Friendly follows the page order (keys the layout does not place keep the diff's order, last).
+        IEnumerable<IniDiffRow> rows = style == IniEditorStyle.Friendly
+            ? comparison.Rows.OrderBy(row => IniEditorLayouts.TryLocate(style, row.Id, out IniFieldLocation? location) ? location.Order : int.MaxValue)
+            : comparison.Rows;
+
+        return rows.Select(row => ToDiffRow(style, row)).ToList();
+    }
 
     partial void OnSelectedRowChanged(IniHistoryRow? value)
     {
-        DiffRows = value?.Entry.Comparison.Rows.Select(ToDiffRow).ToList() ?? [ ];
+        DiffRows = value is null ? [ ] : ToDiffRows(value.Entry.Comparison);
 
         OnPropertyChanged(nameof(ChangeCountText));
         OnPropertyChanged(nameof(HasKeptKeys));
@@ -238,4 +262,17 @@ public sealed partial class RestorePreviousIniDialogViewModel : ViewModelBase
 
     /// <summary>Raised when the dialogue should close.</summary>
     public event EventHandler? CloseRequested;
+}
+
+file sealed class NullIniEditorStyleState : IIniEditorStyleState
+{
+    public IniEditorStyle Style { get; set; } = IniEditorStyle.Friendly;
+
+    public int Version => 0;
+
+    public event EventHandler? StyleChanged
+    {
+        add { }
+        remove { }
+    }
 }

@@ -11,6 +11,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private const double BootingWindowWidth = 480;
 
+    private const string SaveOptionsFailedTitle = "Cannot Save Options";
+
     private readonly IDialogService _dialogs;
 
     private readonly ILogger<InstallationGridViewModel> _gridLogger;
@@ -23,6 +25,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IMessenger _messenger;
 
+    private readonly IIniEditorStyleState _styleState;
+
     private readonly ILogger<IniEditorViewModel> _iniEditorLogger;
 
     private readonly ILogger<IniPlaceholderViewModel> _iniPlaceholderLogger;
@@ -30,6 +34,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly ILogger<IniConfigTabViewModel> _iniTabLogger;
 
     private readonly ILogger<PlayViewModel> _playLogger;
+
+    private bool _hasLoadedStyle;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
@@ -42,6 +48,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="iniTabLogger">Logger passed on to the INI Config tab of each <see cref="PlayViewModel" />.</param>
     /// <param name="iniEditorLogger">Logger passed on to the INI editor of each <see cref="PlayViewModel" />.</param>
     /// <param name="iniPlaceholderLogger">Logger passed on to the INI tab's No INI placeholder of each <see cref="PlayViewModel" />.</param>
+    /// <param name="styleState">The shared INI editor style, passed on to the INI Config tab of each <see cref="PlayViewModel" />.</param>
     public MainWindowViewModel(IMediator                          mediator,
                                IApplicationLifecycle              lifecycle,
                                IDialogService                     dialogs,
@@ -51,7 +58,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                ILogger<PlayViewModel>             playLogger,
                                ILogger<IniConfigTabViewModel>     iniTabLogger,
                                ILogger<IniEditorViewModel>        iniEditorLogger,
-                               ILogger<IniPlaceholderViewModel>   iniPlaceholderLogger)
+                               ILogger<IniPlaceholderViewModel>   iniPlaceholderLogger,
+                               IIniEditorStyleState               styleState)
     {
         _mediator   = mediator;
         _lifecycle  = lifecycle;
@@ -64,6 +72,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _iniTabLogger         = iniTabLogger;
         _iniEditorLogger      = iniEditorLogger;
         _iniPlaceholderLogger = iniPlaceholderLogger;
+        _styleState           = styleState;
+
+        // The view model lives as long as the application, as does the style state, so the subscription is never released.
+        _styleState.StyleChanged += (_, _) => RaiseStyleMenuChecks();
+
+        RaiseStyleMenuChecks();
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
@@ -72,8 +86,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ NotifyCanExecuteChangedFor(nameof(CloseInstallationCommand)) ]
     public partial object? ActiveContent { get; set; }
 
-    // Disposes the outgoing state view model when it holds disposable resources (currently only OpenGameInstallationViewModel's grid), so it unregisters from the
-    // messenger as soon as the main window navigates away from it.
+    // Disposes the outgoing state view model when it holds disposable resources (the picker's grid, and PlayViewModel, whose INI Config tab follows the
+    // shared editor style), so it unregisters from the messenger and the style state as soon as the main window navigates away from it.
     partial void OnActiveContentChanged(object? oldValue, object? newValue)
     {
         if (oldValue is IDisposable disposable)
@@ -194,6 +208,95 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ RelayCommand ]
     private Task OpenOptionsAsync() => _dialogs.ShowOptionsAsync();
 
+    /// <summary>
+    ///     View → Config layout → Friendly style: whether the menu item is checked. Bound two-way because the radio item writes its own check on click; it follows the INI editor
+    ///     style in force, including changes made elsewhere such as Options.
+    /// </summary>
+    [ ObservableProperty ]
+    public partial bool IsFriendlyStyle { get; set; }
+
+    /// <summary>View → Config layout → INI style: whether the menu item is checked. Bound two-way like <see cref="IsFriendlyStyle" />.</summary>
+    [ ObservableProperty ]
+    public partial bool IsIniStyle { get; set; }
+
+    /// <summary><see langword="true" /> while a style choice is being stored; both style commands are disabled meanwhile so a second choice is not lost.</summary>
+    [ ObservableProperty ]
+    [ NotifyCanExecuteChangedFor(nameof(ChooseFriendlyStyleCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(ChooseIniStyleCommand)) ]
+    public partial bool IsStyleSaving { get; set; }
+
+    [ RelayCommand(CanExecute = nameof(CanChooseStyle)) ]
+    private Task ChooseFriendlyStyleAsync(CancellationToken cancellationToken) => ChooseStyleAsync(IniEditorStyle.Friendly, cancellationToken);
+
+    [ RelayCommand(CanExecute = nameof(CanChooseStyle)) ]
+    private Task ChooseIniStyleAsync(CancellationToken cancellationToken) => ChooseStyleAsync(IniEditorStyle.Ini, cancellationToken);
+
+    private bool CanChooseStyle() => !IsStyleSaving;
+
+    // View → Config layout (spec §6.6): stores the chosen style through the same load-then-save path as Options, changing only the style, and applies it to the shared state
+    // only once the save has succeeded. A failed save is reported and changes nothing. A radio item writes its own check on click, so afterwards both check properties are
+    // assigned from the real style: the binding then sees a changed value and pushes it back, which re-raising an unchanged value would not do.
+    private async Task ChooseStyleAsync(IniEditorStyle style, CancellationToken cancellationToken)
+    {
+        IsStyleSaving = true;
+
+        try
+        {
+            ErrorOr<LauncherOptions> loaded = await _mediator.Send(new GetLauncherOptionsQuery(), cancellationToken);
+
+            if (loaded.IsError)
+            {
+                _logger.LogWarning("Failed to read the launcher options: {Error}", loaded.FirstError.Description);
+
+                await _dialogs.ShowErrorAsync(SaveOptionsFailedTitle, loaded.FirstError.Description);
+
+                return;
+            }
+
+            LauncherOptions options = loaded.Value;
+
+            // Compared with what is stored, not with the in-memory style, so a stale in-memory value can never swallow the choice. Choosing what is already stored saves nothing
+            // but brings the shared state into line with it.
+            if (options.EditorStyle == style)
+            {
+                _styleState.Style = style;
+
+                return;
+            }
+
+            ErrorOr<Success> saved = await _mediator.Send(new SaveLauncherOptionsCommand(options.StartupPreference, options.CloseAfterGameLaunch, style), cancellationToken);
+
+            if (saved.IsError)
+            {
+                _logger.LogWarning("Failed to save the launcher options: {Error}", saved.FirstError.Description);
+
+                await _dialogs.ShowErrorAsync(SaveOptionsFailedTitle, saved.FirstError.Description);
+
+                return;
+            }
+
+            _styleState.Style = style;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to save the launcher options.");
+
+            await _dialogs.ShowErrorAsync(SaveOptionsFailedTitle, InstallationDialogMessages.UnexpectedFailure);
+        }
+        finally
+        {
+            IsStyleSaving = false;
+
+            RaiseStyleMenuChecks();
+        }
+    }
+
+    private void RaiseStyleMenuChecks()
+    {
+        IsFriendlyStyle = _styleState.Style == IniEditorStyle.Friendly;
+        IsIniStyle      = _styleState.Style == IniEditorStyle.Ini;
+    }
+
     // File → "Exit" (SDD §9.10). Asks about unsaved INI edits first; on approval marks the close as confirmed so MainWindow's close handler does not ask again.
     [ RelayCommand ]
     private async Task ExitAsync(CancellationToken cancellationToken)
@@ -261,12 +364,48 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         SetPickerStatusMessages();
     }
 
+    // The boot does not otherwise load the launcher options, so the stored editor style is read once here, after the Looking state and status text are set and before any editor
+    // exists: the View menu's bullet is then right in every state, whether or not an INI editor ever opens. A failure keeps the style already in force; the INI Config tab's own lazy load stays harmless beside this one.
+    private async Task LoadStoredStyleAsync(CancellationToken cancellationToken)
+    {
+        if (_hasLoadedStyle)
+        {
+            return;
+        }
+
+        _hasLoadedStyle = true;
+
+        // Anything that sets the state while the query is in flight (an Options save, a menu choice) is newer than what the query reads, so it wins.
+        int versionBeforeQuery = _styleState.Version;
+
+        try
+        {
+            ErrorOr<LauncherOptions> options = await _mediator.Send(new GetLauncherOptionsQuery(), cancellationToken);
+
+            if (options.IsError)
+            {
+                _logger.LogError("Could not read the stored INI editor style at start-up: {Error}", options.FirstError.Description);
+            }
+            else if (options.Value is { } value
+                     && _styleState.Version == versionBeforeQuery)
+            {
+                _styleState.Style = value.EditorStyle;
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "Could not read the stored INI editor style at start-up.");
+        }
+    }
+
     private async Task RunBootAsync(Guid? installationId, CancellationToken cancellationToken, int initialTabIndex = 0)
     {
         ActiveContent              = new LookingForZooTycoonViewModel();
         IsBooting                  = true;
         StatusMessagePrimaryText   = installationId is null ? "Discovering installations…" : "Opening installation…";
         StatusMessageSecondaryText = "Please wait…";
+
+        await LoadStoredStyleAsync(cancellationToken);
 
         ViewModelBase? content = null;
 
@@ -395,6 +534,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                  _iniEditorLogger,
                                                                  _iniPlaceholderLogger,
                                                                  ct => RunBootAsync(result.ActiveInstallation!.Id, ct, PlayViewModel.IniConfigTabIndex),
+                                                                 _styleState,
                                                                  iniErrorMessage: result.IniErrorMessage,
                                                                  writeAccess: result.WriteAccess,
                                                                  initialTabIndex: initialTabIndex),
@@ -410,6 +550,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                                                                 _iniEditorLogger,
                                                                 _iniPlaceholderLogger,
                                                                 ct => RunBootAsync(result.ActiveInstallation!.Id, ct, PlayViewModel.IniConfigTabIndex),
+                                                                _styleState,
                                                                 iniErrorMessage: result.IniErrorMessage,
                                                                 writeAccess: result.WriteAccess,
                                                                 initialTabIndex: initialTabIndex),

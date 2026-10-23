@@ -6,6 +6,8 @@ public sealed class IniConfigTabViewModelTests
 
     private readonly IMediator _mediator = Substitute.For<IMediator>();
 
+    private readonly IniEditorStyleState _styleState = new();
+
     private IniConfigTabViewModel CreateTab(InstallationSummary           installation,
                                          string?                       iniErrorMessage,
                                          ILogger<IniConfigTabViewModel>? logger      = null,
@@ -18,7 +20,112 @@ public sealed class IniConfigTabViewModelTests
                NullLogger<IniEditorViewModel>.Instance,
                NullLogger<IniPlaceholderViewModel>.Instance,
                _ => Task.CompletedTask,
+               _styleState,
                writeAccess);
+
+    [ Fact ]
+    public async Task IniConfigTab_BuildsTheEditorInTheStoredStyle()
+    {
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<LauncherOptions>>(new LauncherOptions(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false,
+                                                                                      IniEditorStyle.Ini)));
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
+
+        await tab.ActivateAsync(CancellationToken.None);
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Ini);
+        ((IniEditorViewModel)tab.Content).Sections[0].IsIniStyle.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public async Task LazyLoad_DoesNotOverwriteAStyleSetMeanwhile()
+    {
+        TaskCompletionSource<ErrorOr<LauncherOptions>> pending = new();
+
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<LauncherOptions>>(pending.Task));
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
+
+        Task activation = tab.ActivateAsync(CancellationToken.None);
+
+        // An Options save lands while the tab's own read of the stored style is still in flight.
+        _styleState.Style = IniEditorStyle.Ini;
+
+        pending.SetResult(new LauncherOptions(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, IniEditorStyle.Friendly));
+
+        await activation;
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Ini);
+        ((IniEditorViewModel)tab.Content).Sections[0].IsIniStyle.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public async Task OptionsQueryFailure_KeepsTheStyleInForce()
+    {
+        _styleState.Style = IniEditorStyle.Ini;
+
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<LauncherOptions>>((ErrorOr<LauncherOptions>)Error.Failure(description: "The options could not be read.")));
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
+
+        await tab.ActivateAsync(CancellationToken.None);
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Ini);
+        ((IniEditorViewModel)tab.Content).Sections[0].IsIniStyle.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public async Task Dispose_UnsubscribesFromStyleChanges()
+    {
+        _styleState.Style = IniEditorStyle.Ini;
+
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
+
+        await tab.ActivateAsync(CancellationToken.None);
+
+        IniEditorViewModel editor = (IniEditorViewModel)tab.Content;
+
+        tab.Dispose();
+
+        _styleState.Style = IniEditorStyle.Friendly;
+
+        editor.Sections[0].IsIniStyle.ShouldBeTrue();
+        editor.Sections[0].Title.ShouldNotBe(expected: "Display");
+    }
+
+    [ Fact ]
+    public async Task IniConfigTab_ReappliesStyleWhenStateChanges()
+    {
+        _styleState.Style = IniEditorStyle.Ini;
+
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
+
+        await tab.ActivateAsync(CancellationToken.None);
+
+        IniEditorViewModel editor = (IniEditorViewModel)tab.Content;
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+
+        _styleState.Style = IniEditorStyle.Friendly;
+
+        tab.Content.ShouldBeSameAs(editor);
+        editor.Sections[0].IsIniStyle.ShouldBeFalse();
+        editor.Sections[0].Title.ShouldBe(expected: "Display");
+        tab.HasPendingChanges.ShouldBeTrue();
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value.ShouldBe(expected: 1024m);
+
+        await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>());
+    }
 
     [ Fact ]
     public void ReadOnlyWarning_FolderReadOnly_ShowsTheFolderText()

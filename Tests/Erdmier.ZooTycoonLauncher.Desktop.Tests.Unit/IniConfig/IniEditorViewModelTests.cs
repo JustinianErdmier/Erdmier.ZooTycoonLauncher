@@ -6,14 +6,131 @@ public sealed class IniEditorViewModelTests
 
     private readonly IMediator _mediator = Substitute.For<IMediator>();
 
-    private IniEditorViewModel CreateEditor(ILogger<IniEditorViewModel>? logger = null)
+    private IniEditorViewModel CreateEditor(ILogger<IniEditorViewModel>? logger = null, IniEditorStyle? style = null)
         => new(Guid.CreateVersion7(), _mediator, _dialogs, IniEditorTestData.Result(("user", "screenwidth", "800"), ("user", "fullscreen", "1")),
-               logger ?? NullLogger<IniEditorViewModel>.Instance);
+               logger ?? NullLogger<IniEditorViewModel>.Instance, style ?? IniEditorStyle.Ini);
 
     private IniEditorViewModel CreateEditorWithHistory(int historicalCount = 2)
         => new(Guid.CreateVersion7(), _mediator, _dialogs,
                IniEditorTestData.ResultWithHistory(historicalCount, ("user", "screenwidth", "800"), ("user", "fullscreen", "1")),
-               NullLogger<IniEditorViewModel>.Instance);
+               NullLogger<IniEditorViewModel>.Instance, IniEditorStyle.Ini);
+
+    [ Fact ]
+    public async Task ApplyStyle_KeepsPendingEditsByKey()
+    {
+        IniEditorViewModel editor = CreateEditor(style: IniEditorStyle.Ini);
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value = 1024m;
+        IniEditorTestData.Field<IniToggleFieldViewModel>(editor, section: "UI", key: "noMenuMusic").IsChecked = true;
+
+        editor.ApplyStyle(IniEditorStyle.Friendly);
+
+        IniNumberFieldViewModel width = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth");
+        IniToggleFieldViewModel music = IniEditorTestData.Field<IniToggleFieldViewModel>(editor, section: "UI", key: "noMenuMusic");
+
+        width.Value.ShouldBe(expected: 1024m);
+        width.Baseline.ShouldBe(expected: "800");
+        music.Inverted.ShouldBeTrue();
+        music.IsChecked.ShouldBeFalse();
+        music.TryGetEdit(out string? musicRaw).ShouldBeTrue();
+        musicRaw.ShouldBe(expected: "1");
+        editor.HasPendingChanges.ShouldBeTrue();
+
+        await _mediator.DidNotReceive().Send(Arg.Any<SaveIniCommand>(), Arg.Any<CancellationToken>());
+        await _mediator.DidNotReceive().Send(Arg.Any<GetIniConfigQuery>(), Arg.Any<CancellationToken>());
+    }
+
+    [ Fact ]
+    public void ApplyStyle_CarriesAnOffStepVolumeAndALanguageEditAcrossBothSwitches()
+    {
+        IniEditorViewModel editor = new(Guid.CreateVersion7(), _mediator, _dialogs,
+                                        IniEditorTestData.Result(("UI", "userAttenuation", "0"), ("language", "lang", "9"), ("language", "sublang", "1")),
+                                        NullLogger<IniEditorViewModel>.Instance, IniEditorStyle.Ini);
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "UI", key: "userAttenuation").Value = 37m;
+        editor.Sections.SelectMany(section => section.Fields).OfType<IniLanguageFieldViewModel>().Single().SelectedOption =
+            IniEditorCatalogue.Languages.First(option => option is { Lang: 7, SubLang: 1 });
+
+        editor.ApplyStyle(IniEditorStyle.Friendly);
+
+        IniSliderFieldViewModel volume = IniEditorTestData.Field<IniSliderFieldViewModel>(editor, section: "UI", key: "userAttenuation");
+        IniNumberFieldViewModel lang   = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "language", key: "lang");
+
+        volume.IsDirty.ShouldBeTrue();
+        volume.TryGetEdit(out string? friendlyRaw).ShouldBeTrue();
+        friendlyRaw.ShouldBe(expected: "37");
+        lang.Value.ShouldBe(expected: 7m);
+        lang.TryGetEdit(out string? langRaw).ShouldBeTrue();
+        langRaw.ShouldBe(expected: "7");
+
+        editor.ApplyStyle(IniEditorStyle.Ini);
+
+        IniNumberFieldViewModel back = IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "UI", key: "userAttenuation");
+
+        back.IsDirty.ShouldBeTrue();
+        back.TryGetEdit(out string? iniRaw).ShouldBeTrue();
+        iniRaw.ShouldBe(expected: "37");
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "language", key: "lang").Value.ShouldBe(expected: 7m);
+        editor.HasPendingChanges.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public void ApplyStyle_SelectsTheFirstSection()
+    {
+        IniEditorViewModel editor = CreateEditor(style: IniEditorStyle.Ini);
+
+        editor.SelectedSection = editor.Sections[3];
+
+        editor.ApplyStyle(IniEditorStyle.Friendly);
+
+        editor.SelectedSection.ShouldBeSameAs(editor.Sections[0]);
+        editor.SelectedSection.Title.ShouldBe(expected: "Display");
+        editor.Sections.Count.ShouldBe(expected: IniEditorLayouts.Sections(IniEditorStyle.Friendly).Count);
+        editor.Sections.ShouldAllBe(section => !section.IsIniStyle);
+    }
+
+    [ Fact ]
+    public void ApplyStyle_ClearsTheFooterHelp()
+    {
+        IniEditorViewModel editor = CreateEditor(style: IniEditorStyle.Ini);
+
+        IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").IsHovered = true;
+        editor.ActiveHelp.ShouldNotBeNull();
+
+        editor.ApplyStyle(IniEditorStyle.Friendly);
+
+        editor.ActiveHelp.ShouldBeNull();
+    }
+
+    [ Fact ]
+    public async Task FriendlyEditor_SaveWritesRawValues()
+    {
+        IniEditorViewModel editor = new(Guid.CreateVersion7(), _mediator, _dialogs, IniEditorTestData.Result(("UI", "noMenuMusic", "1"), ("UI", "userAttenuation", "0")),
+                                        NullLogger<IniEditorViewModel>.Instance, IniEditorStyle.Friendly);
+
+        SaveIniCommand? sent = null;
+
+        _mediator.Send(Arg.Do<SaveIniCommand>(command => sent = command), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<IniConfigResult>>(IniEditorTestData.Result(("UI", "noMenuMusic", "0"), ("UI", "userAttenuation", "2500"))));
+
+        IniToggleFieldViewModel music = IniEditorTestData.Field<IniToggleFieldViewModel>(editor, section: "UI", key: "noMenuMusic");
+
+        music.Caption.ShouldBe(expected: "Enable menu music");
+        music.IsChecked.ShouldBeFalse();
+
+        music.IsChecked = true;
+
+        IniEditorTestData.Field<IniSliderFieldViewModel>(editor, section: "UI", key: "userAttenuation").Percent = 75;
+
+        (await editor.TrySaveAsync(CancellationToken.None)).ShouldBeTrue();
+
+        sent.ShouldNotBeNull();
+        sent.Edits.ShouldBe(new Dictionary<IniKeyId, string>
+        {
+            [new IniKeyId(Section: "UI", Key: "noMenuMusic")]       = "0",
+            [new IniKeyId(Section: "UI", Key: "userAttenuation")] = "2500"
+        });
+    }
 
     [ Fact ]
     public void RestorePrevious_NoHistory_IsDisabled() => CreateEditorWithHistory(historicalCount: 0).RestorePreviousCommand.CanExecute(parameter: null).ShouldBeFalse();
@@ -187,7 +304,7 @@ public sealed class IniEditorViewModelTests
     {
         IniEditorViewModel editor = CreateEditor();
 
-        editor.Sections.Select(section => section.Header).ShouldBe(["[user]", "[UI]", "[advanced]", "[ai]", "[debug]", "[language]", "[Map]"]);
+        editor.Sections.Select(section => section.Title).ShouldBe(["[user]", "[UI]", "[advanced]", "[ai]", "[debug]", "[language]", "[Map]"]);
         editor.SelectedSection.ShouldBeSameAs(editor.Sections[0]);
         editor.Sections.SelectMany(section => section.Fields).Count().ShouldBe(expected: 47);
         IniEditorTestData.Field<IniNumberFieldViewModel>(editor, section: "user", key: "screenwidth").Value.ShouldBe(expected: 800m);
@@ -323,7 +440,8 @@ public sealed class IniEditorViewModelTests
     public async Task Save_Success_SendsOnlyTheEditsAndResetsTheBaseline()
     {
         IniEditorViewModel editor = CreateEditor();
-        SaveIniCommand?    sent   = null;
+
+        SaveIniCommand? sent = null;
 
         _mediator.Send(Arg.Do<SaveIniCommand>(command => sent = command), Arg.Any<CancellationToken>())
                  .Returns(new ValueTask<ErrorOr<IniConfigResult>>(new IniConfigResult(new Dictionary<IniKeyId, string?>
@@ -512,7 +630,7 @@ public sealed class IniEditorViewModelTests
         IniEditorViewModel editor = new(Guid.CreateVersion7(), _mediator, _dialogs,
                                         IniEditorTestData.Result(("user", "screenwidth", "1024"), (IniEditorCatalogue.LanguageId.Section, IniEditorCatalogue.LanguageId.Key, "12"),
                                                             (IniEditorCatalogue.SubLanguageId.Section, IniEditorCatalogue.SubLanguageId.Key, "1")),
-                                        NullLogger<IniEditorViewModel>.Instance);
+                                        NullLogger<IniEditorViewModel>.Instance, IniEditorStyle.Ini);
 
         editor.RestoreDefaultsCommand.CanExecute(parameter: null).ShouldBeTrue();
 
@@ -541,7 +659,7 @@ public sealed class IniEditorViewModelTests
     public async Task RestoreDefaults_WhileBusy_IsDisabled()
     {
         IniEditorViewModel editor = new(Guid.CreateVersion7(), _mediator, _dialogs, IniEditorTestData.ResultWithHistory(historicalCount: 2, ("user", "screenwidth", "1024")),
-                                        NullLogger<IniEditorViewModel>.Instance);
+                                        NullLogger<IniEditorViewModel>.Instance, IniEditorStyle.Ini);
 
         TaskCompletionSource<IniConfigResult?> open = new();
 

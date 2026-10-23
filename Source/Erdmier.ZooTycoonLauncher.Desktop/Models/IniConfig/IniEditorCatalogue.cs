@@ -12,6 +12,22 @@ public static class IniEditorCatalogue
     /// <summary>The <c>[language]/sublang</c> key driven by the language picker.</summary>
     public static readonly IniKeyId SubLanguageId = new(Section: "language", Key: "sublang");
 
+    /// <summary>The <c>[user] fullscreen</c> choices, shared by both layouts.</summary>
+    public static IReadOnlyList<IniChoiceOption> FullscreenOptions { get; } = [new(Raw: "1", Label: "Fullscreen"), new(Raw: "0", Label: "Windowed")];
+
+    /// <summary>The <c>[advanced] level</c> quality presets, shared by both layouts.</summary>
+    public static IReadOnlyList<IniChoiceOption> QualityPresetOptions { get; } =
+    [
+        new(Raw: "0", Label: "0 – Total Quality"),
+        new(Raw: "1", Label: "1 – Quality"),
+        new(Raw: "2", Label: "2 – Balance"),
+        new(Raw: "3", Label: "3 – Speed"),
+        new(Raw: "4", Label: "4 – Paused")
+    ];
+
+    /// <summary>The <c>[UI] helpType</c> levels, shared by both layouts.</summary>
+    public static IReadOnlyList<IniChoiceOption> HelpLevelOptions { get; } = [new(Raw: "0", Label: "Off"), new(Raw: "1", Label: "Standard"), new(Raw: "2", Label: "Verbose")];
+
     /// <summary>The curated languages offered by the language picker.</summary>
     public static IReadOnlyList<IniLanguageOption> Languages { get; } =
     [
@@ -27,17 +43,18 @@ public static class IniEditorCatalogue
         new(Lang: 29, SubLang: 1, Label: "Swedish (Sweden)")
     ];
 
-    /// <summary>The seven sections, in SDD §9.3 order.</summary>
+    /// <summary>The INI layout: the seven sections, in SDD §9.3 order, with their literal key names and raw values.</summary>
     public static IReadOnlyList<IniSectionDescriptor> Sections { get; } =
     [
         new(Section: "user",
+            Title: "[user]",
             Descriptor: "Display and performance",
             Footnote: null,
             [
                 new(SubHeader: null,
                     [
                         Choice(section: "user", key: "fullscreen", hint: "Display mode", help: "Run the game full screen or in a window.",
-                               [new IniChoiceOption(Raw: "1", Label: "Fullscreen"), new IniChoiceOption(Raw: "0", Label: "Windowed")]),
+                               FullscreenOptions),
                         Number(section: "user", key: "screenwidth", hint: "px", help: "Horizontal resolution in pixels. Must be a mode your display adapter supports."),
                         Number(section: "user", key: "screenheight", hint: "px", help: "Vertical resolution in pixels. Must be a mode your display adapter supports."),
                         Number(section: "user", key: "UpdateRate", hint: "1–60 ticks/sec",
@@ -46,13 +63,14 @@ public static class IniEditorCatalogue
                     ])
             ]),
         new(Section: "UI",
+            Title: "[UI]",
             Descriptor: "Audio, gameplay, and interface",
             Footnote: null,
             [
                 new(SubHeader: "Audio",
                     [
-                        Toggle(section: "UI", key: "noMenuMusic", caption: "Play menu music",
-                               help: "Play the main-menu music. The INI key is inverted: noMenuMusic=1 silences it.", inverted: true, hint: "Inverted in INI"),
+                        Toggle(section: "UI", key: "noMenuMusic", caption: "No menu music",
+                               help: "Silence the main-menu music. 1 turns it off, 0 plays it.", hint: "1 = no menu music"),
                         Text(section: "UI", key: "menuMusic", hint: "Relative to the game folder",
                              help: "Path to the main-menu music file, relative to the installation folder."),
                         Number(section: "UI", key: "menuMusicAttenuation", hint: "0–10000", help: "Attenuation applied to the menu music. Higher values are quieter."),
@@ -66,10 +84,10 @@ public static class IniEditorCatalogue
                     ]),
                 new(SubHeader: "Gameplay (cash)",
                     [
-                        Cash(section: "UI", key: "MSStartingCash", hint: "$0–$10,000,000", help: "Cash available at the start of a new game."),
-                        Cash(section: "UI", key: "MSCashIncrement", hint: "$100–$1,000,000", help: "Denomination in which cash amounts are awarded."),
-                        Cash(section: "UI", key: "MSMinCash", hint: "$0–$10,000,000", help: "Minimum cash the player may hold."),
-                        Cash(section: "UI", key: "MSMaxCash", hint: "$0–$10,000,000", help: "Maximum cash the player may hold.")
+                        Cash(section: "UI", key: "MSStartingCash", hint: "$0–$10,000,000", help: "Default starting cash for a new zoo; you can change it before you start."),
+                        Cash(section: "UI", key: "MSCashIncrement", hint: "$100–$1,000,000", help: "Amount the starting cash goes up or down by with each step when you change it."),
+                        Cash(section: "UI", key: "MSMinCash", hint: "$0–$10,000,000", help: "Least starting cash you can choose for a new zoo."),
+                        Cash(section: "UI", key: "MSMaxCash", hint: "$0–$10,000,000", help: "Most starting cash you can choose for a new zoo.")
                     ]),
                 new(SubHeader: "Interface",
                     [
@@ -88,14 +106,11 @@ public static class IniEditorCatalogue
                         Number(section: "UI", key: "minimumMessageInterval", hint: "0–3600 s", help: "Minimum seconds between repeated notifications of the same kind."),
                         Choice(section: "UI", key: "helpType", hint: "In-game help",
                                help: "How much in-game help the game shows. Verbose adds extra explanatory text to most controls.",
-                               [
-                                   new IniChoiceOption(Raw: "0", Label: "Off"),
-                                   new IniChoiceOption(Raw: "1", Label: "Standard"),
-                                   new IniChoiceOption(Raw: "2", Label: "Verbose")
-                               ])
+                               HelpLevelOptions)
                     ])
             ]),
         new(Section: "advanced",
+            Title: "[advanced]",
             Descriptor: "Graphics quality and 8-bit audio",
             Footnote: null,
             [
@@ -103,13 +118,7 @@ public static class IniEditorCatalogue
                     [
                         Choice(section: "advanced", key: "level", hint: "Quality preset",
                                help: "Overall quality preset. Lower values favour quality, higher values favour speed; Paused stops the renderer.",
-                               [
-                                   new IniChoiceOption(Raw: "0", Label: "0 – Total Quality"),
-                                   new IniChoiceOption(Raw: "1", Label: "1 – Quality"),
-                                   new IniChoiceOption(Raw: "2", Label: "2 – Balance"),
-                                   new IniChoiceOption(Raw: "3", Label: "3 – Speed"),
-                                   new IniChoiceOption(Raw: "4", Label: "4 – Paused")
-                               ]),
+                               QualityPresetOptions),
                         Toggle(section: "advanced", key: "loadHalfAnims", caption: "Reduced-detail animations",
                                help: "Load reduced-detail animation sets to help older hardware."),
                         Toggle(section: "advanced", key: "drag", caption: "Drop quality on drag", help: "Lower the rendering quality while objects are being dragged."),
@@ -119,6 +128,7 @@ public static class IniEditorCatalogue
                     ])
             ]),
         new(Section: "ai",
+            Title: "[ai]",
             Descriptor: "AI behaviour limits",
             Footnote: "Raising this above the stock 1,000 limit can make guest pathing thrash; values above 2,500 need a community AI patch.",
             [
@@ -129,6 +139,7 @@ public static class IniEditorCatalogue
                     ])
             ]),
         new(Section: "debug",
+            Title: "[debug]",
             Descriptor: "Diagnostic logging and FPS overlay",
             Footnote: null,
             [
@@ -143,6 +154,7 @@ public static class IniEditorCatalogue
                     ])
             ]),
         new(Section: LanguageId.Section,
+            Title: "[language]",
             Descriptor: "Windows LANGID / SUBLANGID",
             Footnote: null,
             [
@@ -157,6 +169,7 @@ public static class IniEditorCatalogue
                     ])
             ]),
         new(Section: "Map",
+            Title: "[Map]",
             Descriptor: "Default zoo dimensions",
             Footnote: "Default dimensions for new zoos. Doubling both values quadruples world memory; large maps may stutter on the original engine.",
             [
@@ -194,10 +207,9 @@ public static class IniEditorCatalogue
 
     private static IniFieldDescriptor Text(string section, string key, string hint, string help) => new(new IniKeyId(section, key), key, IniControlKind.Text, hint, help);
 
-    private static IniFieldDescriptor Toggle(string section, string key, string caption, string help, bool inverted = false, string? hint = null)
+    private static IniFieldDescriptor Toggle(string section, string key, string caption, string help, string? hint = null)
         => new(new IniKeyId(section, key), key, IniControlKind.Toggle, hint, help)
         {
-            Caption  = caption,
-            Inverted = inverted
+            Caption = caption
         };
 }

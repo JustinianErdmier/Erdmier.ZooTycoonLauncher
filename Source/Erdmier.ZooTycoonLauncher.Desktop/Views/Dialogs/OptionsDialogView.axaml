@@ -46,6 +46,28 @@
             </StackPanel>
         </controls:GroupBox>
 
+        <controls:GroupBox Header="INI editor"
+                           Padding="{StaticResource GroupBoxPadding}">
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
+                <TextBlock Classes="MutedText"
+                           Text="Show settings in the INI Config tab:" />
+
+                <RadioButton Content="{Binding FriendlyStyleName}"
+                             GroupName="EditorStyle"
+                             IsChecked="{Binding IsFriendlyStyle}" />
+
+                <RadioButton Content="{Binding IniStyleName}"
+                             GroupName="EditorStyle"
+                             IsChecked="{Binding IsIniStyle}" />
+
+                <TextBlock Margin="{tokens:Space Left=GroupBoxInset}"
+                           Classes="MutedText"
+                           Text="{Binding StyleDescription}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </controls:GroupBox>
+
         <controls:GroupBox Header="Game launch"
                            Padding="{StaticResource GroupBoxPadding}">
             <StackPanel Orientation="Vertical"

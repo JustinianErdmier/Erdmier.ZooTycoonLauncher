@@ -9,7 +9,7 @@ public sealed partial class IniToggleFieldViewModel : IniKeyedFieldViewModel
         : base(descriptor)
     {
         Caption  = descriptor.Caption ?? string.Empty;
-        Inverted = descriptor.Inverted;
+        Inverted = descriptor.Conversion == IniValueConversion.Invert;
     }
 
     /// <summary>Initialises a new instance for the XAML designer.</summary>
@@ -26,6 +26,9 @@ public sealed partial class IniToggleFieldViewModel : IniKeyedFieldViewModel
 
     /// <summary>Whether the check box shows the opposite of the stored value.</summary>
     public bool Inverted { get; }
+
+    /// <inheritdoc />
+    public override bool UsesCaptionAsLabel => !IsIniStyle;
 
     /// <summary>The check box state as the user sees it.</summary>
     [ ObservableProperty ]

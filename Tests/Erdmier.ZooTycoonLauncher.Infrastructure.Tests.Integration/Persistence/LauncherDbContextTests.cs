@@ -121,6 +121,42 @@ public sealed class LauncherDbContextTests : IDisposable
         (await ColumnDefaultAsync(context, tableName: "LauncherSettings", columnName: "Theme")).ShouldBe(expected: "'System'");
     }
 
+    [ Fact ]
+    public async Task Migration_AddsIniEditorStyleWithFriendlyDefault()
+    {
+        await using (LauncherDbContext upgrade = BuildContext())
+        {
+            await upgrade.GetService<IMigrator>().MigrateAsync(targetMigration: "20261022135110_RemoveLauncherTheme");
+
+            await upgrade.Database.ExecuteSqlAsync($"INSERT INTO \"LauncherSettings\" (\"Id\", \"LauncherStartupPreference\", \"CloseAfterGameLaunch\") VALUES (1, 'NoInstallation', 0)");
+        }
+
+        await using LauncherDbContext context = BuildContext();
+
+        await context.Database.MigrateAsync();
+
+        (await ColumnDefaultAsync(context, tableName: "LauncherSettings", columnName: "IniEditorStyle")).ShouldBe(expected: "'Friendly'");
+
+        LauncherSettings settings = await new LauncherSettingsRepository(context).GetAsync(CancellationToken.None);
+
+        settings.IniEditorStyle.ShouldBe(IniEditorStyle.Friendly);
+        settings.LauncherStartupPreference.ShouldBe(LauncherStartupPreference.NoInstallation);
+    }
+
+    [ Fact ]
+    public async Task Migration_Down_RemovesIniEditorStyle()
+    {
+        await using LauncherDbContext context = BuildContext();
+
+        await context.Database.MigrateAsync();
+
+        (await ColumnExistsAsync(context, tableName: "LauncherSettings", columnName: "IniEditorStyle")).ShouldBeTrue();
+
+        await context.GetService<IMigrator>().MigrateAsync(targetMigration: "20261022135110_RemoveLauncherTheme");
+
+        (await ColumnExistsAsync(context, tableName: "LauncherSettings", columnName: "IniEditorStyle")).ShouldBeFalse();
+    }
+
     private LauncherDbContext BuildContext()
     {
         DbContextOptions<LauncherDbContext> options = new DbContextOptionsBuilder<LauncherDbContext>()

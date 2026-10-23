@@ -2,6 +2,8 @@ global using System.ComponentModel;
 global using System.Diagnostics.CodeAnalysis;
 global using System.Globalization;
 
+global using Ardalis.SmartEnum;
+
 global using Avalonia;
 global using Avalonia.Controls;
 global using Avalonia.Controls.Primitives;

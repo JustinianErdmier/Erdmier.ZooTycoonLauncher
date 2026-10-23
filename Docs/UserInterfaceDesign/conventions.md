@@ -169,7 +169,7 @@ Use a `Grid` with `ColumnDefinitions="190,*"` and the right column's `MinWidth="
 ### 3.2 Hint sub-line
 
 Optional `TextBlock` immediately below the label, styled with `MutedText`. Carries the *units / range / shape* of the value: `px`, `1–60 ticks/sec`, `$0–$10,000,000`,
-`0=Off · 1=Standard · 2=Verbose`, `Inverted in INI` (for `noMenuMusic`), etc. Defaults stay on the input bounds, not in the hint.
+`0=Off · 1=Standard · 2=Verbose`, `1 = no menu music` (for `noMenuMusic`), etc. Defaults stay on the input bounds, not in the hint.
 
 ### 3.3 Help wiring
 
@@ -199,6 +199,29 @@ Each section begins with a `SectionHeader` primitive:
 Mono-bold section name + muted "section of `zoo.ini`" continuation + a 1-px solid `Surface`-shaded underline.
 
 `SubHeader` (only used inside `[UI]`): mono bold text in `ForegroundDim`. Reads `Audio`, `Gameplay (cash)`, `Interface`.
+
+### 3.5 Friendly page header and group boxes
+
+The Friendly style (SDD §9.3.3) reuses the standard row (§3) under a different frame. A page begins with a **page header** in the system face: the page title in
+`FontWeightStrong`, then the one-line description in `ForegroundMuted` (wrapping), then the same 1-px `Surface` underline as §3.4. There is no "section of `zoo.ini`"
+continuation, and the editor does not repeat the description above the form pane. The list caption above the page list reads `Page` where the INI style reads `Section`.
+
+Below the header, each group is a Classic.Avalonia `GroupBox` whose header is the group's name (*Screen*, *Performance*), with `Padding="{StaticResource GroupBoxPadding}"` and
+each row carrying a `GapSmallest` vertical margin and `GapRelated` separating the rows from the footnote, so the inset follows §1.4. A `GroupBox` takes the place of the INI
+style's bold sub-header (§3.4). A group's footnote is a muted wrapping line at the foot of its box; a page's footnote follows the last box. The rows inside use the §3 grid with
+the label and hint in the system face rather than the mono face (`Classes.Mono` is bound to the INI style only).
+
+A check box carries its own label (*Enable menu music*), so a Friendly check-box row drops the label column and spans both columns; it has no hint line either. Its tooltip and
+footer help are unchanged (§3.3).
+
+### 3.6 Slider row
+
+A volume key in the Friendly style renders as a slider row in the control column: a `Grid` with columns `"*,Auto"` and `GapRelated` between them: a `Slider` 0–100
+(`MinWidth="120"`, `MaxWidth="200"`, `SmallChange="1"`, `LargeChange="10"`, `TickFrequency="10"`, `TickPlacement="BottomRight"`) and a mono `TextBlock` (`MinWidth="48"`) reading
+the percentage (`75 %`), so the readout always fits the column. In a left-aligned row the star column gives the slider only its `MinWidth`, so it sits at about 120 px and grows
+toward 200 px only when the control column is wider; the maintainer accepts that width. The muted hint under the label reads `Silent – Full`. Louder is to the right. The row takes
+the standard help wiring (§3.3): a Tab-focused slider keeps focus and the footer help while the arrow keys move it, and a pointer drag gives the focus back on release
+(`IniFieldFocusRelease.AfterCommit`, listening for handled events too because the thumb captures the pointer). No new token or style is involved.
 
 ---
 
@@ -332,7 +355,19 @@ The INI editor's own footer shows unsaved-change state (§6). The full set of st
 
 ---
 
-## 10. Open questions for future revisions
+## 10. Menus
+
+### 10.1 Mutually exclusive menu items
+
+A menu pair that picks one of several states (View ▸ Config layout ▸ Friendly style / INI style) uses the Win9x radio bullet: each `MenuItem` sets `ToggleType="Radio"` and the same
+`GroupName`, and `IsChecked` binds `Mode=TwoWay` to a stored property on the view model, one per item (`IsFriendlyStyle`, `IsIniStyle`). The item writes its own check when clicked,
+so the properties must be reset from the source of truth, not left to follow the click: after every choice, successful or not, assign each property from the real state. A failed
+save then changes the property back and the binding pushes the bullet back; re-raising an unchanged value would be dropped and leave the wrong bullet. Each item also carries a
+`Command` that stores the choice, disabled while a save is in flight so a second click is not lost.
+
+---
+
+## 11. Open questions for future revisions
 
 Captured here so the SDD doesn't accumulate UI-shaped notes:
 

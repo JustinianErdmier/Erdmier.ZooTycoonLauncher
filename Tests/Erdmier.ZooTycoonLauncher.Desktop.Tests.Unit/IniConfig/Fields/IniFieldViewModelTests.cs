@@ -30,11 +30,13 @@ public sealed class IniFieldViewModelTests
     [ Fact ]
     public void Toggle_Inverted_ShowsTheOppositeAndWritesTheFaithfulValue()
     {
-        IniToggleFieldViewModel field = new(Descriptor(section: "UI", key: "noMenuMusic"));
+        IniEditorLayouts.TryLocate(IniEditorStyle.Friendly, new IniKeyId(Section: "UI", Key: "noMenuMusic"), out IniFieldLocation? location).ShouldBeTrue();
+
+        IniToggleFieldViewModel field = new(location!.Field);
 
         field.Load(raw: "0");
 
-        field.Caption.ShouldBe(expected: "Play menu music");
+        field.Caption.ShouldBe(expected: "Enable menu music");
         field.IsChecked.ShouldBeTrue();
 
         field.IsChecked = false;

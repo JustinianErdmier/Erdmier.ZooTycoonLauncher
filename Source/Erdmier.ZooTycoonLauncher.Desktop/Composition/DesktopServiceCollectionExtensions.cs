@@ -11,6 +11,7 @@ public static class DesktopServiceCollectionExtensions
         services.AddSingleton<IApplicationLifecycle, AvaloniaApplicationLifecycle>();
         services.AddSingleton<IDialogService>(sp => new AvaloniaDialogService(sp));
         services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        services.AddSingleton<IIniEditorStyleState, IniEditorStyleState>();
         services.AddSingleton<IApplicationEventPublisher, MessengerEventPublisher>();
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<AddInstallationDialogViewModel>();

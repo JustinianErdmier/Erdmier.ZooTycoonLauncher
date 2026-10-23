@@ -43,6 +43,12 @@ public sealed class IniLanguageFieldViewModel : IniFieldViewModel
     /// <summary>The curated languages.</summary>
     public IReadOnlyList<IniLanguageOption> Options { get; }
 
+    /// <summary>Whether the muted codes line under the picker is shown (the Friendly style).</summary>
+    public bool ShowCodesText => !IsIniStyle;
+
+    /// <summary>The muted line under the picker naming the current codes, on two lines so the pair never wraps apart: <c>Windows language codes:</c> then <c>LANGID 9 · SUBLANGID 1</c> (spec C13, §6.6).</summary>
+    public string CodesText => $"Windows language codes:\nLANGID {Format(_language.Value)} · SUBLANGID {Format(_subLanguage.Value)}";
+
     /// <summary>The curated entry matching the two rows, or <see langword="null" />. Setting a non-null entry writes both rows.</summary>
     public IniLanguageOption? SelectedOption
     {
@@ -67,6 +73,7 @@ public sealed class IniLanguageFieldViewModel : IniFieldViewModel
             }
 
             OnPropertyChanged(nameof(SelectedOption));
+            OnPropertyChanged(nameof(CodesText));
         }
     }
 
@@ -75,6 +82,9 @@ public sealed class IniLanguageFieldViewModel : IniFieldViewModel
         if (!_writing && eventArgs.PropertyName == nameof(IniNumberFieldViewModel.Value))
         {
             OnPropertyChanged(nameof(SelectedOption));
+            OnPropertyChanged(nameof(CodesText));
         }
     }
+
+    private static string Format(decimal? code) => code is { } value ? decimal.ToInt32(decimal.Truncate(value)).ToString(CultureInfo.InvariantCulture) : "—";
 }

@@ -179,6 +179,26 @@ The *Language* page shows only the **Game language** drop-down. Under it, a mute
 the wrong codes is visible without switching style. A pair the drop-down does not list leaves it blank, as today, and the info line shows the pair (decision 9). The line shows the
 **current** values, as INI style's read-only code rows do: what the file holds when nothing is pending, and the picker's codes once a language is picked (C13).
 
+### 6.6 Maintainer follow-ups (added 2026-10-23, after the first review)
+
+Found by the maintainer using the reviewed build. They extend this milestone.
+
+- **Cash help (both styles).** The four `[UI]` cash keys configure the *new zoo* screen, where the player picks a starting cash before the zoo starts. Their help,
+  in both layouts, says so — one meaning in both styles (supersedes ruling R5's wording):
+  - `MSStartingCash` — the starting cash a new zoo offers by default; the player can change it before the zoo starts.
+  - `MSCashIncrement` — how much the starting cash goes up or down per step while the player chooses it (default `$75,000`, step `$25,000`: one step up gives
+    `$100,000`).
+  - `MSMinCash` / `MSMaxCash` — the least / most starting cash the player can choose for a new zoo. Neither limits cash during play (it can go negative).
+- **Language codes line.** The info line under the language drop-down reads *Windows language codes:* on its first line and *LANGID 9 · SUBLANGID 2* on its
+  own second line, so the pair never splits across a wrap.
+- **View menu.** A **View** menu between *File* and *Help* holds **Config layout ▸ Friendly style / INI style**. The two items are a mutually exclusive pair with
+  the Win9x radio-check bullet (•) on the active style. Choosing one saves the style with the other launcher options (as Options' OK does) and applies it at
+  once; the bullet follows the style however it changes (View menu or Options). A failed save shows *Cannot Save Options* with the error and changes nothing.
+  Enabled in every state after boot, like *Options…*.
+
+The SDD changes these bring (§9.3.3, §9.7's key-column font, §9.10's menu table, §11.4's test inventory) land in this milestone too: the SDD is never left
+behind the code.
+
 ## 7. Shared behaviour
 
 Both styles behave identically apart from §5 and §6:

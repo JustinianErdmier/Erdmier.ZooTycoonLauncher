@@ -17,6 +17,11 @@ becomes *Config editor*. Code identifiers, folders and namespaces containing `In
 - **R3 — "the INI tab" becomes "the Game Config tab" in the final fix wave.** The documents' shorthand "the INI tab" names the tab, so the controller ruled it is renamed with
   the rest. Done in the final fix wave. Cost if wrong: one wording revert.
 - **R4 — The Task 3 commits carry a Claude Sonnet 5.5 Co-Authored-By trailer instead of Opus 5.5.** Left as is; no history rewrite. Cost if wrong: cosmetic attribution.
+- **R5 — Further fix waves after the final review.** The SDD-driven process allows one fix wave; CLAUDE.md asks for waves until a re-review has no Critical or Important
+  findings, so it took three. Cost if wrong: two extra review seats.
+- **R6 — The glossary *Drift* definition says "archives … first" instead of "before adopting".** The longer tab name pushed the row past its column; the shorter wording
+  keeps the table aligned without re-padding every row. Cost if wrong: slightly terser glossary wording.
+- **R7 — SDD §9.3.3's short last line ("open editor.") stays.** A short final line is a normal paragraph end in hard-wrapped prose. Cost if wrong: cosmetic.
 
 ## Defects found in the plan
 
@@ -31,6 +36,8 @@ becomes *Config editor*. Code identifiers, folders and namespaces containing `In
   File → Options shows the *Config editor* group box with "Show settings in the Game Config tab:". The app was closed.
 - **Two fix-round commit subjects start with a stray `@ `.** `067c6fe` and `3da2281` break the `type(emoji): subject` format; left as is (no history rewrite) — a squash merge
   would clean it.
+- **The first fix wave wrote a NUL byte into this ledger.** PowerShell expanded backtick escapes in a double-quoted string (`` `0 `` → NUL, `` `t `` → TAB), so git saw the
+  file as binary. The second wave rewrote the line from a literal string; the file is plain text again.
 
 ## Outstanding items
 
@@ -51,4 +58,5 @@ Closed by the final fix wave:
 
 ## Final review
 
-Verdict: **Ready after fixes**. All fixes landed in one wave; nothing is outstanding.
+Verdict: **Ready after fixes**. The fixes took three reviewed waves (R5): the "INI tab" rename and polish, then the ledger repair and SDD table alignment, then the
+glossary *Drift* row. The last re-review has no Critical or Important findings; nothing is outstanding.

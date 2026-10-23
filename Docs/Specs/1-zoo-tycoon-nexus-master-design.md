@@ -1608,7 +1608,7 @@ builds them.
 |          | Config layout ▸ INI style      | `ChooseIniStyleCommand`         | The other half of the radio pair. Both are enabled whenever the menu is visible, and disabled only while a style save runs. |
 | **Help** | Contents                       |                                 | Stub for the MVP: opens nothing but is kept so the eventual CHM/manual has a home. Surfacing it now communicates intent.    |
 |          | —                              |                                 |                                                                                                                             |
-|          | About                          |                                 | Stub for now; it will open the §9.9 dialogue. No "Zoo Tycoon Nexus" suffix — the dialogue title already carries it.      |
+|          | About                          |                                 | Stub for now; it will open the §9.9 dialogue. No "Zoo Tycoon Nexus" suffix — the dialogue title already carries it.         |
 
 An `Edit` menu is not present. The **View** menu holds one submenu, *Config layout*, whose two items form a mutually exclusive radio pair (conventions §10): the bullet follows the
 INI editor style in force, so a change made in Options moves it too. The stored style is loaded at start-up (§9.3.3), so the bullet is right in every state after boot. A choice is

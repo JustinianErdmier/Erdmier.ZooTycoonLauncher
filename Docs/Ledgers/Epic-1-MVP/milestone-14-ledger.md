@@ -4,9 +4,9 @@
 
 **Plan:** [`milestone-14-zoo-tycoon-nexus-rename.md`](../../Plans/Epic-1-MVP/milestone-14-zoo-tycoon-nexus-rename.md) · **Branch:** `feat/milestone-14-zoo-tycoon-nexus-rename`
 
-The product is renamed **Zoo Tycoon Nexus**. The solution, every project and every namespace move from `Erdmier.ZooTycoonLauncher.*` to `Erdmier.ZooTycoonNexus.*`; the
-storage folder, the database and log names, the window titles and the documents follow in later tasks. All three tasks are done: Task 1 renamed the code, Task 2 renamed the
-storage and the user-facing name, and Task 3 brought the current documents up to date.
+The product is renamed **Zoo Tycoon Nexus**. The solution, every project and every namespace moved from `Erdmier.ZooTycoonLauncher.*` to `Erdmier.ZooTycoonNexus.*`; the
+storage folder, the database and log names and the window titles followed, and the current documents were brought up to date. Task 1 renamed the code, Task 2 renamed the
+storage and the user-facing name, and Task 3 updated the documents and closed this ledger.
 
 ## Rulings taken without the maintainer
 
@@ -56,6 +56,8 @@ project prefix, storage folder and file names; the SDD gains revision 1.18 and a
 - **Task 2 log file name.** The plan says `Logs\Nexus.log`, but Serilog's rolling sink writes `Nexus<yyyyMMdd>.log`. The configured base name is `Nexus.log`, as `Launcher.log` was
   before. Task 3's documents describe it the same way the SDD already does.
 - **Task 3 Step 6 grep omits the Ref config path.** The SDD's `%APPDATA%\ZooTycoonLauncher\launcher.config` sentence matches the grep but is correct as it stands (R9).
+- **Task 3 "returns nothing" grep cannot be empty.** `git grep -n "1-zoo-tycoon-launcher-master-design"` always hits the milestone 14 plan and R6 above, because they describe the
+  rename by naming the old file. Those are the only allowed survivors.
 
 ## Incidents
 

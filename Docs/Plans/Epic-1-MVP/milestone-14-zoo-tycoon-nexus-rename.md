@@ -159,14 +159,14 @@ and none contains `"Launcher.db"` — use whatever public surface exposes those 
 
 **Files:**
 
-- Rename: `Docs/Specs/1-zoo-tycoon-nexus-master-design.md` → `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`
+- Rename: `Docs/Specs/1-zoo-tycoon-launcher-master-design.md` → `Docs/Specs/1-zoo-tycoon-nexus-master-design.md`
 - Modify: the SDD; `CLAUDE.md`; `Docs/UserInterfaceDesign/conventions.md`; `Docs/TestPlans/manual-end-to-end-tests.md`; `Erdmier.ZooTycoonNexus.slnx` (the SDD's entry)
-- Modify (link paths only): every milestone 1–13 plan or spec that links `1-zoo-tycoon-nexus-master-design.md`
+- Modify (link paths only): every milestone 1–13 plan or spec that links `1-zoo-tycoon-launcher-master-design.md`
 - Modify: `Docs/Ledgers/Epic-1-MVP/milestone-14-ledger.md`, this plan (ticks)
 
 **Interfaces:** none.
 
-- [x] **Step 1: Rename the SDD** with `git mv`, update its `.slnx` entry, and repair every link to it: `git grep -l "1-zoo-tycoon-nexus-master-design"` lists them.
+- [x] **Step 1: Rename the SDD** with `git mv`, update its `.slnx` entry, and repair every link to it: `git grep -l "1-zoo-tycoon-launcher-master-design"` lists them.
   In milestone 1–13 documents change only the link path, never the prose around it; record that as a ruling in the ledger.
 
 - [x] **Step 2: SDD content.** Product name `Zoo Tycoon Launcher` → `Zoo Tycoon Nexus` (title line 1, the metadata table, §1, §2, §9.1 title bar
@@ -196,7 +196,7 @@ git grep -n -i "Zoo Tycoon Launcher\|ZooTycoonLauncher\|Launcher\.db\|Launcher\.
 ```
 
   Expected: only revision rows before 1.18, `ZooTycoonLauncherRef`, `ZooTycoonLauncherHiFiUIPrototype.gif`, and the 1.18 row itself. Then
-  `git grep -n "1-zoo-tycoon-nexus-master-design"` returns nothing. Check the wrap of every edited Markdown line (≤ 180).
+  `git grep -n "1-zoo-tycoon-launcher-master-design"` returns nothing. Check the wrap of every edited Markdown line (≤ 180).
 
 - [x] **Step 7: Commit.** Message: `docs(📝): rename the app to Zoo Tycoon Nexus in the SDD, CLAUDE.md and current docs`
 

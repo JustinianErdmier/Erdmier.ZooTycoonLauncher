@@ -1,6 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
-using Avalonia.Interactivity;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 
@@ -8,7 +10,10 @@ using Erdmier.ZooTycoonLauncher.Desktop.Views;
 
 namespace Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit.Views;
 
-/// <summary>Drives the real View → Config layout radio items in <see cref="MainWindow" />, which write their own check on click.</summary>
+/// <summary>
+///     Drives the real View → Config layout radio items in <see cref="MainWindow" /> with headless pointer clicks: opening View and Config layout, then clicking INI style, so the
+///     menu's own interaction handler toggles the radio (a radio item writes its own check) before the save fails.
+/// </summary>
 public sealed class MainWindowStyleMenuTests
 {
     [ AvaloniaFact ]
@@ -53,7 +58,9 @@ public sealed class MainWindowStyleMenuTests
         friendly.IsChecked.ShouldBeTrue();
         ini.IsChecked.ShouldBeFalse();
 
-        ini.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+        Click(window, items.Single(item => item.Header as string == "View"));
+        Click(window, items.Single(item => item.Header as string == "Config layout"));
+        Click(window, ini);
 
         for (int attempt = 0; attempt < 100 && !dialogs.ReceivedCalls().Any(); attempt++)
         {
@@ -71,5 +78,18 @@ public sealed class MainWindowStyleMenuTests
         ini.IsChecked.ShouldBeFalse();
 
         window.Close();
+    }
+
+    // Clicks the centre of a menu item through the top-level it currently lives in: the window for the menu bar, a popup root for submenu items.
+    private static void Click(Window window, MenuItem item)
+    {
+        TopLevel topLevel = TopLevel.GetTopLevel(item) ?? window;
+        Point    point    = item.TranslatePoint(new Point(item.Bounds.Width / 2, item.Bounds.Height / 2), topLevel)!.Value;
+
+        topLevel.MouseMove(point);
+        topLevel.MouseDown(point, MouseButton.Left);
+        topLevel.MouseUp(point, MouseButton.Left);
+
+        Dispatcher.UIThread.RunJobs();
     }
 }

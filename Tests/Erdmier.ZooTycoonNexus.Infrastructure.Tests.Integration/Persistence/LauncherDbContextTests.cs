@@ -6,7 +6,7 @@ namespace Erdmier.ZooTycoonNexus.Infrastructure.Tests.Integration.Persistence;
 
 public sealed class LauncherDbContextTests : IDisposable
 {
-    private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"zoolauncher-test-{Guid.NewGuid()}.db");
+    private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"zoonexus-test-{Guid.NewGuid()}.db");
 
     public void Dispose()
     {

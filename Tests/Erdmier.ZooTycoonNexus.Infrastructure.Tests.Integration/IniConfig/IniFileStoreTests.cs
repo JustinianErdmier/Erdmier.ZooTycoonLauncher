@@ -4,7 +4,7 @@ namespace Erdmier.ZooTycoonNexus.Infrastructure.Tests.Integration.IniConfig;
 
 public sealed class IniFileStoreTests : IDisposable
 {
-    private readonly string _directory = Path.Combine(Path.GetTempPath(), $"zoolauncher-ini-test-{Guid.NewGuid():N}");
+    private readonly string _directory = Path.Combine(Path.GetTempPath(), $"zoonexus-ini-test-{Guid.NewGuid():N}");
 
     private readonly IniFileStore _store = new(new FileSystem(), Substitute.For<Serilog.ILogger>());
 

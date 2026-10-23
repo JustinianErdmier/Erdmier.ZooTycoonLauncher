@@ -6,7 +6,7 @@ namespace Erdmier.ZooTycoonNexus.Infrastructure.Tests.Integration.Discovery;
 
 public sealed class InstallationWriteProbeTests : IDisposable
 {
-    private readonly string _directory = Path.Combine(Path.GetTempPath(), $"zoolauncher-probe-test-{Guid.NewGuid():N}");
+    private readonly string _directory = Path.Combine(Path.GetTempPath(), $"zoonexus-probe-test-{Guid.NewGuid():N}");
 
     private readonly InstallationWriteProbe _probe = new(new FileSystem(), NullLogger<InstallationWriteProbe>.Instance);
 

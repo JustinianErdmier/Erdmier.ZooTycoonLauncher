@@ -12,7 +12,7 @@ public sealed class InstallationRepositoryTests : IDisposable
 
     public InstallationRepositoryTests()
     {
-        _databasePath = Path.Combine(Path.GetTempPath(), $"zoolauncher-repo-{Guid.NewGuid()}.db");
+        _databasePath = Path.Combine(Path.GetTempPath(), $"zoonexus-repo-{Guid.NewGuid()}.db");
 
         DbContextOptions<LauncherDbContext> options = new DbContextOptionsBuilder<LauncherDbContext>()
                                                       .UseSqlite($"Data Source={_databasePath}")

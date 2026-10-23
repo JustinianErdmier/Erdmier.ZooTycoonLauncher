@@ -19,7 +19,7 @@ public sealed class AppStorageLocationsTests
     }
 
     [ Fact ]
-    public void Construction_CreatesTheFoldersInTheGivenFileSystemOnly()
+    public void Construction_CreatesTheDataAndLogFolders()
     {
         MockFileSystem      fileSystem = new();
         AppStorageLocations locations  = new(fileSystem);

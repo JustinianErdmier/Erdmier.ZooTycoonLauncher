@@ -6,7 +6,7 @@ public sealed class InstallationDbContextTests : IDisposable
 {
     private readonly string _databasePath;
 
-    public InstallationDbContextTests() => _databasePath = Path.Combine(Path.GetTempPath(), $"zoolauncher-install-test-{Guid.NewGuid()}.db");
+    public InstallationDbContextTests() => _databasePath = Path.Combine(Path.GetTempPath(), $"zoonexus-install-test-{Guid.NewGuid()}.db");
 
     public void Dispose()
     {

@@ -12,7 +12,7 @@ public sealed class IniSnapshotRepositoryTests : IDisposable
 {
     private static readonly DateTime Captured = new(year: 2026, month: 9, day: 24, hour: 12, minute: 0, second: 0, DateTimeKind.Utc);
 
-    private readonly string _directory = Path.Combine(Path.GetTempPath(), $"zoolauncher-snapshots-{Guid.NewGuid():N}");
+    private readonly string _directory = Path.Combine(Path.GetTempPath(), $"zoonexus-snapshots-{Guid.NewGuid():N}");
 
     private readonly Guid _installationId = Guid.CreateVersion7();
 

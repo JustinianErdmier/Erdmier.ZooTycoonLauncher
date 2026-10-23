@@ -1,7 +1,7 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.Dialogs;
 
 /// <summary>
-///     View model for the modal Options dialogue (<c>File → Options…</c>): what the launcher opens at start-up, whether it closes after the game starts and which style the INI Config
+///     View model for the modal Options dialogue (<c>File → Options…</c>): what the launcher opens at start-up, whether it closes after the game starts and which style the Game Config
 ///     tab uses. Loads the stored values in <see cref="InitialiseAsync" />; <see cref="OkCommand" /> saves all three in one <see cref="SaveLauncherOptionsCommand" />, applies the
 ///     chosen style to <see cref="IIniEditorStyleState" /> once the save has succeeded, and raises <see cref="CloseRequested" />; <see cref="CancelCommand" /> raises it without
 ///     saving.
@@ -67,7 +67,7 @@ public sealed partial class OptionsDialogViewModel : ViewModelBase
     [ NotifyPropertyChangedFor(nameof(IsNoInstallation)) ]
     public partial LauncherStartupPreference StartupPreference { get; set; } = LauncherStartupPreference.DefaultInstallation;
 
-    /// <summary>Which style the INI Config tab renders in. The two <c>Is…Style</c> radio properties are views of this value.</summary>
+    /// <summary>Which style the Game Config tab renders in. The two <c>Is…Style</c> radio properties are views of this value.</summary>
     [ ObservableProperty ]
     [ NotifyPropertyChangedFor(nameof(IsFriendlyStyle)) ]
     [ NotifyPropertyChangedFor(nameof(IsIniStyle)) ]

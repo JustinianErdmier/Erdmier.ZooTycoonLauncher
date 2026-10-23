@@ -141,18 +141,18 @@ git commit -m "feat(✨): rename the INI Config tab to Game Config"
 
 **Interfaces:** none. Comment, doc and log text only, so no compiled behaviour changes.
 
-- [ ] **Step 1: List the hits.** Run: `rg -n "INI Config" Source Tests --glob "!**/bin/**" --glob "!**/obj/**"`
+- [x] **Step 1: List the hits.** Run: `rg -n "INI Config" Source Tests --glob "!**/bin/**" --glob "!**/obj/**"`
 
-- [ ] **Step 2: Rewrite each hit that names the tab or its editor** to say *Game Config*, following *Global Constraints*. Leave the two "INI Config slice" mentions
+- [x] **Step 2: Rewrite each hit that names the tab or its editor** to say *Game Config*, following *Global Constraints*. Leave the two "INI Config slice" mentions
   (`Application/Installations/Add/AddInstallationCommand.cs`, `Application/IniConfig/Common/IniErrors.cs`) alone: they name the code slice. Keep each edited line within the
   file's existing width.
 
-- [ ] **Step 3: Verify only the allowed survivors remain.** Run the step 1 command again. Expected: exactly two lines, both containing `INI Config slice`.
+- [x] **Step 3: Verify only the allowed survivors remain.** Run the step 1 command again. Expected: exactly two lines, both containing `INI Config slice`.
 
-- [ ] **Step 4: Build and test the touched projects.** Run `dotnet build` and then `dotnet test` on `Domain`, `Application` and `Desktop` and their unit-test projects, plus
+- [x] **Step 4: Build and test the touched projects.** Run `dotnet build` and then `dotnet test` on `Domain`, `Application` and `Desktop` and their unit-test projects, plus
   `Tests.Architecture`. Expected: no new warnings, all green.
 
-- [ ] **Step 5: Commit.** Stage only the files changed in step 2.
+- [x] **Step 5: Commit.** Stage only the files changed in step 2.
   Message: `docs(📝): call the tab Game Config in comments, docs and logs`
 
 ---

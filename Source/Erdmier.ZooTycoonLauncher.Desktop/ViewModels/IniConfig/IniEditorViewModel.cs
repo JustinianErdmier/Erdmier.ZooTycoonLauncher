@@ -1,7 +1,7 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.ViewModels.IniConfig;
 
 /// <summary>
-///     The INI Config editor (SDD §9.3): a section list, the selected section's form, and a footer whose label shows the active row's help, then the unsaved-changes marker, then
+///     The Game Config editor (SDD §9.3): a section list, the selected section's form, and a footer whose label shows the active row's help, then the unsaved-changes marker, then
 ///     the saved state. Save sends only the dirty rows; Reset reloads from disk.
 /// </summary>
 public sealed partial class IniEditorViewModel : ViewModelBase

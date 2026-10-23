@@ -1,7 +1,7 @@
 namespace Erdmier.ZooTycoonLauncher.Desktop.Models.IniConfig;
 
 /// <summary>
-///     The Friendly layout of the INI Config editor (spec §6): eight pages grouped by purpose, with plain labels, hints and help worded for the value the control shows. It
+///     The Friendly layout of the Game Config editor (spec §6): eight pages grouped by purpose, with plain labels, hints and help worded for the value the control shows. It
 ///     reuses the control kinds, bounds and choice lists of <see cref="IniEditorCatalogue" /> and adds the value conversions of spec §6.3.
 /// </summary>
 public static class IniEditorFriendlyCatalogue

@@ -40,6 +40,30 @@ public sealed class IniConfigTabViewModelTests
     }
 
     [ Fact ]
+    public async Task LazyLoad_DoesNotOverwriteAStyleSetMeanwhile()
+    {
+        TaskCompletionSource<ErrorOr<LauncherOptions>> pending = new();
+
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<LauncherOptions>>(pending.Task));
+        IniEditorTestData.ReturnsForGet(_mediator, IniEditorTestData.Result(("user", "screenwidth", "800")));
+
+        IniConfigTabViewModel tab = CreateTab(IniEditorTestData.Installation(), iniErrorMessage: null);
+
+        Task activation = tab.ActivateAsync(CancellationToken.None);
+
+        // An Options save lands while the tab's own read of the stored style is still in flight.
+        _styleState.Style = IniEditorStyle.Ini;
+
+        pending.SetResult(new LauncherOptions(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, IniEditorStyle.Friendly));
+
+        await activation;
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Ini);
+        ((IniEditorViewModel)tab.Content).Sections[0].IsIniStyle.ShouldBeTrue();
+    }
+
+    [ Fact ]
     public async Task IniConfigTab_ReappliesStyleWhenStateChanges()
     {
         _styleState.Style = IniEditorStyle.Ini;

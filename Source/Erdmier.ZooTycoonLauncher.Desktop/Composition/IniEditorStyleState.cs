@@ -6,6 +6,9 @@ public sealed class IniEditorStyleState : IIniEditorStyleState
     private IniEditorStyle _style = IniEditorStyle.Friendly;
 
     /// <inheritdoc />
+    public int Version { get; private set; }
+
+    /// <inheritdoc />
     public event EventHandler? StyleChanged;
 
     /// <inheritdoc />
@@ -14,6 +17,8 @@ public sealed class IniEditorStyleState : IIniEditorStyleState
         get => _style;
         set
         {
+            Version++;
+
             if (ReferenceEquals(_style, value))
             {
                 return;

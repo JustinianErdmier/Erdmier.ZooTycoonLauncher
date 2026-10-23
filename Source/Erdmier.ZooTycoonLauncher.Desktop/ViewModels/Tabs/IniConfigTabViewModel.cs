@@ -202,6 +202,9 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase, IDisposable
 
         _hasLoadedStyle = true;
 
+        // Anything that sets the state while the query is in flight (an Options save) is newer than what the query reads, so it wins.
+        int versionBeforeQuery = _styleState.Version;
+
         try
         {
             ErrorOr<LauncherOptions> options = await mediator.Send(new GetLauncherOptionsQuery(), cancellationToken);
@@ -209,7 +212,10 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase, IDisposable
             if (!options.IsError
                 && options.Value is { } value)
             {
-                _styleState.Style = value.EditorStyle;
+                if (_styleState.Version == versionBeforeQuery)
+                {
+                    _styleState.Style = value.EditorStyle;
+                }
             }
             else if (options.IsError)
             {

@@ -1,6 +1,6 @@
 namespace Erdmier.ZooTycoonNexus.Application.Common.Abstractions;
 
-/// <summary>Reads and writes <see cref="GameInstallation" /> rows in <c>Launcher.db</c>.</summary>
+/// <summary>Reads and writes <see cref="GameInstallation" /> rows in <c>Nexus.db</c>.</summary>
 public interface IInstallationRepository
 {
     /// <summary>Returns every registered installation, ordered alphabetically (case-insensitive) by name.</summary>

@@ -7,13 +7,13 @@ namespace Erdmier.ZooTycoonNexus.Application.Common.Abstractions;
 /// </remarks>
 public interface IAppStorageLocations
 {
-    /// <summary>The application data root — usually <c>%LOCALAPPDATA%\ZooTycoonLauncher\</c>.</summary>
+    /// <summary>The application data root — usually <c>%LOCALAPPDATA%\ZooTycoonNexus\</c>.</summary>
     string AppDataRoot { get; }
 
     /// <summary>The folder holding launcher and per-installation databases.</summary>
     string DataRoot { get; }
 
-    /// <summary>The fully qualified path to <c>Launcher.db</c>.</summary>
+    /// <summary>The fully qualified path to <c>Nexus.db</c>.</summary>
     string LauncherDatabasePath { get; }
 
     /// <summary>The fully qualified path to the rolling launcher log file.</summary>

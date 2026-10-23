@@ -1,6 +1,6 @@
 namespace Erdmier.ZooTycoonNexus.Infrastructure.Persistence.Launcher.Repositories;
 
-/// <summary>EF Core implementation of <see cref="IInstallationRepository" /> targeting <c>Launcher.db</c>.</summary>
+/// <summary>EF Core implementation of <see cref="IInstallationRepository" /> targeting <c>Nexus.db</c>.</summary>
 public sealed class InstallationRepository : IInstallationRepository
 {
     private readonly LauncherDbContext _context;

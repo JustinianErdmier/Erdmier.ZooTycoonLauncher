@@ -7,7 +7,7 @@
                x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.MainWindow"
                x:DataType="vm:MainWindowViewModel"
                Icon="/Assets/BrandIcons/ZTL_Title-Icon.png"
-               Title="  Zoo Tycoon Launcher  V1.0.0"
+               Title="  Zoo Tycoon Nexus  V1.0.0"
                Width="{Binding WindowWidth}"
                WindowStartupLocation="Manual"
                SizeToContent="Height"

@@ -30,7 +30,7 @@ public sealed partial class LookingForZooTycoonViewModel : ViewModelBase
     private IImmutableList<string> ProgressPhrases { get; } = ImmutableList.Create("Searching for Zoo Tycoon…",
                                                                                    "Locating Zoo Tycoon installation…",
                                                                                    "Verifying Zoo Tycoon files…",
-                                                                                   "Loading Launcher.db…",
+                                                                                   "Loading Nexus.db…",
                                                                                    "Reading launcher settings…",
                                                                                    @"Querying registry: HKLM\…\Zoo Tycoon\1.0",
                                                                                    @"Probing C:\Program Files (x86)\Zoo Tycoon\1.0",

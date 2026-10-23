@@ -1,9 +1,9 @@
 namespace Erdmier.ZooTycoonNexus.Infrastructure.Common.Storage;
 
-/// <summary>Resolves on-disk paths under <c>%LOCALAPPDATA%\ZooTycoonLauncher\</c> (SDD §4.7).</summary>
+/// <summary>Resolves on-disk paths under <c>%LOCALAPPDATA%\ZooTycoonNexus\</c> (SDD §4.7).</summary>
 public sealed class AppStorageLocations : IAppStorageLocations
 {
-    private const string AppFolderName = "ZooTycoonLauncher";
+    private const string AppFolderName = "ZooTycoonNexus";
 
     private readonly IFileSystem _fileSystem;
 
@@ -15,8 +15,8 @@ public sealed class AppStorageLocations : IAppStorageLocations
         AppDataRoot          = _fileSystem.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppFolderName);
         DataRoot             = _fileSystem.Path.Combine(AppDataRoot, path2: "Data");
         LogsRoot             = _fileSystem.Path.Combine(AppDataRoot, path2: "Logs");
-        LauncherDatabasePath = _fileSystem.Path.Combine(DataRoot, path2: "Launcher.db");
-        LauncherLogPath      = _fileSystem.Path.Combine(LogsRoot, path2: "Launcher.log");
+        LauncherDatabasePath = _fileSystem.Path.Combine(DataRoot, path2: "Nexus.db");
+        LauncherLogPath      = _fileSystem.Path.Combine(LogsRoot, path2: "Nexus.log");
 
         _fileSystem.Directory.CreateDirectory(DataRoot);
         _fileSystem.Directory.CreateDirectory(LogsRoot);

@@ -65,7 +65,7 @@ public static class InfrastructureServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>Runs EF Core migrations against <c>Launcher.db</c>. Call once the application starts.</summary>
+    /// <summary>Runs EF Core migrations against <c>Nexus.db</c>. Call once the application starts.</summary>
     /// <param name="serviceProvider">The composed service provider.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public static async Task MigrateLauncherDatabaseAsync(this IServiceProvider serviceProvider, CancellationToken cancellationToken)

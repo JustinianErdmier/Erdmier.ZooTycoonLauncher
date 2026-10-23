@@ -1,6 +1,6 @@
 namespace Erdmier.ZooTycoonNexus.Infrastructure.Persistence.Launcher.Repositories;
 
-/// <summary>EF Core implementation of <see cref="ILauncherSettingsRepository" /> targeting <c>Launcher.db</c>.</summary>
+/// <summary>EF Core implementation of <see cref="ILauncherSettingsRepository" /> targeting <c>Nexus.db</c>.</summary>
 public sealed class LauncherSettingsRepository : ILauncherSettingsRepository
 {
     private readonly LauncherDbContext _context;

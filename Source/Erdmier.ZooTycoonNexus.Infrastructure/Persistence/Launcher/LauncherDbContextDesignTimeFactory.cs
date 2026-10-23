@@ -6,7 +6,7 @@ namespace Erdmier.ZooTycoonNexus.Infrastructure.Persistence.Launcher;
 /// </summary>
 /// <remarks>
 ///     Resolves the connection string from the <c>ZOOLAUNCHER_DESIGNTIME_DB</c> environment variable when set, otherwise falls back to a fixed temp path. Never touches the
-///     user's real <c>Launcher.db</c>.
+///     user's real <c>Nexus.db</c>.
 /// </remarks>
 [ UsedImplicitly ]
 public sealed class LauncherDbContextDesignTimeFactory : IDesignTimeDbContextFactory<LauncherDbContext>
@@ -15,7 +15,7 @@ public sealed class LauncherDbContextDesignTimeFactory : IDesignTimeDbContextFac
     public LauncherDbContext CreateDbContext(string[] args)
     {
         string databasePath = Environment.GetEnvironmentVariable(variable: "ZOOLAUNCHER_DESIGNTIME_DB")
-                              ?? Path.Combine(Path.GetTempPath(), path2: "ZooTycoonLauncher.DesignTime.db");
+                              ?? Path.Combine(Path.GetTempPath(), path2: "ZooTycoonNexus.DesignTime.db");
 
         DbContextOptions<LauncherDbContext> options = new DbContextOptionsBuilder<LauncherDbContext>()
                                                       .UseSqlite($"Data Source={databasePath}")

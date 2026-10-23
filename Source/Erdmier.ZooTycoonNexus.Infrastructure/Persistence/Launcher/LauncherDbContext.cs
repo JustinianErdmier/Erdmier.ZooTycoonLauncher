@@ -1,6 +1,6 @@
 namespace Erdmier.ZooTycoonNexus.Infrastructure.Persistence.Launcher;
 
-/// <summary>EF Core context for <c>Launcher.db</c> — launcher-global settings and the installation registry.</summary>
+/// <summary>EF Core context for <c>Nexus.db</c> — launcher-global settings and the installation registry.</summary>
 public sealed class LauncherDbContext : DbContext
 {
     /// <summary>Initialises a new instance with the supplied options.</summary>

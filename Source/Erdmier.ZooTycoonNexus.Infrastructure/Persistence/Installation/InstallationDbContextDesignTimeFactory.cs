@@ -10,7 +10,7 @@ public sealed class InstallationDbContextDesignTimeFactory : IDesignTimeDbContex
     public InstallationDbContext CreateDbContext(string[] args)
     {
         string databasePath = Environment.GetEnvironmentVariable(variable: "ZOOLAUNCHER_INSTALLATION_DESIGNTIME_DB")
-                              ?? Path.Combine(Path.GetTempPath(), path2: "ZooTycoonLauncher.Installation.DesignTime.db");
+                              ?? Path.Combine(Path.GetTempPath(), path2: "ZooTycoonNexus.Installation.DesignTime.db");
 
         DbContextOptions<InstallationDbContext> options = new DbContextOptionsBuilder<InstallationDbContext>()
                                                           .UseSqlite($"Data Source={databasePath}")

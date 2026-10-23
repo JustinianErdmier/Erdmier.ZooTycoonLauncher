@@ -51,12 +51,12 @@
                     <MenuItem Header="Friendly style"
                               ToggleType="Radio"
                               GroupName="ConfigLayout"
-                              IsChecked="{Binding IsFriendlyStyle, Mode=OneWay}"
+                              IsChecked="{Binding IsFriendlyStyle, Mode=TwoWay}"
                               Command="{Binding ChooseFriendlyStyleCommand}" />
                     <MenuItem Header="INI style"
                               ToggleType="Radio"
                               GroupName="ConfigLayout"
-                              IsChecked="{Binding IsIniStyle, Mode=OneWay}"
+                              IsChecked="{Binding IsIniStyle, Mode=TwoWay}"
                               Command="{Binding ChooseIniStyleCommand}" />
                 </MenuItem>
             </MenuItem>

@@ -74,6 +74,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         // The view model lives as long as the application, as does the style state, so the subscription is never released.
         _styleState.StyleChanged += (_, _) => RaiseStyleMenuChecks();
+
+        RaiseStyleMenuChecks();
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
@@ -204,21 +206,34 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ RelayCommand ]
     private Task OpenOptionsAsync() => _dialogs.ShowOptionsAsync();
 
-    /// <summary>View → Config layout → Friendly style: whether the INI editor style in force is <see cref="IniEditorStyle.Friendly" />. Follows changes made anywhere, such as Options.</summary>
-    public bool IsFriendlyStyle => _styleState.Style == IniEditorStyle.Friendly;
+    /// <summary>
+    ///     View → Config layout → Friendly style: whether the menu item is checked. Bound two-way because the radio item writes its own check on click; it follows the INI editor
+    ///     style in force, including changes made elsewhere such as Options.
+    /// </summary>
+    [ ObservableProperty ]
+    public partial bool IsFriendlyStyle { get; set; }
 
-    /// <summary>View → Config layout → INI style: whether the INI editor style in force is <see cref="IniEditorStyle.Ini" />. Follows changes made anywhere, such as Options.</summary>
-    public bool IsIniStyle => _styleState.Style == IniEditorStyle.Ini;
+    /// <summary>View → Config layout → INI style: whether the menu item is checked. Bound two-way like <see cref="IsFriendlyStyle" />.</summary>
+    [ ObservableProperty ]
+    public partial bool IsIniStyle { get; set; }
 
-    [ RelayCommand ]
+    /// <summary><see langword="true" /> while a style choice is being stored; both style commands are disabled meanwhile so a second choice is not lost.</summary>
+    [ ObservableProperty ]
+    [ NotifyCanExecuteChangedFor(nameof(ChooseFriendlyStyleCommand)) ]
+    [ NotifyCanExecuteChangedFor(nameof(ChooseIniStyleCommand)) ]
+    public partial bool IsStyleSaving { get; set; }
+
+    [ RelayCommand(CanExecute = nameof(CanChooseStyle)) ]
     private Task ChooseFriendlyStyleAsync(CancellationToken cancellationToken) => ChooseStyleAsync(IniEditorStyle.Friendly, cancellationToken);
 
-    [ RelayCommand ]
+    [ RelayCommand(CanExecute = nameof(CanChooseStyle)) ]
     private Task ChooseIniStyleAsync(CancellationToken cancellationToken) => ChooseStyleAsync(IniEditorStyle.Ini, cancellationToken);
 
+    private bool CanChooseStyle() => !IsStyleSaving;
+
     // View → Config layout (spec §6.6): stores the chosen style through the same load-then-save path as Options, changing only the style, and applies it to the shared state
-    // only once the save has succeeded. A failed save is reported and changes nothing. The menu's radio items toggle themselves on click, so the checks are re-raised
-    // afterwards to snap them back to the real style whenever it did not change.
+    // only once the save has succeeded. A failed save is reported and changes nothing. A radio item writes its own check on click, so afterwards both check properties are
+    // assigned from the real style: the binding then sees a changed value and pushes it back, which re-raising an unchanged value would not do.
     private async Task ChooseStyleAsync(IniEditorStyle style, CancellationToken cancellationToken)
     {
         if (_styleState.Style == style)
@@ -227,6 +242,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
             return;
         }
+
+        IsStyleSaving = true;
 
         try
         {
@@ -264,14 +281,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
         finally
         {
+            IsStyleSaving = false;
+
             RaiseStyleMenuChecks();
         }
     }
 
     private void RaiseStyleMenuChecks()
     {
-        OnPropertyChanged(nameof(IsFriendlyStyle));
-        OnPropertyChanged(nameof(IsIniStyle));
+        IsFriendlyStyle = _styleState.Style == IniEditorStyle.Friendly;
+        IsIniStyle      = _styleState.Style == IniEditorStyle.Ini;
     }
 
     // File → "Exit" (SDD §9.10). Asks about unsaved INI edits first; on approval marks the close as confirmed so MainWindow's close handler does not ask again.

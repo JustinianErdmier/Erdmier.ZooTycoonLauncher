@@ -65,6 +65,8 @@ public sealed class MainWindowViewModelStyleMenuTests
                              Arg.Any<CancellationToken>());
 
         _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
+        window.IsFriendlyStyle.ShouldBeTrue();
+        window.IsIniStyle.ShouldBeFalse();
     }
 
     [ Fact ]
@@ -75,9 +77,9 @@ public sealed class MainWindowViewModelStyleMenuTests
 
         MainWindowViewModel window = CreateWindow();
 
-        List<string?> raised = [];
-
-        window.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+        // The radio item writes its own check on click, through the two-way binding.
+        window.IsIniStyle      = true;
+        window.IsFriendlyStyle = false;
 
         await window.ChooseIniStyleCommand.ExecuteAsync(parameter: null);
 
@@ -85,8 +87,73 @@ public sealed class MainWindowViewModelStyleMenuTests
 
         _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
         window.IsFriendlyStyle.ShouldBeTrue();
-        raised.ShouldContain(nameof(MainWindowViewModel.IsFriendlyStyle));
-        raised.ShouldContain(nameof(MainWindowViewModel.IsIniStyle));
+        window.IsIniStyle.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task ChooseStyle_QueryError_ShowsErrorSavesNothingAndSnapsBack()
+    {
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<LauncherOptions>>(Error.Failure(code: "Settings.ReadFailed", description: "unreadable")));
+
+        MainWindowViewModel window = CreateWindow();
+
+        window.IsIniStyle      = true;
+        window.IsFriendlyStyle = false;
+
+        await window.ChooseIniStyleCommand.ExecuteAsync(parameter: null);
+
+        await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync("Cannot Save Options", "unreadable");
+        await _mediator.DidNotReceive().Send(Arg.Any<SaveLauncherOptionsCommand>(), Arg.Any<CancellationToken>());
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
+        window.IsFriendlyStyle.ShouldBeTrue();
+        window.IsIniStyle.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task ChooseStyle_UnexpectedException_ShowsGenericErrorAndSnapsBack()
+    {
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<LauncherOptions>>>(_ => throw new InvalidOperationException("boom"));
+
+        MainWindowViewModel window = CreateWindow();
+
+        window.IsIniStyle      = true;
+        window.IsFriendlyStyle = false;
+
+        await window.ChooseIniStyleCommand.ExecuteAsync(parameter: null);
+
+        await _dialogs.Received(requiredNumberOfCalls: 1).ShowErrorAsync("Cannot Save Options", InstallationDialogMessages.UnexpectedFailure);
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
+        window.IsFriendlyStyle.ShouldBeTrue();
+        window.IsIniStyle.ShouldBeFalse();
+    }
+
+    [ Fact ]
+    public async Task ChooseStyle_WhileASaveIsInFlight_DisablesBothCommands()
+    {
+        ReturnsStored(new LauncherOptions(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, IniEditorStyle.Friendly));
+
+        TaskCompletionSource<ErrorOr<Success>> pending = new();
+
+        _mediator.Send(Arg.Any<SaveLauncherOptionsCommand>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<Success>>(pending.Task));
+
+        MainWindowViewModel window = CreateWindow();
+
+        Task running = window.ChooseIniStyleCommand.ExecuteAsync(parameter: null);
+
+        window.ChooseIniStyleCommand.CanExecute(parameter: null).ShouldBeFalse();
+        window.ChooseFriendlyStyleCommand.CanExecute(parameter: null).ShouldBeFalse();
+
+        pending.SetResult(Result.Success);
+
+        await running;
+
+        window.ChooseIniStyleCommand.CanExecute(parameter: null).ShouldBeTrue();
+        window.ChooseFriendlyStyleCommand.CanExecute(parameter: null).ShouldBeTrue();
     }
 
     [ Fact ]

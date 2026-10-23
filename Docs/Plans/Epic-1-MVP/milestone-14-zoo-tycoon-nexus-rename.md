@@ -200,6 +200,6 @@ git grep -n -i "Zoo Tycoon Launcher\|ZooTycoonLauncher\|Launcher\.db\|Launcher\.
 
 - [x] **Step 7: Commit.** Message: `docs(📝): rename the app to Zoo Tycoon Nexus in the SDD, CLAUDE.md and current docs`
 
-- [ ] **Step 8: Close the ledger.** Clean it into its final shape (rulings with costs, plan defects, outstanding items grouped by when to revisit — including, for the
+- [x] **Step 8: Close the ledger.** Clean it into its final shape (rulings with costs, plan defects, outstanding items grouped by when to revisit — including, for the
   maintainer after the merge: move and rename the old data files, rename the local checkout folder, reopen Rider on `Erdmier.ZooTycoonNexus.slnx` — and incidents), tick
   this plan's boxes, and commit. Message: `docs(📝): close the milestone 14 ledger and plan`

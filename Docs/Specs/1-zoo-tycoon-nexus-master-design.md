@@ -70,7 +70,7 @@
 
 ### 1.1 Purpose of this document
 
-This document specifies the design of the **Zoo Tycoon Nexus**, a native Windows desktop application that discovers, configures, and launches **Zoo Tycoon (2001)** game  
+This document specifies the design of **Zoo Tycoon Nexus**, a native Windows desktop application that discovers, configures, and launches **Zoo Tycoon (2001)** game  
 installations. It is intended to be an implementation-ready reference covering architecture, the domain and data models, the principal workflows, the supporting algorithms, the  
 user interface, and the phased delivery plan.
 
@@ -159,7 +159,7 @@ predicate is a Phase 0 deliverable ([Section 7.9](#79-screen-modes-calculation))
 
 ### 2.4 Windows-only is deliberate, not provisional
 
-The Zoo Tycoon Nexus is **permanently Windows-only**. The game binary is  
+Zoo Tycoon Nexus is **permanently Windows-only**. The game binary is  
 a 32-bit Windows executable from 2001; Avalonia's cross-platform UI capability is incidental, retained only because Classic.Avalonia (the chosen theme library) builds on Avalonia
 
 > See [Section 12](#12-cross-platform-readiness).

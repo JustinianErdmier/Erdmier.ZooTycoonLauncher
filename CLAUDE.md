@@ -41,7 +41,8 @@ sharing the same `milestone-<N>-<feature-name>` stem. Number milestones in creat
   each screen's exact layout and copy; read them when specifying or building a view. It is also captured in
   [`Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif`](./Docs/UserInterfaceDesign/ZooTycoonLauncherHiFiUIPrototype.gif) and the `HiFiMockupScreenshots/`
   beside it, with recurring UI patterns documented in [`Docs/UserInterfaceDesign/conventions.md`](./Docs/UserInterfaceDesign/conventions.md). The SDD (§9), not the
-  prototype, is the contract. The imported copy is a snapshot: re-import a file from the Claude Design project when the live prototype has moved on.
+  prototype, is the contract. The imported copy is a snapshot: re-import a file from the Claude Design project when the live prototype has moved on. The snapshot predates
+  the rename, so read its *Zoo Tycoon Launcher* copy (titles, About, Help, `Launcher.db`) as *Zoo Tycoon Nexus* / `Nexus.db`.
 - **Manual test plan:** [`Docs/TestPlans/manual-end-to-end-tests.md`](./Docs/TestPlans/manual-end-to-end-tests.md).
 
 ## Executing a plan

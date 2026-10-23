@@ -31,6 +31,12 @@ storage and the user-facing name, and Task 3 updated the documents and closed th
 - **R9 (Task 3):** the SDD's note that the Ref build kept its config at `%APPDATA%\ZooTycoonLauncher\launcher.config` was left as it is. It names the prototype's real, historical
   folder, so renaming it would make the sentence false. Cost if wrong: none.
 
+## Task 1 outcome
+
+Commit `9952116`. Every project, folder, `.csproj`, namespace and the `.slnx` / `.idea` folder was renamed with history kept (git sees 590 renames). Test counts: Domain 140,
+Application 205, Infrastructure integration 62, Desktop 373, Architecture 27, with 0 warnings. The `OneTypePerFileTests` mutation proof: a planted second type failed the test,
+then was reverted. The controller's and reviewer's reverse-rename check found that the ledger's `.slnx` entry was the only non-mechanical change.
+
 ## Task 2 outcome
 
 Commit `a637a8d`. Tests written first and seen failing (old folder, `Launcher.db`/`Launcher.log`, `Zoo Tycoon Launcher` titles), then green: Infrastructure integration 64,
@@ -61,16 +67,28 @@ project prefix, storage folder and file names; the SDD gains revision 1.18 and a
 
 ## Incidents
 
-_None._
+- **Task 2's app check wrote to the real profile (expected side effect).** It created `%LOCALAPPDATA%\ZooTycoonNexus\` (`Nexus.db`, its `-wal` / `-shm`, a log) in the
+  maintainer's real profile, and in the Claude package's redirected `LocalCache`. Step 1 of the data-move item under *Outstanding items* clears it.
 
 ## Outstanding items
 
 For the maintainer, after the merge:
 
-- Move and rename the old data files: the app does not migrate them. `Launcher.db` becomes `Nexus.db` under `%LOCALAPPDATA%\ZooTycoonNexus\Data\`, and `Launcher*.log` becomes
-  `Nexus*.log` under `Logs\`, if the history is wanted. Otherwise the app starts fresh, and the old `%LOCALAPPDATA%\ZooTycoonLauncher\` folder can be deleted.
+- Move the old data files, if the history is wanted (the app does not migrate them; otherwise it starts fresh and the old `%LOCALAPPDATA%\ZooTycoonLauncher\` folder can be
+  deleted). In this order:
+  1. With the app closed, delete the `%LOCALAPPDATA%\ZooTycoonNexus\` folder that this milestone's test run created (it holds a fresh `Nexus.db` and possibly `-wal` /
+     `-shm` files; dropping the old database in beside another database's `-wal` risks corruption).
+  2. Rename (or copy) the whole `%LOCALAPPDATA%\ZooTycoonLauncher\` folder to `%LOCALAPPDATA%\ZooTycoonNexus\`.
+  3. Inside it, rename `Data\Launcher.db` to `Data\Nexus.db`, together with any `Launcher.db-wal` / `Launcher.db-shm` (or check none exist).
+  4. Leave every `Data\{installationId}.db` and `Logs\Installations\` exactly as they are — the registry in `Nexus.db` points at them; moving only `Launcher.db` would
+     silently start fresh per-installation history.
+  5. Optionally rename old `Logs\Launcher*.log` files to `Nexus*.log`.
 - Rename the local checkout folder `D:\Source\Personal\Erdmier.ZooTycoonLauncher` to match the repository, `Erdmier.ZooTycoonNexus`.
 - Reopen Rider on `Erdmier.ZooTycoonNexus.slnx`.
 - Rename any local `ZOOLAUNCHER_DESIGNTIME_DB` or `ZOOLAUNCHER_INSTALLATION_DESIGNTIME_DB` environment variables to the `ZOONEXUS_` names (R5).
 
-No item is outstanding for a later milestone.
+For a later milestone:
+
+- The brand artwork still reads "ZTL" (`Source/Erdmier.ZooTycoonNexus.Desktop/Assets/Images/ZTL_Main-Logo.png` and the `ZTL_*` asset names used by `MainWindow.axaml` and
+  the prompt views). New art and asset names are for when the §9.9 About dialogue is built.
+- Rename the product in the Claude Design project and re-import the prototype snapshot.

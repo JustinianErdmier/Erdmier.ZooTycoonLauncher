@@ -28,21 +28,40 @@ internal sealed class IniEditorHarness
     /// <summary>The editor view under test.</summary>
     public IniEditorView View { get; }
 
-    /// <summary>The editor view model, loaded with <c>fullscreen = 1</c> and <c>screenwidth = 800</c>.</summary>
+    /// <summary>The editor view model, loaded with the values passed to <see cref="Show" />.</summary>
     public IniEditorViewModel Editor { get; }
+
+    /// <summary>Presses, moves and releases the left button on <paramref name="target" />, dragging from its centre by <paramref name="deltaX" /> pixels.</summary>
+    /// <param name="target">The control to drag.</param>
+    /// <param name="deltaX">The horizontal distance to drag.</param>
+    public void Drag(Visual target, double deltaX)
+    {
+        TopLevel topLevel = TopLevel.GetTopLevel(target).ShouldNotBeNull();
+
+        Point start = target.TranslatePoint(new Point(target.Bounds.Width / 2, target.Bounds.Height / 2), topLevel).ShouldNotBeNull();
+
+        topLevel.MouseMove(start);
+        topLevel.MouseDown(start, MouseButton.Left);
+        topLevel.MouseMove(new Point(start.X + deltaX, start.Y));
+        topLevel.MouseUp(new Point(start.X + deltaX, start.Y), MouseButton.Left);
+
+        Dispatcher.UIThread.RunJobs();
+    }
 
     /// <summary>The element that has keyboard focus, or <see langword="null" /> when nothing has.</summary>
     public IInputElement? FocusedElement => Window.FocusManager?.GetFocusedElement();
 
     /// <summary>Shows the editor in a new headless window and lets it lay out.</summary>
     /// <param name="style">The editor style; the INI style by default, which the focus tests drive by key.</param>
+    /// <param name="values">The file's values; <c>fullscreen = 1</c> and <c>screenwidth = 800</c> by default.</param>
     /// <returns>The harness.</returns>
-    public static IniEditorHarness Show(IniEditorStyle? style = null)
+    public static IniEditorHarness Show(IniEditorStyle? style = null, (string Section, string Key, string? Value)[]? values = null)
     {
-        style ??= IniEditorStyle.Ini;
+        style  ??= IniEditorStyle.Ini;
+        values ??= [ ("user", "fullscreen", "1"), ("user", "screenwidth", "800") ];
 
         IniEditorViewModel editor = new(Guid.CreateVersion7(), Substitute.For<IMediator>(), Substitute.For<IDialogService>(),
-                                        IniEditorTestData.Result(("user", "fullscreen", "1"), ("user", "screenwidth", "800")),
+                                        IniEditorTestData.Result(values),
                                         NullLogger<IniEditorViewModel>.Instance, style);
 
         IniEditorView view = new() { DataContext = editor };

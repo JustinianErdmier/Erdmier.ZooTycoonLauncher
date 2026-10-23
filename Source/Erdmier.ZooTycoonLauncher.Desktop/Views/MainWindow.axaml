@@ -14,9 +14,7 @@
                CanMaximize="False"
                CanMinimize="False"
                CanResize="False">
-
-    <!--The Classic theme's caption-button template doesn't honour CanMinimize / CanMaximize at the property level — only :fullscreen and :dialog:cantresize.-->
-    <!--The template partial selectors below collapse the Minimise and Restore buttons explicitly, so the title bar renders with only a close button.-->
+    <!--The Classic theme's caption buttons ignore CanMinimize / CanMaximize (only :fullscreen and :dialog:cantresize apply), so the selectors below collapse them explicitly.-->
     <ClassicWindow.Styles>
         <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
             <Setter Property="IsVisible"
@@ -27,40 +25,45 @@
                     Value="False" />
         </Style>
     </ClassicWindow.Styles>
-
     <ClassicWindow.Resources>
         <converters:ErrorToBrushConverter x:Key="ErrorToBrush" />
     </ClassicWindow.Resources>
-
     <DockPanel>
         <Menu DockPanel.Dock="Top"
               IsVisible="{Binding !IsBooting}"
               Margin="{tokens:Space Horizontal=GapLabel, Vertical=GapSmallest}">
             <MenuItem Header="File">
-                <MenuItem Header="Open Installation…" Command="{Binding OpenInstallationPickerCommand}" />
-
-                <MenuItem Header="Installation Manager…" Command="{Binding ManageInstallationsCommand}" />
-
-                <MenuItem Header="Close Installation" Command="{Binding CloseInstallationCommand}" />
-
+                <MenuItem Header="Open Installation…"
+                          Command="{Binding OpenInstallationPickerCommand}" />
+                <MenuItem Header="Installation Manager…"
+                          Command="{Binding ManageInstallationsCommand}" />
+                <MenuItem Header="Close Installation"
+                          Command="{Binding CloseInstallationCommand}" />
                 <Separator />
-
-                <MenuItem Header="O_ptions…" Command="{Binding OpenOptionsCommand}" />
-
+                <MenuItem Header="O_ptions…"
+                          Command="{Binding OpenOptionsCommand}" />
                 <Separator />
-
-                <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
+                <MenuItem Header="Exit"
+                          Command="{Binding ExitCommand}" />
+            </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem Header="Config layout">
+                    <MenuItem Header="Friendly style"
+                              ToggleType="Radio"
+                              GroupName="ConfigLayout"
+                              IsChecked="{Binding IsFriendlyStyle, Mode=OneWay}"
+                              Command="{Binding ChooseFriendlyStyleCommand}" />
+                    <MenuItem Header="INI style"
+                              ToggleType="Radio"
+                              GroupName="ConfigLayout"
+                              IsChecked="{Binding IsIniStyle, Mode=OneWay}"
+                              Command="{Binding ChooseIniStyleCommand}" />
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="Help">
-                <MenuItem Header="Contents" />
-
-                <Separator />
-
-                <MenuItem Header="About" />
+                <MenuItem Header="Contents" /> <Separator /> <MenuItem Header="About" />
             </MenuItem>
         </Menu>
-
-        <!-- <Separator DockPanel.Dock="Top" /> -->
 
         <ContentControl Content="{Binding ActiveContent}"
                         DockPanel.Dock="Top"
@@ -72,7 +75,6 @@
             <commonControls:StatusBarItem commonControls:StatusBar.Size="90*">
                 <TextBlock Text="{Binding StatusMessagePrimaryText}" />
             </commonControls:StatusBarItem>
-
             <commonControls:StatusBarItem commonControls:StatusBar.Size="10*">
                 <TextBlock>V1.0.0</TextBlock>
             </commonControls:StatusBarItem>
@@ -85,7 +87,6 @@
             <commonControls:StatusBarItem commonControls:StatusBar.Size="70*">
                 <TextBlock Text="{Binding StatusMessagePrimaryText}" />
             </commonControls:StatusBarItem>
-
             <commonControls:StatusBarItem commonControls:StatusBar.Size="20*">
                 <TextBlock Foreground="{Binding IsStatusError, Converter={StaticResource ErrorToBrush}}"
                            Text="{Binding StatusMessageSecondaryText}" />

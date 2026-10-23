@@ -11,6 +11,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private const double BootingWindowWidth = 480;
 
+    private const string SaveOptionsFailedTitle = "Cannot Save Options";
+
     private readonly IDialogService _dialogs;
 
     private readonly ILogger<InstallationGridViewModel> _gridLogger;
@@ -69,6 +71,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _iniEditorLogger      = iniEditorLogger;
         _iniPlaceholderLogger = iniPlaceholderLogger;
         _styleState           = styleState;
+
+        // The view model lives as long as the application, as does the style state, so the subscription is never released.
+        _styleState.StyleChanged += (_, _) => RaiseStyleMenuChecks();
     }
 
     /// <summary>The currently active state or content view model; drives the main window's <c>ContentControl</c> via <see cref="Composition.ViewLocator" />.</summary>
@@ -198,6 +203,76 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // changes nothing about the open installation.
     [ RelayCommand ]
     private Task OpenOptionsAsync() => _dialogs.ShowOptionsAsync();
+
+    /// <summary>View → Config layout → Friendly style: whether the INI editor style in force is <see cref="IniEditorStyle.Friendly" />. Follows changes made anywhere, such as Options.</summary>
+    public bool IsFriendlyStyle => _styleState.Style == IniEditorStyle.Friendly;
+
+    /// <summary>View → Config layout → INI style: whether the INI editor style in force is <see cref="IniEditorStyle.Ini" />. Follows changes made anywhere, such as Options.</summary>
+    public bool IsIniStyle => _styleState.Style == IniEditorStyle.Ini;
+
+    [ RelayCommand ]
+    private Task ChooseFriendlyStyleAsync(CancellationToken cancellationToken) => ChooseStyleAsync(IniEditorStyle.Friendly, cancellationToken);
+
+    [ RelayCommand ]
+    private Task ChooseIniStyleAsync(CancellationToken cancellationToken) => ChooseStyleAsync(IniEditorStyle.Ini, cancellationToken);
+
+    // View → Config layout (spec §6.6): stores the chosen style through the same load-then-save path as Options, changing only the style, and applies it to the shared state
+    // only once the save has succeeded. A failed save is reported and changes nothing. The menu's radio items toggle themselves on click, so the checks are re-raised
+    // afterwards to snap them back to the real style whenever it did not change.
+    private async Task ChooseStyleAsync(IniEditorStyle style, CancellationToken cancellationToken)
+    {
+        if (_styleState.Style == style)
+        {
+            RaiseStyleMenuChecks();
+
+            return;
+        }
+
+        try
+        {
+            ErrorOr<LauncherOptions> loaded = await _mediator.Send(new GetLauncherOptionsQuery(), cancellationToken);
+
+            if (loaded.IsError)
+            {
+                _logger.LogWarning("Failed to read the launcher options: {Error}", loaded.FirstError.Description);
+
+                await _dialogs.ShowErrorAsync(SaveOptionsFailedTitle, loaded.FirstError.Description);
+
+                return;
+            }
+
+            LauncherOptions options = loaded.Value;
+
+            ErrorOr<Success> saved = await _mediator.Send(new SaveLauncherOptionsCommand(options.StartupPreference, options.CloseAfterGameLaunch, style), cancellationToken);
+
+            if (saved.IsError)
+            {
+                _logger.LogWarning("Failed to save the launcher options: {Error}", saved.FirstError.Description);
+
+                await _dialogs.ShowErrorAsync(SaveOptionsFailedTitle, saved.FirstError.Description);
+
+                return;
+            }
+
+            _styleState.Style = style;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "Failed to save the launcher options.");
+
+            await _dialogs.ShowErrorAsync(SaveOptionsFailedTitle, InstallationDialogMessages.UnexpectedFailure);
+        }
+        finally
+        {
+            RaiseStyleMenuChecks();
+        }
+    }
+
+    private void RaiseStyleMenuChecks()
+    {
+        OnPropertyChanged(nameof(IsFriendlyStyle));
+        OnPropertyChanged(nameof(IsIniStyle));
+    }
 
     // File → "Exit" (SDD §9.10). Asks about unsaved INI edits first; on approval marks the close as confirmed so MainWindow's close handler does not ask again.
     [ RelayCommand ]

@@ -1,0 +1,100 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels.Boot"
+             x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.Boot.NoGameInstallationFoundView"
+             x:DataType="vm:NoGameInstallationFoundViewModel">
+    <StackPanel Orientation="Vertical"
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
+            <Image DockPanel.Dock="Left"
+                   Classes="IconLarge IconBesideBody"
+                   RenderOptions.BitmapInterpolationMode="None"
+                   Source="/Assets/Win95Icons/error32.gif"
+                   VerticalAlignment="Center" />
+
+            <Button Command="{Binding AddInstallationCommand}"
+                    DockPanel.Dock="Right"
+                    IsDefault="True"
+                    VerticalAlignment="Center">
+                Add Installation
+            </Button>
+
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
+                <TextBlock FontWeight="{StaticResource FontWeightHeading}"
+                           Text="No Game Installation Found" />
+
+                <TextBlock TextWrapping="Wrap">The auto-locate searched the Windows registry, Program Files, and the previously known directory (if applicable), but did not find a zoo.exe file. Add an installation by pointing the launcher at a folder containing the game.</TextBlock>
+            </StackPanel>
+        </DockPanel>
+
+        <StackPanel IsVisible="{Binding HasLocatedPath}"
+                    Orientation="Vertical"
+                    Spacing="{StaticResource GapLabel}">
+            <TextBlock TextWrapping="Wrap">A potential candidate has been located at the following path:</TextBlock>
+
+            <TextBox IsReadOnly="True"
+                     Text="{Binding LocatedCandidatePath}" />
+        </StackPanel>
+
+        <!-- TODO: Build grid dynamically and display actual values  -->
+        <HeaderedContentControl Header="Auto-locate trail"
+                                Padding="{StaticResource GroupBoxPadding}">
+            <Grid ColumnDefinitions="25, 75*, 25*"
+                  RowDefinitions="*, *, *, *"
+                  RowSpacing="{StaticResource GapRelated}">
+                <TextBlock Grid.Column="0"
+                           Grid.Row="0"
+                           Text="×" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="0"
+                           Text="HKLM\SOFTWARE\Microsoft Games\Zoo Tycoon\1.0" />
+
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                           Grid.Column="2"
+                           Grid.Row="0"
+                           Text="no value" />
+
+                <TextBlock Grid.Column="0"
+                           Grid.Row="1"
+                           Text="×" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="1"
+                           Text="C:\Program Files (x86)\Microsoft Games\Zoo Tycoon\" />
+
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                           Grid.Column="2"
+                           Grid.Row="1"
+                           Text="directory missing" />
+
+                <TextBlock Grid.Column="0"
+                           Grid.Row="2"
+                           Text="×" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="2"
+                           Text="C:\Program Files\Microsoft Games\Zoo Tycoon\" />
+
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                           Grid.Column="2"
+                           Grid.Row="2"
+                           Text="directory missing" />
+
+                <TextBlock Grid.Column="0"
+                           Grid.Row="3"
+                           Text="×" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="3"
+                           Text="Last-known path…" />
+
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                           Grid.Column="2"
+                           Grid.Row="3"
+                           Text="empty" />
+            </Grid>
+        </HeaderedContentControl>
+    </StackPanel>
+</UserControl>

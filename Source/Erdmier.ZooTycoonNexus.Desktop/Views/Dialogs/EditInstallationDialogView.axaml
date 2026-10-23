@@ -1,0 +1,53 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonNexus.Desktop.Styles"
+               xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels.Dialogs"
+               xmlns:common="using:Erdmier.ZooTycoonNexus.Desktop.Views.Common"
+               xmlns:layout="clr-namespace:Erdmier.ZooTycoonNexus.Desktop.Views.Layout"
+               x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.Dialogs.EditInstallationDialogView"
+               x:DataType="vm:EditInstallationDialogViewModel"
+               Icon="/Assets/Win95Icons/foldercatalog16.ico"
+               Title="  Edit Installation"
+               Width="420"
+               SizeToContent="Height"
+               CanResize="False"
+               WindowStartupLocation="CenterOwner"
+               ShowInTaskbar="False">
+    <StackPanel Margin="{tokens:Space MarginDialog}"
+                Orientation="Vertical"
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
+            <Image DockPanel.Dock="Left"
+                   Classes="IconLarge IconBesideBody"
+                   RenderOptions.BitmapInterpolationMode="None"
+                   Source="/Assets/Win95Icons/foldercatalog16.ico"
+                   VerticalAlignment="Top" />
+
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
+                <TextBlock FontWeight="{StaticResource FontWeightHeading}"
+                           Text="Edit installation" />
+
+                <TextBlock Classes="MutedText"
+                           Text="Rename this installation or change which one is the launcher's default."
+                           TextWrapping="Wrap" />
+
+                <common:InstallationFormView DataContext="{Binding Form}"
+                                             Margin="{tokens:Space Top=GapRelated}" />
+
+                <layout:UniformStack HorizontalAlignment="Right"
+                                     Margin="{tokens:Space Top=GapUnrelated}"
+                                     Spacing="{StaticResource GapRelated}">
+                    <Button Command="{Binding SaveCommand}"
+                            Content="Save"
+                            IsDefault="True"
+                            Classes="DialogButton" />
+                    <Button Command="{Binding CancelCommand}"
+                            Content="Cancel"
+                            IsCancel="True"
+                            Classes="DialogButton" />
+                </layout:UniformStack>
+            </StackPanel>
+        </DockPanel>
+    </StackPanel>
+</ClassicWindow>

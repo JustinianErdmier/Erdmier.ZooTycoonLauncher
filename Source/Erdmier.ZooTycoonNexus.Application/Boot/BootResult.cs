@@ -1,0 +1,20 @@
+namespace Erdmier.ZooTycoonNexus.Application.Boot;
+
+/// <summary>Result returned by <see cref="BootHandler" /> after running the SDD §7.1.1 state machine.</summary>
+/// <param name="Outcome">The terminal state.</param>
+/// <param name="ActiveInstallation">The installation to display, or <see langword="null" /> when none was resolved.</param>
+/// <param name="LocatedCandidatePath">
+///     Non-null when <see cref="BootOutcome.NoGameInstallationFound" /> is returned because <see cref="IInstallationLocator" /> found a candidate
+///     directory but the Add Installation dialogue is deferred; surfaces the discovery to the user.
+/// </param>
+/// <param name="IniErrorMessage">
+///     Non-null when the outcome is <see cref="BootOutcome.CannotPlay" /> because synchronising <c>zoo.ini</c> failed; the user-readable error description, shown on both tabs.
+/// </param>
+/// <param name="WriteAccess">
+///     Whether the installation folder and <c>zoo.ini</c> can be written, probed when <c>zoo.exe</c> exists; <see cref="InstallationWriteAccess.Unknown" /> otherwise.
+/// </param>
+public sealed record BootResult(BootOutcome             Outcome,
+                                InstallationSummary?    ActiveInstallation,
+                                string?                 LocatedCandidatePath,
+                                string?                 IniErrorMessage = null,
+                                InstallationWriteAccess WriteAccess = InstallationWriteAccess.Unknown);

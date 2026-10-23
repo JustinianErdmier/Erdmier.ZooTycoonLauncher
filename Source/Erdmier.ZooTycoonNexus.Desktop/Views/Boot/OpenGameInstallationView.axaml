@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tokens="using:Erdmier.ZooTycoonNexus.Desktop.Styles"
+             xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels.Boot"
+             xmlns:common="using:Erdmier.ZooTycoonNexus.Desktop.Views.Common"
+             xmlns:layout="clr-namespace:Erdmier.ZooTycoonNexus.Desktop.Views.Layout"
+             x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.Boot.OpenGameInstallationView"
+             x:DataType="vm:OpenGameInstallationViewModel">
+    <StackPanel Orientation="Vertical"
+                Spacing="{StaticResource GapUnrelated}">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
+            <Image DockPanel.Dock="Left"
+                   Classes="IconLarge IconBesideBody"
+                   RenderOptions.BitmapInterpolationMode="None"
+                   Source="/Assets/Win95Icons/foldercatalog16.ico"
+                   VerticalAlignment="Center" />
+
+            <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource GapRelated}">
+                <TextBlock FontWeight="{StaticResource FontWeightHeading}"
+                           Text="Open Game Installation" />
+
+                <!--TODO: The "No Installation" needs to be monospaced, and "Open" needs to be bold.-->
+                <TextBlock TextWrapping="Wrap">Your startup preference is set to No Installation. Please choose an installation below and click Open, or add a new one.</TextBlock>
+            </StackPanel>
+        </DockPanel>
+
+        <common:InstallationGridView DataContext="{Binding Grid}"
+                                     DoubleTapped="OnGridDoubleTapped"
+                                     Height="150" />
+
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}"
+                   LastChildFill="False">
+            <Button Command="{Binding OpenCommand}"
+                    Content="Open"
+                    DockPanel.Dock="Right"
+                    IsDefault="True"
+                    Classes="DialogButton" />
+
+            <layout:UniformStack DockPanel.Dock="Left"
+                                 Spacing="{StaticResource GapRelated}">
+                <Button Command="{Binding AddCommand}"
+                        Content="Add…"
+                        Padding="{tokens:Space Horizontal=GapUnrelated}" />
+
+                <Button Command="{Binding InfoCommand}"
+                        Content="Info"
+                        Padding="{tokens:Space Horizontal=GapUnrelated}" />
+
+                <Button Command="{Binding ManageCommand}"
+                        Content="Manage…"
+                        Padding="{tokens:Space Horizontal=GapUnrelated}" />
+            </layout:UniformStack>
+        </DockPanel>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,100 @@
+<ClassicWindow xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:tokens="using:Erdmier.ZooTycoonNexus.Desktop.Styles"
+               xmlns:converters="using:Erdmier.ZooTycoonNexus.Desktop.Converters"
+               xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels"
+               xmlns:commonControls="clr-namespace:Classic.CommonControls;assembly=Classic.CommonControls.Avalonia"
+               x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.MainWindow"
+               x:DataType="vm:MainWindowViewModel"
+               Icon="/Assets/BrandIcons/ZTL_Title-Icon.png"
+               Title="  Zoo Tycoon Launcher  V1.0.0"
+               Width="{Binding WindowWidth}"
+               WindowStartupLocation="Manual"
+               SizeToContent="Height"
+               CanMaximize="False"
+               CanMinimize="False"
+               CanResize="False">
+    <!--The Classic theme's caption buttons ignore CanMinimize / CanMaximize (only :fullscreen and :dialog:cantresize apply), so the selectors below collapse them explicitly.-->
+    <ClassicWindow.Styles>
+        <Style Selector="CaptionButtons /template/ Button#PART_MinimizeButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+        <Style Selector="CaptionButtons /template/ Button#PART_RestoreButton">
+            <Setter Property="IsVisible"
+                    Value="False" />
+        </Style>
+    </ClassicWindow.Styles>
+    <ClassicWindow.Resources>
+        <converters:ErrorToBrushConverter x:Key="ErrorToBrush" />
+    </ClassicWindow.Resources>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top"
+              IsVisible="{Binding !IsBooting}"
+              Margin="{tokens:Space Horizontal=GapLabel, Vertical=GapSmallest}">
+            <MenuItem Header="File">
+                <MenuItem Header="Open Installation…"
+                          Command="{Binding OpenInstallationPickerCommand}" />
+                <MenuItem Header="Installation Manager…"
+                          Command="{Binding ManageInstallationsCommand}" />
+                <MenuItem Header="Close Installation"
+                          Command="{Binding CloseInstallationCommand}" />
+                <Separator />
+                <MenuItem Header="O_ptions…"
+                          Command="{Binding OpenOptionsCommand}" />
+                <Separator />
+                <MenuItem Header="Exit"
+                          Command="{Binding ExitCommand}" />
+            </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem Header="Config layout">
+                    <MenuItem Header="Friendly style"
+                              ToggleType="Radio"
+                              GroupName="ConfigLayout"
+                              IsChecked="{Binding IsFriendlyStyle, Mode=TwoWay}"
+                              Command="{Binding ChooseFriendlyStyleCommand}" />
+                    <MenuItem Header="INI style"
+                              ToggleType="Radio"
+                              GroupName="ConfigLayout"
+                              IsChecked="{Binding IsIniStyle, Mode=TwoWay}"
+                              Command="{Binding ChooseIniStyleCommand}" />
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="Contents" /> <Separator /> <MenuItem Header="About" />
+            </MenuItem>
+        </Menu>
+
+        <ContentControl Content="{Binding ActiveContent}"
+                        DockPanel.Dock="Top"
+                        Margin="{tokens:Space MarginDialog}" />
+        <!--Two cells whilst booting: primary message and version number.-->
+        <commonControls:StatusBar IsVisible="{Binding IsBooting}"
+                                  DockPanel.Dock="Top"
+                                  Margin="{tokens:Space Top=GapSmallest}">
+            <commonControls:StatusBarItem commonControls:StatusBar.Size="90*">
+                <TextBlock Text="{Binding StatusMessagePrimaryText}" />
+            </commonControls:StatusBarItem>
+            <commonControls:StatusBarItem commonControls:StatusBar.Size="10*">
+                <TextBlock>V1.0.0</TextBlock>
+            </commonControls:StatusBarItem>
+        </commonControls:StatusBar>
+
+        <!--Three cells after booting: primary message, secondary message, and version number.-->
+        <commonControls:StatusBar IsVisible="{Binding !IsBooting}"
+                                  DockPanel.Dock="Top"
+                                  Margin="{tokens:Space Top=GapSmallest}">
+            <commonControls:StatusBarItem commonControls:StatusBar.Size="70*">
+                <TextBlock Text="{Binding StatusMessagePrimaryText}" />
+            </commonControls:StatusBarItem>
+            <commonControls:StatusBarItem commonControls:StatusBar.Size="20*">
+                <TextBlock Foreground="{Binding IsStatusError, Converter={StaticResource ErrorToBrush}}"
+                           Text="{Binding StatusMessageSecondaryText}" />
+            </commonControls:StatusBarItem>
+
+            <commonControls:StatusBarItem commonControls:StatusBar.Size="10*">
+                <TextBlock>V1.0.0</TextBlock>
+            </commonControls:StatusBarItem>
+        </commonControls:StatusBar>
+    </DockPanel>
+</ClassicWindow>

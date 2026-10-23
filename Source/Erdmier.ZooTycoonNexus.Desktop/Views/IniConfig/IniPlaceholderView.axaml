@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tokens="using:Erdmier.ZooTycoonNexus.Desktop.Styles"
+             xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels.IniConfig"
+             xmlns:controls="clr-namespace:Classic.Avalonia.Theme.Controls;assembly=Classic.Avalonia.Theme"
+             x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.IniConfig.IniPlaceholderView"
+             x:DataType="vm:IniPlaceholderViewModel">
+    <controls:GroupBox Header="INI status"
+                       Margin="{tokens:Space MarginDialog}"
+                       Padding="{StaticResource GroupBoxPadding}"
+                       VerticalAlignment="Top">
+        <DockPanel HorizontalSpacing="{StaticResource GapRelated}">
+            <Image DockPanel.Dock="Left"
+                   Classes="IconLarge IconBesideBody"
+                   RenderOptions.BitmapInterpolationMode="None"
+                   IsVisible="{Binding ShowWarningIcon}"
+                   Source="/Assets/Win95Icons/warning32.gif"
+                   VerticalAlignment="Top" />
+
+            <StackPanel Spacing="{StaticResource GapRelated}">
+                <TextBlock FontWeight="{StaticResource FontWeightStrong}"
+                           Text="{Binding Headline}" />
+
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                           IsVisible="{Binding ShowPlainBody}"
+                           Text="{Binding Body}"
+                           TextWrapping="Wrap" />
+
+                <!-- The No INI body (spec C9): same wording as the view model's Body, with zoo.ini in the monospace used elsewhere on the tab. -->
+                <TextBlock Foreground="{StaticResource ForegroundMuted}"
+                           IsVisible="{Binding HasActions}"
+                           TextWrapping="Wrap">
+                    <Run Text="This installation has no " /><Run FontFamily="{StaticResource FontFamilyMono}"
+                                                                 Text="zoo.ini" /><Run Text=" on disk. Create a fresh one from the launcher's defaults, or locate an existing file to copy in." />
+                </TextBlock>
+
+                <StackPanel IsVisible="{Binding HasActions}"
+                            Margin="{tokens:Space Top=GapUnrelated}"
+                            Orientation="Horizontal"
+                            Spacing="{StaticResource GapRelated}">
+                    <Button Command="{Binding CreateCommand}"
+                            Content="Create zoo.ini from defaults"
+                            IsDefault="True"
+                            Classes="DialogButton" />
+
+                    <Button Command="{Binding LocateCommand}"
+                            Content="Locate existing zoo.ini…"
+                            Classes="DialogButton" />
+                </StackPanel>
+            </StackPanel>
+        </DockPanel>
+    </controls:GroupBox>
+</UserControl>

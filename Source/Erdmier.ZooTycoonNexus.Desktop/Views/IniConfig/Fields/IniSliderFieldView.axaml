@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Erdmier.ZooTycoonNexus.Desktop.ViewModels.IniConfig.Fields"
+             x:Class="Erdmier.ZooTycoonNexus.Desktop.Views.IniConfig.Fields.IniSliderFieldView"
+             x:DataType="vm:IniSliderFieldViewModel">
+    <Grid ColumnDefinitions="*,Auto"
+          ColumnSpacing="{StaticResource GapRelated}">
+        <Slider x:Name="VolumeSlider"
+                Grid.Column="0"
+                HorizontalAlignment="Stretch"
+                LargeChange="10"
+                MaxWidth="200"
+                Maximum="100"
+                MinWidth="120"
+                Minimum="0"
+                SmallChange="1"
+                TickFrequency="10"
+                TickPlacement="BottomRight"
+                Value="{Binding Percent}"
+                VerticalAlignment="Center" />
+
+        <TextBlock FontFamily="{StaticResource FontFamilyMono}"
+                   Grid.Column="1"
+                   MinWidth="48"
+                   Text="{Binding PercentText}"
+                   VerticalAlignment="Center" />
+    </Grid>
+</UserControl>

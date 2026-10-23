@@ -1375,8 +1375,8 @@ prototype it was recorded from — are the visual reference. They are reference,
 
 ### 9.3 INI Config tab
 
-The editor has two display styles, chosen in Options (§9.8): the **Friendly style** (the default) and the **INI style**. This section describes the INI style; §9.3.3
-covers what the Friendly style changes. Both read and write the same keys — the style changes only how settings are shown.
+The editor has two display styles, chosen in Options (§9.8) or from the View menu (§9.10): the **Friendly style** (the default) and the **INI style**. This section describes the
+INI style; §9.3.3 covers what the Friendly style changes. Both read and write the same keys — the style changes only how settings are shown.
 
 The INI Config tab uses a two-pane split layout rather than the long vertically-scrolled accordion of the Ref launcher:
 
@@ -1459,12 +1459,16 @@ are held by INI key, so they survive the switch, and the editor returns to its f
 strip and the sub-states (§9.3.1) behave the same in both styles.
 
 The style reaches the editor through `IIniEditorStyleState`, a singleton in the composition root that holds the current style, a `Version` and a `StyleChanged` event. The
-launcher does not read its options at start-up, so the INI tab loads them once, lazily, before it builds its first editor; a failed read keeps the style already in force.
+main window loads the stored style once, at the top of the first boot, before any editor can exist; a failed read is logged and ignored, keeping the default. The INI tab's own
+lazy load before it builds its first editor remains as a guarded fallback; a failed read keeps the style already in force.
 `Version` guards the race with a save: a load that was in flight when Options saved a style does not overwrite it. A save in Options, or a choice in the View menu, sets the state;
 its `StyleChanged` event makes the INI tab call `IniEditorViewModel.ApplyStyle` on an open editor.
 
 - **INI style** — §9.3 as written, with every control following the file literally: the inverted `[UI]/noMenuMusic` is a plain check box (`No menu music`, ticked when the file
   holds `1`), and the attenuation and movie-volume keys are raw number boxes.
+- **Cash keys (both styles)** — the four `[UI]` cash keys (`MSStartingCash`, `MSCashIncrement`, `MSMinCash`, `MSMaxCash`) are worded as the new-zoo starting-cash picker: the
+  default starting cash, how much it moves per step, and the least and most you can choose. None of them limits cash during play. The INI style words this tersely, the Friendly
+  style to "you".
 - **Friendly style** — for a player who has never seen `zoo.ini`:
   - **Pages by purpose.** Eight pages — Display, Graphics, Sound, New Zoos, Controls, Help & Messages, Language, Troubleshooting — gather keys from any INI section. Each page
     shows a title (no brackets, no "section of zoo.ini") and a one-line description, then labelled group boxes (Display: *Screen*, *Performance*). The full map is in the
@@ -1473,11 +1477,9 @@ its `StyleChanged` event makes the INI tab call `IniEditorViewModel.ApplyStyle` 
     no label column and no hint line. The list caption above the pages reads `Page`, and the description sits only in the page header, not above the form pane.
   - **Values by meaning.** `noMenuMusic` is inverted (*Enable menu music*); the four volume keys are **sliders** from 0 % to 100 % with a percentage readout, louder to the
     right — the attenuation keys as `10000 − attenuation`, the movie volumes as `raw + 10000`, in steps of 100 raw units. An off-step file value is kept until the slider moves.
-  - **Language.** Only the language drop-down shows; a muted line under it gives the current LANGID / SUBLANGID, both codes together on a line of their own that never wraps. `lang`
-    and `sublang` stay in the layout as hidden rows (`IniFieldDescriptor.IsHidden`, labelled *Language code* and *Region code*, rendered nowhere) so that the picker's edits, dirty
-    tracking and Restore defaults reach them.
-  - **Cash.** The four `[UI]` cash keys (`MSStartingCash`, `MSCashIncrement`, `MSMinCash`, `MSMaxCash`) are described in both styles as the new-zoo starting-cash picker: the cash a
-    new zoo offers by default, the step per click, and the least and most the player can choose. None of them limits cash during play.
+  - **Language.** Only the language drop-down shows; a muted note under it gives the current codes on two lines that never wrap: *Windows language codes:*, then `LANGID n ·
+    SUBLANGID n`. `lang` and `sublang` stay in the layout as hidden rows (`IniFieldDescriptor.IsHidden`, labelled *Language code* and *Region code*, rendered nowhere) so that the
+    picker's edits, dirty tracking and Restore defaults reach them.
   - Each row's hint and help describe the value as that style shows it.
 
 `IniEditorCatalogue` is the INI layout and `IniEditorFriendlyCatalogue` the Friendly one; both reuse the same control kinds, bounds and choice options, and
@@ -1583,27 +1585,28 @@ descriptor line, a separator, and an attribution line naming the principal libra
 
 ### 9.10 Menu structure
 
-Three top-level menus. Accelerators in `<u>` underscores match Win95 convention.
+Three top-level menus. The menu bar is hidden while the launcher boots. Only `Options…` has an accelerator so far (Alt+P); the items below are as `MainWindow.axaml` builds them.
 
-| Menu     | Item                         | Command         | Shortcut | Notes                                                                                                                        |  
-|----------|------------------------------|-----------------|----------|------------------------------------------------------------------------------------------------------------------------------|  
-| **File** | <u>O</u>pen Installation…    | `open-install`  |          | Opens the Installation Manager focused on `Open`.                                                                            |  
-|          | Installation <u>M</u>anager… | `manage`        |          | Opens the §9.4 dialogue.                                                                                                     |  
-|          | <u>C</u>lose Installation    | `close-install` |          | Disabled when no installation is open. No separator before this item.                                                        |  
-|          | —                            |                 |          |                                                                                                                              |  
-|          | O<u>p</u>tions…              | `options`       |          | Opens the §9.8 dialogue. Enabled in every state after boot (the menu is hidden while booting).                               |
-|          | —                            |                 |          |                                                                                                                              |  
-|          | E<u>x</u>it                  | `exit`          | Alt+F4   |                                                                                                                              |  
-| **View** | Config layout ▸ Friendly style | `choose-friendly-style` |  | Radio item (Win9x bullet on the active style). Saves the style with the other launcher options and applies it at once to an open INI editor. |
-|          | Config layout ▸ INI style | `choose-ini-style` |  | The other half of the radio pair. Both are enabled whenever the menu is visible, and disabled only while a style save is in flight. |
-| **Help** | <u>C</u>ontents              | `help`          | F1       | Stubbed for the MVP — opens nothing but is kept so the eventual CHM/manual has a home. Surfacing it now communicates intent. |  
-|          | —                            |                 |          |                                                                                                                              |  
-|          | <u>A</u>bout                 | `about`         |          | Opens the §9.9 dialogue. No "Zoo Tycoon Launcher" suffix in the menu item — the dialogue title already carries it.           |  
+| Menu     | Item                           | Command                         | Notes                                                                                                                       |
+|----------|--------------------------------|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| **File** | Open Installation…             | `OpenInstallationPickerCommand` | Opens the Installation Manager focused on `Open`.                                                                           |
+|          | Installation Manager…          | `ManageInstallationsCommand`    | Opens the §9.4 dialogue.                                                                                                    |
+|          | Close Installation             | `CloseInstallationCommand`      | Disabled when no installation is open. No separator before this item.                                                       |
+|          | —                              |                                 |                                                                                                                             |
+|          | O<u>p</u>tions…                | `OpenOptionsCommand`            | Opens the §9.8 dialogue. Enabled in every state after boot.                                                                 |
+|          | —                              |                                 |                                                                                                                             |
+|          | Exit                           | `ExitCommand`                   | Alt+F4 also closes the window, as for any window.                                                                           |
+| **View** | Config layout ▸ Friendly style | `ChooseFriendlyStyleCommand`    | Radio item (Win9x bullet on the active style). Saves the style with the other launcher options and applies it at once.      |
+|          | Config layout ▸ INI style      | `ChooseIniStyleCommand`         | The other half of the radio pair. Both are enabled whenever the menu is visible, and disabled only while a style save runs. |
+| **Help** | Contents                       |                                 | Stub for the MVP: opens nothing but is kept so the eventual CHM/manual has a home. Surfacing it now communicates intent.    |
+|          | —                              |                                 |                                                                                                                             |
+|          | About                          |                                 | Stub for now; it will open the §9.9 dialogue. No "Zoo Tycoon Launcher" suffix — the dialogue title already carries it.      |
 
-An `Edit` menu is not present. The **View** menu holds one submenu, *Config layout*, whose two items form a mutually exclusive radio pair (conventions §5.1): the bullet follows the
-INI editor style in force, so a change made in Options moves it too. A choice is stored through the same load-then-save path as Options, changing only the style. When the save
-fails the style is unchanged, the error dialogue **Cannot Save Options** appears and the bullet snaps back to the active style. The toolbar from the Ref launcher is also dropped —
-actions belong in the menu, the tab content, and the dialogues, not in a third place.
+An `Edit` menu is not present. The **View** menu holds one submenu, *Config layout*, whose two items form a mutually exclusive radio pair (conventions §11): the bullet follows the
+INI editor style in force, so a change made in Options moves it too. The stored style is loaded at start-up (§9.3.3), so the bullet is right in every state after boot. A choice is
+compared with the stored style: if it already holds, nothing is saved and only the shared state is synced; otherwise it is stored through the same load-then-save path as Options,
+changing only the style. When the save fails the style is unchanged, the error dialogue **Cannot Save Options** appears and the bullet snaps back to the active style. The toolbar
+from the Ref launcher is also dropped — actions belong in the menu, the tab content, and the dialogues, not in a third place.
 
 ### 9.11 Theming and dark mode (removed)
 
@@ -1701,7 +1704,7 @@ EF Core against an ephemeral SQLite database per test (`Filename=:memory:` for n
 
 ### 11.4 `Erdmier.ZooTycoonLauncher.Desktop.Tests.Unit`
 
-View-model logic without an Avalonia runtime, plus one headless view-load test: INI field view models, the editor (change tracking, footer, save / reset / restore), the INI
+View-model logic without an Avalonia runtime, plus several headless view tests: INI field view models, the editor (change tracking, footer, save / reset / restore), the INI
 tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`, and a catalogue-integrity check against `ZooIniDefaults`.
 
 - `IniConfigTabViewModel` sub-state selection — editor / loading / no-INI / could-not-be-read, from `HasIni` and the `GetIniConfigQuery` load result or error.
@@ -1728,15 +1731,19 @@ tab host, the pending-changes guard on `PlayViewModel` and `MainWindowViewModel`
   the slider and gives the focus back) and `FriendlySlider_TabKeepsFocus` (a Tab-focused slider keeps it through arrow-key steps).
 - **View menu (style switching):** `MainWindowViewModelStyleMenuTests` (choosing either style saves only the style and applies it; a failed save, a query error and an
   unexpected exception each show *Cannot Save Options*, change nothing and snap the checks back; a second choice is blocked while a save is in flight; choosing the active style
-  does nothing; the checks follow the state, Options changes included). `MainWindowStyleMenuTests` (headless) opens the real `MainWindow`, clicks the *INI style* radio item
-  with a failing save and checks the bullet returns to *Friendly style*, which only the real toggle exercises.
-- **Final wave (editor styles):** `IniFriendlyEditorViewTests` also covers Page Up / Page Down on a Tab-focused slider (`FriendlySlider_PageKeysMoveTenPercent`).
-  `IniEditorLayoutsTests` adds layout parity (`Layouts_AgreeOnEachKeysControlAndCurrencyExceptTheFourVolumes`), the footnotes on both layouts
-  (`FriendlyLayout_FootnotesSitOnTheirGroups`, `…GuestsAndMapSizeFootnotesEqualTheIniSectionFootnotes`) and, with Task 9, the cash help (`CashHelp_IsTheSameMeaningInBothLayouts`,
-  checking the INI and Friendly catalogues alike). `IniLanguageFieldViewModelTests` pins the codes on their own line (`LanguageCodes_SitOnTheirOwnLine`).
-  `IniSliderFieldViewModelTests` covers an off-step file value that neither dirties the row nor changes the file until the slider moves (`OffStepValue_IsKeptUntilMoved`,
-  `MovingBackToTheLoadedPosition_StillWritesTheStepValue`). `IniConfigTabViewModelTests` covers the options-failure path (`OptionsQueryFailure_KeepsTheStyleInForce`) and disposal
-  (`Dispose_UnsubscribesFromStyleChanges`).
+  does nothing; the checks follow the state, Options changes included; the stored style is loaded at start-up before any editor, `StartupLoadsTheStoredStyleBeforeAnyEditor`; a
+  choice equal to the stored style saves nothing, `ChooseStyle_AlreadyStored_SavesNothing`, and over a stale state only syncs it,
+  `ChoosingTheStoredStyleOverAStaleState_SavesNothingButSyncsTheState`; a different choice over a stale state is saved,
+  `ChoosingFriendlyWhenIniIsStoredButTheStateIsStale_SavesTheChoice`). `MainWindowStyleMenuTests` (headless) opens the real `MainWindow`, clicks the *INI style* radio item with a
+  failing save and checks the bullet returns to *Friendly style*, which only the real toggle exercises.
+- **Editor behaviour added with the styles:** `IniEditorStyleHeadlessTests` also covers Page Up / Page Down on a Tab-focused slider, moving it 10 %
+  (`FriendlySlider_PageKeysMoveTenPercent`). `IniEditorLayoutsTests` checks that the two layouts agree on each key's control and currency apart from the four volumes
+  (`Layouts_AgreeOnEachKeysControlAndCurrencyExceptTheFourVolumes`), that the Friendly *Guests* and *Map size* groups carry a footnote (`FriendlyLayout_FootnotesSitOnTheirGroups`)
+  and that those footnotes equal the INI `[ai]` and `[Map]` ones (`FriendlyLayout_GuestsAndMapSizeFootnotesEqualTheIniSectionFootnotes`).
+  `IniEditorCatalogueTests.CashHelp_IsTheSameMeaningInBothLayouts` checks the cash help in both catalogues. `IniLanguageFieldViewModelTests` pins the codes to two lines
+  (`LanguageCodes_SitOnTheirOwnLine`). `IniSliderFieldViewModelTests` covers an off-step file value that neither dirties the row nor changes the file until the slider moves
+  (`OffStepValue_IsKeptUntilMoved`, `MovingBackToTheLoadedPosition_StillWritesTheStepValue`). `IniConfigTabViewModelTests` covers a failed options read
+  (`OptionsQueryFailure_KeepsTheStyleInForce`) and disposal (`Dispose_UnsubscribesFromStyleChanges`).
 - **INI field focus (headless):** `IniFieldFocusTests` hosts the real `IniEditorView` in a headless window (`IniEditorHarness`) and drives it with keyboard and pointer
   input, checking §9.3.2's focus rules end to end: the `fullscreen` drop-down reached with Tab, opened with F4 or Alt+Down and confirmed with Enter keeps focus and the
   footer help; an item picked with the pointer, a toggle click and a spinner-button click release focus; a click that opens a drop-down does not, nor does a `Click` raised

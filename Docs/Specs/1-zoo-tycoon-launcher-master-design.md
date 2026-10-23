@@ -1387,9 +1387,9 @@ The INI Config tab uses a two-pane split layout rather than the long vertically-
   from blowing out the layout; the prototype hit this with the long language labels.
 - **Footer row.** Hover / dirty status label on the left (§9.3.2), then `Restore previous…`, `Restore defaults`, `Save` (default), `Reset`.
   `Save` and `Reset` are disabled when there are no pending changes.
-  `Restore previous…` opens the Restore Previous INI dialogue (§7.3.3) and is disabled when there is no history. `Restore defaults` loads every setting the layout holds
-  setting's default into the form as unsaved edits (no prompt, nothing written); it is enabled when some field is not already at its default, and `Reset` undoes it. `Reset`
-  reloads the editor from disk. Button labels follow the Win9x ellipsis rule (conventions §5).
+  `Restore previous…` opens the Restore Previous INI dialogue (§7.3.3) and is disabled when there is no history. `Restore defaults` loads the default of every setting the layout
+  holds into the form as unsaved edits (no prompt, nothing written); it is enabled when some field is not already at its default, and `Reset` undoes it. `Reset` reloads the editor
+  from disk. Button labels follow the Win9x ellipsis rule (conventions §5).
 
 `[UI]` is internally split into three sub-headers (`Audio`, `Gameplay (cash)`, `Interface`); other sections render as flat row lists. Each row is a label + value control, with
 an optional muted hint sub-line (`px`, `1–60 ticks/sec`, `-10000 silent → 0 full`, etc.). The `[scenario]` section, once it joins, will organise its checkboxes by
@@ -1567,9 +1567,9 @@ exactly *N* keys written.
   reports started."*
 
 Footer: `OK` (default) and `Cancel`, right-aligned, both `DialogButton` (`MinWidth="75"`). The dialogue loads the stored values when it opens, and `OK` stays disabled until they
-have loaded. `OK` saves both values in one `SaveLauncherOptionsCommand` and closes; `Cancel`, `Esc` and the title-bar close discard. A failed save shows `Cannot Save Options` with
-the error and keeps the dialogue open. The dialogue never touches `LauncherSettings.DefaultInstallationId`, and nothing applies live: the startup preference is read at the next
-start and the close setting at the next launch. The INI editor style is the exception: it applies as soon as `OK` saves.
+have loaded. `OK` saves all three values in one `SaveLauncherOptionsCommand` and closes; `Cancel`, `Esc` and the title-bar close discard. A failed save shows `Cannot Save Options`
+with the error and keeps the dialogue open. The dialogue never touches `LauncherSettings.DefaultInstallationId`, and nothing applies live: the startup preference is read at the
+next start and the close setting at the next launch. The INI editor style is the exception: it applies as soon as `OK` saves.
 
 ### 9.9 About dialogue
 
@@ -1810,13 +1810,13 @@ will be written.
   delete rule), Installation Manager dialogue (DataGrid + actions), Installation Info dialogue.
 - **Startup flow.** Boot pipeline + state machine, Looking for Zoo Tycoon / Ready to Play / Cannot Play / No Game Installation Found / Open Game Installation wireframes wired to  
   states, last-opened / last-played timestamping.
-- **INI Config tab.** The editor (split layout, eight sections, hover + status help — §9.3.2), the No INI placeholder with its recovery actions (§7.4), the read-only
-  strip (§9.3.1), Restore Previous INI dialogue with inline diff (§9.7), tooltip parity fix, atomic save with snapshot archiving, and the Friendly / INI display
-  styles (§9.3.3).
+- **INI Config tab.** The editor (split layout, seven sections with `[scenario]` joining as the eighth after Phase 0, hover + status help — §9.3.2), the No INI placeholder with its
+  recovery actions (§7.4), the read-only strip (§9.3.1), Restore Previous INI dialogue with inline diff (§9.7), tooltip parity fix, atomic save with snapshot archiving, and the
+  Friendly / INI display styles (§9.3.3).
 - **Screen modes on the General tab.** Available modes count, ZT1-compatible modes count, resolution dropdown sourced from the filtered list.
 - **Launch Game.** Process start with working-directory and arguments matched to the Ref launcher; `CloseAfterGameLaunch` honoured.
-- **Options.** Options dialogue (§9.8) covers `LauncherStartupPreference` and `CloseAfterGameLaunch`. There is no theming: the launcher has one, light, appearance with its
-  colours defined once (§9.11).
+- **Options.** Options dialogue (§9.8) covers `LauncherStartupPreference`, `CloseAfterGameLaunch` and the INI editor style (`IniEditorStyle`). There is no theming: the launcher has
+  one, light, appearance with its colours defined once (§9.11).
 
 ### 13.3 Phase 2 — Saves & Mods (deferred; SDD sketch only)
 

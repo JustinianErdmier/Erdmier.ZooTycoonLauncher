@@ -1490,6 +1490,52 @@ stays responsive rather than crashing.
 
 ### Notes/Thoughts
 
+## 9. Editor Styles: the Options dialogue switches the INI Config tab between the Friendly and INI styles, live and without losing edits
+
+### Testing Strategy
+
+1. Open an installation with a `zoo.ini` and choose `File → Options…`. In the *INI editor* group box select `Friendly style` (the default) and press `OK`. Open the INI Config tab:
+   the left list is captioned `Page` and holds eight pages (Display, Graphics, Sound, New Zoos, Controls, Help & Messages, Language, Troubleshooting), each setting sits in a
+   group box with a plain-language label.
+2. On the Sound page confirm `Enable menu music` is ticked when the file holds `noMenuMusic=0`, and that the four volumes (menu music, game sound, first and second movie) are
+   sliders reading `Silent – Full` with a `0 %`–`100 %` readout that is never clipped. Drag a slider, then Tab to another slider and press the arrow keys (1 %), `Page Up` and
+   `Page Down` (10 %): each moves the value, keeps the focus and updates the footer help. Moving a slider must mark the editor as having unsaved changes; merely visiting every
+   page must not, even when the file holds an off-step value such as `menuMusicAttenuation=3450`.
+3. On the Language page confirm the codes line under the picker wraps rather than being cut off. On the Display page confirm the width and height hints give the range and the
+   default rather than repeating "pixels".
+4. With the edits from step 2 still pending, open `File → Options…`, select `INI style` and press `OK`. The editor re-renders at once without reloading: the list is captioned
+   `Section`, the seven sections are bracketed (`[user]`, `[UI]`, …), keys and values are literal (`noMenuMusic` is its own check box, the volumes are numbers), and the pending
+   edit is still there in raw form (for example `menuMusicAttenuation` showing the stepped value) with the footer still reading `Unsaved changes`. Switch back to the Friendly
+   style and confirm the same edit survives again.
+5. Press `Restore previous…` in each style (the installation needs history). In the Friendly style the difference grid names keys as `Page › Group › Label` in the system face
+   with `On` / `Off` and volume percentages; in the INI style it shows `[section]/key` in the monospace face with raw values. The change count is the same in both.
+6. Press `Save` in the Friendly style after moving a volume slider and ticking a check box, then open `zoo.ini` in a text editor: the file holds raw values (attenuation in steps
+   of 100, `noMenuMusic` inverted) and no other line has changed. Press `Cancel` in Options once with the other style selected and confirm nothing re-renders.
+
+### Expected Outcome
+
+> Explain what the expected outcome for this stage in the process should be.
+
+### Actual Outcome
+
+> Explain what the actual outcome was, how it aligned and/or differed from the expected. If any changes were made, briefly highlight them here (simply to avoid writing multiple
+> "Actual Outcome" sections) and then go into more detail in the next section.
+
+### Changes
+
+> Walk through any changes made during testing to address any gaps between the expected and actual outcomes or improvements you made.
+
+### UI/UX
+
+#### Hi-Fi Mockup
+
+#### Actual Implementation
+
+#### Alignment
+
+### Shortcomings
+
+### Notes/Thoughts
 ---
 
 # Restore Previous INI

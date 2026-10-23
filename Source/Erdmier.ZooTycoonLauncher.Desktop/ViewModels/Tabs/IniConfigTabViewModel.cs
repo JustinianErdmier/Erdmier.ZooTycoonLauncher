@@ -191,8 +191,9 @@ public sealed partial class IniConfigTabViewModel : ViewModelBase, IDisposable
         }
     }
 
-    // The boot does not load the launcher options, so the first editor of this tab reads the stored style itself, once, before it is built. A failure keeps the style already in
-    // force: the editor is still usable in either style, and the options dialogue reports its own errors.
+    // The main window loads the stored style at start-up; this is the fallback for the first editor of this tab, read once before it is built and guarded by the state's Version so
+    // it never overwrites a newer style. A failure keeps the style already in force:
+    // the editor is still usable in either style, and the options dialogue reports its own errors.
     private async Task EnsureStyleLoadedAsync(IMediator mediator, CancellationToken cancellationToken)
     {
         if (_hasLoadedStyle)

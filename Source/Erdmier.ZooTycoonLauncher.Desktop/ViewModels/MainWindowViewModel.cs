@@ -364,8 +364,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         SetPickerStatusMessages();
     }
 
-    // The boot does not load the launcher options, so the stored editor style is read once here, before the first state is built: the View menu's bullet is then right in
-    // every state, whether or not an INI editor ever opens. A failure keeps the style already in force; the INI Config tab's own lazy load stays harmless beside this one.
+    // The boot does not otherwise load the launcher options, so the stored editor style is read once here, after the Looking state and status text are set and before any editor
+    // exists: the View menu's bullet is then right in every state, whether or not an INI editor ever opens. A failure keeps the style already in force; the INI Config tab's own lazy load stays harmless beside this one.
     private async Task LoadStoredStyleAsync(CancellationToken cancellationToken)
     {
         if (_hasLoadedStyle)

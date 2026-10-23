@@ -1459,8 +1459,8 @@ are held by INI key, so they survive the switch, and the editor returns to its f
 strip and the sub-states (§9.3.1) behave the same in both styles.
 
 The style reaches the editor through `IIniEditorStyleState`, a singleton in the composition root that holds the current style, a `Version` and a `StyleChanged` event. The
-main window loads the stored style once, during the first boot, after the Looking-for-Zoo-Tycoon state and status text are set and before any editor exists, with the same `Version`
-guard; a failed or throwing read is logged and ignored, keeping the default, and the boot completes. The INI tab's own lazy load before it builds its first editor remains as a
+main window loads the stored style once, during the first boot, after the Looking-for-Zoo-Tycoon state and status text are set and before any editor exists, with a `Version` guard
+(below); a failed or throwing read is logged and ignored, keeping the default, and the boot completes. The INI tab's own lazy load before it builds its first editor remains as a
 guarded fallback; a failed read keeps the style already in force. `Version` guards the race with a save: a load that was in flight when Options saved a style does not overwrite it.
 A save in Options, or a choice in the View menu, sets the state; its `StyleChanged` event makes the INI tab call `IniEditorViewModel.ApplyStyle` on an open editor.
 

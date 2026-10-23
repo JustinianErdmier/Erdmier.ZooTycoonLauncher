@@ -169,7 +169,7 @@ Use a `Grid` with `ColumnDefinitions="190,*"` and the right column's `MinWidth="
 ### 3.2 Hint sub-line
 
 Optional `TextBlock` immediately below the label, styled with `MutedText`. Carries the *units / range / shape* of the value: `px`, `1–60 ticks/sec`, `$0–$10,000,000`,
-`0=Off · 1=Standard · 2=Verbose`, `Inverted in INI` (for `noMenuMusic`), etc. Defaults stay on the input bounds, not in the hint.
+`0=Off · 1=Standard · 2=Verbose`, `1 = no menu music` (for `noMenuMusic`), etc. Defaults stay on the input bounds, not in the hint.
 
 ### 3.3 Help wiring
 

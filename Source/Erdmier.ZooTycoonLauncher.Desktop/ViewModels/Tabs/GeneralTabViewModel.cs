@@ -69,7 +69,7 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     /// <summary><see langword="true" /> when <c>zoo.ini</c> is present in the installation's directory; drives the INI status row.</summary>
     public bool HasIni { get; }
 
-    /// <summary><see langword="true" /> while the INI Config tab holds unsaved edits; disables Launch Game (SDD §7.3.2).</summary>
+    /// <summary><see langword="true" /> while the Game Config tab holds unsaved edits; disables Launch Game (SDD §7.3.2).</summary>
     [ ObservableProperty ]
     [ NotifyCanExecuteChangedFor(nameof(LaunchCommand)) ]
     [ NotifyPropertyChangedFor(nameof(ShowPendingIniChangesHint)) ]
@@ -117,10 +117,10 @@ public sealed partial class GeneralTabViewModel : ViewModelBase
     /// </summary>
     public bool IsMissingOnlyIni => HasExe && !HasIni;
 
-    /// <summary>The Cannot Play message shown when only <c>zoo.ini</c> is missing, pointing at the INI Config tab's recovery actions.</summary>
+    /// <summary>The Cannot Play message shown when only <c>zoo.ini</c> is missing, pointing at the Game Config tab's recovery actions.</summary>
     public string MissingIniMessage
         => "zoo.ini is missing from this installation's directory. The game will not start without it. Use Fix to locate or recreate the file. "
-           + "Open the installation manager to try fixing the problem. Use the INI Config tab to create or locate zoo.ini.";
+           + "Open the installation manager to try fixing the problem. Use the Game Config tab to create or locate zoo.ini.";
 
     /// <summary>
     ///     <see langword="true" /> when the "Save or revert your INI changes to launch." hint should show: Cannot Play already hides the Launch button, so the hint would be

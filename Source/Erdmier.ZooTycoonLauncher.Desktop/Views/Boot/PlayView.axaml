@@ -7,7 +7,7 @@
         <TabItem Header="General">
             <ContentControl Content="{Binding GeneralTab}" />
         </TabItem>
-        <TabItem Header="INI Config">
+        <TabItem Header="Game Config">
             <ContentControl Content="{Binding IniConfigTab}" />
         </TabItem>
     </TabControl>

@@ -30,6 +30,10 @@ storage and the user-facing name, and Task 3 updated the documents and closed th
   wrong: a version number.
 - **R9 (Task 3):** the SDD's note that the Ref build kept its config at `%APPDATA%\ZooTycoonLauncher\launcher.config` was left as it is. It names the prototype's real, historical
   folder, so renaming it would make the sentence false. Cost if wrong: none.
+- **R10 (final review):** the stale, pre-existing `Source/Launcher/…` entries in Rider's `.idea/…/avalonia.xml` were left; only Rider reads them, and it drops dead keys
+  itself. Cost if wrong: cosmetic.
+- **R11 (final review):** the integration tests' temp-file prefixes moved from `zoolauncher-` to `zoonexus-`, and one storage test was renamed
+  `Construction_CreatesTheDataAndLogFolders` (the plan still names it `…InTheGivenFileSystemOnly`). Cost if wrong: none.
 
 ## Task 1 outcome
 
@@ -76,10 +80,10 @@ For the maintainer, after the merge:
 
 - Move the old data files, if the history is wanted (the app does not migrate them; otherwise it starts fresh and the old `%LOCALAPPDATA%\ZooTycoonLauncher\` folder can be
   deleted). In this order:
-  1. With the app closed, delete the `%LOCALAPPDATA%\ZooTycoonNexus\` folder that this milestone's test run created (it holds a fresh `Nexus.db` and possibly `-wal` /
-     `-shm` files; dropping the old database in beside another database's `-wal` risks corruption).
+  1. With both apps closed (Zoo Tycoon Nexus and any older Zoo Tycoon Launcher build), delete the `%LOCALAPPDATA%\ZooTycoonNexus\` folder that this milestone's test run
+     created (it holds a fresh `Nexus.db` and possibly `-wal` / `-shm` files; dropping the old database in beside another database's `-wal` risks corruption).
   2. Rename (or copy) the whole `%LOCALAPPDATA%\ZooTycoonLauncher\` folder to `%LOCALAPPDATA%\ZooTycoonNexus\`.
-  3. Inside it, rename `Data\Launcher.db` to `Data\Nexus.db`, together with any `Launcher.db-wal` / `Launcher.db-shm` (or check none exist).
+  3. Inside it, rename `Data\Launcher.db` to `Data\Nexus.db`, and any `Launcher.db-wal` / `Launcher.db-shm` to `Nexus.db-wal` / `Nexus.db-shm` (or check none exist).
   4. Leave every `Data\{installationId}.db` and `Logs\Installations\` exactly as they are — the registry in `Nexus.db` points at them; moving only `Launcher.db` would
      silently start fresh per-installation history.
   5. Optionally rename old `Logs\Launcher*.log` files to `Nexus*.log`.

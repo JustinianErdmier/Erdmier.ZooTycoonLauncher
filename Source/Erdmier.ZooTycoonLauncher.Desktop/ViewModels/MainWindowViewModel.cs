@@ -27,8 +27,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IIniEditorStyleState _styleState;
 
-    private bool _hasLoadedStyle;
-
     private readonly ILogger<IniEditorViewModel> _iniEditorLogger;
 
     private readonly ILogger<IniPlaceholderViewModel> _iniPlaceholderLogger;
@@ -36,6 +34,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly ILogger<IniConfigTabViewModel> _iniTabLogger;
 
     private readonly ILogger<PlayViewModel> _playLogger;
+
+    private bool _hasLoadedStyle;
 
     /// <summary>Initialises a new instance.</summary>
     /// <param name="mediator">The Mediator dispatcher.</param>
@@ -382,10 +382,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             ErrorOr<LauncherOptions> options = await _mediator.Send(new GetLauncherOptionsQuery(), cancellationToken);
 
-            if (!options.IsError
-                && _styleState.Version == versionBeforeQuery)
+            if (options.IsError)
             {
-                _styleState.Style = options.Value.EditorStyle;
+                _logger.LogError("Could not read the stored INI editor style at start-up: {Error}", options.FirstError.Description);
+            }
+            else if (options.Value is { } value
+                     && _styleState.Version == versionBeforeQuery)
+            {
+                _styleState.Style = value.EditorStyle;
             }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -396,12 +400,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private async Task RunBootAsync(Guid? installationId, CancellationToken cancellationToken, int initialTabIndex = 0)
     {
-        await LoadStoredStyleAsync(cancellationToken);
-
         ActiveContent              = new LookingForZooTycoonViewModel();
         IsBooting                  = true;
         StatusMessagePrimaryText   = installationId is null ? "Discovering installations…" : "Opening installation…";
         StatusMessageSecondaryText = "Please wait…";
+
+        await LoadStoredStyleAsync(cancellationToken);
 
         ViewModelBase? content = null;
 

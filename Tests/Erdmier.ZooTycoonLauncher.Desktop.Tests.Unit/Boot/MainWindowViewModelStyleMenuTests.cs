@@ -239,4 +239,80 @@ public sealed class MainWindowViewModelStyleMenuTests
         raised.ShouldContain(nameof(MainWindowViewModel.IsFriendlyStyle));
         raised.ShouldContain(nameof(MainWindowViewModel.IsIniStyle));
     }
+
+    private void ReturnsNoGameBoot()
+        => _mediator.Send(Arg.Any<BootCommand>(), Arg.Any<CancellationToken>())
+                    .Returns(new ValueTask<ErrorOr<BootResult>>(new BootResult(BootOutcome.NoGameInstallationFound, ActiveInstallation: null, LocatedCandidatePath: null)));
+
+    [ Fact ]
+    public async Task Startup_AStyleSetWhileTheQueryIsInFlight_IsKept()
+    {
+        TaskCompletionSource<ErrorOr<LauncherOptions>> pending = new();
+
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<LauncherOptions>>(pending.Task));
+
+        ReturnsNoGameBoot();
+
+        MainWindowViewModel window = CreateWindow();
+
+        Task booting = window.BootCommand.ExecuteAsync(parameter: null);
+
+        _styleState.Style = IniEditorStyle.Friendly;
+
+        pending.SetResult(new LauncherOptions(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, IniEditorStyle.Ini));
+
+        await booting;
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
+        window.IsFriendlyStyle.ShouldBeTrue();
+    }
+
+    [ Fact ]
+    public async Task Startup_AFailingQuery_LeavesTheStyleAndTheBootCompletes()
+    {
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns(new ValueTask<ErrorOr<LauncherOptions>>(Error.Failure(code: "Settings.ReadFailed", description: "unreadable")));
+
+        ReturnsNoGameBoot();
+
+        MainWindowViewModel window = CreateWindow();
+
+        await window.BootCommand.ExecuteAsync(parameter: null);
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
+        window.IsBooting.ShouldBeFalse();
+        window.ActiveContent.ShouldBeOfType<NoGameInstallationFoundViewModel>();
+    }
+
+    [ Fact ]
+    public async Task Startup_AThrowingQuery_LeavesTheStyleAndTheBootCompletes()
+    {
+        _mediator.Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>())
+                 .Returns<ValueTask<ErrorOr<LauncherOptions>>>(_ => throw new InvalidOperationException("boom"));
+
+        ReturnsNoGameBoot();
+
+        MainWindowViewModel window = CreateWindow();
+
+        await window.BootCommand.ExecuteAsync(parameter: null);
+
+        _styleState.Style.ShouldBe(IniEditorStyle.Friendly);
+        window.IsBooting.ShouldBeFalse();
+        window.ActiveContent.ShouldBeOfType<NoGameInstallationFoundViewModel>();
+    }
+
+    [ Fact ]
+    public async Task Startup_TheStoredStyleIsLoadedOnlyOnceAcrossAReboot()
+    {
+        ReturnsStored(new LauncherOptions(LauncherStartupPreference.DefaultInstallation, CloseAfterGameLaunch: false, IniEditorStyle.Ini));
+        ReturnsNoGameBoot();
+
+        MainWindowViewModel window = CreateWindow();
+
+        await window.BootCommand.ExecuteAsync(parameter: null);
+        await window.BootCommand.ExecuteAsync(parameter: null);
+
+        await _mediator.Received(requiredNumberOfCalls: 1).Send(Arg.Any<GetLauncherOptionsQuery>(), Arg.Any<CancellationToken>());
+    }
 }
